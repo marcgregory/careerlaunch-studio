@@ -27,17 +27,23 @@ CareerLaunch Studio is an original resume, CV, and cover-letter builder for job 
 
 ## Commands
 
-No implementation exists yet. Recommended future commands after scaffolding:
-
 ```bash
 npm install
 npm run dev
 npm run build
 npm run test
-npm run lint
+npm run typecheck
+npm run test:e2e --workspace @careerlaunch/web
+```
+
+## Environment
+
+Copy `.env.example` to `.env`, set `DATABASE_URL` and `AUTH_SECRET`, then run the Prisma migration before testing the full persistence path.
+
+```bash
+node_modules/.bin/prisma migrate dev --schema prisma/schema.prisma
 ```
 
 ## Current Status
 
-The foundation is complete and ready for implementation. The next step is to scaffold the monorepo and build Sprint 1.
-
+Sprint 1 is in progress. Auth, protected resume persistence routes, database-backed builder code, and export ownership checks are implemented. Sprint 1 should not be marked complete until PostgreSQL is configured, the migration is applied, and the full Playwright signup/save/export path passes against the database.

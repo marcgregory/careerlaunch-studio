@@ -11,6 +11,8 @@ model User {
   id            String           @id @default(cuid())
   email         String           @unique
   name          String?
+  passwordHash  String
+  passwordSalt  String
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   resumes       ResumeDocument[]
@@ -91,4 +93,5 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
 }
+
 

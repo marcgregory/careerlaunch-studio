@@ -4,36 +4,37 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, RotateCcw, Save, Sparkles } from "lucide-react";
 import { ResumePreview } from "@careerlaunch/rendering";
-import { sampleResume, scoreResume, type ResumeDocument } from "@careerlaunch/domain";
+import { scoreResume, type ResumeDocument } from "@careerlaunch/domain";
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 
-const storageKey = "careerlaunch.resume.demo";
-
-export function ResumeBuilder() {
-  const [resume, setResume] = useState<ResumeDocument>(sampleResume);
-  const [saveState, setSaveState] = useState<"Loading" | "Saved" | "Saving">("Loading");
+export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument }) {
+  const [resume, setResume] = useState<ResumeDocument>(initialResume);
+  const [saveState, setSaveState] = useState<"Saved" | "Saving" | "Error">("Saved");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(storageKey);
-    if (stored) {
-      try {
-        setResume(JSON.parse(stored) as ResumeDocument);
-      } catch {
-        setResume(sampleResume);
-      }
-    }
-    setSaveState("Saved");
-  }, []);
-
-  useEffect(() => {
-    if (saveState === "Loading") return;
     setSaveState("Saving");
-    const timeout = window.setTimeout(() => {
-      window.localStorage.setItem(storageKey, JSON.stringify(resume));
-      setSaveState("Saved");
-    }, 250);
-    return () => window.clearTimeout(timeout);
-  }, [resume, saveState]);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/resumes/${resume.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(resume),
+          signal: controller.signal
+        });
+
+        if (!response.ok) throw new Error("Save failed");
+        setSaveState("Saved");
+      } catch (error) {
+        if (!controller.signal.aborted) setSaveState("Error");
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [resume]);
 
   const check = useMemo(() => scoreResume(resume), [resume]);
 
@@ -78,13 +79,18 @@ export function ResumeBuilder() {
     }));
   }
 
-  function resetDemo() {
-    window.localStorage.removeItem(storageKey);
-    setResume(sampleResume);
+  function resetDraft() {
+    setResume(initialResume);
   }
 
-  function exportPdf() {
-    window.print();
+  async function exportPdf() {
+    const response = await fetch("/api/export/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeId: resume.id })
+    });
+
+    if (response.ok) window.print();
   }
 
   return (
@@ -101,10 +107,10 @@ export function ResumeBuilder() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700">
+            <span className={saveBadgeClass(saveState)}>
               <Save size={16} /> {saveState}
             </span>
-            <button className={secondaryButtonClass} onClick={resetDemo} type="button">
+            <button className={secondaryButtonClass} onClick={resetDraft} type="button">
               <RotateCcw size={18} /> Reset
             </button>
             <button className={primaryButtonClass} onClick={exportPdf} type="button">
@@ -226,3 +232,7 @@ function statusClass(status: "pass" | "warn" | "fail") {
   return "rounded-sm bg-rose-100 px-2 py-1 text-xs font-bold uppercase text-rose-800";
 }
 
+function saveBadgeClass(saveState: "Saved" | "Saving" | "Error") {
+  const color = saveState === "Error" ? "border-rose-300 bg-rose-50 text-rose-700" : "border-slate-300 bg-white text-slate-700";
+  return `inline-flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${color}`;
+}
