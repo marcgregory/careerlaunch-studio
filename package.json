@@ -1,0 +1,23 @@
+{
+    "name":  "careerlaunch-studio",
+    "version":  "0.1.0",
+    "private":  true,
+    "description":  "Original resume, CV, and cover-letter builder SaaS.",
+    "scripts":  {
+                    "dev":  "npm run dev --workspace @careerlaunch/web",
+                    "build":  "npm run build --workspaces --if-present",
+                    "lint":  "npm run lint --workspaces --if-present",
+                    "test":  "npm run test --workspaces --if-present",
+                    "typecheck":  "npm run typecheck --workspaces --if-present"
+                },
+    "workspaces":  [
+                       "apps/*",
+                       "packages/*"
+                   ],
+    "engines":  {
+                    "node":  "\u003e=20"
+                },
+    "overrides":  {
+                      "postcss":  "^8.5.10"
+                  }
+}

@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String           @id @default(cuid())
+  email         String           @unique
+  name          String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  resumes       ResumeDocument[]
+  subscriptions Subscription[]
+}
+
+model ResumeDocument {
+  id        String          @id @default(cuid())
+  userId    String
+  title     String
+  targetRole String?
+  body      Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions  ResumeVersion[]
+  exports   ExportJob[]
+
+  @@index([userId, updatedAt])
+}
+
+model ResumeVersion {
+  id        String         @id @default(cuid())
+  resumeId  String
+  body      Json
+  note      String?
+  createdAt DateTime       @default(now())
+  resume    ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt])
+}
+
+model ExportJob {
+  id        String         @id @default(cuid())
+  resumeId  String
+  format    ExportFormat
+  status    ExportStatus   @default(PENDING)
+  fileUrl   String?
+  error     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  resume    ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  stripeCustomerId   String?
+  stripeSubscriptionId String?          @unique
+  status             SubscriptionStatus @default(FREE)
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum ExportFormat {
+  PDF
+  DOCX
+  TXT
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
