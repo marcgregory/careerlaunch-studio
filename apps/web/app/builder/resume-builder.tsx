@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, RotateCcw, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Gauge, RotateCcw, Save, Sparkles } from "lucide-react";
 import { ResumePreview } from "@careerlaunch/rendering";
 import { scoreResume, type ResumeDocument } from "@careerlaunch/domain";
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
@@ -94,16 +94,16 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f3ee] text-slate-950">
-      <header className="no-print sticky top-0 z-20 border-b border-slate-300 bg-[#f6f3ee]/95 px-4 py-3 backdrop-blur">
+    <main className="signal-site min-h-screen text-[#123c3a]">
+      <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-4 py-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className={secondaryButtonClass} aria-label="Back to dashboard">
-              <ArrowLeft size={18} />
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-12 w-12 rounded-full px-0`} aria-label="Back to dashboard">
+              <ArrowLeft size={20} />
             </Link>
-            <div>
-              <p className="text-xs font-bold uppercase text-emerald-700">Resume Builder</p>
-              <h1 className="text-xl font-black">{resume.title}</h1>
+            <div className="min-w-0">
+              <p className="font-mono text-xs font-black uppercase tracking-[0.2em] text-[#00796f]">Resume Builder</p>
+              <h1 className="font-signal truncate text-2xl font-black leading-none tracking-[-0.06em]">{resume.title}</h1>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -120,34 +120,44 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 xl:grid-cols-[420px_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[430px_1fr]">
         <aside className="no-print space-y-5">
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
+          <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-bold uppercase text-emerald-700">Resume score</p>
-                <h2 className="mt-1 text-4xl font-black">{check.score}</h2>
+                <p className="font-mono text-xs font-black uppercase tracking-[0.2em] text-[#b9ff66]">Resume score</p>
+                <h2 className="font-signal mt-2 text-7xl font-black leading-none tracking-[-0.08em]">{check.score}</h2>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-md bg-emerald-700 text-white">
-                <Sparkles size={24} />
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
+                <Sparkles size={25} />
+              </div>
+            </div>
+            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
+                <span>Signal scan</span>
+                <Gauge size={18} className="text-[#b9ff66]" />
+              </div>
+              <div className="space-y-3">
+                <div className="h-2 rounded-full bg-[#b9ff66]" />
+                <div className="h-2 w-5/6 rounded-full bg-white/18" />
+                <div className="h-2 w-2/3 rounded-full bg-white/18" />
               </div>
             </div>
             <div className="mt-5 space-y-3">
               {check.checks.map((item) => (
-                <div key={item.id} className="border-t border-slate-200 pt-3">
+                <div key={item.id} className="border-t border-white/12 pt-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold">{item.label}</p>
+                    <p className="text-sm font-black text-white">{item.label}</p>
                     <span className={statusClass(item.status)}>{item.status}</span>
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-slate-600">{item.detail}</p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-white/62">{item.detail}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black">Target</h2>
-            <div className="mt-4 space-y-3">
+          <Panel title="Target">
+            <div className="space-y-3">
               <Field label="Resume title" value={resume.title} onChange={(value) => setResume({ ...resume, title: value })} />
               <Field
                 label="Target role"
@@ -155,22 +165,20 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
                 onChange={(value) => setResume({ ...resume, targetRole: value })}
               />
             </div>
-          </section>
+          </Panel>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black">Contact</h2>
-            <div className="mt-4 space-y-3">
+          <Panel title="Contact">
+            <div className="space-y-3">
               <Field label="Full name" value={resume.contact.fullName} onChange={(value) => updateContact("fullName", value)} />
               <Field label="Email" value={resume.contact.email} onChange={(value) => updateContact("email", value)} />
               <Field label="Phone" value={resume.contact.phone} onChange={(value) => updateContact("phone", value)} />
               <Field label="Location" value={resume.contact.location} onChange={(value) => updateContact("location", value)} />
               <Field label="Website" value={resume.contact.website} onChange={(value) => updateContact("website", value)} />
             </div>
-          </section>
+          </Panel>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black">Summary</h2>
-            <label className="mt-4 block">
+          <Panel title="Summary">
+            <label className="block">
               <span className={labelClass}>Professional summary</span>
               <textarea
                 className={`${fieldClass} mt-1 min-h-28 resize-y`}
@@ -178,11 +186,10 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
                 onChange={(event) => setResume({ ...resume, summary: event.target.value })}
               />
             </label>
-          </section>
+          </Panel>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black">Current role</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Panel title="Current role">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Role" value={resume.experience[0]?.role ?? ""} onChange={(value) => updateFirstExperience("role", value)} />
               <Field label="Company" value={resume.experience[0]?.company ?? ""} onChange={(value) => updateFirstExperience("company", value)} />
               <Field label="Location" value={resume.experience[0]?.location ?? ""} onChange={(value) => updateFirstExperience("location", value)} />
@@ -194,11 +201,10 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
                 <Field key={index} label={`Impact bullet ${index + 1}`} value={bullet} onChange={(value) => updateFirstBullet(index, value)} />
               ))}
             </div>
-          </section>
+          </Panel>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-black">Skills</h2>
-            <label className="mt-4 block">
+          <Panel title="Skills">
+            <label className="block">
               <span className={labelClass}>Comma-separated skills</span>
               <textarea
                 className={`${fieldClass} mt-1 min-h-24 resize-y`}
@@ -206,14 +212,23 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
                 onChange={(event) => updateSkills(event.target.value)}
               />
             </label>
-          </section>
+          </Panel>
         </aside>
 
-        <section className="print-area overflow-auto rounded-md border border-slate-300 bg-slate-200/70 p-4 xl:p-8">
+        <section className="print-area overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
           <ResumePreview resume={resume} />
         </section>
       </div>
     </main>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition hover:border-[#b9ff66]">
+      <h2 className="font-signal border-b border-[#123c3a]/10 pb-3 text-xl font-black tracking-[-0.05em]">{title}</h2>
+      <div className="mt-4">{children}</div>
+    </section>
   );
 }
 
@@ -227,12 +242,13 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 }
 
 function statusClass(status: "pass" | "warn" | "fail") {
-  if (status === "pass") return "rounded-sm bg-emerald-100 px-2 py-1 text-xs font-bold uppercase text-emerald-800";
-  if (status === "warn") return "rounded-sm bg-amber-100 px-2 py-1 text-xs font-bold uppercase text-amber-800";
-  return "rounded-sm bg-rose-100 px-2 py-1 text-xs font-bold uppercase text-rose-800";
+  if (status === "pass") return "rounded-lg bg-[#b9ff66] px-2.5 py-1 text-xs font-black uppercase text-[#123c3a]";
+  if (status === "warn") return "rounded-lg bg-[#fff1c7] px-2.5 py-1 text-xs font-black uppercase text-[#8a5a00]";
+  return "rounded-lg bg-[#ffe1dc] px-2.5 py-1 text-xs font-black uppercase text-[#9f2f1c]";
 }
 
 function saveBadgeClass(saveState: "Saved" | "Saving" | "Error") {
-  const color = saveState === "Error" ? "border-rose-300 bg-rose-50 text-rose-700" : "border-slate-300 bg-white text-slate-700";
-  return `inline-flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${color}`;
+  const color = saveState === "Error" ? "border-red-200 bg-red-50 text-red-700" : "border-[#123c3a]/10 bg-white text-[#123c3a]";
+  return `inline-flex min-h-10 items-center gap-2 rounded-[14px] border px-3 text-sm font-black ${color}`;
 }
+
