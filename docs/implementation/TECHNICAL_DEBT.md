@@ -12,3 +12,4 @@ Last updated: 2026-07-03
 | Analytics governance | Medium | Product needs metrics but handles sensitive career data | Privacy risk if over-collected | Sprint 2 | Product/Engineering |
 | Template originality review | High | Product must not copy competitor templates | IP and brand risk | Sprint 1 | Design/Founder |
 | Review npm audit findings | Medium | Current audit reports 5 dependency advisories after adding Prisma and Playwright | Dependency risk before public launch | Sprint 1 | Engineering |
+| Replace JSON roundtrip clone in Apply Engine | Low | `JSON.parse(JSON.stringify(...))` drops `Date`, `Map`, `Set`, `undefined`, `Infinity` | Data loss risk if ResumeDocument gains richer types | Sprint 4 | Engineering |
