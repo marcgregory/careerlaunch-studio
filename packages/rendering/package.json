@@ -21,6 +21,7 @@
                         },
     "exports":  {
                     ".":  "./src/index.tsx",
-                    "./pdf":  "./src/pdf.tsx"
+                    "./pdf":  "./src/pdf.tsx",
+                    "./cover-letter-pdf":  "./src/cover-letter-pdf.tsx"
                 }
 }

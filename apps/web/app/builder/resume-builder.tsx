@@ -29,6 +29,7 @@ import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from
 import type { ApplyOperation } from "@careerlaunch/ai";
 import { HealthDashboard } from "./_analysis/health-dashboard";
 import { JobMatchPanel } from "./_analysis/job-match-panel";
+import { CoverLetterPanel } from "./_analysis/cover-letter-panel";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
 type ValidationErrors = Partial<Record<string, string>>;
@@ -256,6 +257,7 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
         <aside className="no-print space-y-5">
           <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
           <JobMatchPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
+          <CoverLetterPanel resumeId={resume.id} />
 
           <Panel title="Target">
             <div className="space-y-3">

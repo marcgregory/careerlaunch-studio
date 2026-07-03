@@ -26,10 +26,10 @@ Last updated: 2026-07-03
 ## Completed
 
 - Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume). URL job-description fetching explicitly deferred (paste-only MVP).
+- Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, mock AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer. `v0.4.0-alpha` tagged.
 
-## In Progress
+## Sprint Queue
 
-- Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer.
 - Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 

@@ -4,9 +4,45 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3D — Cover Letter Builder MVP.
+Sprint 4 — Import Existing Resume and Version Duplication.
 
-Building a cover letter builder that reuses the existing resume, optional pasted job description, AI generation, manual editing, and PDF export. No auto-send, no email integration.
+### Delivered This Sprint (3D)
+
+Sprint 3D — Cover Letter Builder MVP is complete and tagged `v0.4.0-alpha`.
+
+**Cover Letter Model & Persistence (`prisma/schema.prisma` + migration):**
+- New `CoverLetter` model linked to `User` and `ResumeDocument` (one per resume, upsert).
+- Fields: recipient name/title/company/address, salutation, body, closing, signatureName, jobDescription.
+- Migration applied to local database.
+
+**Domain Type (`packages/domain/src/index.ts`):**
+- `CoverLetterDocument` type added — mirrors the Prisma model for type-safe client use.
+
+**AI Generator (`packages/ai/src/cover-letter/`):**
+- `generateCoverLetter(input)` — deterministic, template-based mock that produces realistic placeholder text.
+- Extracts candidate name, target role, up to 3 key skills, and experience highlights.
+- References optional job description in the opening paragraph when provided.
+- 8 unit tests covering all states (with JD, without JD, empty resume, no skills, paragraph structure).
+
+**PDF Renderer (`packages/rendering/src/cover-letter-pdf.tsx`):**
+- Business-letter format: date line, recipient block, salutation, body paragraphs, closing, signature.
+- Uses the resume's template `getResumeTemplate()` for font family and accent color consistency.
+- Same Playwright render pipeline as resume PDF.
+- Exported via `@careerlaunch/rendering/cover-letter-pdf`.
+
+**API Routes:**
+- `GET /api/resumes/:resumeId/cover-letter` — load existing cover letter (or null).
+- `PUT /api/resumes/:resumeId/cover-letter` — upsert cover letter fields.
+- `POST /api/resumes/:resumeId/cover-letter/generate` — generate draft via mock, upsert, return.
+- `POST /api/export/cover-letter-pdf` — render and return PDF bytes.
+- All routes authenticated with ownership checks.
+
+**CoverLetterPanel UI (`apps/web/app/builder/_analysis/cover-letter-panel.tsx`):**
+- Self-contained panel integrated into the builder sidebar alongside HealthDashboard and JobMatchPanel.
+- States: idle (generate prompt + optional JD textarea), generating (spinner), editing (body textarea + recipient fields + salutation + closing), saving, exporting, error.
+- Auto-loads existing cover letter on mount.
+- Regenerate button to start fresh.
+- Full Polish: save indicator, error recovery with retry, disabled states during async operations.
 
 ### Delivered This Sprint (3C)
 
@@ -47,9 +83,9 @@ Job Match JD parsing is paste-only. URL-based job-description fetching is explic
 
 ### Next Up
 
-- Sprint 3D — Cover Letter Builder MVP.
 - Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
+- Future — URL job-description fetching for Job Match.
 
 ## Completed
 
@@ -98,7 +134,7 @@ Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL
 
 ## Platform Status
 
-Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. Build passes with 136 AI tests and 2 domain tests.
+Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. Build passes with 144 AI tests and 2 domain tests.
 
 ## Blockers
 
@@ -109,15 +145,15 @@ Next.js app scaffold exists and production build passes locally. Prisma schema a
 
 ## Next Milestone
 
-Complete Sprint 3D — Cover Letter Builder using existing template and PDF infrastructure.
+Complete Sprint 4 — Import Existing Resume and Version Duplication.
 
 ## Last Build
 
 Local build verification passed on 2026-07-03:
 
 - `npm run build` — passes
-- `npm run test` — 136/136 AI tests + 2/2 domain tests pass
-- `npm run typecheck` — passes
+- `npm run test` — 144/144 AI tests + 2/2 domain tests pass (8 new cover letter tests)
+- `npm run typecheck` — passes (AI, rendering, domain packages)
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 
 Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, template-specific PDF QA, suggestion review modal flow, suggestion acceptance via modal, stale-target 409 handling, cancel review modal behavior, and apply API persistence.

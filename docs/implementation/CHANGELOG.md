@@ -2,6 +2,25 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.4.0-alpha - 2026-07-03
+
+### Added
+
+- **Sprint 3D — Cover Letter Builder MVP** — generate, edit, save, and export a cover letter associated with a resume. AI drafts → user edits → user exports. No auto-send, no email integration.
+- **CoverLetter Prisma model and migration** (`20260703095249_add_cover_letter`) — linked to User and ResumeDocument with fields for recipient details, salutation, body, closing, and optional job description. One cover letter per resume (upsert).
+- **`CoverLetterDocument` domain type** (`packages/domain/src/index.ts`) — type-safe client interface matching the Prisma model.
+- **Cover letter mock generator** (`packages/ai/src/cover-letter/`) — `generateCoverLetter()` produces deterministic, realistic placeholder text from resume data (name, role, skills, experience) and optional job description. Zero AI calls.
+- **Cover letter PDF renderer** (`packages/rendering/src/cover-letter-pdf.tsx`) — business-letter format PDF using the resume's template styling for font and color consistency. Same Playwright render pipeline as resume PDF. Exported as `@careerlaunch/rendering/cover-letter-pdf`.
+- **Cover letter API routes** — `GET/PUT /api/resumes/:resumeId/cover-letter` (load/upsert), `POST /api/resumes/:resumeId/cover-letter/generate` (AI draft + persist), `POST /api/export/cover-letter-pdf` (PDF bytes). All authenticated with ownership checks.
+- **CoverLetterPanel UI** (`apps/web/app/builder/_analysis/cover-letter-panel.tsx`) — self-contained panel integrated into the builder sidebar alongside HealthDashboard and JobMatchPanel. Full state coverage: idle, generating, editing, saving, exporting, error. Auto-loads existing cover letter on mount.
+- **8 new cover letter tests** — all passing. 144 AI tests total.
+
+### Changed
+
+- `prisma/schema.prisma`: User model now has `coverLetters` relation; ResumeDocument has `coverLetters` relation.
+- `packages/rendering/package.json`: added `./cover-letter-pdf` export.
+- Builder sidebar now shows Cover Letter panel below Job Match.
+
 ## 0.3.3-alpha - 2026-07-03
 
 ### Added

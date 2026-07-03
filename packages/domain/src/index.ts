@@ -64,6 +64,21 @@ export type ResumeCheck = {
   checks: ResumeCheckItem[];
 };
 
+export type CoverLetterDocument = {
+  id: string;
+  resumeId: string;
+  title: string;
+  recipientName: string;
+  recipientTitle: string;
+  companyName: string;
+  companyAddress: string;
+  salutation: string;
+  body: string;
+  closing: string;
+  signatureName: string;
+  jobDescription: string;
+};
+
 export type ResumeCheckItem = {
   id: string;
   label: string;

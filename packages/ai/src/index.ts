@@ -69,3 +69,7 @@ export type {
   AppliedChange,
   ApplyResult,
 } from "./apply/index";
+
+// Cover letter generator
+export { generateCoverLetter } from "./cover-letter/index";
+export type { CoverLetterInput, GeneratedCoverLetter } from "./cover-letter/types";

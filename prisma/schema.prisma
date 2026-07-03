@@ -16,6 +16,7 @@ model User {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   resumes       ResumeDocument[]
+  coverLetters  CoverLetter[]
   subscriptions Subscription[]
 }
 
@@ -31,6 +32,7 @@ model ResumeDocument {
   versions     ResumeVersion[]
   exports      ExportJob[]
   analysisRuns AnalysisRun[]
+  coverLetters CoverLetter[]
 
   @@index([userId, updatedAt])
 }
@@ -75,6 +77,29 @@ model ExportJob {
   resume    ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
   @@index([resumeId, createdAt])
+}
+
+model CoverLetter {
+  id             String         @id @default(cuid())
+  userId         String
+  resumeId       String
+  title          String         @default("Cover Letter")
+  recipientName  String?
+  recipientTitle String?
+  companyName    String?
+  companyAddress String?
+  salutation     String         @default("Dear Hiring Manager,")
+  body           String         @default("")
+  closing        String         @default("Sincerely,")
+  signatureName  String?
+  jobDescription String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume         ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@index([resumeId])
 }
 
 model Subscription {
