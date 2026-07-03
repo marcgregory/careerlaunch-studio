@@ -6,7 +6,7 @@
     "scripts":  {
                     "dev":  "npm run dev --workspace @careerlaunch/web",
                     "build":  "npm run build --workspaces --if-present",
-                    "postinstall":  "prisma generate",
+                    "postinstall":  "prisma generate && npx playwright install chromium",
                     "lint":  "npm run lint --workspaces --if-present",
                     "test":  "npm run test --workspaces --if-present",
                     "typecheck":  "npm run typecheck --workspaces --if-present"
@@ -16,7 +16,7 @@
                        "packages/*"
                    ],
     "engines":  {
-                    "node":  "\u003e=20"
+                    "node":  ">=20"
                 },
     "overrides":  {
                       "postcss":  "^8.5.10"
