@@ -26,11 +26,23 @@ Every pull request should run:
 
 ## Runtime Dependencies
 
-PDF export uses `@sparticuz/chromium` + `playwright-core` from the server-only renderer. The `@sparticuz/chromium` package provides the Chromium binary optimized for serverless environments (Vercel, AWS Lambda) — no separate browser install step is required.
+PDF export uses `@sparticuz/chromium-min` + `playwright-core` from the server-only renderer. The `@sparticuz/chromium-min` package downloads the Chromium binary at runtime from a hosted pack URL (set via `CHROMIUM_PACK_URL`). This avoids bundling the ~200 MB binary into the serverless deployment.
 
-On **Vercel**: the binary is bundled automatically by `@sparticuz/chromium`. No configuration or `PLAYWRIGHT_BROWSERS_PATH` env var is needed.
+**Vercel**: set `CHROMIUM_PACK_URL` to a publicly accessible URL of a Chromium pack tarball. No binary bundling is needed.
 
-On **other platforms** (Docker, VPS): install the Chromium binary via `@sparticuz/chromium` during the build — no separate `playwright install` command is needed.
+**Other platforms** (Docker, VPS): set `CHROMIUM_PACK_URL` the same way, or install Chromium via the system package manager and omit `@sparticuz/chromium-min`.
+
+To generate your own Chromium pack for self-hosting:
+
+```bash
+# From an environment with @sparticuz/chromium-min installed
+node -e "
+  const c = require('@sparticuz/chromium-min');
+  c.executablePath('https://your-bucket.example.com/chromium-pack.tar').then(console.log);
+"
+```
+
+Then upload the downloaded pack to a CDN, S3 bucket, or your app's `/public` directory on Vercel.
 
 ## Release Process
 
