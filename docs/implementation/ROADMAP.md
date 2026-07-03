@@ -23,14 +23,13 @@ Last updated: 2026-07-03
 - Sprint 3A — AI Analysis Engine (read-only). `v0.3.1-alpha` tagged. Analysis pipeline, suggestion schema, provider abstraction, MockProvider, health dashboard, accept/dismiss UI.
 - Sprint 3A.5 — Apply Engine + Acceptance Persistence. Pure-function apply layer, API endpoint, database persistence for accepted suggestions, stale-target 409 handling, 5 safe operations (replace_summary, replace_bullet, replace_skill, add_skill, remove_skill), suggestion-to-operation mapping, and Playwright E2E acceptance tests.
 
+## Completed
+
+- Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume). URL job-description fetching explicitly deferred (paste-only MVP).
+
 ## In Progress
 
-- Sprint 3B — Suggestion Preview / Diff UI. Word-diff component, review modal, two-step accept (review → apply), side-by-side before/after highlighting, cancel/escape dismiss.
-- Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume).
-
-## Sprint Queue
-
-- Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
+- Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer.
 - Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 

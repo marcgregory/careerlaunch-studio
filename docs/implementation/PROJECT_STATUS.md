@@ -4,13 +4,17 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3C — Job Match MVP is complete.
+Sprint 3D — Cover Letter Builder MVP.
+
+Building a cover letter builder that reuses the existing resume, optional pasted job description, AI generation, manual editing, and PDF export. No auto-send, no email integration.
 
 ### Delivered This Sprint (3C)
 
+Sprint 3C — Job Match MVP is complete and tagged `v0.3.3-alpha`.
+
 **Job Match Engine (`packages/ai/src/job-match/`):**
 - `normalize-job.ts` — tokenizes job descriptions, extracts skills via 80-skill dictionary, identifies experience level indicators.
-- `compare.ts` — compares resume against JD skills, categorizes as present (in skills list or mentioned in text) vs missing.
+- `compare.ts` — compares resume against JD skills, categorizes as present vs missing.
 - `keywords.ts` — token-level overlap analysis between resume and JD.
 - `score.ts` — match score 0–100 based on skill coverage ratio, floored at 10.
 - `index.ts` — `runJobMatch()` orchestrator that normalizes, compares, scores, and returns suggestions.
@@ -31,15 +35,19 @@ Sprint 3C — Job Match MVP is complete.
 
 **UI (`apps/web/app/builder/_analysis/job-match-panel.tsx`):**
 - Self-contained panel with paste textarea, Analyze Match button.
-- Match score display with strong/moderate/weak labels.
+- Match score gauge with strong/moderate/weak labels.
 - Missing vs Present skills in side-by-side columns.
 - Suggestion cards with Review (opens diff modal) and Dismiss.
 - Handles all states: idle, loading, error, success, empty JD, no extracted skills.
 - Integrated into builder sidebar alongside HealthDashboard.
 
+### Architecture Note
+
+Job Match JD parsing is paste-only. URL-based job-description fetching is explicitly deferred to a future sprint — no scraping/API integration.
+
 ### Next Up
 
-- Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
+- Sprint 3D — Cover Letter Builder MVP.
 - Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 
