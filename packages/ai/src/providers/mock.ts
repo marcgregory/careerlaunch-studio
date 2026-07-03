@@ -324,7 +324,9 @@ export class MockProvider implements AIProvider {
         title: "Summary is too brief",
         reason: `Your summary is ${wordCount} words. Aim for 40–80 words that highlight your experience, key skills, and career target.`,
         targetText: resume.summary,
-        suggestedText: null,
+        suggestedText: resume.summary
+          ? `${resume.summary.replace(/\.$/, "")} — a results-driven professional with a proven track record of delivering measurable impact across cross-functional teams.`
+          : "A results-driven professional with experience delivering measurable impact across cross-functional teams.",
         location: { sectionId: "summary" },
         confidence: 0.9,
         source: "ai",

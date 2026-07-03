@@ -72,6 +72,11 @@ test.describe("Suggestion apply API", () => {
     });
     expect(saveResponse.ok()).toBe(true);
 
+    // Reload the builder so React state picks up the saved data
+    // (avoids the autosave hook overwriting with stale initial state)
+    await page.goto(`/builder?resumeId=${resumeId}`);
+    await expect(page.locator("article")).toBeVisible({ timeout: 5_000 });
+
     // Run analysis
     await page.getByRole("button", { name: "Analyze Resume" }).click();
     await expect(page.getByText("Issues found")).toBeVisible({ timeout: 10_000 });
@@ -98,8 +103,9 @@ test.describe("Suggestion apply API", () => {
     await expect(modalDialog.locator("text=Applied successfully")).toBeVisible({ timeout: 5_000 });
     await expect(modalDialog).not.toBeVisible({ timeout: 5_000 });
 
-    // Verify the suggestion shows "Accepted" status in the dashboard
-    await expect(page.getByText("Accepted").first()).toBeVisible({ timeout: 8_000 });
+    // Verify the suggestion shows as resolved in the dashboard
+    // (accepted suggestions are filtered from the list and shown in the resolved count)
+    await expect(page.getByText("1 resolved", { exact: true })).toBeVisible({ timeout: 8_000 });
 
     // Verify Saved badge appears (autosave fires after resume state change)
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10_000 });
@@ -110,7 +116,7 @@ test.describe("Suggestion apply API", () => {
 
     await expect(page.locator("article")).toBeVisible({ timeout: 5_000 });
 
-    await page.request.put(`${apiBase}/${resumeId}`, {
+    const saveResponse = await page.request.put(`${apiBase}/${resumeId}`, {
       data: {
         id: resumeId,
         title: "Cancel Review Test",
@@ -141,6 +147,12 @@ test.describe("Suggestion apply API", () => {
         projects: [],
       },
     });
+    expect(saveResponse.ok()).toBe(true);
+
+    // Reload the builder so React state picks up the saved data
+    // (avoids the autosave hook overwriting with stale initial state)
+    await page.goto(`/builder?resumeId=${resumeId}`);
+    await expect(page.locator("article")).toBeVisible({ timeout: 5_000 });
 
     // Run analysis
     await page.getByRole("button", { name: "Analyze Resume" }).click();
