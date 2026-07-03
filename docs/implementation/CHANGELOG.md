@@ -26,6 +26,12 @@ All notable changes to CareerLaunch Studio will be documented here.
 
 - **Duplicate suggestion IDs** — `suggestionId(category, code, path)` produces deterministic, path-scoped IDs. Both static and AI providers use the same factory.
 
+### Documentation
+
+- Sprint 3C closeout: ROADMAP, PROJECT_STATUS, CHANGELOG, TECHNICAL_DEBT updated.
+- Job Match JD parsing documented as paste-only MVP; URL-based fetching explicitly deferred.
+- Technical debt item added for future URL job-description scraping/API integration. — `suggestionId(category, code, path)` produces deterministic, path-scoped IDs. Both static and AI providers use the same factory.
+
 ## 0.1.0 - 2026-07-03
 
 ### Added
