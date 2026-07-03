@@ -1,4 +1,8 @@
-import { Prisma } from "@prisma/client";
+import {
+  PrismaClientInitializationError,
+  PrismaClientKnownRequestError,
+  PrismaClientRustPanicError,
+} from "@prisma/client/runtime/library";
 import { NextResponse } from "next/server";
 import { registerUser, setUserSession } from "../../../../lib/auth";
 
@@ -23,9 +27,9 @@ export async function POST(request: Request) {
 }
 
 function getRegisterErrorCode(error: unknown) {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return "exists";
-  if (error instanceof Prisma.PrismaClientInitializationError) return "database";
-  if (error instanceof Prisma.PrismaClientRustPanicError) return "database";
+  if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") return "exists";
+  if (error instanceof PrismaClientInitializationError) return "database";
+  if (error instanceof PrismaClientRustPanicError) return "database";
   if (error instanceof Error && error.message.includes("DATABASE_URL")) return "database";
   if (error instanceof Error && error.message.includes("Can't reach database")) return "database";
   return "invalid";
