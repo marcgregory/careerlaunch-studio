@@ -5,16 +5,15 @@ import {
 } from "@careerlaunch/domain";
 import type { ReactElement } from "react";
 import { getResumeTemplate, type TemplateDefinition } from "./index";
-import { launchChromium } from "./browser";
+import { launchBrowser } from "./browser";
 
 export async function renderResumePdf(
   resume: ResumeDocument,
 ): Promise<ArrayBuffer> {
-  const [{ chromium }, { renderToStaticMarkup }] = await Promise.all([
-    import("playwright"),
+  const [{ renderToStaticMarkup }] = await Promise.all([
     import("react-dom/server"),
   ]);
-  const browser = await launchChromium(chromium);
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage({

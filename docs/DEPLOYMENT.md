@@ -26,13 +26,11 @@ Every pull request should run:
 
 ## Runtime Dependencies
 
-PDF export uses Playwright Chromium from the server-only renderer. Hosting images or build containers must install the Chromium browser binaries before serving export traffic:
+PDF export uses `@sparticuz/chromium` + `playwright-core` from the server-only renderer. The `@sparticuz/chromium` package provides the Chromium binary optimized for serverless environments (Vercel, AWS Lambda) — no separate browser install step is required.
 
-```bash
-npx playwright install --with-deps chromium
-```
+On **Vercel**: the binary is bundled automatically by `@sparticuz/chromium`. No configuration or `PLAYWRIGHT_BROWSERS_PATH` env var is needed.
 
-On platforms that do not support `--with-deps`, install the equivalent OS packages plus the Chromium browser binary during the build image setup.
+On **other platforms** (Docker, VPS): install the Chromium binary via `@sparticuz/chromium` during the build — no separate `playwright install` command is needed.
 
 ## Release Process
 
