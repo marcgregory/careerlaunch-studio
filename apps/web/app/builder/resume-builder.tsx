@@ -387,8 +387,8 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
           </Panel>
         </aside>
 
-        <aside className="sticky top-6 hidden max-h-[calc(100vh-6rem)] self-start xl:block">
-          <div className="print-area overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
+        <aside className="sticky top-6 hidden self-start xl:block">
+          <div className="print-area max-h-[calc(100vh-8rem)] overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
             <ResumePreview resume={resume} />
           </div>
         </aside>
