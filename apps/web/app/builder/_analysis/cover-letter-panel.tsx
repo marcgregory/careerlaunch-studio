@@ -136,7 +136,7 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
     }
   }, [
     resumeId,
-    coverLetter?.id,
+    coverLetter,
     editBody,
     editSalutation,
     editClosing,
