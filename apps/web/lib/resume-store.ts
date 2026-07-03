@@ -1,6 +1,4 @@
 import { defaultSectionOrder, sampleResume, type ResumeDocument, type ResumeSectionId, type ResumeTemplateId } from "@careerlaunch/domain";
-import type { Prisma } from "@prisma/client";
-
 export function createStarterResume(): ResumeDocument {
   return {
     ...sampleResume,
@@ -16,7 +14,8 @@ export function createStarterResume(): ResumeDocument {
   };
 }
 
-export function toStoredResume(resume: ResumeDocument): Prisma.InputJsonObject {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toStoredResume(resume: ResumeDocument): any {
   return {
     id: resume.id,
     title: resume.title,
@@ -33,7 +32,7 @@ export function toStoredResume(resume: ResumeDocument): Prisma.InputJsonObject {
   };
 }
 
-export function fromStoredResume(record: { id: string; title: string; targetRole: string | null; body: Prisma.JsonValue }): ResumeDocument {
+export function fromStoredResume(record: { id: string; title: string; targetRole: string | null; body: unknown }): ResumeDocument {
   const body = record.body as unknown as Partial<ResumeDocument>;
   return {
     ...createStarterResume(),
