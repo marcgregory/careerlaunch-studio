@@ -164,12 +164,51 @@ test("all templates render without visual regression", async ({ page }) => {
     // Wait for preview to reflect the selected template
     await expect(page.locator("article")).toHaveAttribute("data-template", templateId, { timeout: 5_000 });
 
-    // Compare the preview card against the baseline
-    const previewCard = page.locator("article");
-    await expect(previewCard).toHaveScreenshot(`template-${templateId}.png`, {
-      // Limit the capture to the preview card itself
-      clip: await previewCard.boundingBox() ?? undefined,
+    // Compare the preview card against the baseline (locator-scoped, captures only the element)
+    await expect(page.locator("article")).toHaveScreenshot(`template-${templateId}.png`);
+  }
+});
+
+test("each template exports a valid PDF", async ({ page }) => {
+  test.skip(!hasDatabase, "Set DATABASE_URL to run the PDF QA e2e path.");
+
+  const runId = Date.now();
+  const email = `e2e-pdfqa-${runId}@example.com`;
+  const resumeTitle = `E2E PDF QA ${runId}`;
+  await page.goto("/register");
+  await page.getByLabel("Name").fill("E2E PDF QA User");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("password-123");
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(page).toHaveURL(/\/dashboard/);
+  await page.getByRole("link", { name: "New resume" }).click();
+  await expect(page).toHaveURL(/\/builder\?resumeId=/);
+  const resumeId = new URL(page.url()).searchParams.get("resumeId");
+
+  // Fill resume data and save it
+  await page.getByLabel("Resume title").fill(resumeTitle);
+  await page.getByLabel("Full name").fill("Jordan Lee");
+  await page.getByLabel("Email").fill("jordan@example.com");
+  await page.getByLabel("Phone").fill("(555) 123-4567");
+  await saveResume(page.request, resumeId, resumeTitle);
+
+  const templates = ["modern", "executive", "minimal", "ats"] as const;
+
+  for (const templateId of templates) {
+    // Switch template by saving with the new templateId
+    const saveResponse = await page.request.put(`/api/resumes/${resumeId}`, {
+      data: { id: resumeId, title: resumeTitle, templateId },
     });
+    expect(saveResponse.ok()).toBe(true);
+
+    // Export PDF for this template
+    const pdf = await exportPdf(page.request, resumeId);
+    const pdfPageCount = getPdfPageCount(pdf);
+
+    expect(pdf.length).toBeGreaterThan(1024);
+    expect(pdfPageCount).toBeGreaterThan(0);
+    expect(pdfPageCount).toBeLessThanOrEqual(2);
   }
 });
 

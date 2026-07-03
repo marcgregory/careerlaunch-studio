@@ -15,10 +15,15 @@ Last updated: 2026-07-03
 - First original resume template polished across live preview and PDF export.
 - Release-closeout QA completed for desktop/mobile builder behavior, accessibility basics, preview/PDF parity, and full local verification.
 - Database-backed Playwright coverage verifies signup, save, real PDF export bytes, repeated PDF render stability, and builder section/item ordering persistence.
+- Template registry refactored to semantic properties, removing per-template conditionals (`isAts`, `isExecutive`) from renderers.
+- PDF renderer now generates CSS programmatically from template definitions, eliminating preview/PDF drift.
+- Template gallery is data-driven — uses `premium`, `accentColor`, `swatches` metadata for selection highlights and lock overlays.
+- Playwright visual regression tests added for all 4 templates (modern, executive, minimal, ats).
+- Template-specific PDF QA tests verify each template produces valid, single-page PDF output.
 
 ## In Progress
 
-- Sprint 2 planning: Template Library and Resume Checker Depth.
+- Sprint 2 completion closeout and documentation update.
 
 ## Sprint Queue
 

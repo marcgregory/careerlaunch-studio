@@ -109,7 +109,7 @@ function pdfCss(t: TemplateDefinition): string {
       display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 14px;
       color: ${t.nameStyle === "plain" ? "#333333" : "#4b4b4b"};
       font-size: 12px;
-      font-weight: ${t.nameStyle === "plain" ? "500" : "800"};
+      font-weight: ${t.nameStyle === "plain" ? "500" : "900"};
     }
     section { margin-top: 24px; break-inside: avoid; }
     .pdf-summary, .pdf-description {

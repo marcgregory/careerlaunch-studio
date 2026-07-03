@@ -39,3 +39,24 @@ All notable changes to CareerLaunch Studio will be documented here.
 ### Removed
 
 - Removed localStorage-based resume autosave from the builder.
+
+## 0.2.0 - 2026-07-03
+
+### Added
+
+- Template registry with semantic properties (`headerStyle`, `nameStyle`, `roleStyle`) replacing per-template conditionals.
+- Template metadata (`premium`, `accentColor`, `swatches`) for data-driven gallery rendering.
+- Premium template lock UI — locked templates show a lock icon, overlay, and upgrade prompt; disabled state prevents selection.
+- Playwright visual regression tests capturing screenshots for all 4 templates (modern, executive, minimal, ats).
+- Template-specific PDF QA tests verifying each template produces valid PDF output.
+
+### Changed
+
+- PDF renderer (`packages/rendering/src/pdf.tsx`) now generates CSS programmatically from template definitions, eliminating preview/PDF drift.
+- `ResumePreview` component refactored — mapping functions for header border, name style, role style, contact weight, and item titles all branch on semantic properties instead of `isAts`/`isExecutive` flags.
+- Template gallery selection highlights use `accentColor` from template metadata instead of hardcoded green.
+- Updated ROADMAP, PROJECT_STATUS, and CHANGELOG to reflect Sprint 2 template foundation work.
+
+### Fixed
+
+- PDF contact line font-weight now matches browser preview for `display`-style templates (900 instead of 800).
