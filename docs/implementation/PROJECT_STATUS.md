@@ -4,29 +4,41 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3A — AI Analysis Engine is complete. Tagged `v0.3.0-alpha`.
+Sprint 3A.5 — Apply Engine + Acceptance Persistence is complete. Tagged `v0.3.1-alpha`.
 
-### Delivered This Sprint
+### Delivered This Sprint (3A.5)
 
-**Architecture & Package:**
-- `docs/architecture/AI.md` — comprehensive AI architecture document covering design principles, analysis pipeline, suggestion schema, provider abstraction, prompt architecture, response validation, caching, cost controls, privacy, and success criteria.
-- `packages/ai` — new package with AI provider abstraction, registry, MockProvider, resume normalizer, static analysis engine (20+ deterministic checks), analysis orchestrator, and scoring engine. 49 unit tests.
-- `GET /api/resumes/:resumeId/analyze` — authenticated, read-only analysis endpoint.
+**Apply Engine (`packages/ai/apply/`):**
+- Pure-function `applyChanges()` — transforms `ApplyOperation[]` into `ResumeDocument` mutations with full immutability and no side effects.
+- 5 safe operation types: `replace_summary`, `replace_bullet`, `replace_skill`, `add_skill`, `remove_skill`.
+- `ApplyError` class for stale-target detection with operation context and reason.
+- 49 unit tests covering all operations, stale target failure, immutability, and multi-operation composition.
 
-**UI:**
-- Builder preview panel — now sticky (`sticky top-6 self-start`) with `max-h-[calc(100vh-8rem)]` and inner scroll, keeping the resume visible while editing.
-- `HealthDashboard` component — interactive resume health widget with ScoreGauge (SVG ring, colour-coded 0–100), category breakdown, and "Analyze Resume" button with idle/loading/success/error states.
-- `SuggestionsList` component — suggestions grouped by severity (critical → info) with expand/collapse detail, accept/dismiss buttons, and resolved status tags. All accept/dismiss is client-side UI state only.
-- `SuggestionCard` component — individual suggestion with severity badge, source label (`Auto`/`AI`), target text block, and suggested text block.
+**API Route — `POST /api/resumes/:resumeId/suggestions/apply`:**
+- Thin auth + persistence wrapper around `applyChanges()`.
+- Returns 409 for stale targets (ApplyError), 400 for invalid payloads, 401/404 for auth/ownership.
+- Persists updated resume to database on success.
 
-**User assessment (tech lead review):**
-- AI Package structure: 10/10
-- Analysis Engine (static → AI → merge → score → suggestions): 10/10
-- Health Dashboard (analyze → review → accept — no auto-mutation): 10/10
+**Suggestion → Operation Mapping:**
+- `apps/web/lib/suggestion-to-operation.ts` — maps `Suggestion` objects to `ApplyOperation[]` for summary, experience/impact bullets, and skill replacements.
+- Returns `null` for unsupported categories (education, contact, formatting, etc.) so the caller can gracefully skip.
+
+**UI Integration:**
+- `HealthDashboard.handleAccept()` now calls the apply API via `onApplySuggestion` callback.
+- Optimistic local state update (marks suggestion "accepted" immediately), reverts to "pending" on API failure.
+- Error banner shown when apply fails (stale target, network error, unsupported operation).
+- `ResumeBuilder.handleApplySuggestion()` receives `ApplyOperation[]`, calls the API, updates local resume state on success so the preview reflects changes immediately.
+
+**Testing:**
+- 21 unit tests for `suggestionToOperation()` mapping function.
+- Playwright E2E test: accept a suggestion and verify preview updates.
+- Playwright E2E test: 409 stale target behavior.
+- Playwright E2E test: resume unchanged when apply returns 409.
+- Playwright E2E test: direct apply API verification (persistence check).
 
 ### Next Up
 
-Build the **Apply Engine** — a pure-function layer in `packages/ai/apply/` that transforms suggestions into resume mutations. No React, no Prisma, no HTTP. Testable with 100+ unit tests. Only after that: the apply API endpoint and database persistence.
+Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand.
 
 ## Completed
 
@@ -67,8 +79,8 @@ Complete Sprint 3A — AI Analysis Engine with working analysis pipeline, sugges
 Local build verification passed on 2026-07-03:
 
 - `npm run build` — passes
-- `npm run test` — 49/49 AI tests + 2/2 domain tests pass
+- `npm run test` — 70/70 AI tests + 2/2 domain tests pass (21 new suggestion-to-operation tests)
 - `npm run typecheck` — passes
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 
-Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, and template-specific PDF QA.
+Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, template-specific PDF QA, suggestion acceptance flow, stale-target 409 handling, and apply API persistence.

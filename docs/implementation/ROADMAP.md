@@ -20,16 +20,15 @@ Last updated: 2026-07-03
 - Template gallery is data-driven — uses `premium`, `accentColor`, `swatches` metadata for selection highlights and lock overlays.
 - Playwright visual regression tests added for all 4 templates (modern, executive, minimal, ats).
 - Template-specific PDF QA tests verify each template produces valid, single-page PDF output.
-- Sprint 3A — AI Analysis Engine (read-only). `v0.3.0-alpha` tagged. Analysis pipeline, suggestion schema, provider abstraction, MockProvider, health dashboard, accept/dismiss UI.
+- Sprint 3A — AI Analysis Engine (read-only). `v0.3.1-alpha` tagged. Analysis pipeline, suggestion schema, provider abstraction, MockProvider, health dashboard, accept/dismiss UI.
+- Sprint 3A.5 — Apply Engine + Acceptance Persistence. Pure-function apply layer, API endpoint, database persistence for accepted suggestions, stale-target 409 handling, 5 safe operations (replace_summary, replace_bullet, replace_skill, add_skill, remove_skill), suggestion-to-operation mapping, and Playwright E2E acceptance tests.
 
 ## In Progress
 
-- Apply Engine — pure-function layer in `packages/ai/apply/` that transforms accepted suggestions into resume mutations. No React, no Prisma, no HTTP. 100+ unit test target.
+- Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
 
 ## Sprint Queue
 
-- Sprint 3A.5 — Apply Engine + Acceptance Persistence. Pure-function apply layer, then API endpoint + database persistence for accepted suggestions.
-- Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
 - Sprint 3C — Job Matching. Resume + Job Description → match %, missing keywords, missing skills, suggested improvements.
 - Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
 - Sprint 4 — Import Existing Resume and Version Duplication.

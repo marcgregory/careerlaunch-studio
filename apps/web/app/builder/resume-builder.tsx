@@ -26,6 +26,7 @@ import {
   type ResumeTemplateId
 } from "@careerlaunch/domain";
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import type { ApplyOperation } from "@careerlaunch/ai";
 import { HealthDashboard } from "./_analysis/health-dashboard";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
@@ -166,6 +167,34 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
     setResume(normalizeResume(initialResume));
   }
 
+  async function handleApplySuggestion(operations: ApplyOperation[]) {
+    try {
+      const response = await fetch(`/api/resumes/${resume.id}/suggestions/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ operations }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        if (response.status === 409) {
+          return { error: body.error ?? "Suggestion target is stale. Re-analyze the resume." };
+        }
+        return { error: body.error ?? "Failed to apply suggestion" };
+      }
+
+      const data = await response.json();
+
+      // Update local resume state so the preview reflects changes
+      savedSnapshot.current = "";
+      setResume(normalizeResume(data.updatedResume));
+
+      return { appliedChanges: data.appliedChanges };
+    } catch {
+      return { error: "Network error. Please try again." };
+    }
+  }
+
   async function exportPdf() {
     if (hasValidationErrors) return;
     setExportState("Exporting");
@@ -224,7 +253,7 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[460px_1fr]">
         <aside className="no-print space-y-5">
-          <HealthDashboard resumeId={resume.id} />
+          <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
 
           <Panel title="Target">
             <div className="space-y-3">

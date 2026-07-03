@@ -6,6 +6,8 @@ import { ScoreGauge } from "./score-gauge";
 import { SuggestionCard } from "./suggestion-card";
 import type { AnalysisState, ClientSuggestion } from "./types";
 import type { SuggestionSeverity, SuggestionCategory } from "@careerlaunch/ai";
+import type { ApplyOperation } from "@careerlaunch/ai";
+import { suggestionToOperation } from "../../../lib/suggestion-to-operation";
 
 const categoryLabels: Record<SuggestionCategory, string> = {
   summary: "Summary",
@@ -25,9 +27,14 @@ const severityOrder: SuggestionSeverity[] = ["critical", "major", "medium", "min
 
 interface HealthDashboardProps {
   resumeId: string;
+  /** Called when the user accepts a suggestion — maps it to operations and persists. */
+  onApplySuggestion: (operations: ApplyOperation[]) => Promise<{
+    appliedChanges?: { operation: string; path: string; before: string | null; after: string | null }[];
+    error?: string;
+  }>;
 }
 
-export function HealthDashboard({ resumeId }: HealthDashboardProps) {
+export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboardProps) {
   const [analysis, setAnalysis] = useState<AnalysisState>({
     status: "idle",
     overallScore: null,
@@ -35,9 +42,11 @@ export function HealthDashboard({ resumeId }: HealthDashboardProps) {
     analyzedAt: null,
     error: null,
   });
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const runAnalysis = useCallback(async () => {
     setAnalysis((prev) => ({ ...prev, status: "loading", error: null }));
+    setApplyError(null);
 
     try {
       const response = await fetch(`/api/resumes/${resumeId}/analyze`);
@@ -70,13 +79,38 @@ export function HealthDashboard({ resumeId }: HealthDashboardProps) {
     }
   }, [resumeId]);
 
-  function handleAccept(id: string) {
+  async function handleAccept(id: string) {
+    setApplyError(null);
+
+    const suggestion = analysis.suggestions.find((s) => s.id === id);
+    if (!suggestion) return;
+
+    const operations = suggestionToOperation(suggestion);
+    if (!operations) {
+      setApplyError("This suggestion cannot be applied automatically yet.");
+      return;
+    }
+
+    // Optimistic local state: mark as accepted immediately
     setAnalysis((prev) => ({
       ...prev,
       suggestions: prev.suggestions.map((s) =>
         s.id === id ? { ...s, status: "accepted" as const } : s,
       ),
     }));
+
+    const result = await onApplySuggestion(operations);
+
+    if (result.error) {
+      // Revert to pending — the apply failed
+      setAnalysis((prev) => ({
+        ...prev,
+        suggestions: prev.suggestions.map((s) =>
+          s.id === id ? { ...s, status: "pending" as const } : s,
+        ),
+      }));
+      setApplyError(result.error);
+    }
   }
 
   function handleReject(id: string) {
@@ -200,6 +234,14 @@ export function HealthDashboard({ resumeId }: HealthDashboardProps) {
 
   return (
     <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
+      {/* Apply error banner */}
+      {applyError && (
+        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <p className="font-medium">{applyError}</p>
+        </div>
+      )}
+
       {/* Score header */}
       <div className="flex items-start justify-between gap-3">
         <ScoreGauge score={score} />

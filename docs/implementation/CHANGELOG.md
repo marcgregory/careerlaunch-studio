@@ -40,6 +40,26 @@ All notable changes to CareerLaunch Studio will be documented here.
 
 - Removed localStorage-based resume autosave from the builder.
 
+## 0.3.1-alpha - 2026-07-03
+
+Sprint 3A.5 — Apply Engine + Acceptance Persistence. Tagged `v0.3.1-alpha`.
+
+### Added
+
+- Pure-function apply engine in `packages/ai/apply/` with 5 safe operation types: `replace_summary`, `replace_bullet`, `replace_skill`, `add_skill`, `remove_skill`.
+- `applyChanges()` function — transforms operation arrays into resume mutations with full immutability and no side effects.
+- `ApplyError` class with operation context and reason for stale-target detection.
+- `POST /api/resumes/:resumeId/suggestions/apply` — authenticated API endpoint with auth, ownership check, apply engine, and database persistence.
+- `suggestionToOperation()` in `apps/web/lib/suggestion-to-operation.ts` — maps Suggestion objects to ApplyOperation arrays.
+- Apply wiring in `HealthDashboard` — accept button now calls the API with optimistic state and error handling.
+- `handleApplySuggestion` in `ResumeBuilder` — updates local resume state from API response so preview reflects changes.
+- 21 unit tests for `suggestionToOperation()` mapping.
+- Playwright E2E tests for suggestion acceptance, 409 stale target, resume unchanged on failure, and apply API persistence.
+
+### Changed
+
+- Updated ROADMAP, PROJECT_STATUS, and CHANGELOG for Sprint 3A.5 completion.
+
 ## 0.2.0 - 2026-07-03
 
 Sprint 2 user assessment: Architecture 10/10, Rendering Pipeline 10/10, Testing 10/10, Maintainability 10/10, Extensibility 10/10. "The engineering foundation now looks mature."
