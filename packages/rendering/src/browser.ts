@@ -5,13 +5,8 @@ import type { Browser } from "playwright-core";
 /*  Cross-platform browser launcher (local dev + Vercel)               */
 /* ------------------------------------------------------------------ */
 
-/**
- * Detect whether we are running on Windows so we can skip the
- * `@sparticuz/chromium` serverless binary (which is not compatible).
- * On Windows we rely on the Playwright-managed Chromium installation
- * (`npx playwright install chromium`).
- */
 const IS_WINDOWS = process.platform === "win32";
+const IS_VERCEL = !!process.env.VERCEL;
 
 /**
  * Lazy-import @sparticuz/chromium so the module doesn't crash at
@@ -52,10 +47,27 @@ export async function launchBrowser(): Promise<Browser> {
         executablePath = await sparticuz.executablePath();
         chromiumArgs = sparticuz.args;
       } catch {
-        // @sparticuz/chromium binary unavailable (local dev without the
-        // sparticuz Chromium installed). Let playwright-core discover its
-        // own browser.
+        // @sparticuz/chromium module loaded but the binary path could
+        // not be resolved (e.g. the binary wasn't bundled into the
+        // Vercel deployment or the filesystem layout differs).
+        // Do NOT fall through to playwright-core's own browser — it
+        // doesn't exist in serverless environments and would produce
+        // the confusing "Executable doesn't exist at ...ms-playwright"
+        // error.  We'll throw a clear message instead.
       }
+    }
+
+    // On Vercel, the sparticuz binary is our only option.  If we
+    // couldn't resolve it, give a clear error rather than letting
+    // playwright-core search for its own browser (which is not
+    // present in serverless deployments).
+    if (IS_VERCEL && !executablePath) {
+      throw new Error(
+        "Cannot resolve Chromium binary on Vercel.  " +
+          "@sparticuz/chromium module loaded but executablePath() " +
+          "returned no binary.  Ensure @sparticuz/chromium@121 is " +
+          "installed and the binary is included in the deployment.",
+      );
     }
   }
 
