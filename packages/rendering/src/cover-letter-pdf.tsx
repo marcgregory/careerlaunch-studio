@@ -1,5 +1,6 @@
 import { type ResumeDocument, type CoverLetterDocument } from "@careerlaunch/domain";
 import { getResumeTemplate } from "./index";
+import { launchChromium } from "./browser";
 
 export async function renderCoverLetterPdf(
   coverLetter: CoverLetterDocument,
@@ -9,7 +10,7 @@ export async function renderCoverLetterPdf(
     import("playwright"),
     import("react-dom/server"),
   ]);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium(chromium);
 
   try {
     const page = await browser.newPage({

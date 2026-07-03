@@ -5,6 +5,7 @@ import {
 } from "@careerlaunch/domain";
 import type { ReactElement } from "react";
 import { getResumeTemplate, type TemplateDefinition } from "./index";
+import { launchChromium } from "./browser";
 
 export async function renderResumePdf(
   resume: ResumeDocument,
@@ -13,7 +14,7 @@ export async function renderResumePdf(
     import("playwright"),
     import("react-dom/server"),
   ]);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium(chromium);
 
   try {
     const page = await browser.newPage({
@@ -390,3 +391,4 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }
+
