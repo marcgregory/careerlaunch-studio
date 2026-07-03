@@ -10,6 +10,7 @@ import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from
 export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument }) {
   const [resume, setResume] = useState<ResumeDocument>(initialResume);
   const [saveState, setSaveState] = useState<"Saved" | "Saving" | "Error">("Saved");
+  const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
 
   useEffect(() => {
     setSaveState("Saving");
@@ -84,13 +85,30 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
   }
 
   async function exportPdf() {
-    const response = await fetch("/api/export/pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resumeId: resume.id })
-    });
+    setExportState("Exporting");
 
-    if (response.ok) window.print();
+    try {
+      const response = await fetch("/api/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId: resume.id })
+      });
+
+      if (!response.ok) throw new Error("PDF export failed");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${resume.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "resume"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setExportState("Idle");
+    } catch (error) {
+      setExportState("Error");
+    }
   }
 
   return (
@@ -113,8 +131,8 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
             <button className={secondaryButtonClass} onClick={resetDraft} type="button">
               <RotateCcw size={18} /> Reset
             </button>
-            <button className={primaryButtonClass} onClick={exportPdf} type="button">
-              <Download size={18} /> Export PDF
+            <button className={primaryButtonClass} onClick={exportPdf} type="button" disabled={exportState === "Exporting"}>
+              <Download size={18} /> {exportState === "Exporting" ? "Exporting" : "Export PDF"}
             </button>
           </div>
         </div>
@@ -251,4 +269,5 @@ function saveBadgeClass(saveState: "Saved" | "Saving" | "Error") {
   const color = saveState === "Error" ? "border-red-200 bg-red-50 text-red-700" : "border-[#123c3a]/10 bg-white text-[#123c3a]";
   return `inline-flex min-h-10 items-center gap-2 rounded-[14px] border px-3 text-sm font-black ${color}`;
 }
+
 

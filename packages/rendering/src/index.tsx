@@ -84,4 +84,3 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
     </article>
   );
 }
-

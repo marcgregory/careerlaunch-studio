@@ -6,12 +6,21 @@
     "main":  "./src/index.tsx",
     "types":  "./src/index.tsx",
     "dependencies":  {
-                         "@careerlaunch/domain":  "*"
+                         "@careerlaunch/domain":  "*",
+                         "playwright":  "^1.61.1",
+                         "react":  "^18.3.1",
+                         "react-dom":  "^18.3.1"
                      },
     "scripts":  {
                     "typecheck":  "tsc --noEmit"
                 },
     "devDependencies":  {
+                            "@types/react":  "^18.3.0",
+                            "@types/react-dom":  "^18.3.0",
                             "typescript":  "^5.5.0"
-                        }
+                        },
+    "exports":  {
+                    ".":  "./src/index.tsx",
+                    "./pdf":  "./src/pdf.tsx"
+                }
 }

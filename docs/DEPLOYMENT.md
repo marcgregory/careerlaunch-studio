@@ -24,6 +24,16 @@ Every pull request should run:
 - Playwright smoke tests for critical paths.
 - Prisma migration validation.
 
+## Runtime Dependencies
+
+PDF export uses Playwright Chromium from the server-only renderer. Hosting images or build containers must install the Chromium browser binaries before serving export traffic:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+On platforms that do not support `--with-deps`, install the equivalent OS packages plus the Chromium browser binary during the build image setup.
+
 ## Release Process
 
 1. Merge passing changes into main.
@@ -44,4 +54,3 @@ Use platform rollback for app deployments. Database migrations must be backwards
 - Basic uptime monitoring.
 - Secret rotation policy before public launch.
 - Stripe webhook replay procedure documented before paid launch.
-

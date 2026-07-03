@@ -9,10 +9,15 @@ Last updated: 2026-07-03
 - Monorepo scaffold created.
 - Local resume-builder demo created with dashboard, builder, preview, scoring, autosave, and print export.
 - Initial Prisma schema created.
+- First-party email/password auth, protected routes, and Prisma-backed resume persistence implemented.
+- Real PDF export implemented with Playwright print-to-PDF and ownership-checked download responses.
+- Database-backed Playwright happy path now verifies signup, save, and real PDF export bytes.
 
 ## In Progress
 
-- Sprint 1 - Resume Builder Vertical Slice: auth, database persistence, robust PDF export, and end-to-end tests remain.
+- Builder completeness: finish guided editing coverage for all resume sections, empty states, validation, and recovery states.
+- First original resume template polish for desktop and mobile.
+- Accessibility checks for the builder flow.
 
 ## Sprint Queue
 
@@ -33,5 +38,5 @@ Last updated: 2026-07-03
 ## Blocked
 
 - Final auth provider is undecided.
-- Database connection details are not configured.
+- Production database connection details are not configured.
 - Final brand name, legal requirements, and payment-market policy remain unconfirmed.

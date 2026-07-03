@@ -39,4 +39,7 @@ test("signed-in user can create, save, and request a PDF export", async ({ page 
   const resumeId = new URL(builderUrl).searchParams.get("resumeId");
   const exportResponse = await page.request.post("/api/export/pdf", { data: { resumeId } });
   expect(exportResponse.ok()).toBe(true);
+  expect(exportResponse.headers()["content-type"]).toContain("application/pdf");
+  expect((await exportResponse.body()).subarray(0, 4).toString()).toBe("%PDF");
 });
+
