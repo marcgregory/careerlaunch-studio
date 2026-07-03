@@ -66,3 +66,19 @@ export interface Suggestion {
 export interface StoredSuggestion extends Suggestion {
   status: SuggestionStatus;
 }
+
+/**
+ * Create a deterministic, unique suggestion ID from its semantic parts.
+ *
+ * Two suggestions with the same (category, code, path) are the same logical
+ * finding, regardless of whether they came from static or AI analysis.
+ * This lets the orchestrator deduplicate while keeping a stable, readable ID.
+ *
+ * @param category — the SuggestionCategory (e.g. "summary", "impact")
+ * @param code     — a short kebab-case code for the specific check (e.g. "too-short")
+ * @param path     — location context: sectionId, entryId, or a composite path.
+ *                  Omit for whole-resume suggestions. Defaults to "resume".
+ */
+export function suggestionId(category: string, code: string, path?: string): string {
+  return [category, code, path ?? "resume"].join(":").replace(/[^a-zA-Z0-9:_-]/g, "-");
+}

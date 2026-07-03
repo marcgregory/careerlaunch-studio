@@ -39,7 +39,7 @@ describe("MockProvider", () => {
   it("returns keywords suggestion without a job description", async () => {
     const result = await provider.analyze("keywords", { resume: normalized });
     expect(result.suggestions.length).toBeGreaterThanOrEqual(1);
-    expect(result.suggestions[0].id).toBe("keywords-no-jd");
+    expect(result.suggestions[0].id).toBe("keywords:no-jd:skills");
   });
 
   it("returns summary suggestions", async () => {

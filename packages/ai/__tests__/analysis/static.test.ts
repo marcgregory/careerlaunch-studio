@@ -50,8 +50,8 @@ describe("runStaticAnalysis", () => {
       contact: { fullName: "Jane Smith", email: "", phone: "(555) 123-4567", location: "SF", website: "" },
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "contact-email")).toBe(true);
-    const email = suggestions.find((s) => s.id === "contact-email")!;
+    expect(suggestions.some((s) => s.id === "contact:missing-email:contact")).toBe(true);
+    const email = suggestions.find((s) => s.id === "contact:missing-email:contact")!;
     expect(email.severity).toBe("critical");
     expect(email.source).toBe("static");
   });
@@ -61,7 +61,7 @@ describe("runStaticAnalysis", () => {
       contact: { fullName: "Jane Smith", email: "j@j.com", phone: "", location: "SF", website: "" },
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "contact-phone")).toBe(true);
+    expect(suggestions.some((s) => s.id === "contact:missing-phone:contact")).toBe(true);
   });
 
   it("flags invalid email format", () => {
@@ -69,19 +69,19 @@ describe("runStaticAnalysis", () => {
       contact: { fullName: "Jane Smith", email: "not-an-email", phone: "(555) 123-4567", location: "SF", website: "" },
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "contact-email-invalid")).toBe(true);
+    expect(suggestions.some((s) => s.id === "contact:email-invalid:contact")).toBe(true);
   });
 
   it("flags missing summary as critical", () => {
     const resume = makeMinimalResume({ summary: "" });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "summary-missing")).toBe(true);
+    expect(suggestions.some((s) => s.id === "summary:missing:summary")).toBe(true);
   });
 
   it("flags a too-short summary", () => {
     const resume = makeMinimalResume({ summary: "Short." });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "summary-too-short")).toBe(true);
+    expect(suggestions.some((s) => s.id === "summary:too-short:summary")).toBe(true);
   });
 
   it("does not flag a good-length summary", () => {
@@ -89,14 +89,14 @@ describe("runStaticAnalysis", () => {
       summary: "Senior engineer with 8 years of experience building scalable web applications and leading cross-functional teams to deliver high-impact products. Proven track record of driving engineering excellence and mentoring junior developers.",
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "summary-too-short")).toBe(false);
-    expect(suggestions.some((s) => s.id === "summary-too-long")).toBe(false);
+    expect(suggestions.some((s) => s.id === "summary:too-short:summary")).toBe(false);
+    expect(suggestions.some((s) => s.id === "summary:too-long:summary")).toBe(false);
   });
 
   it("flags no experience entries as critical", () => {
     const resume = makeMinimalResume({ sections: [] });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "exp-missing")).toBe(true);
+    expect(suggestions.some((s) => s.id === "experience:missing:experience")).toBe(true);
   });
 
   it("flags experience entries with no bullet points", () => {
@@ -113,7 +113,7 @@ describe("runStaticAnalysis", () => {
       ],
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "exp-empty-exp-1")).toBe(true);
+    expect(suggestions.some((s) => s.id === "experience:empty:exp-1")).toBe(true);
   });
 
   it("flags experience with no metrics", () => {
@@ -130,32 +130,32 @@ describe("runStaticAnalysis", () => {
       ],
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "exp-metrics-exp-1")).toBe(true);
+    expect(suggestions.some((s) => s.id === "impact:no-metrics:exp-1")).toBe(true);
   });
 
   it("does not flag metrics when bullets contain numbers", () => {
     const resume = makeMinimalResume();
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "exp-metrics-exp-1")).toBe(false);
+    expect(suggestions.some((s) => s.id === "impact:no-metrics:exp-1")).toBe(false);
   });
 
   it("flags missing skills", () => {
     const resume = makeMinimalResume({ skills: [] });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "skills-missing")).toBe(true);
+    expect(suggestions.some((s) => s.id === "skills:missing:skills")).toBe(true);
   });
 
   it("flags too few skills", () => {
     const resume = makeMinimalResume({ skills: ["TypeScript"] });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "skills-few")).toBe(true);
+    expect(suggestions.some((s) => s.id === "skills:too-few:skills")).toBe(true);
   });
 
   it("flags too many skills", () => {
     const longSkills = Array.from({ length: 25 }, (_, i) => `Skill ${i + 1}`);
     const resume = makeMinimalResume({ skills: longSkills });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "skills-many")).toBe(true);
+    expect(suggestions.some((s) => s.id === "skills:too-many:skills")).toBe(true);
   });
 
   it("flags missing education", () => {
@@ -175,7 +175,7 @@ describe("runStaticAnalysis", () => {
       ],
     };
     const suggestions = runStaticAnalysis(noEduResume);
-    expect(suggestions.some((s) => s.id === "edu-missing")).toBe(true);
+    expect(suggestions.some((s) => s.id === "education:missing:education")).toBe(true);
   });
 
   it("detects missing location as minor", () => {
@@ -183,22 +183,22 @@ describe("runStaticAnalysis", () => {
       contact: { fullName: "Jane Smith", email: "j@j.com", phone: "(555) 123-4567", location: "", website: "" },
     });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "contact-location-missing")).toBe(true);
-    const loc = suggestions.find((s) => s.id === "contact-location-missing")!;
+    expect(suggestions.some((s) => s.id === "contact:location-missing:contact")).toBe(true);
+    const loc = suggestions.find((s) => s.id === "contact:location-missing:contact")!;
     expect(loc.severity).toBe("minor");
   });
 
   it("suggests adding projects when none exist", () => {
     const resume = makeMinimalResume({ projects: [] });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "projects-missing")).toBe(true);
+    expect(suggestions.some((s) => s.id === "completeness:projects-missing:projects")).toBe(true);
   });
 
   it("reports certifications as info when present", () => {
     const resume = makeMinimalResume({ certifications: ["AWS Certified"] });
     const suggestions = runStaticAnalysis(resume);
-    expect(suggestions.some((s) => s.id === "certifications-present")).toBe(true);
-    const cert = suggestions.find((s) => s.id === "certifications-present")!;
+    expect(suggestions.some((s) => s.id === "completeness:certifications:certifications")).toBe(true);
+    const cert = suggestions.find((s) => s.id === "completeness:certifications:certifications")!;
     expect(cert.severity).toBe("info");
   });
 

@@ -5,6 +5,7 @@ import type {
   AnalysisInput,
   ProviderHealth,
 } from "../analysis/types";
+import { suggestionId } from "../suggestion/types";
 
 /**
  * Mock provider that returns realistic fake analysis results.
@@ -66,7 +67,7 @@ export class MockProvider implements AIProvider {
 
     if (missing.length > 0) {
       suggestions.push({
-        id: "ats-missing-sections",
+        id: suggestionId("ats", "missing-sections", "completeness"),
         category: "ats",
         severity: missing.length > 2 ? "critical" : "major",
         title: "Missing ATS-required sections",
@@ -86,7 +87,7 @@ export class MockProvider implements AIProvider {
     );
     if (tableWarning) {
       suggestions.push({
-        id: "ats-format-tables",
+        id: suggestionId("ats", "format-tables", "formatting"),
         category: "ats",
         severity: "medium",
         title: "Tables or columns detected",
@@ -127,7 +128,7 @@ export class MockProvider implements AIProvider {
         );
         if (secPresent.length > 0 && secPast.length > 0) {
           suggestions.push({
-            id: `grammar-tense-${section.id}`,
+            id: suggestionId("grammar", "tense", section.id),
             category: "grammar",
             severity: "medium",
             title: "Inconsistent verb tense in this section",
@@ -153,7 +154,7 @@ export class MockProvider implements AIProvider {
           )
         ) {
           suggestions.push({
-            id: `grammar-weak-phrase-${section.id}-${i}`,
+            id: suggestionId("grammar", `weak-phrase-${i}`, section.id),
             category: "grammar",
             severity: "minor",
             title: "Weak phrasing: 'Responsible for'",
@@ -205,7 +206,7 @@ export class MockProvider implements AIProvider {
       bulletsWithoutMetrics.length >= allBullets.length * 0.5
     ) {
       suggestions.push({
-        id: "impact-missing-metrics",
+        id: suggestionId("impact", "missing-metrics", "experience"),
         category: "impact",
         severity: "major",
         title: "Most bullets lack measurable results",
@@ -226,7 +227,7 @@ export class MockProvider implements AIProvider {
         for (const pattern of weakVerbPatterns) {
           if (pattern.test(bullet)) {
             suggestions.push({
-              id: `impact-weak-verb-${section.id}-${i}`,
+              id: suggestionId("impact", `weak-verb-${i}`, section.id),
               category: "impact",
               severity: "medium",
               title: "Weak action verb detected",
@@ -253,7 +254,7 @@ export class MockProvider implements AIProvider {
     );
     if (!hasAnyActionVerb && allBullets.length > 0) {
       suggestions.push({
-        id: "impact-strong-verbs",
+        id: suggestionId("impact", "strong-verbs", "experience"),
         category: "impact",
         severity: "minor",
         title: "Consider stronger action verbs",
@@ -276,7 +277,7 @@ export class MockProvider implements AIProvider {
     return {
       suggestions: [
         {
-          id: "keywords-no-jd",
+          id: suggestionId("keywords", "no-jd", "skills"),
           category: "keywords",
           severity: "info",
           title: "Add a job description for keyword matching",
@@ -298,7 +299,7 @@ export class MockProvider implements AIProvider {
 
     if (!resume.summary.trim()) {
       suggestions.push({
-        id: "summary-missing",
+        id: suggestionId("summary", "missing", "summary"),
         category: "summary",
         severity: "critical",
         title: "Professional summary is missing",
@@ -317,7 +318,7 @@ export class MockProvider implements AIProvider {
 
     if (wordCount < 30) {
       suggestions.push({
-        id: "summary-too-short",
+        id: suggestionId("summary", "too-short", "summary"),
         category: "summary",
         severity: "major",
         title: "Summary is too brief",
@@ -333,7 +334,7 @@ export class MockProvider implements AIProvider {
 
     if (wordCount > 120) {
       suggestions.push({
-        id: "summary-too-long",
+        id: suggestionId("summary", "too-long", "summary"),
         category: "summary",
         severity: "medium",
         title: "Summary is longer than recommended",
@@ -358,7 +359,7 @@ export class MockProvider implements AIProvider {
     const hasGeneric = genericOpeners.some((p) => p.test(resume.summary));
     if (hasGeneric) {
       suggestions.push({
-        id: "summary-generic",
+        id: suggestionId("summary", "generic", "summary"),
         category: "summary",
         severity: "medium",
         title: "Summary opens with a generic phrase",
@@ -390,7 +391,7 @@ export class MockProvider implements AIProvider {
     const firstPerson = (allText.match(/\b(i\s|my\s|me\s)/g) || []).length;
     if (firstPerson > 2) {
       suggestions.push({
-        id: "tone-first-person",
+        id: suggestionId("grammar", "first-person", "experience"),
         category: "grammar",
         severity: "minor",
         title: "First-person pronouns detected",

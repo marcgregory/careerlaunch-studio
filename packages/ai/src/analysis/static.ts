@@ -1,5 +1,6 @@
 import type { NormalizedResume } from "./types";
 import type { Suggestion } from "../suggestion/types";
+import { suggestionId } from "../suggestion/types";
 
 /**
  * Static analysis engine — performs deterministic checks that require no AI.
@@ -31,16 +32,16 @@ function checkContact(resume: NormalizedResume): Suggestion[] {
   const s: Suggestion[] = [];
 
   if (!resume.contact.fullName.trim()) {
-    s.push(missingField("contact-name", "Full name", "contact"));
+    s.push(missingField(suggestionId("contact", "missing-name", "contact"), "Full name", "contact"));
   }
 
   if (!resume.contact.email.trim()) {
-    s.push(missingField("contact-email", "Email address", "contact"));
+    s.push(missingField(suggestionId("contact", "missing-email", "contact"), "Email address", "contact"));
   } else if (
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resume.contact.email.trim())
   ) {
     s.push({
-      id: "contact-email-invalid",
+      id: suggestionId("contact", "email-invalid", "contact"),
       category: "contact",
       severity: "critical",
       title: "Email address appears invalid",
@@ -54,12 +55,12 @@ function checkContact(resume: NormalizedResume): Suggestion[] {
   }
 
   if (!resume.contact.phone.trim()) {
-    s.push(missingField("contact-phone", "Phone number", "contact"));
+    s.push(missingField(suggestionId("contact", "missing-phone", "contact"), "Phone number", "contact"));
   }
 
   if (!resume.contact.location.trim()) {
     s.push({
-      id: "contact-location-missing",
+      id: suggestionId("contact", "location-missing", "contact"),
       category: "contact",
       severity: "minor",
       title: "Location is missing",
@@ -82,7 +83,7 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
 
   if (!resume.summary.trim()) {
     s.push({
-      id: "summary-missing",
+      id: suggestionId("summary", "missing", "summary"),
       category: "summary",
       severity: "critical",
       title: "Professional summary is missing",
@@ -101,7 +102,7 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
 
   if (wordCount < 30) {
     s.push({
-      id: "summary-too-short",
+      id: suggestionId("summary", "too-short", "summary"),
       category: "summary",
       severity: "major",
       title: "Summary is too brief",
@@ -116,7 +117,7 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
 
   if (wordCount > 120) {
     s.push({
-      id: "summary-too-long",
+      id: suggestionId("summary", "too-long", "summary"),
       category: "summary",
       severity: "medium",
       title: "Summary is longer than recommended",
@@ -140,7 +141,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
 
   if (expSections.length === 0) {
     s.push({
-      id: "exp-missing",
+      id: suggestionId("experience", "missing", "experience"),
       category: "experience",
       severity: "critical",
       title: "No experience entries",
@@ -159,7 +160,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
   for (const entry of expSections) {
     if (entry.bullets.length === 0) {
       s.push({
-        id: `exp-empty-${entry.id}`,
+        id: suggestionId("experience", "empty", entry.id),
         category: "experience",
         severity: "major",
         title: `"${entry.role ?? "Role"}" has no bullet points`,
@@ -184,7 +185,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       const words = bullet.split(/\s+/).filter(Boolean).length;
       if (words < 8 && words > 0) {
         s.push({
-          id: `exp-short-${entry.id}-${i}`,
+          id: suggestionId("experience", `short-bullet-${i}`, entry.id),
           category: "experience",
           severity: "minor",
           title: "Bullet point is too short",
@@ -232,7 +233,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       const firstWord = bullet.split(/\s+/)[0]?.toLowerCase();
       if (firstWord && !actionVerbs.includes(firstWord)) {
         s.push({
-          id: `exp-verb-${entry.id}-${i}`,
+          id: suggestionId("experience", `weak-verb-${i}`, entry.id),
           category: "experience",
           severity: "minor",
           title: "Bullet does not start with a strong action verb",
@@ -258,7 +259,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     );
     if (entry.bullets.length > 0 && bulletsWithMetrics.length === 0) {
       s.push({
-        id: `exp-metrics-${entry.id}`,
+        id: suggestionId("impact", "no-metrics", entry.id),
         category: "impact",
         severity: "major",
         title: `"${entry.role ?? "Role"}" has no measurable results`,
@@ -282,7 +283,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       const endYear = parseInt(end, 10);
       if (endYear - startYear > 5) {
         s.push({
-          id: `exp-long-tenure-${entry.id}`,
+          id: suggestionId("experience", `long-tenure`, entry.id),
           category: "experience",
           severity: "info",
           title: "Long tenure at one role — consider a summary",
@@ -308,7 +309,7 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
 
   if (count === 0) {
     s.push({
-      id: "skills-missing",
+      id: suggestionId("skills", "missing", "skills"),
       category: "skills",
       severity: "major",
       title: "No skills listed",
@@ -322,7 +323,7 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
     });
   } else if (count < 6) {
     s.push({
-      id: "skills-few",
+      id: suggestionId("skills", "too-few", "skills"),
       category: "skills",
       severity: "medium",
       title: "Only " + count + " skills listed",
@@ -336,7 +337,7 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
     });
   } else if (count > 20) {
     s.push({
-      id: "skills-many",
+      id: suggestionId("skills", "too-many", "skills"),
       category: "skills",
       severity: "minor",
       title: `${count} skills is more than typical`,
@@ -361,7 +362,7 @@ function checkEducation(resume: NormalizedResume): Suggestion[] {
 
   if (eduSections.length === 0) {
     s.push({
-      id: "edu-missing",
+      id: suggestionId("education", "missing", "education"),
       category: "education",
       severity: "medium",
       title: "No education entries",
@@ -386,7 +387,7 @@ function checkCompleteness(resume: NormalizedResume): Suggestion[] {
   // Certifications presence
   if (resume.certifications.length > 0) {
     s.push({
-      id: "certifications-present",
+      id: suggestionId("completeness", "certifications", "certifications"),
       category: "completeness",
       severity: "info",
       title: `${resume.certifications.length} certification(s) listed`,
@@ -403,7 +404,7 @@ function checkCompleteness(resume: NormalizedResume): Suggestion[] {
   // Projects presence
   if (resume.projects.length === 0) {
     s.push({
-      id: "projects-missing",
+      id: suggestionId("completeness", "projects-missing", "projects"),
       category: "completeness",
       severity: "info",
       title: "Consider adding a Projects section",
@@ -420,7 +421,7 @@ function checkCompleteness(resume: NormalizedResume): Suggestion[] {
   // Target role
   if (!resume.projects.length && !resume.sections.some(s => s.type === "experience")) {
     s.push({
-      id: "completeness-minimal",
+      id: suggestionId("completeness", "minimal", "completeness"),
       category: "completeness",
       severity: "critical",
       title: "Resume is mostly empty",

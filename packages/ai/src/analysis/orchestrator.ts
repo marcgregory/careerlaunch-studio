@@ -76,11 +76,19 @@ export async function analyzeResume(
     }),
   );
 
-  // Step 3: Merge all suggestions
-  const allSuggestions = [
-    ...staticSuggestions,
-    ...dimensionResults.flatMap((r) => r.suggestions),
-  ];
+  // Step 3: Merge all suggestions, deduplicating by id.
+  // Both static analysis and AI providers can produce the same logical
+  // suggestion for the same finding. When one exists, prefer the AI source
+  // (higher-enrichment) over the static source (deterministic).
+  const merged = new Map<string, typeof staticSuggestions[number]>();
+  for (const s of staticSuggestions) {
+    merged.set(s.id, s);
+  }
+  for (const s of dimensionResults.flatMap((r) => r.suggestions)) {
+    // AI suggestions overwrite static ones for the same finding
+    merged.set(s.id, s);
+  }
+  const allSuggestions = Array.from(merged.values());
 
   // Step 4: Compute overall score
   const overallScore = computeOverallScore(allSuggestions, normalized);
