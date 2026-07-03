@@ -1,4 +1,3 @@
-import { dirname } from "node:path";
 import { chromium as playwrightChromium } from "playwright-core";
 import type { Browser } from "playwright-core";
 
@@ -32,8 +31,8 @@ async function getSparticuzChromium(): Promise<typeof import("@sparticuz/chromiu
  * Launch a headless Chromium instance for PDF generation.
  *
  * **Vercel (production):** uses the `@sparticuz/chromium` serverless-optimized
- * binary with GPU disabled and `LD_LIBRARY_PATH` set so the dynamic linker
- * can find the bundled `.so` shared libraries (fixes "libnss3.so not found").
+ * binary with its recommended default args (GPU/rendering features already
+ * disabled by the package).
  *
  * **Local Windows / macOS / Linux dev:** uses the Playwright-managed Chromium
  * installation. Run `npx playwright install chromium` to ensure it is present.
@@ -45,26 +44,12 @@ export async function launchBrowser(): Promise<Browser> {
   let executablePath: string | undefined;
   let chromiumArgs: string[] = [];
 
-  /*
-   * ── Platform detection ──────────────────────────────────────────────
-   *
-   * On Windows, @sparticuz/chromium's brotli-compressed binary is
-   * incompatible with the OS.  Skip it entirely and let Playwright find
-   * its own locally-installed Chromium (from `npx playwright install
-   * chromium`).
-   *
-   * On Linux / macOS we use @sparticuz/chromium on Vercel and fall back
-   * to Playwright's local install when it isn't available.
-   */
   if (!IS_WINDOWS) {
     const sparticuz = await getSparticuzChromium();
 
     if (sparticuz) {
       try {
         executablePath = await sparticuz.executablePath();
-        // Disable GPU/rendering features — not needed for PDF generation
-        // and reduces the shared-library surface area on serverless runtimes.
-        sparticuz.setGraphicsMode = false;
         chromiumArgs = sparticuz.args;
       } catch {
         // @sparticuz/chromium binary unavailable (local dev without the
@@ -72,22 +57,6 @@ export async function launchBrowser(): Promise<Browser> {
         // own browser.
       }
     }
-  }
-
-  /*
-   * ── LD_LIBRARY_PATH (Vercel / Linux only) ───────────────────────────
-   *
-   * On Vercel, @sparticuz/chromium extracts to /tmp and its .so files
-   * must be discoverable by the dynamic linker.
-   */
-  if (!IS_WINDOWS && executablePath) {
-    process.env.LD_LIBRARY_PATH = [
-      dirname(executablePath),
-      "/tmp",
-      process.env.LD_LIBRARY_PATH,
-    ]
-      .filter(Boolean)
-      .join(":");
   }
 
   return playwrightChromium.launch({
