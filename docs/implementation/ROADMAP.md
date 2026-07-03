@@ -23,14 +23,13 @@ Last updated: 2026-07-03
 
 ## In Progress
 
-- Sprint 2 completion closeout and documentation update.
+- Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
 
 ## Sprint Queue
 
-- Sprint 2 - Template Library and Resume Checker Depth.
-- Sprint 3 - Cover Letter Builder and Paid Export Gates.
-- Sprint 4 - AI Rewrite Assistance and Role Tailoring.
-- Sprint 5 - Import Existing Resume and Version Duplication.
+- Sprint 4 — AI Rewrite Assistance and Role Tailoring.
+- Sprint 5 — Import Existing Resume and Version Duplication.
+- Sprint 6 — Cover Letter Builder and Paid Export Gates.
 
 ## Future
 

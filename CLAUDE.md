@@ -10,11 +10,11 @@ Build an original SaaS product for creating, improving, and exporting resumes, C
 
 ## Current Sprint
 
-Sprint 1 - Resume Builder Vertical Slice.
+Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
 
 ## Current Implementation Summary
 
-No implementation code exists yet. The project foundation defines product scope, architecture, stack, roadmap, sprint plan, release rules, founder strategy, and ADRs.
+The project has completed Sprints 1 and 2. The resume builder is fully functional with authenticated draft creation, four registry-driven templates (Modern, Executive, Minimal, ATS Classic), guided sections with add/remove/reorder flows, resume scoring, autosave, and real PDF export via Playwright. The template system uses a metadata-driven registry with semantic properties, eliminating per-template conditionals from renderers. Visual regression tests and per-template PDF QA are in place.
 
 ## Architecture Summary
 
@@ -88,9 +88,9 @@ Initial debt is planning debt only: implementation scaffolding, legal review, co
 
 ## Next Priority
 
-Scaffold the TypeScript monorepo and implement Sprint 1: authenticated resume draft creation, one editable template, guided sections, lightweight scoring, and PDF export.
+Implement Sprint 3: AI resume review and scoring (ATS analysis, keyword match, grammar, action verbs), cover letter builder using the existing template and PDF infrastructure.
 
 ## AI Handoff
 
-Start with `docs/PRD.md`, then `docs/ARCHITECTURE.md`, then `docs/implementation/BUILD_PLAN.md`. Keep Sprint 1 as the only active sprint until the vertical slice is demonstrable.
+Start with `docs/PRD.md`, then `docs/ARCHITECTURE.md`, then `docs/implementation/BUILD_PLAN.md`, then `docs/implementation/ROADMAP.md`. Check `PROJECT_STATUS.md` for current sprint state.
 

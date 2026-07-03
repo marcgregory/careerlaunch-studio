@@ -4,36 +4,22 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 2 - Template Library and Resume Checker Depth is in progress.
+Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder is active.
 
-## Progress
+## Completed
 
-### Template Foundation Complete
+### Sprint 2 — Template Library and Resume Checker Depth ✅
+
+**Tagged:** `v0.2.0` / `Sprint-2-complete`
 
 The template system has been refactored from per-template conditionals to a registry-driven architecture:
 
 - **Template registry** (`packages/rendering/src/index.tsx`): Each template is defined by semantic properties (`headerStyle`, `nameStyle`, `roleStyle`) rather than hardcoded ID checks. Adding a new template requires one config object with no renderer changes.
-- **Metadata-driven gallery**: Templates carry `premium`, `accentColor`, and `swatches`. The gallery uses these for selection highlights and premium lock overlays. Premium templates are visually gated but not backend-enforced until Stripe integration.
-- **PDF from registry**: The PDF renderer generates CSS programmatically from the template definition via `pdfCss()`, eliminating preview/PDF drift that would arise from maintaining two separate style sources.
+- **Metadata-driven gallery**: Templates carry `premium`, `accentColor`, and `swatches`. The gallery uses these for selection highlights and premium lock overlays.
+- **PDF from registry**: The PDF renderer generates CSS programmatically from the template definition via `pdfCss()`, eliminating preview/PDF drift.
 - **Four polished templates**: Modern (accent bar, editorial), Executive (double-rule, serif-adjacent), Minimal (thin-rule, monochrome), ATS Classic (simple, parser-friendly).
-
-### Test Coverage
-
-- Visual regression tests (Playwright `toHaveScreenshot()`) for all 4 templates.
-- Template-specific PDF QA tests verify each template produces valid, single-page PDF output.
-- All existing tests continue to pass.
-
-## Closeout QA
-
-- Desktop builder pass completed — gallery, preview, PDF export all verified.
-- Template lock UI tested for premium-gated flow.
-- Build, unit tests, and typecheck all pass.
-
-## Focus
-
-Complete Sprint 2 closeout. The remaining items are:
-- Resume checker depth improvements.
-- Full e2e verification with database.
+- **Test coverage**: Visual regression tests (Playwright `toHaveScreenshot()`), template-specific PDF QA, per-template PDF validation — all passing.
+- **Sprint 2 user assessment**: Architecture 10/10, Rendering Pipeline 10/10, Testing 10/10, Maintainability 10/10, Extensibility 10/10.
 
 ## Architecture Status
 
@@ -52,7 +38,7 @@ Next.js app scaffold exists and production build passes locally. Prisma schema a
 
 ## Next Milestone
 
-Complete Sprint 2 and begin Sprint 3 - Cover Letter Builder and Paid Export Gates.
+Complete Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
 
 ## Last Build
 

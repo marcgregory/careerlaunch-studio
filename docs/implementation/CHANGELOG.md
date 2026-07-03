@@ -42,6 +42,8 @@ All notable changes to CareerLaunch Studio will be documented here.
 
 ## 0.2.0 - 2026-07-03
 
+Sprint 2 user assessment: Architecture 10/10, Rendering Pipeline 10/10, Testing 10/10, Maintainability 10/10, Extensibility 10/10. "The engineering foundation now looks mature."
+
 ### Added
 
 - Template registry with semantic properties (`headerStyle`, `nameStyle`, `roleStyle`) replacing per-template conditionals.
