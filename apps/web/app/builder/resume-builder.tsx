@@ -7,20 +7,17 @@ import {
   ArrowLeft,
   ArrowUp,
   Download,
-  Gauge,
   GripVertical,
   Lock,
   Palette,
   Plus,
   RotateCcw,
   Save,
-  Sparkles,
   Trash2
 } from "lucide-react";
 import { ResumePreview, resumeTemplates } from "@careerlaunch/rendering";
 import {
   defaultSectionOrder,
-  scoreResume,
   type EducationItem,
   type ExperienceItem,
   type ProjectItem,
@@ -29,6 +26,7 @@ import {
   type ResumeTemplateId
 } from "@careerlaunch/domain";
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { HealthDashboard } from "./_analysis/health-dashboard";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
 type ValidationErrors = Partial<Record<string, string>>;
@@ -80,8 +78,6 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
       window.clearTimeout(timeout);
     };
   }, [resume]);
-
-  const check = useMemo(() => scoreResume(resume), [resume]);
 
   function patchResume(patch: Partial<ResumeDocument>) {
     setResume((current) => ({ ...current, ...patch }));
@@ -228,39 +224,7 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[460px_1fr]">
         <aside className="no-print space-y-5">
-          <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-mono text-xs font-black uppercase tracking-[0.2em] text-[#b9ff66]">Resume score</p>
-                <h2 className="font-signal mt-2 text-7xl font-black leading-none tracking-[-0.08em]">{check.score}</h2>
-              </div>
-              <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
-                <Sparkles size={25} />
-              </div>
-            </div>
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-              <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
-                <span>Signal scan</span>
-                <Gauge size={18} className="text-[#b9ff66]" />
-              </div>
-              <div className="space-y-3">
-                <div className="h-2 rounded-full bg-[#b9ff66]" />
-                <div className="h-2 w-5/6 rounded-full bg-white/18" />
-                <div className="h-2 w-2/3 rounded-full bg-white/18" />
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {check.checks.map((item) => (
-                <div key={item.id} className="border-t border-white/12 pt-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-black text-white">{item.label}</p>
-                    <span className={statusClass(item.status)}>{item.status}</span>
-                  </div>
-                  <p className="mt-1 text-xs font-medium leading-5 text-white/62">{item.detail}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+          <HealthDashboard resumeId={resume.id} />
 
           <Panel title="Target">
             <div className="space-y-3">
@@ -423,9 +387,11 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
           </Panel>
         </aside>
 
-        <section className="print-area overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
-          <ResumePreview resume={resume} />
-        </section>
+        <aside className="sticky top-6 hidden max-h-[calc(100vh-6rem)] self-start xl:block">
+          <div className="print-area overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
+            <ResumePreview resume={resume} />
+          </div>
+        </aside>
       </div>
     </main>
   );
@@ -700,12 +666,6 @@ function validateResume(resume: ResumeDocument): ValidationErrors {
 function makeId(prefix: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function statusClass(status: "pass" | "warn" | "fail") {
-  if (status === "pass") return "rounded-lg bg-[#b9ff66] px-2.5 py-1 text-xs font-black uppercase text-[#123c3a]";
-  if (status === "warn") return "rounded-lg bg-[#fff1c7] px-2.5 py-1 text-xs font-black uppercase text-[#8a5a00]";
-  return "rounded-lg bg-[#ffe1dc] px-2.5 py-1 text-xs font-black uppercase text-[#9f2f1c]";
 }
 
 function saveBadgeClass(saveState: SaveState) {

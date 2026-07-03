@@ -9,6 +9,12 @@ Sprint 3A — AI Analysis Engine is active. Read-only analysis: ATS scoring, gra
 ### Delivered This Sprint
 
 - `docs/architecture/AI.md` — comprehensive AI architecture document covering design principles, analysis pipeline, suggestion schema, provider abstraction, prompt architecture, response validation, caching, cost controls, privacy, and success criteria.
+- `packages/ai` — new package with AI provider abstraction, registry, MockProvider, resume normalizer, static analysis engine (20+ deterministic checks), analysis orchestrator, and scoring engine. 49 unit tests.
+- `GET /api/resumes/:resumeId/analyze` — authenticated, read-only analysis endpoint.
+- Builder preview panel — now sticky (`sticky top-6 self-start`) with `max-h-[calc(100vh-6rem)]` and inner scroll, keeping the resume visible while editing.
+- `HealthDashboard` component — interactive resume health widget with ScoreGauge (SVG ring, colour-coded 0–100), category breakdown, and "Analyze Resume" button with idle/loading/success/error states.
+- `SuggestionsList` component — suggestions grouped by severity (critical → info) with expand/collapse detail, accept/dismiss buttons, and resolved status tags. All accept/dismiss is client-side UI state only — no auto-application to the resume.
+- `SuggestionCard` component — individual suggestion with severity badge, source label (`Auto`/`AI`), target text block, and suggested text block.
 
 ## Completed
 
@@ -49,7 +55,7 @@ Complete Sprint 3A — AI Analysis Engine with working analysis pipeline, sugges
 Local build verification passed on 2026-07-03:
 
 - `npm run build` — passes
-- `npm run test` — 2/2 domain tests pass
+- `npm run test` — 49/49 AI tests + 2/2 domain tests pass
 - `npm run typecheck` — passes
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 
