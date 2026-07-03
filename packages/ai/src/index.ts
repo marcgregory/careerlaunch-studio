@@ -48,3 +48,16 @@ export type {
 } from "./suggestion/types";
 
 export { computeOverallScore, computeCategoryScores } from "./scoring/index";
+
+// Apply engine
+export { applyChanges, ApplyError } from "./apply/index";
+export type {
+  ApplyOperation,
+  ReplaceSummaryOperation,
+  ReplaceBulletOperation,
+  ReplaceSkillOperation,
+  AddSkillOperation,
+  RemoveSkillOperation,
+  AppliedChange,
+  ApplyResult,
+} from "./apply/index";
