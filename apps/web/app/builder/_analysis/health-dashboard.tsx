@@ -4,6 +4,7 @@ import { Sparkles, Gauge, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useCallback, useState } from "react";
 import { ScoreGauge } from "./score-gauge";
 import { SuggestionCard } from "./suggestion-card";
+import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import type { AnalysisState, ClientSuggestion } from "./types";
 import type { SuggestionSeverity, SuggestionCategory } from "@careerlaunch/ai";
 import type { ApplyOperation } from "@careerlaunch/ai";
@@ -44,6 +45,11 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   });
   const [applyError, setApplyError] = useState<string | null>(null);
 
+  // ── Modal state ───────────────────────────────────────────────────
+  const [reviewingSuggestion, setReviewingSuggestion] = useState<ClientSuggestion | null>(null);
+  const [applyState, setApplyState] = useState<ApplyState>("idle");
+  const [modalError, setModalError] = useState<string | undefined>();
+
   const runAnalysis = useCallback(async () => {
     setAnalysis((prev) => ({ ...prev, status: "loading", error: null }));
     setApplyError(null);
@@ -79,38 +85,55 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
     }
   }, [resumeId]);
 
-  async function handleAccept(id: string) {
+  // ── Review handler — opens the diff modal ─────────────────────────
+  function handleReview(id: string) {
+    const suggestion = analysis.suggestions.find((s) => s.id === id);
+    if (!suggestion) return;
+
+    setReviewingSuggestion(suggestion);
+    setApplyState("idle");
+    setModalError(undefined);
+  }
+
+  // ── Apply handler — called from the modal ─────────────────────────
+  async function handleApplyFromModal(id: string) {
     setApplyError(null);
+    setModalError(undefined);
 
     const suggestion = analysis.suggestions.find((s) => s.id === id);
     if (!suggestion) return;
 
     const operations = suggestionToOperation(suggestion);
     if (!operations) {
-      setApplyError("This suggestion cannot be applied automatically yet.");
+      setModalError("This suggestion cannot be applied automatically yet.");
+      setApplyState("error");
       return;
     }
 
-    // Optimistic local state: mark as accepted immediately
-    setAnalysis((prev) => ({
-      ...prev,
-      suggestions: prev.suggestions.map((s) =>
-        s.id === id ? { ...s, status: "accepted" as const } : s,
-      ),
-    }));
+    setApplyState("applying");
 
     const result = await onApplySuggestion(operations);
 
     if (result.error) {
-      // Revert to pending — the apply failed
+      setModalError(result.error);
+      setApplyState("error");
+    } else {
+      // Update local state: mark as accepted
       setAnalysis((prev) => ({
         ...prev,
         suggestions: prev.suggestions.map((s) =>
-          s.id === id ? { ...s, status: "pending" as const } : s,
+          s.id === id ? { ...s, status: "accepted" as const } : s,
         ),
       }));
-      setApplyError(result.error);
+      setApplyState("applied");
+      // Modal auto-closes after 1.5s (handled in SuggestionDiffModal)
     }
+  }
+
+  function handleCloseModal() {
+    setReviewingSuggestion(null);
+    setApplyState("idle");
+    setModalError(undefined);
   }
 
   function handleReject(id: string) {
@@ -233,73 +256,114 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   }
 
   return (
-    <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
-      {/* Apply error banner */}
-      {applyError && (
-        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200">
-          <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <p className="font-medium">{applyError}</p>
-        </div>
-      )}
-
-      {/* Score header */}
-      <div className="flex items-start justify-between gap-3">
-        <ScoreGauge score={score} />
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
-          <Sparkles size={25} />
-        </div>
-      </div>
-
-      {/* Mini category breakdown */}
-      {pendingByCategory.size > 0 && (
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
-            <span>Issues found</span>
-            <Gauge size={18} className="text-[#b9ff66]" />
+    <>
+      <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
+        {/* Apply error banner (for errors outside the modal) */}
+        {applyError && (
+          <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200">
+            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+            <p className="font-medium">{applyError}</p>
           </div>
-          <div className="space-y-2">
-            {Array.from(pendingByCategory.entries()).map(([category, count]) => (
-              <div
-                key={category}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="font-medium text-white/80">
-                  {categoryLabels[category]}
-                </span>
-                <span className="rounded-lg bg-white/10 px-2.5 py-0.5 text-xs font-black">
-                  {count}
-                </span>
-              </div>
-            ))}
+        )}
+
+        {/* Score header */}
+        <div className="flex items-start justify-between gap-3">
+          <ScoreGauge score={score} />
+          <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
+            <Sparkles size={25} />
           </div>
         </div>
-      )}
 
-      {pendingByCategory.size === 0 && (
-        <div className="mt-6 rounded-2xl border border-[#b9ff66]/20 bg-[#b9ff66]/5 p-6 text-center">
-          <p className="font-signal text-xl font-black tracking-[-0.04em] text-[#b9ff66]">
-            No issues found
+        {/* Mini category breakdown */}
+        {pendingByCategory.size > 0 && (
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
+              <span>Issues found</span>
+              <Gauge size={18} className="text-[#b9ff66]" />
+            </div>
+            <div className="space-y-2">
+              {Array.from(pendingByCategory.entries()).map(([category, count]) => (
+                <div
+                  key={category}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="font-medium text-white/80">
+                    {categoryLabels[category]}
+                  </span>
+                  <span className="rounded-lg bg-white/10 px-2.5 py-0.5 text-xs font-black">
+                    {count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {pendingByCategory.size === 0 && (
+          <div className="mt-6 rounded-2xl border border-[#b9ff66]/20 bg-[#b9ff66]/5 p-6 text-center">
+            <p className="font-signal text-xl font-black tracking-[-0.04em] text-[#b9ff66]">
+              No issues found
+            </p>
+            <p className="mt-1 text-sm text-white/60">
+              Your resume looks great! Run the analysis again after making changes.
+            </p>
+          </div>
+        )}
+
+        {/* Re-analyze button */}
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <p className="text-xs font-medium text-white/45">
+            {analysis.suggestions.length} suggestion{analysis.suggestions.length !== 1 ? "s" : ""}
+            {resolvedCount > 0 && ` · ${resolvedCount} resolved`}
           </p>
-          <p className="mt-1 text-sm text-white/60">
-            Your resume looks great! Run the analysis again after making changes.
-          </p>
+          <button
+            type="button"
+            onClick={runAnalysis}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/8 px-3 text-xs font-black text-white/70 transition hover:bg-white/15 hover:text-white"
+          >
+            <RefreshCw size={14} /> Re-analyze
+          </button>
         </div>
-      )}
 
-      {/* Re-analyze button */}
-      <div className="mt-5 flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-white/45">
-          {analysis.suggestions.length} suggestion{analysis.suggestions.length !== 1 ? "s" : ""}
-          {resolvedCount > 0 && ` · ${resolvedCount} resolved`}
-        </p>
-        <button
-          type="button"
-          onClick={runAnalysis}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/8 px-3 text-xs font-black text-white/70 transition hover:bg-white/15 hover:text-white"
-        >
-          <RefreshCw size={14} /> Re-analyze
-        </button>
-      </div>
-    </section>
+        {/* Suggestions list */}
+        {groupedBySeverity.map((group) => (
+          <div key={group.severity} className="mt-6">
+            <h3 className="mb-3 font-mono text-xs font-black uppercase tracking-[0.15em] text-white/50">
+              {group.severity}
+            </h3>
+            <div className="space-y-3">
+              {group.items.map((suggestion) => (
+                <SuggestionCard
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onReview={handleReview}
+                  onReject={handleReject}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Resolved summary */}
+        {resolvedCount > 0 && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <p className="text-xs font-medium text-white/45">
+              {resolvedCount} resolved
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Diff Review Modal */}
+      {reviewingSuggestion && (
+        <SuggestionDiffModal
+          suggestion={reviewingSuggestion}
+          applyState={applyState}
+          applyError={modalError}
+          onApply={handleApplyFromModal}
+          onClose={handleCloseModal}
+        />
+      )}
+    </>
   );
 }

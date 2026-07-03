@@ -29,7 +29,7 @@ test.describe("Suggestion apply API", () => {
     cookies = await context.cookies();
   });
 
-  test("accepts a suggestion and updates the preview", async ({ page }) => {
+  test("accepts a suggestion via review modal and updates the preview", async ({ page }) => {
     expect(resumeId).toBeTruthy();
 
     // Wait for builder to load and fill in contact info so the resume is valid
@@ -39,7 +39,7 @@ test.describe("Suggestion apply API", () => {
     const saveResponse = await page.request.put(`${apiBase}/${resumeId}`, {
       data: {
         id: resumeId,
-        title: "Accept Suggestion Test Resume",
+        title: "Review Modal Test Resume",
         targetRole: "Customer Success Manager",
         contact: {
           fullName: "Jordan Lee",
@@ -76,16 +76,96 @@ test.describe("Suggestion apply API", () => {
     await page.getByRole("button", { name: "Analyze Resume" }).click();
     await expect(page.getByText("Issues found")).toBeVisible({ timeout: 10_000 });
 
-    // Click the first Accept button
-    const acceptButton = page.locator('button[aria-label="Accept suggestion"]').first();
-    await expect(acceptButton).toBeVisible({ timeout: 5_000 });
-    await acceptButton.click();
+    // Click the first Review button to open the diff modal
+    const reviewButton = page.locator('button[aria-label="Review suggestion"]').first();
+    await expect(reviewButton).toBeVisible({ timeout: 5_000 });
+    await reviewButton.click();
 
-    // Verify the suggestion shows "Accepted" status
+    // Verify the diff modal opened with Apply and Cancel buttons
+    const modalDialog = page.locator('[role="dialog"]');
+    await expect(modalDialog).toBeVisible({ timeout: 3_000 });
+
+    // Verify diff shows both "Current" and "Suggested" labels
+    await expect(modalDialog.getByText("Current")).toBeVisible();
+    await expect(modalDialog.getByText("Suggested")).toBeVisible();
+
+    // Click Apply inside the modal
+    const applyButton = modalDialog.getByRole("button", { name: "Apply" });
+    await expect(applyButton).toBeVisible();
+    await applyButton.click();
+
+    // Wait for the modal to show success state or close (auto-closes after 1.5s)
+    await expect(modalDialog.locator("text=Applied successfully")).toBeVisible({ timeout: 5_000 });
+    await expect(modalDialog).not.toBeVisible({ timeout: 5_000 });
+
+    // Verify the suggestion shows "Accepted" status in the dashboard
     await expect(page.getByText("Accepted").first()).toBeVisible({ timeout: 8_000 });
 
     // Verify Saved badge appears (autosave fires after resume state change)
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("cancels review modal and returns to pending suggestions", async ({ page }) => {
+    expect(resumeId).toBeTruthy();
+
+    await expect(page.locator("article")).toBeVisible({ timeout: 5_000 });
+
+    await page.request.put(`${apiBase}/${resumeId}`, {
+      data: {
+        id: resumeId,
+        title: "Cancel Review Test",
+        targetRole: "Engineer",
+        contact: {
+          fullName: "Sam Smith",
+          email: "sam@test.com",
+          phone: "(555) 000-0000",
+          location: "NYC",
+          website: "",
+        },
+        summary: "A test summary for cancel testing purposes.",
+        sectionOrder: ["summary", "experience", "education", "skills", "certifications", "projects"],
+        experience: [
+          {
+            id: "exp-cancel-1",
+            role: "Software Engineer",
+            company: "Tech Co",
+            location: "NYC",
+            start: "2020",
+            end: "Present",
+            bullets: ["Wrote code."],
+          },
+        ],
+        education: [],
+        skills: ["JavaScript"],
+        certifications: [],
+        projects: [],
+      },
+    });
+
+    // Run analysis
+    await page.getByRole("button", { name: "Analyze Resume" }).click();
+    await expect(page.getByText("Issues found")).toBeVisible({ timeout: 10_000 });
+
+    // Click Review to open modal
+    const reviewButton = page.locator('button[aria-label="Review suggestion"]').first();
+    await expect(reviewButton).toBeVisible({ timeout: 5_000 });
+    await reviewButton.click();
+
+    // Verify modal is open
+    const modalDialog = page.locator('[role="dialog"]');
+    await expect(modalDialog).toBeVisible({ timeout: 3_000 });
+
+    // Click Cancel to close the modal
+    const cancelButton = modalDialog.getByRole("button", { name: "Cancel" });
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+
+    // Verify modal is closed
+    await expect(modalDialog).not.toBeVisible({ timeout: 3_000 });
+
+    // Verify the suggestion is still pending (no "Accepted" or "Dismissed" shown for it)
+    const reviewButtons = page.locator('button[aria-label="Review suggestion"]');
+    await expect(reviewButtons.first()).toBeVisible({ timeout: 3_000 });
   });
 
   test("returns 409 when applying operations against stale targets", async ({ page }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X, AlertTriangle, AlertCircle, Info, ArrowBigUp, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, AlertTriangle, AlertCircle, Info, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import type { ClientSuggestion } from "./types";
 
@@ -14,11 +14,11 @@ const severityConfig = {
 
 export function SuggestionCard({
   suggestion,
-  onAccept,
+  onReview,
   onReject,
 }: {
   suggestion: ClientSuggestion;
-  onAccept: (id: string) => void;
+  onReview: (id: string) => void;
   onReject: (id: string) => void;
 }) {
   const config = severityConfig[suggestion.severity];
@@ -91,12 +91,13 @@ export function SuggestionCard({
           <div className="flex shrink-0 gap-1.5">
             <button
               type="button"
-              aria-label="Accept suggestion"
-              title="Accept suggestion"
-              onClick={() => onAccept(suggestion.id)}
-              className="inline-grid h-9 w-9 place-items-center rounded-xl border border-[#b9ff66] bg-white text-[#123c3a] transition hover:bg-[#b9ff66]"
+              aria-label="Review suggestion"
+              title="Review suggestion"
+              onClick={() => onReview(suggestion.id)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
             >
-              <Check size={18} />
+              <Eye size={15} />
+              Review
             </button>
             <button
               type="button"

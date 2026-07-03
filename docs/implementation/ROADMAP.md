@@ -25,7 +25,7 @@ Last updated: 2026-07-03
 
 ## In Progress
 
-- Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
+- Sprint 3B — Suggestion Preview / Diff UI. Word-diff component, review modal, two-step accept (review → apply), side-by-side before/after highlighting, cancel/escape dismiss.
 
 ## Sprint Queue
 

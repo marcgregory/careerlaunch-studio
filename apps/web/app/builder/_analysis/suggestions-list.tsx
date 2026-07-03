@@ -23,11 +23,11 @@ const severityOrder: SuggestionSeverity[] = ["critical", "major", "medium", "min
 
 interface SuggestionsListProps {
   suggestions: ClientSuggestion[];
-  onAccept: (id: string) => void;
+  onReview: (id: string) => void;
   onReject: (id: string) => void;
 }
 
-export function SuggestionsList({ suggestions, onAccept, onReject }: SuggestionsListProps) {
+export function SuggestionsList({ suggestions, onReview, onReject }: SuggestionsListProps) {
   // Separate pending and resolved
   const pending = suggestions.filter((s) => s.status === "pending");
   const accepted = suggestions.filter((s) => s.status === "accepted");
@@ -66,7 +66,7 @@ export function SuggestionsList({ suggestions, onAccept, onReject }: Suggestions
               <SuggestionCard
                 key={suggestion.id}
                 suggestion={suggestion}
-                onAccept={onAccept}
+                onReview={onReview}
                 onReject={onReject}
               />
             ))}

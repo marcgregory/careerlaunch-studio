@@ -4,41 +4,37 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3A.5 — Apply Engine + Acceptance Persistence is complete. Tagged `v0.3.1-alpha`.
+Sprint 3B — Suggestion Preview / Diff UI is complete.
 
-### Delivered This Sprint (3A.5)
+### Delivered This Sprint (3B)
 
-**Apply Engine (`packages/ai/apply/`):**
-- Pure-function `applyChanges()` — transforms `ApplyOperation[]` into `ResumeDocument` mutations with full immutability and no side effects.
-- 5 safe operation types: `replace_summary`, `replace_bullet`, `replace_skill`, `add_skill`, `remove_skill`.
-- `ApplyError` class for stale-target detection with operation context and reason.
-- 49 unit tests covering all operations, stale target failure, immutability, and multi-operation composition.
+**Diff Component (`apps/web/components/diff-view.tsx`):**
+- Word-level diff algorithm using LCS (longest common subsequence) — no external dependencies.
+- Side-by-side and inline layout modes with word-level added/removed/same highlighting.
+- Pure function `wordDiff()` returns structured `DiffResult` for use outside React.
+- Handles all edge cases: empty old/new text, complete replacement, partial overlap, punctuation.
 
-**API Route — `POST /api/resumes/:resumeId/suggestions/apply`:**
-- Thin auth + persistence wrapper around `applyChanges()`.
-- Returns 409 for stale targets (ApplyError), 400 for invalid payloads, 401/404 for auth/ownership.
-- Persists updated resume to database on success.
+**Diff Modal (`apps/web/components/suggestion-diff-modal.tsx`):**
+- Dialog overlay showing suggestion severity, title, reason, and before/after diff.
+- Two-step UX: Review opens modal → user inspects diff → Apply from modal.
+- Handles all states: idle, applying (spinner), applied (auto-close after 1.5s), error with message.
+- Close on Escape, backdrop click, Cancel button.
+- Informational suggestions (no text change) show a polite message instead of diff.
 
-**Suggestion → Operation Mapping:**
-- `apps/web/lib/suggestion-to-operation.ts` — maps `Suggestion` objects to `ApplyOperation[]` for summary, experience/impact bullets, and skill replacements.
-- Returns `null` for unsupported categories (education, contact, formatting, etc.) so the caller can gracefully skip.
+**SuggestionCard Changes:**
+- Replaced direct Accept (✓) button with a **Review** button (👁 Review) that opens the diff modal.
+- Dismiss (X) remains one-click, unchanged.
+- `onAccept` → `onReview` prop rename; `onReject` unchanged.
 
-**UI Integration:**
-- `HealthDashboard.handleAccept()` now calls the apply API via `onApplySuggestion` callback.
-- Optimistic local state update (marks suggestion "accepted" immediately), reverts to "pending" on API failure.
-- Error banner shown when apply fails (stale target, network error, unsupported operation).
-- `ResumeBuilder.handleApplySuggestion()` receives `ApplyOperation[]`, calls the API, updates local resume state on success so the preview reflects changes immediately.
-
-**Testing:**
-- 21 unit tests for `suggestionToOperation()` mapping function.
-- Playwright E2E test: accept a suggestion and verify preview updates.
-- Playwright E2E test: 409 stale target behavior.
-- Playwright E2E test: resume unchanged when apply returns 409.
-- Playwright E2E test: direct apply API verification (persistence check).
+**HealthDashboard Changes:**
+- `handleAccept` split into `handleReview` (opens modal) + `handleApplyFromModal` (calls API).
+- New state: `reviewingSuggestion`, `applyState`, `modalError`.
+- `SuggestionDiffModal` rendered when a suggestion is being reviewed.
+- Suggestions now rendered inline instead of via `SuggestionsList` component.
 
 ### Next Up
 
-Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand.
+- Sprint 3C — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
 
 ## Completed
 
@@ -79,8 +75,8 @@ Complete Sprint 3A — AI Analysis Engine with working analysis pipeline, sugges
 Local build verification passed on 2026-07-03:
 
 - `npm run build` — passes
-- `npm run test` — 70/70 AI tests + 2/2 domain tests pass (21 new suggestion-to-operation tests)
+- `npm run test` — 97/97 AI tests + 2/2 domain tests pass
 - `npm run typecheck` — passes
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 
-Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, template-specific PDF QA, suggestion acceptance flow, stale-target 409 handling, and apply API persistence.
+Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, template-specific PDF QA, suggestion review modal flow, suggestion acceptance via modal, stale-target 409 handling, cancel review modal behavior, and apply API persistence.

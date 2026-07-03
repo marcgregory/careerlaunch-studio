@@ -40,7 +40,24 @@ All notable changes to CareerLaunch Studio will be documented here.
 
 - Removed localStorage-based resume autosave from the builder.
 
-## 0.3.1-alpha - 2026-07-03
+## 0.3.2-alpha - 2026-07-03
+
+Sprint 3B — Suggestion Preview / Diff UI.
+
+### Added
+
+- `apps/web/components/diff-view.tsx` — word-level diff component with LCS-based algorithm, side-by-side and inline layout, added/removed/same highlighting.
+- `apps/web/components/suggestion-diff-modal.tsx` — dialog overlay for reviewing suggestions before applying; supports applying, success, error, and dismiss states.
+- Review flow in `SuggestionCard` — replaced direct Accept (✓) with Review (👁) button that opens the diff modal.
+- Modal state management in `HealthDashboard` — split accept into review (open modal) + apply (from modal), managing `reviewingSuggestion`, `applyState`, and `modalError`.
+
+### Changed
+
+- `suggestion-card.tsx`: `onAccept` → `onReview` prop, Review button replaces Accept button.
+- `suggestions-list.tsx`: `onAccept` → `onReview` prop pass-through.
+- `health-dashboard.tsx`: suggestions rendered inline with diff modal support; removed dependency on external `SuggestionsList` for the rendered suggestions.
+- E2E tests: updated to test review modal flow (open → inspect diff → apply → success) and cancel behavior (close → still pending).
+- Updated ROADMAP, PROJECT_STATUS, and CHANGELOG for Sprint 3B completion.
 
 Sprint 3A.5 — Apply Engine + Acceptance Persistence. Tagged `v0.3.1-alpha`.
 
