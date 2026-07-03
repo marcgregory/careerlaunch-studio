@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, FileText, Gauge, Layers3, LogOut, Plus, Sparkles } from "lucide-react";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import type { Prisma } from "@prisma/client";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const resumes = await prisma.resumeDocument.findMany({
+  const resumes: Prisma.ResumeDocumentGetPayload<{
+    select: { id: true; title: true; targetRole: true; updatedAt: true };
+  }>[] = await prisma.resumeDocument.findMany({
     where: { userId: user.id },
     orderBy: { updatedAt: "desc" },
     select: { id: true, title: true, targetRole: true, updatedAt: true }
