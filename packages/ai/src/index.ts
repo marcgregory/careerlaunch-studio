@@ -25,6 +25,7 @@ export type {
   AnalysisResult,
   ProviderHealth,
   AnalysisQuota,
+  AnalysisRunRecord,
 } from "./analysis/types";
 
 export {
@@ -48,6 +49,13 @@ export type {
 } from "./suggestion/types";
 
 export { computeOverallScore, computeCategoryScores } from "./scoring/index";
+
+// Job-match engine
+export { runJobMatch, normalizeJobDescription, compare, computeMatchScore, analyzeKeywords } from "./job-match/index";
+export type { JobMatchResult, JobMatchInput, NormalizedJob } from "./job-match/types";
+
+// Suggestion-to-operation factory
+export { createOperations, suggestionToOperation } from "./operations/factory";
 
 // Apply engine
 export { applyChanges, ApplyError } from "./apply/index";

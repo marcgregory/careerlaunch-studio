@@ -4,9 +4,48 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3B — Suggestion Preview / Diff UI is complete.
+Sprint 3C — Job Match MVP is complete.
 
-### Delivered This Sprint (3B)
+### Delivered This Sprint (3C)
+
+**Job Match Engine (`packages/ai/src/job-match/`):**
+- `normalize-job.ts` — tokenizes job descriptions, extracts skills via 80-skill dictionary, identifies experience level indicators.
+- `compare.ts` — compares resume against JD skills, categorizes as present (in skills list or mentioned in text) vs missing.
+- `keywords.ts` — token-level overlap analysis between resume and JD.
+- `score.ts` — match score 0–100 based on skill coverage ratio, floored at 10.
+- `index.ts` — `runJobMatch()` orchestrator that normalizes, compares, scores, and returns suggestions.
+- All 39 job-match tests pass.
+
+**Operation Factory Upgrade (`packages/ai/src/operations/factory.ts`):**
+- `createOperations(suggestion, resume)` — upgraded to accept resume context, enabling `add_skill` operations.
+- `suggestionToOperation(suggestion)` preserved as deprecated wrapper.
+- `"job-match"` SuggestionCategory added for add_skill suggestions.
+
+**API:**
+- `POST /api/resumes/:resumeId/job-match` — authenticated, validates input, persists `AnalysisRun` with type `"job_match"`.
+
+**AnalysisRun Table:**
+- Prisma model, migration `20260703083953_add_analysis_run`.
+- Persisted for both `/analyze` and `/job-match` API calls.
+- `AnalysisRunRecord` type exported from `@careerlaunch/ai`.
+
+**UI (`apps/web/app/builder/_analysis/job-match-panel.tsx`):**
+- Self-contained panel with paste textarea, Analyze Match button.
+- Match score display with strong/moderate/weak labels.
+- Missing vs Present skills in side-by-side columns.
+- Suggestion cards with Review (opens diff modal) and Dismiss.
+- Handles all states: idle, loading, error, success, empty JD, no extracted skills.
+- Integrated into builder sidebar alongside HealthDashboard.
+
+### Next Up
+
+- Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
+- Sprint 4 — Import Existing Resume and Version Duplication.
+- Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
+
+## Completed
+
+### Sprint 3B — Suggestion Preview / Diff UI ✅
 
 **Diff Component (`apps/web/components/diff-view.tsx`):**
 - Word-level diff algorithm using LCS (longest common subsequence) — no external dependencies.
@@ -32,12 +71,6 @@ Sprint 3B — Suggestion Preview / Diff UI is complete.
 - `SuggestionDiffModal` rendered when a suggestion is being reviewed.
 - Suggestions now rendered inline instead of via `SuggestionsList` component.
 
-### Next Up
-
-- Sprint 3C — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
-
-## Completed
-
 ### Sprint 2 — Template Library and Resume Checker Depth ✅
 
 **Tagged:** `v0.2.0` / `Sprint-2-complete`
@@ -53,11 +86,11 @@ The template system has been refactored from per-template conditionals to a regi
 
 ## Architecture Status
 
-Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, Stripe, and deferred queue infrastructure. Auth currently uses first-party password sessions with signed HTTP-only cookies. PDF rendering lives in `packages/rendering` with a browser-safe preview entry and a server-only Playwright renderer entry. The template registry is the single source of truth for both browser preview and PDF rendering.
+Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, Stripe, and deferred queue infrastructure. Auth currently uses first-party password sessions with signed HTTP-only cookies. PDF rendering lives in `packages/rendering` with a browser-safe preview entry and a server-only Playwright renderer entry. The template registry is the single source of truth for both browser preview and PDF rendering. AI suggestions flow through a layered pipeline: Analysis → Suggestion → Review UI → Diff → Apply Engine → Persistence, with Job Match now using the same pipeline unchanged.
 
 ## Platform Status
 
-Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. The local environment has `DATABASE_URL` available to Playwright, and the database-backed signup/save/export flow passes locally.
+Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. Build passes with 136 AI tests and 2 domain tests.
 
 ## Blockers
 
@@ -68,14 +101,14 @@ Next.js app scaffold exists and production build passes locally. Prisma schema a
 
 ## Next Milestone
 
-Complete Sprint 3A — AI Analysis Engine with working analysis pipeline, suggestion UI, accept/reject flow, and quota enforcement.
+Complete Sprint 3D — Cover Letter Builder using existing template and PDF infrastructure.
 
 ## Last Build
 
 Local build verification passed on 2026-07-03:
 
 - `npm run build` — passes
-- `npm run test` — 97/97 AI tests + 2/2 domain tests pass
+- `npm run test` — 136/136 AI tests + 2/2 domain tests pass
 - `npm run typecheck` — passes
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 

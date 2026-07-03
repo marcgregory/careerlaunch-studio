@@ -165,3 +165,20 @@ export interface AnalysisQuota {
   limit: number;
   resetAt: string;
 }
+
+/**
+ * A persisted record of one analysis run.
+ * Maps to the AnalysisRun database table.
+ */
+export interface AnalysisRunRecord {
+  id: string;
+  resumeId: string;
+  resumeVersionId: string | null;
+  type: string;
+  provider: string;
+  promptVersion: string | null;
+  durationMs: number;
+  overallScore: number | null;
+  suggestionCount: number;
+  createdAt: Date;
+}

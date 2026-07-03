@@ -26,10 +26,10 @@ Last updated: 2026-07-03
 ## In Progress
 
 - Sprint 3B — Suggestion Preview / Diff UI. Word-diff component, review modal, two-step accept (review → apply), side-by-side before/after highlighting, cancel/escape dismiss.
+- Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume).
 
 ## Sprint Queue
 
-- Sprint 3C — Job Matching. Resume + Job Description → match %, missing keywords, missing skills, suggested improvements.
 - Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
 - Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.

@@ -10,7 +10,8 @@ export type SuggestionCategory =
   | "grammar"
   | "impact"
   | "keywords"
-  | "completeness";
+  | "completeness"
+  | "job-match";
 
 /** How important this suggestion is */
 export type SuggestionSeverity = "critical" | "major" | "medium" | "minor" | "info";

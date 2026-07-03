@@ -17,6 +17,7 @@ const categoryLabels: Record<SuggestionCategory, string> = {
   impact: "Impact & Metrics",
   keywords: "Keyword Match",
   completeness: "Completeness",
+  "job-match": "Job Match",
 };
 
 const severityOrder: SuggestionSeverity[] = ["critical", "major", "medium", "minor", "info"];

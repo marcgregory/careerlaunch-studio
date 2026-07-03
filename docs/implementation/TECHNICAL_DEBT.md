@@ -13,3 +13,4 @@ Last updated: 2026-07-03
 | Template originality review | High | Product must not copy competitor templates | IP and brand risk | Sprint 1 | Design/Founder |
 | Review npm audit findings | Medium | Current audit reports 5 dependency advisories after adding Prisma and Playwright | Dependency risk before public launch | Sprint 1 | Engineering |
 | Replace JSON roundtrip clone in Apply Engine | Low | `JSON.parse(JSON.stringify(...))` drops `Date`, `Map`, `Set`, `undefined`, `Infinity` | Data loss risk if ResumeDocument gains richer types | Sprint 4 | Engineering |
+| Move `suggestionToOperation` from web layer to AI package | Resolved | Migrated to `packages/ai/src/operations/factory.ts` — canonical location | — | — | Engineering |

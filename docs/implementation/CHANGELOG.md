@@ -2,6 +2,30 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.3.3-alpha - 2026-07-03
+
+### Added
+
+- **Sprint 3C — Job Match MVP** — paste-only job description comparison without URL scraping.
+- **Job Match engine** (`packages/ai/src/job-match/`): `normalize-job.ts` (tokenizer + 80-skill dictionary), `compare.ts` (resume vs JD skill comparison), `keywords.ts` (keyword overlap analysis), `score.ts` (match scoring 0–100), `index.ts` (orchestrator). Dictionary-based, deterministic, zero AI calls.
+- **`"job-match"` SuggestionCategory** — new category for `add_skill` operations from job matching.
+- **`createOperations(suggestion, resume)`** — upgraded operation factory that accepts resume context, enabling `add_skill` operations for job-match suggestions. Deprecated wrapper keeps `suggestionToOperation(suggestion)` working.
+- **`POST /api/resumes/:resumeId/job-match`** — authenticated API route that runs the match pipeline and persists an `AnalysisRun` with `type: "job_match"`.
+- **JobMatchPanel UI** (`apps/web/app/builder/_analysis/job-match-panel.tsx`) — self-contained panel with JD paste area, match score gauge, missing/present skill lists, suggestion cards, and Review → Diff → Apply integration. Integrated into the builder sidebar alongside HealthDashboard.
+- **39 new tests** — `normalize-job.test.ts`, `compare.test.ts`, `score.test.ts`, `keywords.test.ts`, `index.test.ts` integration, plus `createOperations` job-match tests. All 136 tests pass.
+- **AnalysisRun database table** — `Prisma` model persisted per analysis and per job-match run. Exported as `AnalysisRunRecord` type.
+- **Suggestion ID convention** — documented in CLAUDE.md Engineering Rules.
+
+### Changed
+
+- `suggestionToOperation()` moved from `apps/web/lib/` to canonical `packages/ai/src/operations/factory.ts`. Exported from `@careerlaunch/ai`. Web import updated. Tests now import from canonical package.
+- Analysis orchestrator deduplication — merged suggestions use `Map<string, Suggestion>` (AI overwrites static for same ID).
+- Empty dead code `apps/web/lib/suggestion-to-operation.ts` removed.
+
+### Fixed
+
+- **Duplicate suggestion IDs** — `suggestionId(category, code, path)` produces deterministic, path-scoped IDs. Both static and AI providers use the same factory.
+
 ## 0.1.0 - 2026-07-03
 
 ### Added
@@ -67,7 +91,7 @@ Sprint 3A.5 — Apply Engine + Acceptance Persistence. Tagged `v0.3.1-alpha`.
 - `applyChanges()` function — transforms operation arrays into resume mutations with full immutability and no side effects.
 - `ApplyError` class with operation context and reason for stale-target detection.
 - `POST /api/resumes/:resumeId/suggestions/apply` — authenticated API endpoint with auth, ownership check, apply engine, and database persistence.
-- `suggestionToOperation()` in `apps/web/lib/suggestion-to-operation.ts` — maps Suggestion objects to ApplyOperation arrays.
+- `suggestionToOperation()` in `packages/ai/src/operations/factory.ts` — canonical mapping from Suggestion objects to ApplyOperation arrays.
 - Apply wiring in `HealthDashboard` — accept button now calls the API with optimistic state and error handling.
 - `handleApplySuggestion` in `ResumeBuilder` — updates local resume state from API response so preview reflects changes.
 - 21 unit tests for `suggestionToOperation()` mapping.

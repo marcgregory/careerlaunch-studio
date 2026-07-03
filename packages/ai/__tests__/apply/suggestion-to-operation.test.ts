@@ -1,62 +1,20 @@
 import { describe, it, expect } from "vitest";
+import { createOperations, suggestionToOperation } from "../../src/operations/factory.js";
 import type { Suggestion } from "../../src/suggestion/types.js";
-import type { ApplyOperation } from "../../src/apply/types.js";
 
-/**
- * Re-implementation of suggestionToOperation for vitest testing.
- *
- * The canonical implementation lives in apps/web/lib/suggestion-to-operation.ts.
- * We re-implement here because vitest is only configured in packages/ai.
- * The logic is pure and deterministic — this is a mapping function test.
- */
-function suggestionToOperation(
-  suggestion: Suggestion,
-): ApplyOperation[] | null {
-  if (!suggestion.suggestedText) return null;
-
-  const { category, location, suggestedText } = suggestion;
-  const { entryId, field } = location;
-
-  // ── Summary ────────────────────────────────────────────────────
-  if (category === "summary") {
-    return [{ type: "replace_summary", summary: suggestedText }];
-  }
-
-  // ── Experience / Project bullets ───────────────────────────────
-  if (
-    (category === "experience" || category === "impact") &&
-    entryId &&
-    field &&
-    /^bullets\[(\d+)\]$/.test(field)
-  ) {
-    const bulletIndex = parseInt(field.match(/^bullets\[(\d+)\]$/)![1], 10);
-    return [
-      {
-        type: "replace_bullet",
-        entryId,
-        bulletIndex,
-        text: suggestedText,
-      },
-    ];
-  }
-
-  // ── Skills ─────────────────────────────────────────────────────
-  if (category === "skills" && field && /^skills\[(\d+)\]$/.test(field)) {
-    const index = parseInt(field.match(/^skills\[(\d+)\]$/)![1], 10);
-    return [{ type: "replace_skill", index, skill: suggestedText }];
-  }
-
-  // entryId-only skills are not supported (need index context)
-  if (category === "skills" && entryId && !field) {
-    return null;
-  }
-
-  return null;
-}
+/** Minimal resume stub for createOperations tests */
+const MINIMAL_RESUME = {
+  contact: { fullName: "", email: "", phone: "", location: "", website: "" },
+  summary: "",
+  sections: [],
+  skills: [],
+  certifications: [],
+  projects: [],
+};
 
 function makeSuggestion(overrides: Partial<Suggestion>): Suggestion {
   return {
-    id: "test-sug-1",
+    id: "test:sug:test-sug-1",
     category: "summary",
     severity: "major",
     title: "Test suggestion",
@@ -263,6 +221,67 @@ describe("suggestionToOperation", () => {
       );
 
       expect(result![0]).toMatchObject({ type: "replace_bullet", bulletIndex: 0 });
+    });
+  });
+
+  // ─── createOperations: job-match → add_skill ─────────────────────
+
+  describe("createOperations with job-match category", () => {
+    it("maps job-match category to add_skill operation", () => {
+      const result = createOperations(
+        makeSuggestion({
+          category: "job-match",
+          location: { sectionId: "skills" },
+          suggestedText: "React",
+        }),
+        MINIMAL_RESUME,
+      );
+
+      expect(result).toEqual([
+        { type: "add_skill", skill: "React" },
+      ]);
+    });
+
+    it("returns add_skill even when resume has an empty skills list", () => {
+      const result = createOperations(
+        makeSuggestion({
+          category: "job-match",
+          location: { sectionId: "skills" },
+          suggestedText: "TypeScript",
+        }),
+        MINIMAL_RESUME,
+      );
+
+      expect(result).toEqual([
+        { type: "add_skill", skill: "TypeScript" },
+      ]);
+    });
+
+    it("returns add_skill with multi-word skill names", () => {
+      const result = createOperations(
+        makeSuggestion({
+          category: "job-match",
+          location: { sectionId: "skills" },
+          suggestedText: "Machine Learning",
+        }),
+        MINIMAL_RESUME,
+      );
+
+      expect(result).toEqual([
+        { type: "add_skill", skill: "Machine Learning" },
+      ]);
+    });
+
+    it("returns null for job-match with null suggestedText", () => {
+      const result = createOperations(
+        makeSuggestion({
+          category: "job-match",
+          suggestedText: null,
+        }),
+        MINIMAL_RESUME,
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

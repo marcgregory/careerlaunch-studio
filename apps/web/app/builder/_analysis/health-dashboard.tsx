@@ -8,7 +8,7 @@ import { SuggestionDiffModal, type ApplyState } from "../../../components/sugges
 import type { AnalysisState, ClientSuggestion } from "./types";
 import type { SuggestionSeverity, SuggestionCategory } from "@careerlaunch/ai";
 import type { ApplyOperation } from "@careerlaunch/ai";
-import { suggestionToOperation } from "../../../lib/suggestion-to-operation";
+import { suggestionToOperation } from "@careerlaunch/ai";
 
 const categoryLabels: Record<SuggestionCategory, string> = {
   summary: "Summary",
@@ -22,6 +22,7 @@ const categoryLabels: Record<SuggestionCategory, string> = {
   impact: "Impact & Metrics",
   keywords: "Keyword Match",
   completeness: "Completeness",
+  "job-match": "Job Match",
 };
 
 const severityOrder: SuggestionSeverity[] = ["critical", "major", "medium", "minor", "info"];

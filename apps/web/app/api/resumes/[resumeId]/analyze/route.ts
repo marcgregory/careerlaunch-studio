@@ -16,6 +16,8 @@ async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
  *
  * Runs the full analysis pipeline on a resume and returns the analysis result.
  * Analysis is read-only — the resume document is never modified.
+ * Each run is persisted as an AnalysisRun record for reproducibility,
+ * analytics, and debugging.
  *
  * Query parameters:
  *   - jobDescription (optional): URL-encoded job description for keyword matching
@@ -37,6 +39,19 @@ export async function GET(_request: Request, context: { params: Promise<{ resume
   try {
     const resume = fromStoredResume(record);
     const result = await analyzeResume(resume);
+
+    // Persist the analysis run for audit, reproducibility, and history
+    await prisma.analysisRun.create({
+      data: {
+        resumeId,
+        type: "full",
+        provider: result.metadata.providersUsed.join(","),
+        promptVersion: null,
+        durationMs: result.metadata.duration,
+        overallScore: result.overallScore,
+        suggestionCount: result.suggestions.length,
+      },
+    });
 
     return Response.json({
       result: {

@@ -65,6 +65,16 @@ Shared validation schemas, template renderers, domain types, and UI primitives b
 
 Keep each document in its lane: PRD for behavior, scope for boundaries, architecture for design, build plan for execution, roadmap for backlog, changelog for history, project status for now, technical debt for cleanup, release plan for done.
 
+### Suggestion ID Rule
+
+Suggestion IDs must be deterministic and path-scoped. Every `Suggestion.id` is produced by `suggestionId(category, code, path)` from `packages/ai/src/suggestion/types.ts`. Format:
+
+```
+category:code:path
+```
+
+Where `path` is the resume section or entry ID the suggestion targets. This keeps IDs stable across re-analysis, enables deduplication in the orchestrator, and avoids React key conflicts in the UI.
+
 ### Testing Rules
 
 Each sprint must include focused unit tests, integration tests for persistence and permissions, Playwright checks for core flows, accessibility checks for builder screens, and build/lint verification.
