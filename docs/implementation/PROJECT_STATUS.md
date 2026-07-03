@@ -4,7 +4,11 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder is active.
+Sprint 3A — AI Analysis Engine is active. Read-only analysis: ATS scoring, grammar, impact statements, keyword density, completeness. Suggestions flow through accept/reject. Static analysis runs without AI. Provider abstraction. Cost controls and quota enforcement.
+
+### Delivered This Sprint
+
+- `docs/architecture/AI.md` — comprehensive AI architecture document covering design principles, analysis pipeline, suggestion schema, provider abstraction, prompt architecture, response validation, caching, cost controls, privacy, and success criteria.
 
 ## Completed
 
@@ -38,7 +42,7 @@ Next.js app scaffold exists and production build passes locally. Prisma schema a
 
 ## Next Milestone
 
-Complete Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
+Complete Sprint 3A — AI Analysis Engine with working analysis pipeline, suggestion UI, accept/reject flow, and quota enforcement.
 
 ## Last Build
 

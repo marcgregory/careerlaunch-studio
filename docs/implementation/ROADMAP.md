@@ -23,13 +23,15 @@ Last updated: 2026-07-03
 
 ## In Progress
 
-- Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
+- Sprint 3A — AI Analysis Engine (read-only). ATS scoring, grammar, impact statements, keyword density, completeness checks. Suggestions flow through accept/reject. Static analysis runs without AI. Provider abstraction. Cost controls and quota enforcement.
 
 ## Sprint Queue
 
-- Sprint 4 — AI Rewrite Assistance and Role Tailoring.
-- Sprint 5 — Import Existing Resume and Version Duplication.
-- Sprint 6 — Cover Letter Builder and Paid Export Gates.
+- Sprint 3B — AI Rewrite Assistance. Bullet rewrites, summary improvements, headline tuning, shorten/expand. Every suggestion requires explicit user approval.
+- Sprint 3C — Job Matching. Resume + Job Description → match %, missing keywords, missing skills, suggested improvements.
+- Sprint 3D — Cover Letter Builder. Reuses resume, job description, template engine, and PDF renderer.
+- Sprint 4 — Import Existing Resume and Version Duplication.
+- Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 
 ## Future
 

@@ -172,10 +172,14 @@ Deploy web app to Vercel or Render, database to Neon/Supabase, assets to object 
 
 Keyboard navigable builder, semantic form labels, focus management for dialogs, accessible color contrast, readable resume preview controls, and automated axe checks for core flows.
 
+## AI Architecture
+
+See [AI.md](AI.md) for the full AI architecture, including provider abstraction, analysis pipeline, suggestion schema, prompt architecture, response validation, cost controls, and privacy design.
+
 ## Architecture Risks
 
 - PDF fidelity may require deeper rendering investment than expected.
 - JSONB document storage can become limiting for analytics if not revisited.
-- AI usage can create cost spikes without quotas.
+- AI usage can create cost spikes without quotas — see [AI.md](AI.md#cost-controls) for controls.
 - Subscription state must be carefully synchronized with Stripe webhooks.
 
