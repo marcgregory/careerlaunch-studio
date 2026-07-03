@@ -10,6 +10,7 @@
         "test:e2e": "playwright test"
     },
     "dependencies": {
+        "@careerlaunch/ai": "*",
         "@careerlaunch/domain": "*",
         "@careerlaunch/rendering": "*",
         "@careerlaunch/ui": "*",

@@ -27,6 +27,9 @@
                                           "@careerlaunch/ui":  [
                                                                    "packages/ui/src/index.ts"
                                                                ],
+                                          "@careerlaunch/ai": [
+                                                                  "packages/ai/src/index.ts"
+                                                              ],
                                           "@careerlaunch/rendering/pdf":  [
                                                                               "packages/rendering/src/pdf.tsx"
                                                                           ]
