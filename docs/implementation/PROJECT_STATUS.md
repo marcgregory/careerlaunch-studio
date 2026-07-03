@@ -4,17 +4,29 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 3A — AI Analysis Engine is active. Read-only analysis: ATS scoring, grammar, impact statements, keyword density, completeness. Suggestions flow through accept/reject. Static analysis runs without AI. Provider abstraction. Cost controls and quota enforcement.
+Sprint 3A — AI Analysis Engine is complete. Tagged `v0.3.0-alpha`.
 
 ### Delivered This Sprint
 
+**Architecture & Package:**
 - `docs/architecture/AI.md` — comprehensive AI architecture document covering design principles, analysis pipeline, suggestion schema, provider abstraction, prompt architecture, response validation, caching, cost controls, privacy, and success criteria.
 - `packages/ai` — new package with AI provider abstraction, registry, MockProvider, resume normalizer, static analysis engine (20+ deterministic checks), analysis orchestrator, and scoring engine. 49 unit tests.
 - `GET /api/resumes/:resumeId/analyze` — authenticated, read-only analysis endpoint.
-- Builder preview panel — now sticky (`sticky top-6 self-start`) with `max-h-[calc(100vh-6rem)]` and inner scroll, keeping the resume visible while editing.
+
+**UI:**
+- Builder preview panel — now sticky (`sticky top-6 self-start`) with `max-h-[calc(100vh-8rem)]` and inner scroll, keeping the resume visible while editing.
 - `HealthDashboard` component — interactive resume health widget with ScoreGauge (SVG ring, colour-coded 0–100), category breakdown, and "Analyze Resume" button with idle/loading/success/error states.
-- `SuggestionsList` component — suggestions grouped by severity (critical → info) with expand/collapse detail, accept/dismiss buttons, and resolved status tags. All accept/dismiss is client-side UI state only — no auto-application to the resume.
+- `SuggestionsList` component — suggestions grouped by severity (critical → info) with expand/collapse detail, accept/dismiss buttons, and resolved status tags. All accept/dismiss is client-side UI state only.
 - `SuggestionCard` component — individual suggestion with severity badge, source label (`Auto`/`AI`), target text block, and suggested text block.
+
+**User assessment (tech lead review):**
+- AI Package structure: 10/10
+- Analysis Engine (static → AI → merge → score → suggestions): 10/10
+- Health Dashboard (analyze → review → accept — no auto-mutation): 10/10
+
+### Next Up
+
+Build the **Apply Engine** — a pure-function layer in `packages/ai/apply/` that transforms suggestions into resume mutations. No React, no Prisma, no HTTP. Testable with 100+ unit tests. Only after that: the apply API endpoint and database persistence.
 
 ## Completed
 
