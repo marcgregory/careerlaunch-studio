@@ -15,6 +15,7 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry"
   },
+  snapshotPathTemplate: "{testDir}/__snapshots__/{projectName}/{testFilePath}/{arg}{ext}",
   webServer: {
     command: "npm run dev --workspace @careerlaunch/web",
     url: "http://localhost:3000",

@@ -2,6 +2,7 @@ export type ResumeDocument = {
   id: string;
   title: string;
   targetRole: string;
+  templateId: ResumeTemplateId;
   contact: ContactInfo;
   summary: string;
   sectionOrder: ResumeSectionId[];
@@ -11,6 +12,8 @@ export type ResumeDocument = {
   certifications: string[];
   projects: ProjectItem[];
 };
+
+export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
 
 export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "projects";
 
@@ -72,6 +75,7 @@ export const sampleResume: ResumeDocument = {
   id: "sample-resume",
   title: "Career Switch Resume",
   targetRole: "Customer Success Manager",
+  templateId: "modern",
   contact: {
     fullName: "Jordan Lee",
     email: "jordan.lee@email.com",
@@ -210,4 +214,3 @@ function countMetricBullets(resume: ResumeDocument): number {
     .flatMap((item) => item.bullets)
     .filter((bullet) => /\d|%|\$|million|thousand|hours|weeks|months/i.test(bullet)).length;
 }
-

@@ -9,13 +9,14 @@ import {
   Download,
   Gauge,
   GripVertical,
+  Palette,
   Plus,
   RotateCcw,
   Save,
   Sparkles,
   Trash2
 } from "lucide-react";
-import { ResumePreview } from "@careerlaunch/rendering";
+import { ResumePreview, resumeTemplates } from "@careerlaunch/rendering";
 import {
   defaultSectionOrder,
   scoreResume,
@@ -23,7 +24,8 @@ import {
   type ExperienceItem,
   type ProjectItem,
   type ResumeDocument,
-  type ResumeSectionId
+  type ResumeSectionId,
+  type ResumeTemplateId
 } from "@careerlaunch/domain";
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 
@@ -266,6 +268,16 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
             </div>
           </Panel>
 
+          <Panel
+            title="Template"
+            action={
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 py-1.5 text-xs font-black text-[#123c3a]">
+                <Palette size={15} /> {resumeTemplates.length} styles
+              </span>
+            }
+          >
+            <TemplateGallery selectedTemplateId={resume.templateId} onSelect={(templateId) => patchResume({ templateId })} />
+          </Panel>
           <Panel title="Contact">
             <div className="space-y-3">
               <Field label="Full name" value={resume.contact.fullName} error={validation.fullName} onChange={(value) => updateContact("fullName", value)} />
@@ -430,6 +442,62 @@ function Panel({ title, action, children }: { title: string; action?: React.Reac
   );
 }
 
+function TemplateGallery({ selectedTemplateId, onSelect }: { selectedTemplateId: ResumeTemplateId; onSelect: (templateId: ResumeTemplateId) => void }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {resumeTemplates.map((template) => {
+        const selected = template.id === selectedTemplateId;
+        return (
+          <button
+            key={template.id}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => onSelect(template.id)}
+            className={`min-h-[12rem] rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
+              selected
+                ? "border-[#123c3a] bg-[#f8f8f5] shadow-[0_0_0_3px]"
+                : "border-[#123c3a]/10 bg-white"
+            }`}
+            style={{
+              ...(selected ? { boxShadow: `0 0 0 3px ${template.accentColor}88` } : {}),
+              ...(selected ? { borderColor: template.accentColor } : {}),
+            }}
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex gap-1.5" aria-hidden="true">
+                {template.swatches.map((swatch) => (
+                  <span key={swatch} className="h-4 w-4 rounded-full border border-black/10" style={{ backgroundColor: swatch }} />
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                {template.premium && (
+                  <span className="rounded bg-[#f59e0b] px-1.5 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.08em] text-white">
+                    Premium
+                  </span>
+                )}
+                <span className="rounded-lg border border-[#123c3a]/10 px-2 py-1 text-[0.65rem] font-black uppercase tracking-[0.12em] text-[#4b4b4b]">
+                  {template.tone}
+                </span>
+              </div>
+            </div>
+            <div className="h-20 rounded-xl border border-[#123c3a]/10 bg-white p-3">
+              <div className="h-2 w-2/3 rounded-full" style={{ backgroundColor: template.swatches[0] }} />
+              <div className="mt-3 h-1.5 w-full rounded-full bg-[#123c3a]/15" />
+              <div className="mt-2 h-1.5 w-5/6 rounded-full bg-[#123c3a]/15" />
+              <div className="mt-3 flex gap-1.5">
+                <span className="h-2 w-10 rounded-full" style={{ backgroundColor: template.swatches[1] }} />
+                <span className="h-2 w-8 rounded-full bg-[#123c3a]/15" />
+                <span className="h-2 w-12 rounded-full bg-[#123c3a]/15" />
+              </div>
+            </div>
+            <h3 className="mt-3 text-sm font-black text-[#123c3a]">{template.name}</h3>
+            <p className="mt-1 text-xs font-medium leading-5 text-[#4b4b4b]">{template.description}</p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 function Field({ label, value, error, onChange }: { label: string; value: string; error?: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
@@ -566,9 +634,13 @@ function ErrorText({ message }: { message?: string }) {
 }
 
 function normalizeResume(resume: ResumeDocument): ResumeDocument {
-  return { ...resume, sectionOrder: normalizeSectionOrder(resume.sectionOrder) };
+  return { ...resume, templateId: normalizeTemplateId(resume.templateId), sectionOrder: normalizeSectionOrder(resume.sectionOrder) };
 }
 
+function normalizeTemplateId(value: ResumeTemplateId | undefined): ResumeTemplateId {
+  const template = resumeTemplates.find((item) => item.id === value);
+  return template?.id ?? "modern";
+}
 function normalizeSectionOrder(value: ResumeSectionId[] | undefined): ResumeSectionId[] {
   const ordered = Array.isArray(value) ? value.filter((section): section is ResumeSectionId => defaultSectionOrder.includes(section)) : [];
   return [...ordered, ...defaultSectionOrder.filter((section) => !ordered.includes(section))];
