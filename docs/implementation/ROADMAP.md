@@ -11,13 +11,14 @@ Last updated: 2026-07-03
 - Initial Prisma schema created.
 - First-party email/password auth, protected routes, and Prisma-backed resume persistence implemented.
 - Real PDF export implemented with Playwright print-to-PDF and ownership-checked download responses.
-- Database-backed Playwright happy path now verifies signup, save, and real PDF export bytes.
+- Builder completeness delivered for all core resume sections, including add/remove/reorder flows, empty states, validation, autosave state, and reset/export recovery states.
+- First original resume template polished across live preview and PDF export.
+- Release-closeout QA completed for desktop/mobile builder behavior, accessibility basics, preview/PDF parity, and full local verification.
+- Database-backed Playwright coverage verifies signup, save, real PDF export bytes, repeated PDF render stability, and builder section/item ordering persistence.
 
 ## In Progress
 
-- Builder completeness: finish guided editing coverage for all resume sections, empty states, validation, and recovery states.
-- First original resume template polish for desktop and mobile.
-- Accessibility checks for the builder flow.
+- Sprint 2 planning: Template Library and Resume Checker Depth.
 
 ## Sprint Queue
 

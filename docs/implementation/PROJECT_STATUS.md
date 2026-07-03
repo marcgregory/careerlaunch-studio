@@ -4,17 +4,24 @@ Last updated: 2026-07-03
 
 ## Current Sprint
 
-Sprint 1 - Resume Builder Vertical Slice.
+Sprint 1 - Resume Builder Vertical Slice is release-complete.
 
 ## Progress
 
-Sprint 1 is in progress. The first local vertical slice has been upgraded with first-party email/password auth, protected dashboard and builder routes, Prisma-backed resume create/edit/save code paths, ownership-checked resume APIs, and real ownership-checked PDF export downloads.
+Sprint 1 is complete for the MVP preview release bar. The local vertical slice includes first-party email/password auth, protected dashboard and builder routes, Prisma-backed resume create/edit/save code paths, ownership-checked resume APIs, a complete multi-section builder, validation and recovery states, live preview, section ordering, and real ownership-checked PDF export downloads.
 
-PDF export is now real using Playwright print-to-PDF.
+PDF export is implemented using Playwright print-to-PDF through the server-only rendering entry.
+
+## Closeout QA
+
+- Builder desktop/mobile pass completed against the responsive builder layout, sticky action header, editor panels, and live preview surface.
+- Accessibility pass completed for the release scope: labels are present on form controls, icon-only controls expose accessible names, status text uses `aria-live`, protected routes redirect anonymous users, and reduced-motion handling exists globally.
+- Preview and PDF polish pass completed for the first original resume template, including section ordering parity between browser preview and generated PDF.
+- `next-env.d.ts` was restored to the production routes import after dev/e2e runs.
 
 ## Focus
 
-Finish builder completeness, polish the first original resume template for desktop and mobile, and add accessibility checks before marking Sprint 1 complete. Template Library / deeper resume checker work is the next major product area after Sprint 1.
+Sprint 1 is closed. Do not add more Sprint 1 product scope unless a release blocker appears. Next focus is Sprint 2: Template Library and deeper resume checker depth.
 
 ## Architecture Status
 
@@ -22,20 +29,26 @@ Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL
 
 ## Platform Status
 
-Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. The local environment now has `DATABASE_URL` available to Playwright, and the database-backed signup/save/export flow passes locally.
+Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. The local environment has `DATABASE_URL` available to Playwright, and the database-backed signup/save/export flow passes locally.
 
 ## Blockers
 
 - Production PostgreSQL must be provisioned and `DATABASE_URL` must be configured for deployed environments.
 - Initial Prisma migration must be applied to staging and production databases.
-- First original template direction must be designed and polished.
 - Legal review is needed before paid launch.
 - `npm audit` reports 5 dependency advisories after adding Prisma and Playwright; review before launch unless a high or critical advisory affects runtime risk.
 
 ## Next Milestone
 
-MVP Preview Release after Sprint 1.
+Sprint 2 - Template Library and Resume Checker Depth.
 
 ## Last Build
 
-Local build passed on 2026-07-03 with `npm run build` using Next webpack build mode. Local tests, typecheck, and Playwright passed with `npm run test`, `npm run typecheck`, and `npm run test:e2e --workspace @careerlaunch/web`. Playwright covered anonymous auth protection and the database-backed signup/save/real-PDF-export happy path.
+Local release verification passed on 2026-07-03:
+
+- `npm run build`
+- `npm run test`
+- `npm run typecheck`
+- `npm run test:e2e --workspace @careerlaunch/web`
+
+Playwright covered anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, and builder section/item ordering persistence.

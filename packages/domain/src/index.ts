@@ -4,12 +4,24 @@ export type ResumeDocument = {
   targetRole: string;
   contact: ContactInfo;
   summary: string;
+  sectionOrder: ResumeSectionId[];
   experience: ExperienceItem[];
   education: EducationItem[];
   skills: string[];
   certifications: string[];
   projects: ProjectItem[];
 };
+
+export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "projects";
+
+export const defaultSectionOrder: ResumeSectionId[] = [
+  "summary",
+  "experience",
+  "education",
+  "skills",
+  "certifications",
+  "projects"
+];
 
 export type ContactInfo = {
   fullName: string;
@@ -69,6 +81,7 @@ export const sampleResume: ResumeDocument = {
   },
   summary:
     "Customer-focused operations specialist with 6 years of experience improving service workflows, training frontline teams, and translating customer feedback into measurable retention gains.",
+  sectionOrder: defaultSectionOrder,
   experience: [
     {
       id: "exp-1",

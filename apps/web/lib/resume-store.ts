@@ -1,4 +1,4 @@
-import { sampleResume, type ResumeDocument } from "@careerlaunch/domain";
+import { defaultSectionOrder, sampleResume, type ResumeDocument, type ResumeSectionId } from "@careerlaunch/domain";
 import type { Prisma } from "@prisma/client";
 
 export function createStarterResume(): ResumeDocument {
@@ -6,6 +6,7 @@ export function createStarterResume(): ResumeDocument {
     ...sampleResume,
     id: "new-resume",
     title: sampleResume.title,
+    sectionOrder: [...sampleResume.sectionOrder],
     experience: sampleResume.experience.map((item) => ({ ...item, bullets: [...item.bullets] })),
     education: sampleResume.education.map((item) => ({ ...item })),
     skills: [...sampleResume.skills],
@@ -21,6 +22,7 @@ export function toStoredResume(resume: ResumeDocument): Prisma.InputJsonObject {
     targetRole: resume.targetRole,
     contact: resume.contact,
     summary: resume.summary,
+    sectionOrder: normalizeSectionOrder(resume.sectionOrder),
     experience: resume.experience,
     education: resume.education,
     skills: resume.skills,
@@ -36,7 +38,8 @@ export function fromStoredResume(record: { id: string; title: string; targetRole
     ...body,
     id: record.id,
     title: record.title,
-    targetRole: record.targetRole ?? body.targetRole ?? ""
+    targetRole: record.targetRole ?? body.targetRole ?? "",
+    sectionOrder: normalizeSectionOrder(body.sectionOrder)
   };
 }
 
@@ -51,10 +54,18 @@ export function parseResumePayload(value: unknown): ResumeDocument {
     ...createStarterResume(),
     ...resume,
     contact: { ...createStarterResume().contact, ...resume.contact },
+    sectionOrder: normalizeSectionOrder(resume.sectionOrder),
     experience: Array.isArray(resume.experience) ? resume.experience : [],
     education: Array.isArray(resume.education) ? resume.education : [],
     skills: Array.isArray(resume.skills) ? resume.skills : [],
     certifications: Array.isArray(resume.certifications) ? resume.certifications : [],
     projects: Array.isArray(resume.projects) ? resume.projects : []
   };
+}
+
+function normalizeSectionOrder(value: unknown): ResumeSectionId[] {
+  if (!Array.isArray(value)) return [...defaultSectionOrder];
+  const allowed = new Set<ResumeSectionId>(defaultSectionOrder);
+  const ordered = value.filter((section): section is ResumeSectionId => allowed.has(section as ResumeSectionId));
+  return [...ordered, ...defaultSectionOrder.filter((section) => !ordered.includes(section))];
 }
