@@ -79,6 +79,7 @@ describe("POST /api/billing/preview-upgrade", () => {
       plan: "PROFESSIONAL",
       stripeCustomerId: "cus_123",
       stripeSubscriptionId: "sub_123",
+      status: "ACTIVE",
     } as never);
     mockStripeInstance.prices.retrieve.mockResolvedValue({
       id: "price_enterprise_mock",
@@ -130,6 +131,35 @@ describe("POST /api/billing/preview-upgrade", () => {
         }),
       }),
     );
+  });
+
+  it("falls back to a checkout-style preview for stale local subscriptions", async () => {
+    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+      userId: "user_1",
+      plan: "PROFESSIONAL",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: "sub_canceled",
+      status: "CANCELED",
+    } as never);
+    mockStripeInstance.prices.retrieve.mockResolvedValue({
+      id: "price_enterprise_mock",
+      unit_amount: 4900,
+      currency: "usd",
+    });
+
+    const { POST } = await import("../preview-upgrade/route");
+    const res = await POST(new Request("http://localhost:3000/api/billing/preview-upgrade", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: "enterprise" }),
+    }));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.todayCharge).toBe(49);
+    expect(json.lines).toEqual([{ label: "Enterprise subscription", amount: 49 }]);
+    expect(mockStripeInstance.subscriptions.retrieve).not.toHaveBeenCalled();
+    expect(mockStripeInstance.invoices.createPreview).not.toHaveBeenCalled();
   });
 
   it("rejects non-upgrade previews", async () => {

@@ -22,6 +22,29 @@ function planLabel(plan: string): string {
   return plan.charAt(0).toUpperCase() + plan.slice(1);
 }
 
+function newSubscriptionPreview({
+  currentPlan,
+  currency,
+  nextRenewal,
+  plan,
+}: {
+  currentPlan: string;
+  currency: string;
+  nextRenewal: number;
+  plan: string;
+}) {
+  return {
+    todayCharge: nextRenewal,
+    currency,
+    currentPlan: planLabel(currentPlan),
+    newPlan: planLabel(plan),
+    nextRenewal,
+    renewalDate: null,
+    paymentMethod: null,
+    lines: [{ label: `${planLabel(plan)} subscription`, amount: nextRenewal }] satisfies PreviewLine[],
+  };
+}
+
 /**
  * POST /api/billing/preview-upgrade
  *
@@ -70,23 +93,24 @@ export async function POST(request: Request) {
     const price = await stripe.prices.retrieve(priceId);
     const nextRenewal = centsToMajor(price.unit_amount);
     const currency = price.currency.toUpperCase();
+    const fallbackPreview = newSubscriptionPreview({ currentPlan, currency, nextRenewal, plan });
 
-    if (!subscription?.stripeCustomerId || !subscription.stripeSubscriptionId) {
-      return Response.json({
-        todayCharge: nextRenewal,
-        currency,
-        currentPlan: planLabel(currentPlan),
-        newPlan: planLabel(plan),
-        nextRenewal,
-        renewalDate: null,
-        paymentMethod: null,
-        lines: [{ label: `${planLabel(plan)} subscription`, amount: nextRenewal }] satisfies PreviewLine[],
-      });
+    if (
+      !subscription?.stripeCustomerId ||
+      !subscription.stripeSubscriptionId ||
+      (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")
+    ) {
+      return Response.json(fallbackPreview);
     }
 
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
     );
+
+    if (stripeSubscription.status !== "active" && stripeSubscription.status !== "trialing") {
+      return Response.json(fallbackPreview);
+    }
+
     const subscriptionItem = stripeSubscription.items.data[0];
     if (!subscriptionItem?.id) {
       throw new Error("No subscription item found for upgrade preview");
@@ -103,11 +127,19 @@ export async function POST(request: Request) {
       },
     });
 
-    const paymentMethod = await getDefaultPaymentMethodSummary(
-      stripe,
-      stripeSubscription,
-      subscription.stripeCustomerId,
-    );
+    let paymentMethod = null;
+    try {
+      paymentMethod = await getDefaultPaymentMethodSummary(
+        stripe,
+        stripeSubscription,
+        subscription.stripeCustomerId,
+      );
+    } catch (error) {
+      reportError(error, "billing-preview-payment-method", {
+        route: "billing-preview-upgrade",
+        userId: user.id,
+      });
+    }
 
     return Response.json({
       todayCharge: centsToMajor(preview.amount_due),
