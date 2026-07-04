@@ -6,6 +6,7 @@ const mockStripeInstance = {
   },
   subscriptionSchedules: {
     create: vi.fn(),
+    retrieve: vi.fn(),
     update: vi.fn(),
   },
 };
@@ -50,16 +51,21 @@ describe("POST /api/billing/schedule-downgrade", () => {
     mockStripeInstance.subscriptions.retrieve.mockResolvedValue({
       id: "sub_123",
       status: "active",
-      current_period_end: 1785801600,
+      schedule: null,
       items: {
         data: [{
           id: "si_123",
           quantity: 1,
+          current_period_start: 1783123200,
+          current_period_end: 1785801600,
           price: { id: "price_enterprise_mock" },
         }],
       },
     });
-    mockStripeInstance.subscriptionSchedules.create.mockResolvedValue({ id: "sched_123" });
+    mockStripeInstance.subscriptionSchedules.create.mockResolvedValue({
+      id: "sched_123",
+      current_phase: { start_date: 1783123200, end_date: 1785801600 },
+    });
     mockStripeInstance.subscriptionSchedules.update.mockResolvedValue({ id: "sched_123" });
 
     const { POST } = await import("../schedule-downgrade/route");
@@ -73,6 +79,9 @@ describe("POST /api/billing/schedule-downgrade", () => {
     expect(res.status).toBe(200);
     expect(json.currentPlan).toBe("Enterprise");
     expect(json.scheduledPlan).toBe("Professional");
+    expect(mockStripeInstance.subscriptions.retrieve).toHaveBeenCalledWith("sub_123", {
+      expand: ["schedule"],
+    });
     expect(mockStripeInstance.subscriptionSchedules.create).toHaveBeenCalledWith({
       from_subscription: "sub_123",
     });
@@ -84,15 +93,59 @@ describe("POST /api/billing/schedule-downgrade", () => {
         phases: [
           {
             items: [{ price: "price_enterprise_mock", quantity: 1 }],
-            start_date: "now",
+            start_date: 1783123200,
             end_date: 1785801600,
+            proration_behavior: "none",
           },
           {
             items: [{ price: "price_professional_mock", quantity: 1 }],
             start_date: 1785801600,
+            proration_behavior: "none",
           },
         ],
       }),
+    );
+  });
+
+  it("reuses an existing Stripe subscription schedule", async () => {
+    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+      userId: "user_1",
+      plan: "ENTERPRISE",
+      stripeSubscriptionId: "sub_123",
+    } as never);
+    mockStripeInstance.subscriptions.retrieve.mockResolvedValue({
+      id: "sub_123",
+      status: "active",
+      schedule: "sched_existing",
+      items: {
+        data: [{
+          id: "si_123",
+          quantity: 1,
+          current_period_start: 1783123200,
+          current_period_end: 1785801600,
+          price: { id: "price_enterprise_mock" },
+        }],
+      },
+    });
+    mockStripeInstance.subscriptionSchedules.retrieve.mockResolvedValue({
+      id: "sched_existing",
+      current_phase: { start_date: 1783123200, end_date: 1785801600 },
+    });
+    mockStripeInstance.subscriptionSchedules.update.mockResolvedValue({ id: "sched_existing" });
+
+    const { POST } = await import("../schedule-downgrade/route");
+    const res = await POST(new Request("http://localhost:3000/api/billing/schedule-downgrade", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: "professional" }),
+    }));
+
+    expect(res.status).toBe(200);
+    expect(mockStripeInstance.subscriptionSchedules.create).not.toHaveBeenCalled();
+    expect(mockStripeInstance.subscriptionSchedules.retrieve).toHaveBeenCalledWith("sched_existing");
+    expect(mockStripeInstance.subscriptionSchedules.update).toHaveBeenCalledWith(
+      "sched_existing",
+      expect.any(Object),
     );
   });
 

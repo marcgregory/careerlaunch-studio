@@ -3,6 +3,7 @@ import {
   getPriceIdForPlan,
   getSubscriptionPeriodEnd,
   getSubscriptionPeriodEndTimestamp,
+  getSubscriptionPeriodStartTimestamp,
   isPaidPlan,
   normalizePlan,
   PLAN_RANK,
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
     const stripe = getStripe();
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
+      { expand: ["schedule"] },
     );
 
     if (stripeSubscription.status !== "active" && stripeSubscription.status !== "trialing") {
@@ -80,29 +82,38 @@ export async function POST(request: Request) {
     }
 
     const item = stripeSubscription.items.data[0];
+    const currentPeriodStart = getSubscriptionPeriodStartTimestamp(stripeSubscription);
     const currentPeriodEnd = getSubscriptionPeriodEndTimestamp(stripeSubscription);
-    if (!item || !currentPeriodEnd) {
-      throw new Error("Subscription is missing item or period end");
+    if (!item || !currentPeriodStart || !currentPeriodEnd) {
+      throw new Error("Subscription is missing item or billing period");
     }
 
-    const schedule = await stripe.subscriptionSchedules.create({
-      from_subscription: subscription.stripeSubscriptionId,
-    });
+    const existingSchedule = stripeSubscription.schedule;
+    const schedule = typeof existingSchedule === "string"
+      ? await stripe.subscriptionSchedules.retrieve(existingSchedule)
+      : existingSchedule
+        ? existingSchedule
+        : await stripe.subscriptionSchedules.create({
+            from_subscription: subscription.stripeSubscriptionId,
+          });
+
+    const currentPhaseStart = schedule.current_phase?.start_date ?? currentPeriodStart;
+    const currentPriceId = typeof item.price === "string" ? item.price : item.price.id;
+    const quantity = item.quantity ?? 1;
 
     await stripe.subscriptionSchedules.update(schedule.id, {
       end_behavior: "release",
       phases: [
         {
-          items: [{
-            price: typeof item.price === "string" ? item.price : item.price.id,
-            quantity: item.quantity ?? 1,
-          }],
-          start_date: "now",
+          items: [{ price: currentPriceId, quantity }],
+          start_date: currentPhaseStart,
           end_date: currentPeriodEnd,
+          proration_behavior: "none",
         },
         {
-          items: [{ price: newPriceId, quantity: item.quantity ?? 1 }],
+          items: [{ price: newPriceId, quantity }],
           start_date: currentPeriodEnd,
+          proration_behavior: "none",
         },
       ],
       proration_behavior: "none",

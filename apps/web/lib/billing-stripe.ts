@@ -62,6 +62,13 @@ export function getSubscriptionPeriodEndTimestamp(subscription: Stripe.Subscript
   return itemValue ?? null;
 }
 
+export function getSubscriptionPeriodStartTimestamp(subscription: Stripe.Subscription): number | null {
+  const legacyValue = (subscription as unknown as { current_period_start?: number }).current_period_start;
+  if (legacyValue) return legacyValue;
+
+  const itemValue = subscription.items.data[0]?.current_period_start;
+  return itemValue ?? null;
+}
 function summarizePaymentMethod(value: unknown): PaymentMethodSummary {
   if (!value || typeof value === "string") return null;
 
