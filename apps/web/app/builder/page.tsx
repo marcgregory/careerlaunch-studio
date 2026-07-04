@@ -4,6 +4,7 @@ import { SentryErrorBoundary } from "../../components/sentry-error-boundary";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { createStarterResume, fromStoredResume, toStoredResume } from "../../lib/resume-store";
+import { can } from "../../lib/entitlements";
 
 type BuilderPageProps = {
   searchParams?: Promise<{ resumeId?: string }>;
@@ -14,6 +15,12 @@ export default async function BuilderPage({ searchParams }: BuilderPageProps) {
   const params = searchParams ? await searchParams : {};
 
   if (!params.resumeId) {
+    // Entitlement check: resume limit
+    const allowed = await can(user.id, "resume_limit");
+    if (!allowed) {
+      redirect("/billing?reason=resume_limit");
+    }
+
     const starter = createStarterResume();
     const created = await prisma.resumeDocument.create({
       data: {

@@ -1,10 +1,11 @@
-import { renderResumePdf, resumeToHtml } from "@careerlaunch/rendering/pdf";
+import { renderResumePdf, resumeToHtml, type PdfOptions } from "@careerlaunch/rendering/pdf";
 import { requireApiUser } from "../../../../lib/auth";
 import { prisma } from "../../../../lib/prisma";
 import { fromStoredResume } from "../../../../lib/resume-store";
 import { getRequestId } from "../../../../lib/request-id";
 import { reportError } from "../../../../lib/error-reporting";
 import { checkRateLimit } from "../../../../lib/rate-limit";
+import { canExportPdf, getPdfExportKind } from "../../../../lib/entitlements";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
@@ -25,6 +26,15 @@ export async function POST(request: Request) {
           "X-RateLimit-Remaining": "0",
         },
       },
+    );
+  }
+
+  // Entitlement check: monthly export limit
+  const exportCheck = await canExportPdf(user.id);
+  if (!exportCheck.allowed) {
+    return Response.json(
+      { error: "Monthly export limit reached. Upgrade to Professional for unlimited exports.", upgradeUrl: "/billing" },
+      { status: 403 },
     );
   }
 
@@ -49,11 +59,15 @@ export async function POST(request: Request) {
     const resume = fromStoredResume(record);
     const filename = `${toSafeFilename(resume.title || "resume")}.pdf`;
 
+    // Determine watermark based on plan
+    const exportKind = await getPdfExportKind(user.id);
+    const pdfOptions: PdfOptions = { watermarked: exportKind === "watermarked" };
+
     let pdf: ArrayBuffer;
 
     if (RENDERER_URL) {
       // Production: proxy to the external Docker PDF renderer service
-      const html = resumeToHtml(resume);
+      const html = resumeToHtml(resume, pdfOptions);
       const requestId = getRequestId(request);
 
       const res = await fetch(RENDERER_URL, {
@@ -63,7 +77,7 @@ export async function POST(request: Request) {
           ...(RENDERER_TOKEN ? { Authorization: `Bearer ${RENDERER_TOKEN}` } : {}),
           "X-Request-ID": requestId,
         },
-        body: JSON.stringify({ html }),
+        body: JSON.stringify({ html, watermarked: pdfOptions.watermarked }),
         signal: AbortSignal.timeout(35000),
       });
 
@@ -75,7 +89,7 @@ export async function POST(request: Request) {
       pdf = await res.arrayBuffer();
     } else {
       // Local dev: use in-process Playwright renderer
-      pdf = await renderResumePdf(resume);
+      pdf = await renderResumePdf(resume, pdfOptions);
     }
 
     await prisma.exportJob.update({

@@ -42,6 +42,11 @@ export async function GET() {
     checks["pdf-renderer"] = "unconfigured";
   }
 
+  // Stripe billing
+  const hasStripeKeys = !!(process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+  const hasStripePrices = !!(process.env.STRIPE_PROFESSIONAL_PRICE_ID);
+  checks["billing"] = hasStripeKeys && hasStripePrices ? "ok" : "unconfigured";
+
   const allOk = Object.values(checks).every(
     (v) => v === "ok" || v === "unconfigured",
   );

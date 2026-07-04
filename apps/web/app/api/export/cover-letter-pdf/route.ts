@@ -9,6 +9,7 @@ import { getRequestId } from "../../../../lib/request-id";
 import { reportError } from "../../../../lib/error-reporting";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
+import { canExportPdf, getPdfExportKind } from "../../../../lib/entitlements";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
@@ -37,6 +38,15 @@ export async function POST(request: Request) {
           "X-RateLimit-Remaining": "0",
         },
       },
+    );
+  }
+
+  // Entitlement check: monthly export limit
+  const exportCheck = await canExportPdf(user.id);
+  if (!exportCheck.allowed) {
+    return Response.json(
+      { error: "Monthly export limit reached. Upgrade to Professional for unlimited exports.", upgradeUrl: "/billing" },
+      { status: 403 },
     );
   }
 

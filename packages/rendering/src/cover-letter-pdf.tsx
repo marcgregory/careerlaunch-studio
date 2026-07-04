@@ -8,11 +8,16 @@ import { renderHtmlToPdf } from "./render";
  * For local development — on Vercel you should set `PDF_RENDERER_URL`
  * and use `coverLetterToHtml()` + external renderer instead.
  */
+export type CoverLetterPdfOptions = {
+  watermarked?: boolean;
+};
+
 export async function renderCoverLetterPdf(
   coverLetter: CoverLetterDocument,
   resume: ResumeDocument,
+  options?: CoverLetterPdfOptions,
 ): Promise<ArrayBuffer> {
-  const html = coverLetterToHtml(coverLetter, resume);
+  const html = coverLetterToHtml(coverLetter, resume, options);
   return renderHtmlToPdf(html);
 }
 
@@ -24,6 +29,7 @@ export async function renderCoverLetterPdf(
 export function coverLetterToHtml(
   coverLetter: CoverLetterDocument,
   resume: ResumeDocument,
+  options?: CoverLetterPdfOptions,
 ): string {
   const template = getResumeTemplate(resume.templateId);
 
@@ -99,8 +105,10 @@ export function coverLetterToHtml(
         color: ${template.swatches[0] ?? "#123c3a"};
       }
     </style>
+    ${options?.watermarked ? coverLetterWatermarkCss() : ""}
   </head>
   <body>
+    ${options?.watermarked ? coverLetterWatermarkOverlay() : ""}
     <div class="letter-header">
       <h1 class="letter-name">${escapeHtml(resume.contact.fullName || "Your Name")}</h1>
       <p class="letter-contact">${[resume.contact.email, resume.contact.phone, resume.contact.location].filter(Boolean).join("  |  ")}</p>
@@ -148,4 +156,51 @@ function escapeHtml(value: string) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Watermark (shared with resume PDF)                                 */
+/* ------------------------------------------------------------------ */
+
+function coverLetterWatermarkCss(): string {
+  return `
+    .watermark-wrapper {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .watermark-text {
+      position: absolute;
+      color: rgba(180, 180, 180, 0.25);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform: rotate(-25deg);
+      user-select: none;
+    }
+  `;
+}
+
+function coverLetterWatermarkOverlay(): string {
+  const label = "Created with CareerLaunch Studio";
+  const positions = [
+    { top: "10%", left: "-10%" },
+    { top: "25%", left: "30%" },
+    { top: "45%", left: "-20%" },
+    { top: "60%", left: "35%" },
+    { top: "80%", left: "-15%" },
+    { top: "95%", left: "25%" },
+  ];
+
+  return `<div class="watermark-wrapper">${positions
+    .map(
+      (pos) =>
+        `<span class="watermark-text" style="top:${pos.top};left:${pos.left}">${escapeHtml(label)}</span>`,
+    )
+    .join("\n")}</div>`;
 }

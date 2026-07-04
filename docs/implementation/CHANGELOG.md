@@ -2,6 +2,32 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.6.0-alpha - 2026-07-04
+
+### Added
+
+- **Sprint 5 — Billing & Entitlement System.** Tagged `v0.6.0-alpha`.
+- **Billing architecture document** (`docs/architecture/BILLING.md`) — defines entitlement model, plan registry, feature gate strategy, webhook flow, subscription lifecycle, upgrade/downgrade behavior, and failure handling.
+- **Prisma migration** (`20260704040000_add_plan_billing_fields`) — adds `Plan` enum (`FREE`, `PROFESSIONAL`, `ENTERPRISE`), `plan` and `cancelAtPeriodEnd` columns to `Subscription`, and converts `userId` index to unique constraint.
+- **Entitlement domain package** (`packages/domain/src/entitlements/`) — `types.ts` (PlanId, Entitlements, FeatureKeys), `plans.ts` (plan definitions with per-feature values). Three plans defined: Free (3 resumes, 2 templates, watermarked PDF, 5 exports/mo), Professional (unlimited everything, clean PDF, job match), Enterprise (unlimited + priority support). Exported from `@careerlaunch/domain`.
+- **Entitlement service** (`apps/web/lib/entitlements.ts`) — runtime service: `getSubscription()`, `can()`, `getFeatureValue()`, `requireEntitlement()`, `canExportPdf()`, `getPdfExportKind()`, `canUseTemplateByUser()`. Grace period for PAST_DUE accounts.
+- **Entitlement gates** — PDF export route checks `canExportPdf()` (403 on limit reached), cover letter PDF export gated, builder page checks `resume_limit` entitlement before creating new resumes, watermark applied for Free plan.
+- **PDF watermark** (`packages/rendering/src/pdf.tsx`, `cover-letter-pdf.tsx`) — `PdfOptions.watermarked` parameter renders semi-transparent "Created with CareerLaunch Studio" watermark across the page. Applied when plan is Free, removed for Professional+.
+- **Stripe integration** — lazy-initialized `getStripe()` in `apps/web/lib/stripe.ts`. Checkout (`/api/billing/checkout`), Customer Portal (`/api/billing/portal`), webhook handler (`/api/billing/webhook`) for `checkout.session.completed`, `customer.subscription.updated/deleted`, `invoice.payment_failed`. `/api/billing/subscription` returns current plan and all plans.
+- **Pricing page** (`/billing`) — client component with 3-column plan comparison, feature breakdown, current-plan badge, upgrade buttons calling Stripe Checkout. Handles checkout success/canceled/resume-limit redirect states.
+- **Account billing page** (`/account/billing`) — shows current plan, usage stats (monthly exports, export quality), manage billing button linking to Stripe Customer Portal.
+- **Dashboard upgrade prompts** — Free plan users see upgrade banner at top of dashboard. Sidebar shows "Free plan" badge with link to `/billing` and a "Billing" menu item.
+- **Health endpoint** — billing configuration check added (Stripe keys + price IDs).
+- **14 entitlement tests** — plan definitions, `can()` checks, `canUseTemplate()`, `getResumeLimit()`, `getFeatureValue()`. All pass.
+- **Environment variables** — `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PROFESSIONAL_PRICE_ID`, `STRIPE_ENTERPRISE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `PAST_DUE_GRACE_DAYS`, `NEXT_PUBLIC_BASE_URL` documented in `.env.example`.
+
+### Changed
+
+- Subscription model: `@@index([userId])` replaced with `@@unique([userId])`.
+- PDF renderer: `renderResumePdf()` and `resumeToHtml()` now accept `PdfOptions` parameter.
+- Cover letter PDF renderer: `renderCoverLetterPdf()` and `coverLetterToHtml()` now accept `CoverLetterPdfOptions`.
+- Dashboard sidebar refreshed with billing link, plans link, resume count.
+
 ## 0.5.1-alpha - 2026-07-04
 
 ### Added

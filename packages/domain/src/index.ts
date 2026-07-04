@@ -86,6 +86,9 @@ export type ResumeCheckItem = {
   detail: string;
 };
 
+export * from "./entitlements/types";
+export * from "./entitlements/plans";
+
 export const sampleResume: ResumeDocument = {
   id: "sample-resume",
   title: "Career Switch Resume",

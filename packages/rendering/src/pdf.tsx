@@ -6,6 +6,14 @@ import {
 import { getResumeTemplate, type TemplateDefinition } from "./index";
 import { renderHtmlToPdf } from "./render";
 
+export type PdfOptions = {
+  /**
+   * When true, a semi-transparent watermark is rendered behind the
+   * resume content.  Used for the Free plan.
+   */
+  watermarked?: boolean;
+};
+
 /**
  * Render a resume to a PDF buffer using an in-process Playwright browser.
  *
@@ -14,8 +22,9 @@ import { renderHtmlToPdf } from "./render";
  */
 export async function renderResumePdf(
   resume: ResumeDocument,
+  options?: PdfOptions,
 ): Promise<ArrayBuffer> {
-  const html = resumeToHtml(resume);
+  const html = resumeToHtml(resume, options);
   return renderHtmlToPdf(html);
 }
 
@@ -24,9 +33,8 @@ export async function renderResumePdf(
  * for a resume.  Use this when you want to send the HTML to an external
  * PDF renderer service instead of rendering in-process.
  */
-export function resumeToHtml(resume: ResumeDocument): string {
-  // Synchronous — only needs a renderToStaticMarkup import
-  const html = renderInlineHtml(resume);
+export function resumeToHtml(resume: ResumeDocument, options?: PdfOptions): string {
+  const html = renderInlineHtml(resume, options);
   return html;
 }
 
@@ -34,10 +42,9 @@ export function resumeToHtml(resume: ResumeDocument): string {
 /*  Internal helpers                                                   */
 /* ------------------------------------------------------------------ */
 
-function renderInlineHtml(resume: ResumeDocument): string {
+function renderInlineHtml(resume: ResumeDocument, options?: PdfOptions): string {
   const template = getResumeTemplate(resume.templateId);
-  const markup = /* raw HTML string to avoid the async import dance */
-    buildResumeHtml(resume);
+  const markup = buildResumeHtml(resume);
 
   return `<!doctype html>
 <html lang="en">
@@ -55,9 +62,13 @@ function renderInlineHtml(resume: ResumeDocument): string {
         print-color-adjust: exact;
       }
       ${pdfCss(template)}
+      ${options?.watermarked ? watermarkCss() : ""}
     </style>
   </head>
-  <body data-template-name="${escapeHtml(template.name)}">${markup}</body>
+  <body data-template-name="${escapeHtml(template.name)}">
+    ${options?.watermarked ? watermarkOverlay() : ""}
+    ${markup}
+  </body>
 </html>`;
 }
 
@@ -317,4 +328,54 @@ function escapeHtml(value: string) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Watermark for Free plan exports                                    */
+/* ------------------------------------------------------------------ */
+
+function watermarkCss(): string {
+  return `
+    .watermark-wrapper {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .watermark-text {
+      position: absolute;
+      color: rgba(180, 180, 180, 0.25);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform: rotate(-25deg);
+      user-select: none;
+    }
+  `;
+}
+
+function watermarkOverlay(): string {
+  const label = "Created with CareerLaunch Studio";
+  const positions = [
+    // 8 repeated positions across the page
+    { top: "5%", left: "-10%" },
+    { top: "15%", left: "30%" },
+    { top: "30%", left: "-20%" },
+    { top: "40%", left: "40%" },
+    { top: "55%", left: "-15%" },
+    { top: "65%", left: "25%" },
+    { top: "80%", left: "-25%" },
+    { top: "90%", left: "35%" },
+  ];
+
+  return `<div class="watermark-wrapper">${positions
+    .map(
+      (pos) =>
+        `<span class="watermark-text" style="top:${pos.top};left:${pos.left}">${escapeHtml(label)}</span>`,
+    )
+    .join("\n")}</div>`;
 }

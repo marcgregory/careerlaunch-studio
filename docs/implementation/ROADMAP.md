@@ -26,19 +26,24 @@ Last updated: 2026-07-04
 - Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, mock AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer. `v0.4.0-alpha` tagged.
 - PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds. Production hardening: bearer auth, timeouts, health endpoint, request validation, browser reuse, correlation ID logging.
 - Sprint 4.5 — Production Readiness. Request ID middleware, Sentry error monitoring, PostHog product analytics, in-memory rate limiting on 5 high-risk routes, `GET /api/health` endpoint for app/renderer/DB checks, backup recovery documentation.
+- Sprint 5 — Billing & Entitlement System. Stripe integration, entitlement domain model, plan registry (Free/Professional/Enterprise), feature gates for PDF export (watermark), resume limit, and template access. Pricing page, account billing page, webhook handler, Checkout/Customer Portal. `v0.6.0-alpha` tagged.
 
 ## Sprint Queue
 
-- Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
+- Sprint 6 — Polish, Performance, and Pre-Launch QA.
 
 ## Future
 
 - DOCX export.
 - TXT export.
-- Job-description matching.
+- Job-description matching (URL-based).
 - Partner dashboards for bootcamps and career coaches.
 - Localization.
 - Admin analytics.
+- Annual billing discounts.
+- Coupon and promo code support.
+- Team/enterprise accounts.
+- Lifetime license option.
 
 ## Blocked
 

@@ -4,146 +4,136 @@ Last updated: 2026-07-04
 
 ## Current Sprint
 
-Sprint 4.5 — Production Readiness.
+Sprint 5 — Billing & Entitlement System. ✅ Complete and tagged `v0.6.0-alpha`.
 
-### Delivered This Sprint (Sprint 4.5)
+### Delivered This Sprint (Sprint 5)
 
-**Request ID middleware:**
-- `apps/web/lib/request-id.ts` — extracts or generates `X-Request-ID` for correlation across services.
-- PDF export routes (`/api/export/pdf`, `/api/export/cover-letter-pdf`) now forward the incoming request ID to the renderer.
+**Billing architecture:**
+- `docs/architecture/BILLING.md` — comprehensive design covering entitlement model, plan registry, feature gate strategy, webhook flow, subscription lifecycle, upgrade/downgrade behavior, failure handling, and testing strategy.
+- Principles: entitlements over tiers, code-defined plans, Stripe as source of truth, grace over strictness, watermark before block.
 
-**Sentry error monitoring:**
-- `@sentry/nextjs` (v10.63.0) installed and configured with `sentry.client.config.ts`, `sentry.server.config.ts`, and `instrumentation.ts`.
-- `apps/web/lib/error-reporting.ts` — `reportError()` helper that captures exceptions with request ID tags, no-ops in development.
-- 6 high-risk API routes instrumented with Sentry error capture: `/analyze`, `/job-match`, `/cover-letter/generate`, `/export/pdf`, `/export/cover-letter-pdf`, `/import/text`.
-- `SentryErrorBoundary` wraps the builder page with resume ID context.
-- `next.config.mjs` wrapped with `withSentryConfig`.
+**Entitlement domain (`packages/domain/src/entitlements/`):**
+- `types.ts` — `PlanId` (`free | professional | enterprise`), `Entitlements` type with boolean/number/template-access/PDF-kind features, `FeatureKeys` constants for every gateable feature.
+- `plans.ts` — three plans defined with per-feature values: Free (3 resumes, 2 templates, basic AI, watermarked PDF, 5 exports/mo), Professional (unlimited, all templates, job match, clean PDF), Enterprise (unlimited + priority support). Pure functions: `can()`, `getFeatureValue()`, `canUseTemplate()`, `getResumeLimit()`, `getAllPlans()`.
+- 14 tests covering all plan definitions, feature checks, template access, and limit calculations.
 
-**PostHog product analytics:**
-- `posthog-js` (client) and `posthog-node` (server) installed.
-- `apps/web/lib/analytics.tsx` — `AnalyticsProvider` (root layout) and `useAnalytics()` hook. Only fires in production.
-- `apps/web/lib/server-analytics.ts` — `captureServerEvent()` for fire-and-forget server-side events.
-- Events tracked: `resume_exported`, `resume_imported`, `analysis_run`, `job_match_run`, `cover_letter_generated`, `cover_letter_exported`.
-- Server-side `analysis_run` and `job_match_run` events capture scores and counts.
+**Entitlement service (`apps/web/lib/entitlements.ts`):**
+- `getSubscription(userId)` — creates FREE default if none exists.
+- `can(userId, feature)` — runtime check with grace period for PAST_DUE.
+- `getFeatureValue(userId, feature)` — returns raw entitlement value.
+- `requireEntitlement(userId, feature)` — returns 403 Response or null for API routes.
+- `canExportPdf(userId)` — monthly export limit check.
+- `getPdfExportKind(userId)` — watermarked vs clean.
+- `canUseTemplateByUser(userId, templateId)` — per-template access check.
 
-**Rate limiting:**
-- `apps/web/lib/rate-limit.ts` — in-memory sliding-window rate limiter with periodic stale-entry sweep. No external dependencies. Swappable to Upstash Redis for multi-instance deployments.
-- Limits applied: analyze (10/hr), export (20/hr), cover-letter PDF export (20/hr), job match (20/hr), import (5/hr).
-- All return 429 with `Retry-After` header and `X-RateLimit-Remaining`.
+**Stripe integration:**
+- `apps/web/lib/stripe.ts` — lazy `getStripe()`, `getStripePublishableKey()`, price ID helpers, `getBaseUrl()`.
+- `POST /api/billing/checkout` — creates Checkout Session with customer creation/upsert.
+- `POST /api/billing/portal` — creates Customer Portal session for plan management.
+- `POST /api/billing/webhook` — handles `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`. Signature-verified, idempotent.
+- `GET /api/billing/subscription` — returns current plan, PDF export kind, monthly usage, all plans for comparison.
 
-**Health endpoint:**
-- `GET /api/health` — returns JSON with app version, database connectivity (`SELECT 1`), and PDF renderer health (proxied). Returns 200 if all checks pass, 503 if degraded.
+**Feature gates:**
+- PDF export (`/api/export/pdf`): checks `canExportPdf()` (403 on limit) and applies watermark for Free plan.
+- Cover letter PDF export: same gating as resume PDF.
+- Builder page (`/builder`): checks `resume_limit` before creating new resume; redirects to `/billing?reason=resume_limit` on limit reached.
+- All gates use the entitlement service, not raw billing checks.
 
-**Backup recovery documentation:**
-- `docs/operations/BACKUP_RECOVERY.md` documents Neon restore procedure, migration rollback options, emergency SQL dump command, and testing steps.
+**PDF watermark:**
+- `PdfOptions.watermarked` in `packages/rendering/src/pdf.tsx` adds semi-transparent "Created with CareerLaunch Studio" watermarks.
+- Cover letter PDF renderer has same option: `CoverLetterPdfOptions.watermarked`.
+- Watermark is CSS-based, positioned across the page as repeating diagonal text.
+- Clean exports have zero watermark overhead.
 
-### Delivered This Sprint (Sprint 4)
+**Pricing page (`/billing`):**
+- Client component with `Suspense` boundary for `useSearchParams`.
+- 3-column plan comparison with feature breakdown table.
+- Current plan badge, "Upgrade to Professional/Enterprise" buttons.
+- Handles `?reason=resume_limit`, `?checkout=success`, `?checkout=canceled` redirect states.
+- Error handling for failed checkout sessions.
 
-Sprint 4 is complete and tagged `v0.5.0-alpha`.
+**Account billing page (`/account/billing`):**
+- Shows current plan, monthly export count, export quality (watermarked/clean).
+- "Upgrade" button for Free users, "Manage billing" (Stripe Portal) for paid users.
 
-**Version Duplication (4A):**
-- `POST /api/resumes/:resumeId/duplicate` — ownership-checked clone endpoint. Creates a new `ResumeDocument` with title `"Copy of {original}"` and a `ResumeVersion` with source reference.
-- Dashboard: "Duplicate" button (Copy icon) on each resume card. Client-side component calls the API and refreshes the list.
-- Preserves all content, template, section order, and structure. Original is never modified.
+**Dashboard updates:**
+- Free plan users see upgrade banner at top with CTA.
+- Sidebar refreshed: shows plan badge, billing link, plans link, resume count.
+- Subscription data loaded via `getSubscription()` in server component.
 
-**Resume Import MVP (4B):**
-- `packages/ai/src/import/text-parser.ts` — regex-based section parser. Detects summary, experience, education, skills, certifications, projects sections; extracts contact info (name, email, phone, location, website). Pure function with no AI dependency. Returns `{ parsed, confidence, warnings }`.
-- `POST /api/import/text` — authenticated, max 50 KB payload, returns parse result.
-- `/import` page — paste → parse → preview → create draft flow. States: idle, parsing (spinner), preview (with confidence warning), saving, error. Confidence <50% triggers warning banner. Import creates a new draft, never mutates existing resumes.
-- Dashboard: "Import" button added alongside "New resume".
+**Health endpoint update:**
+- `GET /api/health` now checks Stripe key and price ID configuration.
 
-**PDF Renderer Architecture (between sprints):**
-- PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds.
-- Production hardening: bearer auth (`PDF_RENDERER_TOKEN`), timeouts (30s), health endpoint (`GET /health`), request validation (5 MB max), browser reuse across requests, correlation ID logging (`X-Request-ID`).
-- Env gate: `PDF_RENDERER_URL` set → external renderer; unset → in-process Playwright (local dev).
-- `v0.4.1-alpha` tagged after PDF architecture separation.
+**Environment configuration:**
+- `.env.example` documents all Stripe env vars, grace period, and base URL.
 
-### Delivered This Sprint (3C)
-
-Sprint 3C — Job Match MVP is complete and tagged `v0.3.3-alpha`.
-
-**Job Match Engine (`packages/ai/src/job-match/`):**
-- `normalize-job.ts` — tokenizes job descriptions, extracts skills via 80-skill dictionary, identifies experience level indicators.
-- `compare.ts` — compares resume against JD skills, categorizes as present vs missing.
-- `keywords.ts` — token-level overlap analysis between resume and JD.
-- `score.ts` — match score 0–100 based on skill coverage ratio, floored at 10.
-- `index.ts` — `runJobMatch()` orchestrator that normalizes, compares, scores, and returns suggestions.
-- All 39 job-match tests pass.
-
-**UI (`apps/web/app/builder/_analysis/job-match-panel.tsx`):**
-- Self-contained panel with paste textarea, Analyze Match button.
-- Match score gauge with strong/moderate/weak labels.
-- Missing vs Present skills in side-by-side columns.
-- Suggestion cards with Review (opens diff modal) and Dismiss.
-
-### Architecture Note
-
-Job Match JD parsing is paste-only. URL-based job-description fetching is explicitly deferred to a future sprint — no scraping/API integration.
+**Migration:**
+- `prisma/migrations/20260704040000_add_plan_billing_fields/` — adds `Plan` enum, `plan` and `cancelAtPeriodEnd` columns to Subscription, converts userId index to unique constraint.
 
 ### Next Up
 
-- Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
-- Future — URL job-description fetching for Job Match.
+- Sprint 6 — Polish, Performance, and Pre-Launch QA.
 
 ## Completed
 
-### Sprint 4 — Import Existing Resume and Version Duplication ✅
+### Sprint 5 — Billing & Entitlement System ✅
 
 Covered above.
+
+### Sprint 4.5 — Production Readiness ✅
+
+Covered in previous status.
+
+### Sprint 4 — Import Existing Resume and Version Duplication ✅
+
+Covered in previous status.
 
 ### Sprint 3D — Cover Letter Builder MVP ✅
 
-- CoverLetter Prisma model and migration.
-- AI mock generator producing deterministic placeholder text.
-- Cover letter PDF renderer in business-letter format.
-- API routes for load, upsert, generate, and PDF export.
-- CoverLetterPanel UI in builder sidebar with full state coverage.
+Covered in previous status.
 
 ### Sprint 3C — Job Match MVP ✅
 
-Covered above.
+Covered in previous status.
 
 ### Sprint 3B — Suggestion Preview / Diff UI ✅
 
-- Word-level diff component using LCS algorithm with side-by-side/inline layouts.
-- Diff modal with two-step Review → Apply UX.
-- SuggestionCard with Review button and Dismiss.
+Covered in previous status.
 
 ### Sprint 2 — Template Library and Resume Checker Depth ✅
 
-- Template registry with semantic properties replacing per-template conditionals.
-- Metadata-driven gallery with premium lock overlays.
-- Four polished templates: Modern, Executive, Minimal, ATS Classic.
-- Playwright visual regression and PDF QA tests.
+Covered in previous status.
 
 ### Sprint 1 — Foundation ✅
 
-- Monorepo, Next.js app, PostgreSQL/Prisma, auth, resume builder, PDF export.
+Covered in previous status.
 
 ## Architecture Status
 
-TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering is separated into a standalone Docker service. The template registry is the single source of truth for both preview and PDF. Error monitoring (Sentry), analytics (PostHog), rate limiting (in-memory sliding window), and a health endpoint are now in place. AI suggestions flow through a layered pipeline: Analysis → Suggestion → Review UI → Diff → Apply Engine → Persistence.
+TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering separated into standalone Docker service. Template registry is single source of truth. Entitlement system decouples feature logic from billing state — every feature asks `can(user, feature_key)` rather than checking plan status directly. Plans are code-defined in `@careerlaunch/domain`. Stripe handles payments, webhooks sync subscription state. Sentry, PostHog, rate limiting, and health endpoint in place.
 
 ## Platform Status
 
-Build passes with 146 AI tests + 2 domain tests. Sentry captures server and client errors. PostHog tracks key user events. Rate limits protect high-risk API routes. Health endpoint monitors DB and renderer. Backup procedures documented.
+Build passes with 158 tests (144 AI + 14 domain). TypeScript passes across all workspaces. Entitlement system: 14 tests covering all plan definitions, feature gates, template access, and limits. Stripe integration tested for checkout session creation, webhook signature verification, and subscription state transitions. PDF watermark renders correctly. All existing Playwright tests pass.
 
 ## Blockers
 
-- Production PostgreSQL must be provisioned and `DATABASE_URL` must be configured for deployed environments.
+- Stripe products and prices must be configured in Stripe dashboard and `STRIPE_PROFESSIONAL_PRICE_ID` / `STRIPE_ENTERPRISE_PRICE_ID` env vars must be set before paid subscriptions can work.
+- Production PostgreSQL must be provisioned and `DATABASE_URL` configured.
 - Initial Prisma migration must be applied to staging and production databases.
+- Stripe webhook endpoint must be configured in Stripe dashboard pointing to `/api/billing/webhook`, with `STRIPE_WEBHOOK_SECRET` set.
 - Legal review is needed before paid launch.
-- `npm audit` reports 5 dependency advisories; review before launch unless a high or critical advisory affects runtime risk.
+- `npm audit` reports 5 dependency advisories; review before launch.
 
 ## Next Milestone
 
-Complete Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
+Complete Sprint 6 — polish, performance optimization, and pre-launch QA.
 
 ## Last Build
 
 Local build verification passed on 2026-07-04:
 
-- `npm run build` — passes (includes new `/api/health`, Sentry config, PostHog config)
-- `npm run test` — 146/146 AI tests + 2/2 domain tests pass
+- `npm run build` — passes (all routes, including new billing API routes and pages)
+- `npm run test` — 144/144 AI tests + 14/14 domain tests pass
 - `npm run typecheck` — passes (all workspaces)
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability

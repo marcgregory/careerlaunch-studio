@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, FileText, Gauge, Layers3, LogOut, Plus, Sparkles } from "lucide-react";
+import { ArrowRight, CreditCard, FileText, Gauge, Layers3, LogOut, Plus, Sparkles } from "lucide-react";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { DuplicateButton } from "./duplicate-button";
+import { getSubscription } from "../../lib/entitlements";
 
 type DashboardResume = {
   id: string;
@@ -14,11 +15,15 @@ type DashboardResume = {
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const resumes: DashboardResume[] = await prisma.resumeDocument.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, targetRole: true, updatedAt: true }
-  });
+  const [resumes, subscription] = await Promise.all([
+    prisma.resumeDocument.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, title: true, targetRole: true, updatedAt: true }
+    }),
+    getSubscription(user.id),
+  ]);
+  const isFree = subscription.plan === "free";
 
   return (
     <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
@@ -55,6 +60,30 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </header>
+
+        {isFree && (
+          <div className="mt-6 flex items-center justify-between rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-5">
+            <div className="flex items-center gap-4">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
+                <Sparkles size={22} />
+              </div>
+              <div>
+                <p className="font-signal text-lg font-black tracking-[-0.02em]">
+                  You&apos;re on the Free plan
+                </p>
+                <p className="text-sm font-medium text-[#4b4b4b]">
+                  Upgrade to Professional for unlimited resumes, all templates, job matching, and clean PDF exports.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/billing"
+              className="flex shrink-0 items-center gap-2 rounded-full border-2 border-[#123c3a] bg-[#123c3a] px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_3px_0_#123c3a] transition hover:bg-[#1a5250]"
+            >
+              <CreditCard size={16} /> Upgrade
+            </Link>
+          </div>
+        )}
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
           <div className="space-y-5">
@@ -107,31 +136,39 @@ export default async function DashboardPage() {
               <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
                 <Layers3 size={26} />
               </div>
-              <span className="rounded-full border border-white/15 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#b9ff66]">Sprint 1</span>
+              {isFree ? (
+                <Link href="/billing" className="rounded-full border border-[#b9ff66]/60 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#b9ff66] hover:bg-[#b9ff66]/10">
+                  Free plan
+                </Link>
+              ) : (
+                <span className="rounded-full border border-[#b9ff66]/60 px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#b9ff66]">
+                  {subscription.plan.charAt(0) + subscription.plan.slice(1).toLowerCase()}
+                </span>
+              )}
             </div>
-            <h2 className="font-signal mt-7 text-4xl font-black leading-[0.92] tracking-[-0.06em]">Complete path to PDF.</h2>
+            <h2 className="font-signal mt-7 text-4xl font-black leading-[0.92] tracking-[-0.06em]">Your workspace</h2>
             <p className="mt-5 text-sm font-medium leading-7 text-white/62">
-              Auth, PostgreSQL persistence, ownership checks, and export gating are wired into the first vertical slice. The next layer is smarter guidance and richer templates.
+              Create, edit, and export resumes. AI-powered analysis, job matching, and cover letters available on paid plans.
             </p>
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-              <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
-                <span>Signal scan</span>
-                <Gauge size={18} className="text-[#b9ff66]" />
-              </div>
-              <div className="space-y-3">
-                <div className="h-2 rounded-full bg-[#b9ff66]" />
-                <div className="h-2 w-5/6 rounded-full bg-white/18" />
-                <div className="h-2 w-2/3 rounded-full bg-white/18" />
-              </div>
-            </div>
-            <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-black text-[#123c3a]">
-              <span className="rounded-xl bg-[#b9ff66] px-2 py-3">Auth</span>
-              <span className="rounded-xl bg-white px-2 py-3">Save</span>
-              <span className="rounded-xl bg-white px-2 py-3">PDF</span>
+            <div className="mt-7 space-y-3">
+              <Link href="/account/billing" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.08]">
+                <div className="flex items-center gap-3">
+                  <CreditCard size={18} className="text-[#b9ff66]" />
+                  <span className="text-sm font-black">Billing</span>
+                </div>
+                <ArrowRight size={16} className="text-white/40" />
+              </Link>
+              <Link href="/billing" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.08]">
+                <div className="flex items-center gap-3">
+                  <Sparkles size={18} className="text-[#b9ff66]" />
+                  <span className="text-sm font-black">Plans</span>
+                </div>
+                <ArrowRight size={16} className="text-white/40" />
+              </Link>
             </div>
             <div className="mt-6 flex items-center gap-3 rounded-2xl bg-[#b9ff66] p-4 text-[#123c3a]">
-              <Sparkles size={22} />
-              <p className="text-sm font-black leading-5">Every draft remains connected to the existing builder flow.</p>
+              <FileText size={22} />
+              <p className="text-sm font-black leading-5">{resumes.length} resume{resumes.length !== 1 ? "s" : ""} in your workspace.</p>
             </div>
           </aside>
         </section>
