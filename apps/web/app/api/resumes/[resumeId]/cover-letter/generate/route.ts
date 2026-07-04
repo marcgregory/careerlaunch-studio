@@ -1,6 +1,8 @@
 import { prisma } from "../../../../../../lib/prisma";
 import { requireApiUser } from "../../../../../../lib/auth";
 import { fromStoredResume } from "../../../../../../lib/resume-store";
+import { reportError } from "../../../../../../lib/error-reporting";
+import { getRequestId } from "../../../../../../lib/request-id";
 import { generateCoverLetter } from "@careerlaunch/ai";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
 
@@ -72,6 +74,7 @@ export async function POST(request: Request, context: { params: Promise<{ resume
 
     return Response.json({ coverLetter: toCoverLetterDocument(coverLetter) });
   } catch (error) {
+    reportError(error, getRequestId(request), { resumeId, route: "cover-letter-generate" });
     return Response.json(
       { error: error instanceof Error ? error.message : "Cover letter generation failed" },
       { status: 500 },

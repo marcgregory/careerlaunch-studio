@@ -2,6 +2,9 @@ import { renderResumePdf, resumeToHtml } from "@careerlaunch/rendering/pdf";
 import { requireApiUser } from "../../../../lib/auth";
 import { prisma } from "../../../../lib/prisma";
 import { fromStoredResume } from "../../../../lib/resume-store";
+import { getRequestId } from "../../../../lib/request-id";
+import { reportError } from "../../../../lib/error-reporting";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
@@ -9,6 +12,21 @@ const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
 export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
   if (response) return response;
+
+  // Rate limit: 20 PDF exports per hour per user
+  const rl = checkRateLimit(`export:${user.id}`, 20, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return Response.json(
+      { error: "Rate limit exceeded. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
 
   const { resumeId } = (await request.json().catch(() => ({}))) as { resumeId?: string };
   if (!resumeId) return Response.json({ error: "resumeId is required" }, { status: 400 });
@@ -36,7 +54,7 @@ export async function POST(request: Request) {
     if (RENDERER_URL) {
       // Production: proxy to the external Docker PDF renderer service
       const html = resumeToHtml(resume);
-      const requestId = crypto.randomUUID();
+      const requestId = getRequestId(request);
 
       const res = await fetch(RENDERER_URL, {
         method: "POST",
@@ -78,6 +96,7 @@ export async function POST(request: Request) {
       }
     });
   } catch (error) {
+    const requestId = getRequestId(request);
     await prisma.exportJob.update({
       where: { id: exportJob.id },
       data: {
@@ -86,6 +105,7 @@ export async function POST(request: Request) {
       }
     });
 
+    reportError(error, requestId, { resumeId, route: "export-pdf" });
     return Response.json({ error: "PDF render failed" }, { status: 500 });
   }
 }

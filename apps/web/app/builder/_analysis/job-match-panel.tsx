@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import { createOperations } from "@careerlaunch/ai";
+import { useAnalytics } from "../../../lib/analytics";
 import type { Suggestion, ApplyOperation } from "@careerlaunch/ai";
 
 interface MatchState {
@@ -38,6 +39,7 @@ interface JobMatchPanelProps {
 }
 
 export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProps) {
+  const analytics = useAnalytics();
   const [jobDescription, setJobDescription] = useState("");
   const [match, setMatch] = useState<MatchState>({
     status: "idle",
@@ -76,6 +78,12 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
       }
 
       const data = await response.json();
+
+      analytics.capture("job_match_run", {
+        matchScore: data.matchScore,
+        missingSkillsCount: data.missingSkills?.length ?? 0,
+        suggestionsCount: data.suggestions?.length ?? 0,
+      });
 
       setMatch({
         status: "success",

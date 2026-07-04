@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
+import { useAnalytics } from "../../lib/analytics";
 import type { ParseResult } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 
 export default function ImportPage() {
   const router = useRouter();
+  const analytics = useAnalytics();
   const [state, setState] = useState<ImportState>("idle");
   const [text, setText] = useState("");
   const [result, setResult] = useState<ParseResult | null>(null);
@@ -74,6 +76,7 @@ export default function ImportPage() {
       }
 
       const created = await res.json();
+      analytics.capture("resume_imported", { confidence: result.confidence });
       router.push(`/builder?resumeId=${created.resume.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create resume");

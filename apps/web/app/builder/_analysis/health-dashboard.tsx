@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { ScoreGauge } from "./score-gauge";
 import { SuggestionCard } from "./suggestion-card";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
+import { useAnalytics } from "../../../lib/analytics";
 import type { AnalysisState, ClientSuggestion } from "./types";
 import type { SuggestionSeverity, SuggestionCategory } from "@careerlaunch/ai";
 import type { ApplyOperation } from "@careerlaunch/ai";
@@ -37,6 +38,7 @@ interface HealthDashboardProps {
 }
 
 export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboardProps) {
+  const analytics = useAnalytics();
   const [analysis, setAnalysis] = useState<AnalysisState>({
     status: "idle",
     overallScore: null,
@@ -70,6 +72,10 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         }),
       );
 
+      analytics.capture("analysis_run", {
+        overallScore: data.result.overallScore ?? 0,
+        suggestionCount: suggestions.length,
+      });
       setAnalysis({
         status: "success",
         overallScore: data.result.overallScore ?? 0,

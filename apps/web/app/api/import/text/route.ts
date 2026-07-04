@@ -1,5 +1,8 @@
 import { parseResumeText } from "@careerlaunch/ai/import";
 import { requireApiUser } from "../../../../lib/auth";
+import { reportError } from "../../../../lib/error-reporting";
+import { getRequestId } from "../../../../lib/request-id";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 const MAX_IMPORT_SIZE = 50 * 1024; // 50 KB
 
@@ -15,6 +18,21 @@ const MAX_IMPORT_SIZE = 50 * 1024; // 50 KB
 export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
   if (response) return response;
+
+  // Rate limit: 5 imports per hour per user
+  const rl = checkRateLimit(`import:${user.id}`, 5, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return Response.json(
+      { error: "Rate limit exceeded. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
 
   let body: { text?: string };
   try {
@@ -44,7 +62,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = parseResumeText(body.text);
+  let result;
+  try {
+    result = parseResumeText(body.text);
+  } catch (error) {
+    reportError(error, getRequestId(request), { route: "import-text" });
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Import parsing failed" },
+      { status: 500 },
+    );
+  }
 
   return Response.json(result, { status: 200 });
 }

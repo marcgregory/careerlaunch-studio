@@ -2,7 +2,17 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
-## 0.5.0-alpha - 2026-07-04
+## 0.5.1-alpha - 2026-07-04
+
+### Added
+
+- **Sprint 4.5 — Production Readiness.**
+- **Request ID middleware** (`apps/web/lib/request-id.ts`) — extracts or generates `X-Request-ID` for cross-service correlation. PDF export routes now forward the incoming request ID to the renderer instead of generating a new one.
+- **Sentry error monitoring** (`@sentry/nextjs` v10.63.0) — server and client config files, `reportError()` helper, instrumented 6 high-risk API routes (analyze, job-match, cover-letter generate, PDF export, cover-letter PDF export, import). `SentryErrorBoundary` wraps the builder page with resume ID context. `next.config.mjs` wrapped with `withSentryConfig`.
+- **PostHog product analytics** — `AnalyticsProvider` in root layout, `useAnalytics()` hook on the client, `captureServerEvent()` for server-side fire-and-forget events. Events tracked: `resume_exported`, `resume_imported`, `analysis_run`, `job_match_run`, `cover_letter_generated`, `cover_letter_exported`. Only fires in production.
+- **Rate limiting** (`apps/web/lib/rate-limit.ts`) — in-memory sliding-window rate limiter with periodic stale-entry sweep. Applied to 5 high-risk routes: analyze (10/hr), exports (20/hr), job match (20/hr), import (5/hr). Returns 429 with `Retry-After` and `X-RateLimit-Remaining` headers.
+- **Health endpoint** (`GET /api/health`) — returns app version, database connectivity (via `SELECT 1`), and PDF renderer health (proxied). Returns 200/503.
+- **Backup recovery documentation** (`docs/operations/BACKUP_RECOVERY.md`) — Neon restore procedure, migration rollback options, emergency SQL dump command.
 
 ### Added
 

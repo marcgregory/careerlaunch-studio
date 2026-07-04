@@ -30,6 +30,7 @@ import type { ApplyOperation } from "@careerlaunch/ai";
 import { HealthDashboard } from "./_analysis/health-dashboard";
 import { JobMatchPanel } from "./_analysis/job-match-panel";
 import { CoverLetterPanel } from "./_analysis/cover-letter-panel";
+import { useAnalytics } from "../../lib/analytics";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
 type ValidationErrors = Partial<Record<string, string>>;
@@ -44,6 +45,7 @@ const sectionLabels: Record<ResumeSectionId, string> = {
 };
 
 export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument }) {
+  const analytics = useAnalytics();
   const [resume, setResume] = useState<ResumeDocument>(() => normalizeResume(initialResume));
   const [saveState, setSaveState] = useState<SaveState>("Saved");
   const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
@@ -209,6 +211,11 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
       });
 
       if (!response.ok) throw new Error("PDF export failed");
+
+      analytics.capture("resume_exported", {
+        templateId: resume.templateId,
+        sectionCount: resume.sectionOrder.length,
+      });
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

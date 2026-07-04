@@ -25,6 +25,7 @@ Last updated: 2026-07-04
 - Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume). URL job-description fetching explicitly deferred (paste-only MVP).
 - Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, mock AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer. `v0.4.0-alpha` tagged.
 - PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds. Production hardening: bearer auth, timeouts, health endpoint, request validation, browser reuse, correlation ID logging.
+- Sprint 4.5 — Production Readiness. Request ID middleware, Sentry error monitoring, PostHog product analytics, in-memory rate limiting on 5 high-risk routes, `GET /api/health` endpoint for app/renderer/DB checks, backup recovery documentation.
 
 ## Sprint Queue
 

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { ResumeBuilder } from "./resume-builder";
+import { SentryErrorBoundary } from "../../components/sentry-error-boundary";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { createStarterResume, fromStoredResume, toStoredResume } from "../../lib/resume-store";
@@ -39,5 +40,9 @@ export default async function BuilderPage({ searchParams }: BuilderPageProps) {
 
   if (!resume) redirect("/dashboard");
 
-  return <ResumeBuilder initialResume={fromStoredResume(resume)} />;
+  return (
+    <SentryErrorBoundary context={{ resumeId: params.resumeId }}>
+      <ResumeBuilder initialResume={fromStoredResume(resume)} />
+    </SentryErrorBoundary>
+  );
 }

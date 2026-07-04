@@ -1,6 +1,10 @@
 import { prisma } from "../../../../../lib/prisma";
 import { requireApiUser } from "../../../../../lib/auth";
 import { fromStoredResume } from "../../../../../lib/resume-store";
+import { reportError } from "../../../../../lib/error-reporting";
+import { getRequestId } from "../../../../../lib/request-id";
+import { captureServerEvent } from "../../../../../lib/server-analytics";
+import { checkRateLimit } from "../../../../../lib/rate-limit";
 import {
   runJobMatch,
   normalizeResume,
@@ -41,6 +45,21 @@ export async function POST(
   if (response) return response;
 
   const resumeId = await getResumeId(context);
+
+  // Rate limit: 20 job matches per hour per user
+  const rl = checkRateLimit(`job-match:${user.id}`, 20, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return Response.json(
+      { error: "Rate limit exceeded. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
 
   const record = await prisma.resumeDocument.findFirst({
     where: { id: resumeId, userId: user.id },
@@ -86,6 +105,14 @@ export async function POST(
       },
     });
 
+    // Fire server-side analytics event
+    captureServerEvent("job_match_run", user.id, {
+      resumeId,
+      matchScore: result.matchScore,
+      missingSkillsCount: result.missingSkills.length,
+      suggestionsCount: result.suggestions.length,
+    });
+
     return Response.json({
       matchScore: result.matchScore,
       missingSkills: result.missingSkills,
@@ -93,6 +120,7 @@ export async function POST(
       suggestions: result.suggestions,
     });
   } catch (error) {
+    reportError(error, getRequestId(request), { resumeId, route: "job-match" });
     return Response.json(
       { error: error instanceof Error ? error.message : "Job match failed" },
       { status: 500 },

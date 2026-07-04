@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   RefreshCw,
 } from "lucide-react";
+import { useAnalytics } from "../../../lib/analytics";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
 
 type PanelState =
@@ -26,6 +27,7 @@ interface CoverLetterPanelProps {
 }
 
 export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
+  const analytics = useAnalytics();
   const [jobDescription, setJobDescription] = useState("");
   const [panelState, setPanelState] = useState<PanelState>({ status: "idle" });
   const [coverLetter, setCoverLetter] = useState<CoverLetterDocument | null>(null);
@@ -87,6 +89,9 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
       setRecipientTitle(cl.recipientTitle);
       setCompanyName(cl.companyName);
       setCompanyAddress(cl.companyAddress);
+      analytics.capture("cover_letter_generated", {
+        hasJobDescription: !!jobDescription,
+      });
       setPanelState({ status: "ready", coverLetter: cl });
     } catch (error) {
       setPanelState({
@@ -170,6 +175,9 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      analytics.capture("cover_letter_exported", {
+        hasJobDescription: !!coverLetter.jobDescription,
+      });
       setPanelState({ status: "ready", coverLetter });
     } catch (error) {
       setPanelState({
