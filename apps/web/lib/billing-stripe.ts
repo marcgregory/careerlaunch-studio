@@ -50,12 +50,16 @@ export function stripeTimestampToDate(timestamp: number | null | undefined): str
 }
 
 export function getSubscriptionPeriodEnd(subscription: Stripe.Subscription): string | null {
-  const value = (subscription as unknown as { current_period_end?: number }).current_period_end;
+  const value = getSubscriptionPeriodEndTimestamp(subscription);
   return stripeTimestampToDate(value);
 }
 
 export function getSubscriptionPeriodEndTimestamp(subscription: Stripe.Subscription): number | null {
-  return (subscription as unknown as { current_period_end?: number }).current_period_end ?? null;
+  const legacyValue = (subscription as unknown as { current_period_end?: number }).current_period_end;
+  if (legacyValue) return legacyValue;
+
+  const itemValue = subscription.items.data[0]?.current_period_end;
+  return itemValue ?? null;
 }
 
 function summarizePaymentMethod(value: unknown): PaymentMethodSummary {

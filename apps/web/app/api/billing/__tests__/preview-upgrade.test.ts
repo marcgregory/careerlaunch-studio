@@ -89,13 +89,12 @@ describe("POST /api/billing/preview-upgrade", () => {
     mockStripeInstance.subscriptions.retrieve.mockResolvedValue({
       id: "sub_123",
       status: "active",
-      current_period_end: 1785801600,
       default_payment_method: {
         id: "pm_123",
         type: "card",
         card: { brand: "visa", last4: "4242" },
       },
-      items: { data: [{ id: "si_123", price: { id: "price_professional_mock" } }] },
+      items: { data: [{ id: "si_123", current_period_end: 1785801600, price: { id: "price_professional_mock" } }] },
     });
     mockStripeInstance.invoices.createPreview.mockResolvedValue({
       amount_due: 3000,
@@ -119,6 +118,7 @@ describe("POST /api/billing/preview-upgrade", () => {
     expect(res.status).toBe(200);
     expect(json.todayCharge).toBe(30);
     expect(json.nextRenewal).toBe(49);
+    expect(json.renewalDate).toBe("2026-08-04T00:00:00.000Z");
     expect(json.paymentMethod).toEqual({ brand: "visa", last4: "4242" });
     expect(json.lines).toHaveLength(2);
     expect(mockStripeInstance.invoices.createPreview).toHaveBeenCalledWith(
