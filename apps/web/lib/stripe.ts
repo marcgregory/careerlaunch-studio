@@ -13,7 +13,6 @@ export function getStripe(): Stripe {
       throw new Error("STRIPE_SECRET_KEY is not configured");
     }
     _stripe = new Stripe(key, {
-      apiVersion: "2025-03-31" as any,
       typescript: true,
     });
   }
