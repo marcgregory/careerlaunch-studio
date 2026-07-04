@@ -4,12 +4,14 @@ type MockSubscription = {
   currentPlan?: string;
   cancelAtPeriodEnd?: boolean;
   currentPeriodEnd?: string | null;
+  scheduledChange?: { plan: string; effectiveDate: string | null } | null;
 };
 
 const defaultSubscription = {
   currentPlan: "free",
   cancelAtPeriodEnd: false,
   currentPeriodEnd: null,
+  scheduledChange: null,
   paymentMethod: null,
   invoices: [],
   plans: [
@@ -118,6 +120,23 @@ test.describe("Billing page", () => {
     await expect(page.getByText("visa ending 4242")).toBeVisible();
     await page.getByRole("button", { name: /^Upgrade$/ }).click();
     await expect(page).toHaveURL(/upgrade=completed&plan=enterprise/);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test("shows scheduled downgrade state on plan cards", async ({ page }) => {
+    const pageErrors: Error[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error));
+    await mockSubscription(page, {
+      currentPlan: "enterprise",
+      currentPeriodEnd: "2026-08-04T00:00:00.000Z",
+      scheduledChange: { plan: "professional", effectiveDate: "2026-08-04T00:00:00.000Z" },
+    });
+
+    await page.goto("/billing");
+
+    await expect(page.getByText("Scheduled Aug 4, 2026")).toBeVisible();
+    await expect(page.getByText("Current until Aug 4, 2026")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Downgrade$/ })).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   });
 });

@@ -16,6 +16,7 @@ type SubscriptionData = {
   currentPlan: string;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd: string | null;
+  scheduledChange: { plan: string; effectiveDate: string | null } | null;
   plans: PlanInfo[];
 };
 
@@ -34,6 +35,7 @@ const DEFAULT_SUBSCRIPTION_DATA: SubscriptionData = {
   currentPlan: "free",
   cancelAtPeriodEnd: false,
   currentPeriodEnd: null,
+  scheduledChange: null,
   plans: [
     { id: "free", label: "Free", isCurrent: true },
     { id: "professional", label: "Professional", isCurrent: false },
@@ -50,6 +52,12 @@ function normalizeSubscriptionData(value: Partial<SubscriptionData> | null | und
     currentPlan,
     cancelAtPeriodEnd: Boolean(value?.cancelAtPeriodEnd),
     currentPeriodEnd: typeof value?.currentPeriodEnd === "string" ? value.currentPeriodEnd : null,
+    scheduledChange: value?.scheduledChange && typeof value.scheduledChange === "object"
+      ? {
+          plan: typeof value.scheduledChange.plan === "string" ? value.scheduledChange.plan : "",
+          effectiveDate: typeof value.scheduledChange.effectiveDate === "string" ? value.scheduledChange.effectiveDate : null,
+        }
+      : null,
     plans: Array.isArray(value?.plans)
       ? value.plans
       : DEFAULT_SUBSCRIPTION_DATA.plans.map((plan) => ({
@@ -396,6 +404,8 @@ function BillingContent() {
             const values = FEATURE_VALUES[planId];
             const currentRank = PLAN_RANK[data?.currentPlan ?? "free"];
             const cardRank = PLAN_RANK[planId];
+            const scheduledChange = data?.scheduledChange;
+            const isScheduledPlan = scheduledChange?.plan === planId;
 
             return (
               <article
@@ -449,7 +459,11 @@ function BillingContent() {
                   <div className="mt-8">
                     {isCurrent ? (
                       <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
-                        Current plan
+                        {scheduledChange ? `Current until ${formatDate(scheduledChange.effectiveDate)}` : "Current plan"}
+                      </span>
+                    ) : isScheduledPlan ? (
+                      <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                        Scheduled {formatDate(scheduledChange.effectiveDate)}
                       </span>
                     ) : currentRank > cardRank ? (
                       planId === "free" ? (

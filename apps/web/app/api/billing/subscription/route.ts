@@ -5,6 +5,39 @@ import { getMonthlyExportCount, getPdfExportKind, getSubscription } from "../../
 import { reportError } from "../../../../lib/error-reporting";
 import { getStripe } from "../../../../lib/stripe";
 
+type ScheduledChange = {
+  plan: string;
+  effectiveDate: string | null;
+} | null;
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" ? value as Record<string, unknown> : null;
+}
+
+function timestampToIso(value: unknown): string | null {
+  return typeof value === "number" ? new Date(value * 1000).toISOString() : null;
+}
+
+function getScheduledChange(stripeSub: unknown): ScheduledChange {
+  const subscription = asRecord(stripeSub);
+  const schedule = asRecord(subscription?.schedule);
+  if (!schedule) return null;
+
+  const metadata = asRecord(schedule.metadata);
+  const scheduledPlan = typeof metadata?.scheduledPlan === "string"
+    ? metadata.scheduledPlan
+    : null;
+  if (!scheduledPlan) return null;
+
+  const currentPhase = asRecord(schedule.current_phase);
+  const effectiveDate = timestampToIso(currentPhase?.end_date);
+
+  return {
+    plan: scheduledPlan,
+    effectiveDate,
+  };
+}
+
 /**
  * GET /api/billing/subscription
  *
@@ -21,18 +54,20 @@ export async function GET() {
   const monthlyExportsUsed = await getMonthlyExportCount(user.id);
   let paymentMethod = null;
   let invoices: InvoiceSummary[] = [];
+  let scheduledChange: ScheduledChange = null;
 
   if (sub.stripeCustomerId) {
     try {
       const stripe = getStripe();
       const stripeSub = sub.stripeSubscriptionId
-        ? await stripe.subscriptions.retrieve(sub.stripeSubscriptionId)
+        ? await stripe.subscriptions.retrieve(sub.stripeSubscriptionId, { expand: ["schedule"] })
         : null;
       const invoiceList = await stripe.invoices.list({
         customer: sub.stripeCustomerId,
         limit: 5,
       });
 
+      scheduledChange = getScheduledChange(stripeSub);
       paymentMethod = await getDefaultPaymentMethodSummary(stripe, stripeSub, sub.stripeCustomerId);
       invoices = invoiceList.data.map(summarizeInvoice);
     } catch (error) {
@@ -58,6 +93,7 @@ export async function GET() {
     monthlyExportsUsed,
     paymentMethod,
     invoices,
+    scheduledChange,
     plans,
   });
 }

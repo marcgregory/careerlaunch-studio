@@ -20,6 +20,12 @@ const mockStripeInstance = {
   subscriptions: {
     retrieve: vi.fn(),
   },
+  invoices: {
+    list: vi.fn(),
+  },
+  paymentMethods: {
+    retrieve: vi.fn(),
+  },
 };
 
 vi.mock("../../../../lib/stripe", () => ({
@@ -138,7 +144,43 @@ describe("GET /api/billing/subscription", () => {
     expect(json.currentPeriodEnd).toBe("2026-08-04T00:00:00.000Z");
   });
 
-  it("requires authentication", async () => {
+
+  it("returns scheduled downgrade state from Stripe schedule metadata", async () => {
+    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue(
+      createMockSubscription({
+        plan: "ENTERPRISE",
+        status: "ACTIVE",
+        stripeCustomerId: "cus_123",
+        stripeSubscriptionId: "sub_stripe_1",
+        currentPeriodEnd: new Date("2026-08-04"),
+      }) as never,
+    );
+    vi.spyOn(prisma.exportJob, "count").mockResolvedValue(0 as never);
+    mockStripeInstance.subscriptions.retrieve.mockResolvedValue({
+      id: "sub_stripe_1",
+      default_payment_method: null,
+      schedule: {
+        id: "sched_123",
+        metadata: { scheduledPlan: "professional" },
+        current_phase: { start_date: 1783123200, end_date: 1785801600 },
+      },
+      items: { data: [] },
+    });
+    mockStripeInstance.invoices.list.mockResolvedValue({ data: [] });
+
+    const { GET } = await import("../subscription/route");
+    const res = await GET();
+    const json = await res.json();
+
+    expect(json.currentPlan).toBe("enterprise");
+    expect(json.scheduledChange).toEqual({
+      plan: "professional",
+      effectiveDate: "2026-08-04T00:00:00.000Z",
+    });
+    expect(mockStripeInstance.subscriptions.retrieve).toHaveBeenCalledWith("sub_stripe_1", {
+      expand: ["schedule"],
+    });
+  });  it("requires authentication", async () => {
     (requireApiUser as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: null,
       response: Response.json({ error: "Authentication required" }, { status: 401 }),
