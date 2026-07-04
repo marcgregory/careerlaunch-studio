@@ -104,42 +104,52 @@ function BillingContent() {
           : null;
 
   useEffect(() => {
+    // Only poll when returning from Stripe Checkout success
+    if (checkoutStatus !== "success") return;
+
     let cancelled = false;
-    let pollCount = 0;
-    const MAX_POLLS = 30; // ~30s total
+    const MAX_ATTEMPTS = 10;
+    const POLL_INTERVAL_MS = 1500;
+    const TIMEOUT_MS = 30_000; // hard stop after 30s
+    let attempts = 0;
 
-    async function load() {
-      try {
-        const res = await fetch("/api/billing/subscription");
-        const d = await res.json();
-        if (cancelled) return;
-        setData(d);
-        setLoading(false);
+    async function poll() {
+      const deadline = Date.now() + TIMEOUT_MS;
 
-        // If checkout just succeeded but we still see "free", keep polling
-        if (
-          checkoutStatus === "success" &&
-          d.currentPlan === "free" &&
-          pollCount < MAX_POLLS
-        ) {
-          pollCount++;
-          await new Promise((r) => setTimeout(r, 1000));
-          if (!cancelled) {
-            setLoading(true);
-            load();
+      while (!cancelled && attempts < MAX_ATTEMPTS && Date.now() < deadline) {
+        attempts++;
+        try {
+          const res = await fetch("/api/billing/subscription");
+          const d = await res.json();
+          if (cancelled) return;
+
+          // If the plan is no longer "free", the subscription is active
+          if (d.currentPlan !== "free") {
+            setData(d);
+            setLoading(false);
+            // Strip the checkout=success param so refreshing doesn't re-poll
+            router.replace("/billing", { scroll: false });
+            return;
           }
+        } catch {
+          // Transient network error — retry on next iteration
         }
-      } catch {
-        if (!cancelled) {
-          setError("Failed to load subscription data.");
-          setLoading(false);
+
+        if (!cancelled && attempts < MAX_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
         }
+      }
+
+      // Exhausted all attempts or timed out — stop loading and clean URL
+      if (!cancelled) {
+        setLoading(false);
+        router.replace("/billing", { scroll: false });
       }
     }
 
-    load();
+    poll();
     return () => { cancelled = true; };
-  }, [checkoutStatus]);
+  }, [checkoutStatus, router]);
 
   const handleUpgrade = async (planId: string) => {
     setUpgrading(planId);
