@@ -84,35 +84,56 @@ function BillingContent() {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const reason = searchParams?.get("reason");
   const checkoutStatus = searchParams?.get("checkout");
 
-  useEffect(() => {
-    if (reason === "resume_limit") {
-      setMessage("You've reached the free plan limit. Upgrade to create more resumes.");
-    }
-    if (checkoutStatus === "success") {
-      setMessage("Payment successful! Your plan has been upgraded.");
-    }
-    if (checkoutStatus === "canceled") {
-      setMessage("Checkout was canceled. No changes were made.");
-    }
-  }, [reason, checkoutStatus]);
+  // Derive message from URL params — no effect needed
+  const message = checkoutStatus === "success"
+    ? "Payment successful! Your plan has been upgraded."
+    : checkoutStatus === "canceled"
+      ? "Checkout was canceled. No changes were made."
+      : reason === "resume_limit"
+        ? "You've reached the free plan limit. Upgrade to create more resumes."
+        : null;
 
   useEffect(() => {
-    fetch("/api/billing/subscription")
-      .then((res) => res.json())
-      .then((d) => {
+    let cancelled = false;
+    let pollCount = 0;
+    const MAX_POLLS = 30; // ~30s total
+
+    async function load() {
+      try {
+        const res = await fetch("/api/billing/subscription");
+        const d = await res.json();
+        if (cancelled) return;
         setData(d);
         setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to load subscription data.");
-        setLoading(false);
-      });
-  }, []);
+
+        // If checkout just succeeded but we still see "free", keep polling
+        if (
+          checkoutStatus === "success" &&
+          d.currentPlan === "free" &&
+          pollCount < MAX_POLLS
+        ) {
+          pollCount++;
+          await new Promise((r) => setTimeout(r, 1000));
+          if (!cancelled) {
+            setLoading(true);
+            load();
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Failed to load subscription data.");
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [checkoutStatus]);
 
   const handleUpgrade = async (planId: string) => {
     setUpgrading(planId);
