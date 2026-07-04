@@ -19,6 +19,7 @@ const mockStripeInstance = {
   },
   subscriptions: {
     retrieve: vi.fn(),
+    update: vi.fn(),
   },
 };
 
@@ -207,5 +208,79 @@ describe("POST /api/billing/checkout", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(401);
+  });
+
+  it("upgrades existing active subscription in-place instead of creating a new checkout session", async () => {
+    // Simulate existing subscriber with Professional
+    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+      stripeSubscriptionId: "sub_active",
+      status: "ACTIVE",
+      plan: "PROFESSIONAL",
+      userId: "user_1",
+    } as never);
+
+    mockStripeInstance.subscriptions.retrieve.mockResolvedValue({
+      id: "sub_active",
+      status: "active",
+      items: {
+        data: [{ id: "si_item1", price: { id: "price_professional_mock" } }],
+      },
+    } as never);
+
+    mockStripeInstance.subscriptions.update.mockResolvedValue({} as never);
+
+    vi.spyOn(prisma.subscription, "update").mockResolvedValue({} as never);
+
+    const { POST } = await import("../checkout/route");
+    const req = new Request("http://localhost:3000/api/billing/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: "enterprise" }),
+    });
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    // Should NOT create a checkout session (no mode: "subscription" call)
+    expect(mockStripeInstance.checkout.sessions.create).not.toHaveBeenCalled();
+    // Should update the existing subscription instead
+    expect(mockStripeInstance.subscriptions.update).toHaveBeenCalledWith(
+      "sub_active",
+      expect.objectContaining({
+        items: [{ id: "si_item1", price: "price_enterprise_mock" }],
+        proration_behavior: "create_prorations",
+      }),
+    );
+    // Should redirect back to billing page with upgrade success
+    expect(json.url).toContain("/billing?upgrade=completed&plan=enterprise");
+  });
+
+  it("creates checkout session when existing subscription is canceled", async () => {
+    // Canceled subscription → should still create new Checkout Session
+    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+      stripeSubscriptionId: "sub_canceled",
+      status: "CANCELED",
+    } as never);
+
+    // The subscription has a stripeSubscriptionId but status is CANCELED,
+    // so the upgrade-in-place branch is skipped and Checkout Session is created.
+    mockStripeInstance.checkout.sessions.create.mockResolvedValue({
+      url: "https://checkout.stripe.com/pay/new",
+    });
+
+    const { POST } = await import("../checkout/route");
+    const req = new Request("http://localhost:3000/api/billing/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: "professional" }),
+    });
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalled();
+    expect(mockStripeInstance.subscriptions.update).not.toHaveBeenCalled();
   });
 });

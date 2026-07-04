@@ -92,13 +92,16 @@ function BillingContent() {
   const checkoutStatus = searchParams?.get("checkout");
 
   // Derive message from URL params — no effect needed
+  const upgradePlan = searchParams?.get("plan");
   const message = checkoutStatus === "success"
     ? "Payment successful! Your plan has been upgraded."
     : checkoutStatus === "canceled"
       ? "Checkout was canceled. No changes were made."
-      : reason === "resume_limit"
-        ? "You've reached the free plan limit. Upgrade to create more resumes."
-        : null;
+      : searchParams?.get("upgrade") === "completed"
+        ? `Your plan has been upgraded to ${upgradePlan ?? "the new plan"}. Your next invoice will reflect any prorated charges.`
+        : reason === "resume_limit"
+          ? "You've reached the free plan limit. Upgrade to create more resumes."
+          : null;
 
   useEffect(() => {
     let cancelled = false;

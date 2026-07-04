@@ -7,9 +7,15 @@ import { getRequestId } from "../../../../lib/request-id";
 /**
  * POST /api/billing/checkout
  *
- * Creates a Stripe Checkout Session for the given plan.
+ * Creates a Stripe Checkout Session for the given plan, OR upgrades the
+ * existing subscription in-place if the customer already has one.
  *
  * Body: { plan: "professional" | "enterprise" }
+ *
+ * For first-time subscribers: creates a Checkout Session → redirect to Stripe.
+ * For existing subscribers: swaps the price on the current subscription with
+ * proration → redirect back to billing with a success message.
+ * This prevents creating two active subscriptions and double-billing.
  */
 export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
@@ -59,7 +65,50 @@ export async function POST(request: Request) {
       });
     }
 
-    // Create checkout session
+    // ─── Existing subscriber? Upgrade in-place ──────────────────────────
+    // If the user already has a Stripe subscription, update its price
+    // with prorations instead of creating a second subscription.
+    // This prevents double-billing the customer (the core bug).
+    if (subscription?.stripeSubscriptionId && subscription?.status === "ACTIVE") {
+      const stripeSub = await getStripe().subscriptions.retrieve(
+        subscription.stripeSubscriptionId,
+      );
+
+      if (stripeSub.status === "active" || stripeSub.status === "trialing") {
+        const items = stripeSub.items as unknown as {
+          data: Array<{ id: string; price: Record<string, unknown> }>;
+        };
+
+        const itemId = items.data[0]?.id;
+        if (!itemId) {
+          throw new Error("No subscription items found to update");
+        }
+
+        await getStripe().subscriptions.update(
+          subscription.stripeSubscriptionId,
+          {
+            items: [{ id: itemId, price: priceId }],
+            proration_behavior: "create_prorations",
+          },
+        );
+
+        // Update local DB immediately for responsiveness; the
+        // customer.subscription.updated webhook will confirm it.
+        await prisma.subscription.update({
+          where: { userId: user.id },
+          data: {
+            plan: plan === "enterprise" ? "ENTERPRISE" : "PROFESSIONAL",
+          },
+        });
+
+        // Redirect back to billing page with success param
+        return Response.json({
+          url: `${getBaseUrl(request)}/billing?upgrade=completed&plan=${plan}`,
+        });
+      }
+    }
+
+    // ─── First-time subscriber → Checkout Session ──────────────────────
     const session = await getStripe().checkout.sessions.create({
       customer: stripeCustomerId,
       mode: "subscription",
