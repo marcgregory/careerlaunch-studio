@@ -5,104 +5,100 @@ Last updated: 2026-07-04
 ## Architecture
 
 ```
-                Vercel (Next.js)
-        ┌─────────────────────────┐
-        │ Resume Builder          │
-        │ Job Match               │
-        │ AI Analysis             │
-        │ Cover Letter            │
-        │ Authentication          │
-        └──────────┬──────────────┘
-                   │ HTTPS (POST /render, body: { html })
-                   ▼
-        ┌─────────────────────────┐
-        │ PDF Renderer Service    │
-        │ Railway / Docker        │
-        │                         │
-        │ Playwright + Chromium   │
-        └─────────────────────────┘
+                    Vercel (Next.js)
+ ┌──────────────────────────────────────────┐
+ │ Resume Builder                           │
+ │ AI Analysis / Suggestions / Diff / Apply │
+ │ Job Match                                │
+ │ Cover Letter Builder                     │
+ │ Authentication (password sessions)       │
+ │ PostgreSQL (Neon / Supabase)             │
+ └───────────────┬──────────────────────────┘
+                 │ POST /render
+                 │ Authorization: Bearer ****
+                 │ X-Request-ID: <uuid>
+                 │ AbortSignal.timeout(35000)
+                 ▼
+        PDF_RENDERER_URL
+                 │
+                 ▼
+        Docker PDF Renderer (Railway / etc.)
+ ┌──────────────────────────────────────────┐
+ │ Express HTTP server                      │
+ │ Browser pool (reused across requests)    │
+ │ Playwright + Chromium                    │
+ │ PDF bytes out                            │
+ └──────────────────────────────────────────┘
 ```
 
-PDF rendering is isolated into a standalone Docker service. The Vercel app generates HTML and sends it to the renderer via HTTP. This avoids bundling Chromium (~200 MB) into serverless deployments.
+PDF rendering is isolated into a standalone Docker service. The Vercel app generates HTML (`resumeToHtml`, `coverLetterToHtml`) and sends it to the renderer via HTTP. This avoids bundling Chromium (~200 MB) into serverless deployments.
 
-## Environments
+## The Two Services
 
-- Local: developer machine with local Postgres or hosted development database.
-- Preview: per-branch deploys for UI review.
-- Staging: production-like environment for Stripe test mode, migrations, and release checks.
-- Production: public app with live billing and monitored exports.
+### Service 1: Vercel (Next.js app)
 
-## Deployment Target
+Deployed from the monorepo root. Standard `vercel deploy`.
 
-- **Vercel** for the Next.js app.
-- **Neon** or **Supabase** for managed Postgres.
-- **Railway** (or any Docker host) for the PDF renderer service.
+**Required env vars:**
 
-This keeps operations light while supporting previews, rollbacks, managed TLS, and environment separation.
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `AUTH_SECRET` | Secret for session signing |
+| `PDF_RENDERER_URL` | Full URL of renderer's `/render` endpoint (e.g. `https://pdf-renderer.up.railway.app/render`) |
+| `PDF_RENDERER_TOKEN` | Shared secret — **must match** the renderer's `PDF_RENDERER_TOKEN` |
 
-## CI/CD
+`PDF_RENDERER_URL` + `PDF_RENDERER_TOKEN` must both be set in production/preview.
+When unset (local dev), the app falls back to the in-process Playwright renderer.
 
-Every pull request should run:
+### Service 2: Docker PDF Renderer
 
-- TypeScript check.
-- Lint.
-- Unit tests.
-- Integration tests where environment services are available.
-- Playwright smoke tests for critical paths.
-- Prisma migration validation.
+A standalone Node.js HTTP server at `services/pdf-renderer/`.
 
-## PDF Renderer Service
+**Endpoints:**
 
-A standalone Node.js HTTP server at `services/pdf-renderer/`:
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/render` | Accepts `{ html: string }`, returns `application/pdf` |
+| `GET` | `/health` | Returns `{ status: "ok", browserConnected: true/false }` |
 
-```
-POST /render
-Content-Type: application/json
-Body: { "html": "<!doctype html>..." }
-Response: application/pdf
-```
+**Renderer env vars:**
 
-### Building and running (Docker)
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3001` | HTTP listen port |
+| `PDF_RENDERER_TOKEN` | — | Shared secret for bearer auth (omit to disable auth — not recommended) |
+| `PDF_RENDERER_TIMEOUT_MS` | `30000` | Per-request render timeout in ms |
+| `PDF_RENDERER_MAX_HTML_SIZE` | `5242880` | Max accepted HTML payload in bytes (5 MB) |
+| `CHROMIUM_PATH` | — | Path to system Chromium binary (optional; auto-detected on the Docker image) |
+
+**Logs include `[<request-id>]` prefix** — correlate events across Vercel and the renderer via the `X-Request-ID` header.
+
+### Building and running the renderer (Docker)
 
 ```bash
 cd services/pdf-renderer
 
+# Build
 docker build -t careerlaunch-pdf-renderer .
 
+# Run
 docker run -d \
   -p 3001:3001 \
+  -e PDF_RENDERER_TOKEN=491ef5f3... \
   --name pdf-renderer \
   careerlaunch-pdf-renderer
 ```
-
-### Environment variables
-
-| Variable                      | Default   | Description                                              |
-|-------------------------------|-----------|----------------------------------------------------------|
-| `PORT`                        | `3001`    | Port to listen on                                        |
-| `CHROMIUM_PATH`               | —         | Path to system Chromium binary (optional)                |
-| `PDF_RENDERER_TOKEN`          | —         | Shared secret for bearer-auth (omit to disable auth)     |
-| `PDF_RENDERER_TIMEOUT_MS`     | `30000`   | Per-request render timeout in ms                         |
-| `PDF_RENDERER_MAX_HTML_SIZE`  | `5242880` | Max accepted HTML payload in bytes (default 5 MB)        |
 
 ### Deploying to Railway
 
 1. Create a new Railway project from the `services/pdf-renderer/` directory.
 2. Railway auto-detects the Dockerfile.
-3. Set `PORT=3001` and `PDF_RENDERER_TOKEN` in Railway environment.
-4. Note the public URL (e.g. `https://pdf-renderer.up.railway.app`).
+3. Set env vars in Railway: `PORT=3001`, `PDF_RENDERER_TOKEN=...`.
+4. Railway assigns a public URL (e.g. `https://pdf-renderer.up.railway.app`).
+5. Set `PDF_RENDERER_URL=https://pdf-renderer.up.railway.app/render` and `PDF_RENDERER_TOKEN=...` in Vercel.
 
-## Vercel Environment Variables
-
-| Variable            | Required | Description                                              |
-|---------------------|----------|----------------------------------------------------------|
-| `DATABASE_URL`      | Yes      | PostgreSQL connection string                             |
-| `AUTH_SECRET`       | Yes      | Secret for session signing                               |
-| `PDF_RENDERER_URL`  | Yes*     | URL of the PDF renderer service (e.g. `https://pdf-renderer.up.railway.app/render`) |
-| `PDF_RENDERER_TOKEN`| Yes*     | Shared secret matching the renderer's `PDF_RENDERER_TOKEN` |
-
-Set both `PDF_RENDERER_URL` and `PDF_RENDERER_TOKEN` in Vercel production/preview environments.
-When `PDF_RENDERER_URL` is unset (local dev), the app falls back to the in-process Playwright renderer.
+**The renderer must be deployed before PDF export works in production.**
 
 ## Local Development
 
@@ -117,7 +113,18 @@ npx playwright install chromium
 npm run dev
 ```
 
-PDF export will use the in-process Playwright renderer when `PDF_RENDERER_URL` is not set.
+PDF export uses the in-process Playwright renderer when `PDF_RENDERER_URL` is not set.
+
+## CI/CD
+
+Every pull request should run:
+
+- TypeScript check (`npm run typecheck`)
+- Lint (`npm run lint`)
+- Unit tests (`npm run test`)
+- Integration tests where environment services are available
+- Playwright smoke tests for critical paths (`npm run test:e2e`)
+- Prisma migration validation
 
 ## Release Process
 

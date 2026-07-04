@@ -22,11 +22,9 @@ Last updated: 2026-07-03
 - Template-specific PDF QA tests verify each template produces valid, single-page PDF output.
 - Sprint 3A — AI Analysis Engine (read-only). `v0.3.1-alpha` tagged. Analysis pipeline, suggestion schema, provider abstraction, MockProvider, health dashboard, accept/dismiss UI.
 - Sprint 3A.5 — Apply Engine + Acceptance Persistence. Pure-function apply layer, API endpoint, database persistence for accepted suggestions, stale-target 409 handling, 5 safe operations (replace_summary, replace_bullet, replace_skill, add_skill, remove_skill), suggestion-to-operation mapping, and Playwright E2E acceptance tests.
-
-## Completed
-
 - Sprint 3C — Job Match MVP. Paste-only JD comparison, dictionary-based skill extraction, match score, missing/present skills, suggestions through Review → Diff → Apply. AnalysisRun table. Operation factory upgraded to createOperations(suggestion, resume). URL job-description fetching explicitly deferred (paste-only MVP).
 - Sprint 3D — Cover Letter Builder MVP. User picks a resume, optionally pastes a job description, mock AI generates a draft cover letter, user edits manually, saves, and exports to PDF. No auto-send, no email integration. Reuses template engine and PDF renderer. `v0.4.0-alpha` tagged.
+- PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds. Production hardening: bearer auth, timeouts, health endpoint, request validation, browser reuse, correlation ID logging.
 
 ## Sprint Queue
 

@@ -1,6 +1,6 @@
 # CareerLaunch Studio Project Status
 
-Last updated: 2026-07-03
+Last updated: 2026-07-04
 
 ## Current Sprint
 
@@ -130,11 +130,11 @@ The template system has been refactored from per-template conditionals to a regi
 
 ## Architecture Status
 
-Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, Stripe, and deferred queue infrastructure. Auth currently uses first-party password sessions with signed HTTP-only cookies. PDF rendering lives in `packages/rendering` with a browser-safe preview entry and a server-only Playwright renderer entry. The template registry is the single source of truth for both browser preview and PDF rendering. AI suggestions flow through a layered pipeline: Analysis → Suggestion → Review UI → Diff → Apply Engine → Persistence, with Job Match now using the same pipeline unchanged.
+Architecture selected: TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, Stripe, and deferred queue infrastructure. Auth currently uses first-party password sessions with signed HTTP-only cookies. PDF rendering is separated into a standalone Docker service (`services/pdf-renderer/`) authenticated with a shared bearer token, with the Vercel app falling back to the in-process Playwright renderer when `PDF_RENDERER_URL` is unset (local dev). The template registry is the single source of truth for both browser preview and PDF rendering. AI suggestions flow through a layered pipeline: Analysis → Suggestion → Review UI → Diff → Apply Engine → Persistence, with Job Match now using the same pipeline unchanged.
 
 ## Platform Status
 
-Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. Build passes with 144 AI tests and 2 domain tests.
+Next.js app scaffold exists and production build passes locally. Prisma schema and initial PostgreSQL migration exist. Build passes with 146 AI tests and 2 domain tests. PDF renderer service has production hardening: bearer auth, timeouts, request validation, health endpoint, browser reuse, correlation ID logging, and a Dockerfile for Railway deployment.
 
 ## Blockers
 

@@ -69,7 +69,7 @@ async function getBrowser() {
     _browserRefCount++;
     return _browser;
   }
-  // Launch on first request or reconnect after disconnect
+  console.log(`[browser] launching chromium${CHROMIUM_PATH ? ` (path: ${CHROMIUM_PATH})` : ""}`);
   _browser = await chromium.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     executablePath: CHROMIUM_PATH || undefined,
@@ -79,6 +79,7 @@ async function getBrowser() {
 
   // If the browser disconnects unexpectedly, clear the reference
   _browser.on("disconnected", () => {
+    console.error("[browser] chromium disconnected unexpectedly");
     _browser = null;
     _browserRefCount = 0;
   });
