@@ -9,7 +9,7 @@ import { reportError } from "../../../../lib/error-reporting";
  * Creates a Stripe Customer Portal session so the user can manage
  * their subscription, invoices, and payment methods.
  */
-export async function POST() {
+export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
   if (response) return response;
 
@@ -27,7 +27,7 @@ export async function POST() {
 
     const session = await getStripe().billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
-      return_url: `${getBaseUrl()}/account/billing`,
+      return_url: `${getBaseUrl(request)}/account/billing`,
     });
 
     return Response.json({ url: session.url });

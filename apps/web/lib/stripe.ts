@@ -40,6 +40,24 @@ export function getEnterprisePriceId(): string {
 }
 
 /** Base URL for redirects (Stripe Checkout return URLs). */
-export function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+export function getBaseUrl(request?: Request): string {
+  // Prefer the explicit env var (Vercel project setting)
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  // Derive from the incoming request headers (works on Vercel without config)
+  if (request) {
+    const origin = request.headers.get("origin");
+    if (origin) return origin;
+    const host = request.headers.get("host");
+    if (host) {
+      const proto = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+      return `${proto}://${host}`;
+    }
+  }
+  // Last resort — Vercel preview deployments
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
 }
