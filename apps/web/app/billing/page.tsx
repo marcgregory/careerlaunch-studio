@@ -264,31 +264,49 @@ function BillingContent() {
                   </ul>
 
                   <div className="mt-8">
-                    {isCurrent ? (
-                      <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
-                        Current plan
-                      </span>
-                    ) : planId === "free" ? (
-                      <span className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#4b4b4b]">
-                        Downgrade (contact support)
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleUpgrade(planId)}
-                        disabled={upgrading === planId}
-                        className={`${primaryButtonClass} w-full justify-center`}
-                      >
-                        {upgrading === planId ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" /> Processing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles size={16} /> Upgrade to {planId}
-                          </>
-                        )}
-                      </button>
-                    )}
+                    {(() => {
+                      const PLAN_RANK: Record<string, number> = {
+                        free: 0,
+                        professional: 1,
+                        enterprise: 2,
+                      };
+                      const currentRank = PLAN_RANK[data?.currentPlan ?? "free"];
+                      const cardRank = PLAN_RANK[planId];
+
+                      if (isCurrent) {
+                        return (
+                          <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                            Current plan
+                          </span>
+                        );
+                      }
+
+                      if (currentRank > cardRank) {
+                        return (
+                          <span className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#4b4b4b]">
+                            Downgrade (contact support)
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <button
+                          onClick={() => handleUpgrade(planId)}
+                          disabled={upgrading === planId}
+                          className={`${primaryButtonClass} w-full justify-center`}
+                        >
+                          {upgrading === planId ? (
+                            <>
+                              <Loader2 size={16} className="animate-spin" /> Processing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles size={16} /> Upgrade to {planId}
+                            </>
+                          )}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               </article>
