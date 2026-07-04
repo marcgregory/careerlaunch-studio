@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Sparkles, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
+import { AlertTriangle, Check, CreditCard, Sparkles, ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 
@@ -17,6 +17,17 @@ type SubscriptionData = {
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd: string | null;
   plans: PlanInfo[];
+};
+
+type UpgradePreview = {
+  todayCharge: number;
+  currency: string;
+  currentPlan: string;
+  newPlan: string;
+  nextRenewal: number;
+  renewalDate: string | null;
+  paymentMethod: { brand: string; last4: string } | null;
+  lines: Array<{ label: string; amount: number }>;
 };
 
 const DEFAULT_SUBSCRIPTION_DATA: SubscriptionData = {
@@ -96,6 +107,32 @@ const FEATURE_VALUES: Record<string, Record<string, string>> = {
   },
 };
 
+const PLAN_RANK: Record<string, number> = {
+  free: 0,
+  professional: 1,
+  enterprise: 2,
+};
+
+function planLabel(plan: string) {
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
+}
+
+function formatMoney(amount: number, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(amount);
+}
+
+function formatDate(date: string | null) {
+  if (!date) return "your next renewal date";
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function BillingPage() {
   return (
     <Suspense fallback={
@@ -114,16 +151,17 @@ function BillingContent() {
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncingCheckout, setSyncingCheckout] = useState(false);
-  const [upgrading, setUpgrading] = useState<string | null>(null);
-  const [portalLoading, setPortalLoading] = useState(false);
+  const [busyPlan, setBusyPlan] = useState<string | null>(null);
+  const [confirmingUpgrade, setConfirmingUpgrade] = useState(false);
+  const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
+  const [downgradePlan, setDowngradePlan] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reason = searchParams?.get("reason");
   const checkoutStatus = searchParams?.get("checkout");
-
-  // Derive message from URL params — no effect needed
   const upgradePlan = searchParams?.get("plan");
-  const message = checkoutStatus === "success"
+  const message = success ?? (checkoutStatus === "success"
     ? "Payment successful! Your plan has been upgraded."
     : checkoutStatus === "canceled"
       ? "Checkout was canceled. No changes were made."
@@ -131,7 +169,7 @@ function BillingContent() {
         ? `Your plan has been upgraded to ${upgradePlan ?? "the new plan"}. Your next invoice will reflect any prorated charges.`
         : reason === "resume_limit"
           ? "You've reached the free plan limit. Upgrade to create more resumes."
-          : null;
+          : null);
 
   useEffect(() => {
     let cancelled = false;
@@ -165,13 +203,12 @@ function BillingContent() {
   }, []);
 
   useEffect(() => {
-    // Only poll when returning from Stripe Checkout success. Keep cards visible while syncing.
     if (checkoutStatus !== "success") return;
 
     let cancelled = false;
     const MAX_ATTEMPTS = 10;
     const POLL_INTERVAL_MS = 1500;
-    const TIMEOUT_MS = 30_000; // hard stop after 30s
+    const TIMEOUT_MS = 30_000;
     let attempts = 0;
 
     async function poll() {
@@ -187,16 +224,14 @@ function BillingContent() {
           const d = normalizeSubscriptionData(await res.json());
           if (cancelled) return;
 
-          // If the plan is no longer "free", the subscription is active
           if (d.currentPlan !== "free") {
             setData(d);
             setSyncingCheckout(false);
-            // Strip the checkout=success param so refreshing doesn't re-poll
             router.replace("/billing", { scroll: false });
             return;
           }
         } catch {
-          // Transient network error - retry on next iteration
+          // Retry transient failures while Stripe webhooks settle.
         }
 
         if (!cancelled && attempts < MAX_ATTEMPTS) {
@@ -204,7 +239,6 @@ function BillingContent() {
         }
       }
 
-      // Exhausted all attempts or timed out - keep plans visible and clean URL
       if (!cancelled) {
         setSyncingCheckout(false);
         setError("Payment succeeded, but we're still waiting for Stripe to confirm your subscription. The plan cards remain available below.");
@@ -216,39 +250,47 @@ function BillingContent() {
     return () => { cancelled = true; };
   }, [checkoutStatus, router]);
 
-  const handleUpgrade = async (planId: string) => {
-    setUpgrading(planId);
+  const refreshSubscription = async () => {
+    const res = await fetch("/api/billing/subscription");
+    if (!res.ok) return;
+    setData(normalizeSubscriptionData(await res.json()));
+  };
+
+  const openUpgradePreview = async (planId: string) => {
+    setBusyPlan(planId);
     setError(null);
+    setSuccess(null);
 
     try {
-      const res = await fetch("/api/billing/checkout", {
+      const res = await fetch("/api/billing/preview-upgrade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: planId }),
       });
 
       const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to preview upgrade.");
 
-      if (res.ok && result.url) {
-        window.location.assign(result.url);
-      } else {
-        setError(result.error || "Failed to start checkout.");
-        setUpgrading(null);
-      }
-    } catch {
-      setError("Network error. Please try again.");
-      setUpgrading(null);
+      setUpgradePreview(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to preview upgrade.");
+    } finally {
+      setBusyPlan(null);
     }
   };
 
-  const handlePortal = async () => {
-    setPortalLoading(true);
+  const confirmUpgrade = async () => {
+    if (!upgradePreview) return;
+
+    setConfirmingUpgrade(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/billing/portal", {
+      const plan = upgradePreview.newPlan.toLowerCase();
+      const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
       });
 
       const result = await res.json();
@@ -256,12 +298,39 @@ function BillingContent() {
       if (res.ok && result.url) {
         window.location.assign(result.url);
       } else {
-        setError(result.error || "Failed to open billing portal.");
-        setPortalLoading(false);
+        setError(result.error || "Failed to start upgrade.");
       }
     } catch {
       setError("Network error. Please try again.");
-      setPortalLoading(false);
+    } finally {
+      setConfirmingUpgrade(false);
+    }
+  };
+
+  const confirmDowngrade = async () => {
+    if (!downgradePlan) return;
+
+    setBusyPlan(downgradePlan);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch("/api/billing/schedule-downgrade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: downgradePlan }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to schedule downgrade.");
+
+      setDowngradePlan(null);
+      setSuccess(`${result.scheduledPlan} is scheduled for ${formatDate(result.effectiveDate)}. Your ${result.currentPlan} features remain available until then.`);
+      await refreshSubscription();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to schedule downgrade.");
+    } finally {
+      setBusyPlan(null);
     }
   };
 
@@ -324,6 +393,8 @@ function BillingContent() {
             const isCurrent = data?.currentPlan === planId;
             const isProfessional = planId === "professional";
             const values = FEATURE_VALUES[planId];
+            const currentRank = PLAN_RANK[data?.currentPlan ?? "free"];
+            const cardRank = PLAN_RANK[planId];
 
             return (
               <article
@@ -375,89 +446,42 @@ function BillingContent() {
                   </ul>
 
                   <div className="mt-8">
-                    {(() => {
-                      const PLAN_RANK: Record<string, number> = {
-                        free: 0,
-                        professional: 1,
-                        enterprise: 2,
-                      };
-                      const currentRank = PLAN_RANK[data?.currentPlan ?? "free"];
-                      const cardRank = PLAN_RANK[planId];
-
-                      if (isCurrent) {
-                        const cancelDate = data?.cancelAtPeriodEnd && data?.currentPeriodEnd
-                          ? new Date(data.currentPeriodEnd).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : null;
-
-                        return (
-                          <div className="space-y-2">
-                            <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
-                              {cancelDate ? `Current plan — cancels ${cancelDate}` : "Current plan"}
-                            </span>
-                            {cancelDate && (
-                              <button
-                                onClick={handlePortal}
-                                disabled={portalLoading}
-                                className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-2 text-center text-xs font-black uppercase tracking-[0.08em] text-[#6bbf22] hover:bg-[#f3f3f3]"
-                              >
-                                {portalLoading ? (
-                                  <Loader2 size={14} className="mx-auto animate-spin" />
-                                ) : (
-                                  "Reactivate"
-                                )}
-                              </button>
-                            )}
-                          </div>
-                        );
-                      }
-
-                      if (currentRank > cardRank) {
-                        // Downgrade — send to Stripe Customer Portal (or show contact support if no portal)
-                        const hasStripeCustomer = data?.currentPlan !== "free";
-                        if (hasStripeCustomer) {
-                          return (
-                            <button
-                              onClick={handlePortal}
-                              disabled={portalLoading}
-                              className={`${secondaryButtonClass} w-full justify-center`}
-                            >
-                              {portalLoading ? (
-                                <Loader2 size={16} className="animate-spin" />
-                              ) : (
-                                <ExternalLink size={16} />
-                              )}
-                              Change plan
-                            </button>
-                          );
-                        }
-                        return (
-                          <span className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#4b4b4b]">
-                            Contact support
-                          </span>
-                        );
-                      }
-
-                      return (
+                    {isCurrent ? (
+                      <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                        Current plan
+                      </span>
+                    ) : currentRank > cardRank ? (
+                      planId === "free" ? (
+                        <span className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#4b4b4b]">
+                          Contact support
+                        </span>
+                      ) : (
                         <button
-                          onClick={() => handleUpgrade(planId)}
-                          disabled={upgrading === planId}
-                          className={`${primaryButtonClass} w-full justify-center`}
+                          onClick={() => setDowngradePlan(planId)}
+                          disabled={busyPlan === planId}
+                          className={`${secondaryButtonClass} w-full justify-center`}
                         >
-                          {upgrading === planId ? (
-                            <>
-                              <Loader2 size={16} className="animate-spin" /> Processing...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles size={16} /> Upgrade to {planId}
-                            </>
-                          )}
+                          {busyPlan === planId ? <Loader2 size={16} className="animate-spin" /> : <AlertTriangle size={16} />}
+                          Downgrade
                         </button>
-                      );
-                    })()}
+                      )
+                    ) : (
+                      <button
+                        onClick={() => openUpgradePreview(planId)}
+                        disabled={busyPlan === planId}
+                        className={`${primaryButtonClass} w-full justify-center`}
+                      >
+                        {busyPlan === planId ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" /> Previewing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={16} /> Upgrade to {planId}
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>
@@ -465,6 +489,117 @@ function BillingContent() {
           })}
         </section>
       </div>
+
+      {upgradePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6bbf22]">Confirm upgrade</p>
+                <h2 className="mt-2 font-signal text-3xl font-black tracking-[-0.05em]">
+                  Upgrade to {upgradePreview.newPlan}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUpgradePreview(null)}
+                className="grid h-10 w-10 place-items-center rounded-full border border-[#123c3a]/10 hover:bg-[#f3f3f3]"
+                aria-label="Close upgrade preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-[#f3f3f3] p-5">
+              <p className="text-sm font-black text-[#123c3a]">You&apos;ll be charged today</p>
+              <div className="mt-4 space-y-3">
+                {upgradePreview.lines.map((line, index) => (
+                  <div key={`${line.label}-${index}`} className="flex items-center justify-between gap-4 text-sm">
+                    <span className="font-medium text-[#4b4b4b]">{line.label}</span>
+                    <span className="font-black text-[#123c3a]">{formatMoney(line.amount, upgradePreview.currency)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-[#123c3a]/10 pt-4">
+                <span className="text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">Total today</span>
+                <span className="font-signal text-3xl font-black tracking-[-0.04em]">
+                  {formatMoney(upgradePreview.todayCharge, upgradePreview.currency)}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-[#123c3a]/10 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#4b4b4b]">Next renewal</p>
+                <p className="mt-2 text-sm font-black text-[#123c3a]">{formatDate(upgradePreview.renewalDate)}</p>
+                <p className="text-sm font-medium text-[#4b4b4b]">
+                  {formatMoney(upgradePreview.nextRenewal, upgradePreview.currency)}/month
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#123c3a]/10 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#4b4b4b]">Payment method</p>
+                <p className="mt-2 flex items-center gap-2 text-sm font-black capitalize text-[#123c3a]">
+                  <CreditCard size={16} />
+                  {upgradePreview.paymentMethod
+                    ? `${upgradePreview.paymentMethod.brand} ending ${upgradePreview.paymentMethod.last4}`
+                    : "Collected in Stripe Checkout"}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setUpgradePreview(null)}
+                className={secondaryButtonClass}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmUpgrade}
+                disabled={confirmingUpgrade}
+                className={primaryButtonClass}
+              >
+                {confirmingUpgrade ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {downgradePlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-orange-600">Schedule downgrade</p>
+            <h2 className="mt-2 font-signal text-3xl font-black tracking-[-0.05em]">
+              Downgrade to {planLabel(downgradePlan)}?
+            </h2>
+            <p className="mt-4 text-sm font-medium leading-6 text-[#4b4b4b]">
+              Your {planLabel(data?.currentPlan ?? "current")} features remain available until {formatDate(data?.currentPeriodEnd ?? null)}. Your subscription will renew as {planLabel(downgradePlan)} afterward.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setDowngradePlan(null)}
+                className={secondaryButtonClass}
+              >
+                Keep {planLabel(data?.currentPlan ?? "plan")}
+              </button>
+              <button
+                type="button"
+                onClick={confirmDowngrade}
+                disabled={busyPlan === downgradePlan}
+                className={primaryButtonClass}
+              >
+                {busyPlan === downgradePlan ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                Schedule downgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

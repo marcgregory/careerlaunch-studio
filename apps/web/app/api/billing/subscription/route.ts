@@ -1,6 +1,9 @@
-import { requireApiUser } from "../../../../lib/auth";
-import { getSubscription, getPdfExportKind, getMonthlyExportCount } from "../../../../lib/entitlements";
 import { getAllPlans } from "@careerlaunch/domain";
+import { requireApiUser } from "../../../../lib/auth";
+import { getDefaultPaymentMethodSummary, type InvoiceSummary, summarizeInvoice } from "../../../../lib/billing-stripe";
+import { getMonthlyExportCount, getPdfExportKind, getSubscription } from "../../../../lib/entitlements";
+import { reportError } from "../../../../lib/error-reporting";
+import { getStripe } from "../../../../lib/stripe";
 
 /**
  * GET /api/billing/subscription
@@ -16,6 +19,29 @@ export async function GET() {
   const planId = sub.plan.toLowerCase();
   const pdfExportKind = await getPdfExportKind(user.id);
   const monthlyExportsUsed = await getMonthlyExportCount(user.id);
+  let paymentMethod = null;
+  let invoices: InvoiceSummary[] = [];
+
+  if (sub.stripeCustomerId) {
+    try {
+      const stripe = getStripe();
+      const stripeSub = sub.stripeSubscriptionId
+        ? await stripe.subscriptions.retrieve(sub.stripeSubscriptionId)
+        : null;
+      const invoiceList = await stripe.invoices.list({
+        customer: sub.stripeCustomerId,
+        limit: 5,
+      });
+
+      paymentMethod = await getDefaultPaymentMethodSummary(stripe, stripeSub, sub.stripeCustomerId);
+      invoices = invoiceList.data.map(summarizeInvoice);
+    } catch (error) {
+      reportError(error, "billing-subscription-stripe-summary", {
+        route: "billing-subscription",
+        userId: user.id,
+      });
+    }
+  }
 
   const plans = getAllPlans().map((plan) => ({
     id: plan.id,
@@ -30,6 +56,8 @@ export async function GET() {
     currentPeriodEnd: sub.currentPeriodEnd?.toISOString() ?? null,
     pdfExportKind,
     monthlyExportsUsed,
+    paymentMethod,
+    invoices,
     plans,
   });
 }
