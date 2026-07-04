@@ -3,6 +3,48 @@ import { prisma } from "../../../../lib/prisma";
 import { reportError } from "../../../../lib/error-reporting";
 
 /**
+ * Safely check whether a Stripe event has been processed already.
+ * If the ProcessedStripeEvent table doesn't exist (e.g. pending migration),
+ * we degrade gracefully — no idempotency until the migration runs.
+ */
+async function isDuplicateEvent(eventId: string): Promise<boolean> {
+  try {
+    const alreadyProcessed = await prisma.processedStripeEvent.findUnique({
+      where: { id: eventId },
+    });
+    return alreadyProcessed !== null;
+  } catch (err) {
+    // P2021 = table not found
+    if (err instanceof Error && err.constructor.name === "PrismaClientKnownRequestError") {
+      const code = (err as unknown as { code: string }).code;
+      if (code === "P2021") {
+        console.warn(`[webhook] ProcessedStripeEvent table missing — run 'prisma migrate deploy'. Skipping idempotency check.`);
+        return false;
+      }
+    }
+    throw err;
+  }
+}
+
+/**
+ * Safely record a processed event ID. Gracefully handles a missing table.
+ */
+async function recordProcessedEvent(eventId: string): Promise<void> {
+  try {
+    await prisma.processedStripeEvent.create({ data: { id: eventId } }).catch(() => {});
+  } catch (err) {
+    if (err instanceof Error && err.constructor.name === "PrismaClientKnownRequestError") {
+      const code = (err as unknown as { code: string }).code;
+      if (code === "P2021") {
+        console.warn(`[webhook] ProcessedStripeEvent table missing — skipping event record for ${eventId}`);
+        return;
+      }
+    }
+    throw err;
+  }
+}
+
+/**
  * POST /api/billing/webhook
  *
  * Receives Stripe webhook events to keep the local Subscription
@@ -50,10 +92,7 @@ export async function POST(request: Request) {
 
   // ─── Idempotency check ───────────────────────────────────
   // Strip delivers events at least once. Skip events we've already processed.
-  const alreadyProcessed = await prisma.processedStripeEvent.findUnique({
-    where: { id: eventId },
-  });
-  if (alreadyProcessed) {
+  if (await isDuplicateEvent(eventId)) {
     console.log(`[webhook] skipping duplicate event ${eventId}`);
     return Response.json({ received: true });
   }
@@ -225,9 +264,8 @@ export async function POST(request: Request) {
     }
 
     // Record the event ID for idempotency.
-    // Use create with a catch for any rare race condition where two deliveries
-    // of the same event arrive simultaneously.
-    await prisma.processedStripeEvent.create({ data: { id: eventId } }).catch(() => {});
+    // Gracefully handles a missing ProcessedStripeEvent table.
+    await recordProcessedEvent(eventId);
 
     return Response.json({ received: true });
   } catch (err) {
