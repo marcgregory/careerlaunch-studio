@@ -2,7 +2,29 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
-## 0.4.0-alpha - 2026-07-03
+## 0.5.0-alpha - 2026-07-04
+
+### Added
+
+- **Sprint 4 — Resume Import + Version Duplication**
+- **Version duplication** — `POST /api/resumes/:resumeId/duplicate` clones a resume with ownership check, preserves all content/template/structure, and creates a new `ResumeVersion` with source reference. "Duplicate" button on each dashboard resume card.
+- **Text import parser** (`packages/ai/src/import/text-parser.ts`) — regex-based parser that detects sections (summary, experience, education, skills, certifications, projects), extracts contact info (name, email, phone, location, website), and returns `{ parsed, confidence, warnings }`. Pure function, no AI dependency.
+- **`POST /api/import/text`** — authenticated API route, max 50 KB, returns parse result with confidence score.
+- **`/import` page** — full import flow: paste text → parse → preview parsed data → create draft → redirect to builder. States: idle, parsing (spinner), preview (low-confidence warning banner, editable data display), saving, error. Confidence threshold <50% triggers warning banner.
+- **Documentation updates** — ROADMAP, PROJECT_STATUS, DEPLOYMENT.md, CHANGELOG updated for Sprint 4 completion.
+
+### Changed
+
+- PDF rendering architecture: separated into standalone Docker service (`services/pdf-renderer/`), removing `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds. Production hardening: bearer auth, timeouts, health endpoint, request validation, browser reuse, correlation ID logging.
+- Dashboard: added "Import" button (secondary style) next to "New resume" and "Duplicate" button (Copy icon) on each resume card.
+- tsconfig.base.json: added `@careerlaunch/ai/*` path for subpath imports.
+
+### Removed
+
+- `@sparticuz/chromium-min` dependency from root `package.json` and `packages/rendering/package.json`.
+- `CHROMIUM_PACK_URL` env var — replaced by `PDF_RENDERER_URL` + `PDF_RENDERER_TOKEN`.
+- Vercel-specific Chromium launch logic from `packages/rendering/src/browser.ts`.
+- Postinstall Playwright hacks from root `package.json`.
 
 ### Added
 

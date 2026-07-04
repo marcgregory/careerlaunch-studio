@@ -3,6 +3,7 @@ import { ArrowRight, FileText, Gauge, Layers3, LogOut, Plus, Sparkles } from "lu
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
+import { DuplicateButton } from "./duplicate-button";
 
 type DashboardResume = {
   id: string;
@@ -46,6 +47,9 @@ export default async function DashboardPage() {
                 <LogOut size={18} /> Sign out
               </button>
             </form>
+            <Link href="/import" className={secondaryButtonClass}>
+              <FileText size={18} /> Import
+            </Link>
             <Link href="/builder" className={primaryButtonClass}>
               <Plus size={18} /> New resume
             </Link>
@@ -87,9 +91,12 @@ export default async function DashboardPage() {
                       {resume.targetRole || "Untargeted resume"} - Updated {resume.updatedAt.toLocaleDateString()}
                     </p>
                   </div>
-                  <Link href={`/builder?resumeId=${resume.id}`} className={secondaryButtonClass}>
-                    Continue <ArrowRight size={18} />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <DuplicateButton resumeId={resume.id} />
+                    <Link href={`/builder?resumeId=${resume.id}`} className={secondaryButtonClass}>
+                      Continue <ArrowRight size={18} />
+                    </Link>
+                  </div>
                 </article>
               ))
             )}

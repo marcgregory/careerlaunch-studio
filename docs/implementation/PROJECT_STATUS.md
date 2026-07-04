@@ -6,9 +6,26 @@ Last updated: 2026-07-04
 
 Sprint 4 — Import Existing Resume and Version Duplication.
 
-### Delivered This Sprint (3D)
+### Delivered This Sprint (Sprint 4)
 
-Sprint 3D — Cover Letter Builder MVP is complete and tagged `v0.4.0-alpha`.
+Sprint 4 is complete and tagged `v0.5.0-alpha`.
+
+**Version Duplication (4A):**
+- `POST /api/resumes/:resumeId/duplicate` — ownership-checked clone endpoint. Creates a new `ResumeDocument` with title `"Copy of {original}"` and a `ResumeVersion` with source reference.
+- Dashboard: "Duplicate" button (Copy icon) on each resume card. Client-side component calls the API and refreshes the list.
+- Preserves all content, template, section order, and structure. Original is never modified.
+
+**Resume Import MVP (4B):**
+- `packages/ai/src/import/text-parser.ts` — regex-based section parser. Detects summary, experience, education, skills, certifications, projects sections; extracts contact info (name, email, phone, location, website). Pure function with no AI dependency. Returns `{ parsed, confidence, warnings }`.
+- `POST /api/import/text` — authenticated, max 50 KB payload, returns parse result.
+- `/import` page — paste → parse → preview → create draft flow. States: idle, parsing (spinner), preview (with confidence warning), saving, error. Confidence <50% triggers warning banner. Import creates a new draft, never mutates existing resumes.
+- Dashboard: "Import" button added alongside "New resume".
+
+**PDF Renderer Architecture (between sprints):**
+- PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds.
+- Production hardening: bearer auth (`PDF_RENDERER_TOKEN`), timeouts (30s), health endpoint (`GET /health`), request validation (5 MB max), browser reuse across requests, correlation ID logging (`X-Request-ID`).
+- Env gate: `PDF_RENDERER_URL` set → external renderer; unset → in-process Playwright (local dev).
+- `v0.4.1-alpha` tagged after PDF architecture separation.
 
 **Cover Letter Model & Persistence (`prisma/schema.prisma` + migration):**
 - New `CoverLetter` model linked to `User` and `ResumeDocument` (one per resume, upsert).
@@ -83,7 +100,6 @@ Job Match JD parsing is paste-only. URL-based job-description fetching is explic
 
 ### Next Up
 
-- Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 - Future — URL job-description fetching for Job Match.
 
@@ -145,15 +161,15 @@ Next.js app scaffold exists and production build passes locally. Prisma schema a
 
 ## Next Milestone
 
-Complete Sprint 4 — Import Existing Resume and Version Duplication.
+Complete Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 
 ## Last Build
 
-Local build verification passed on 2026-07-03:
+Local build verification passed on 2026-07-04:
 
-- `npm run build` — passes
-- `npm run test` — 144/144 AI tests + 2/2 domain tests pass (8 new cover letter tests)
-- `npm run typecheck` — passes (AI, rendering, domain packages)
+- `npm run build` — passes (includes new `/import` page, `/api/import/text`, `/api/resumes/:resumeId/duplicate`)
+- `npm run test` — 146/146 AI tests + 2/2 domain tests pass
+- `npm run typecheck` — passes (AI, rendering, domain packages, web app)
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
 
 Playwright covers anonymous auth protection, database-backed signup/save/real-PDF-export, repeated PDF render stability, builder section/item ordering persistence, visual regression across all 4 templates, template-specific PDF QA, suggestion review modal flow, suggestion acceptance via modal, stale-target 409 handling, cancel review modal behavior, and apply API persistence.

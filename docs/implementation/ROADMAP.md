@@ -1,6 +1,6 @@
 # CareerLaunch Studio Roadmap
 
-Last updated: 2026-07-03
+Last updated: 2026-07-04
 
 ## Completed
 
@@ -28,7 +28,6 @@ Last updated: 2026-07-03
 
 ## Sprint Queue
 
-- Sprint 4 — Import Existing Resume and Version Duplication.
 - Sprint 5 — Paid Export Gates, Premium Template Entitlements, Subscription Tier Enforcement.
 
 ## Future

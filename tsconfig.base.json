@@ -30,6 +30,9 @@
                                           "@careerlaunch/ai": [
                                                                   "packages/ai/src/index.ts"
                                                               ],
+                                          "@careerlaunch/ai/*": [
+                                                                  "packages/ai/src/*"
+                                                              ],
                                           "@careerlaunch/rendering/pdf":  [
                                                                               "packages/rendering/src/pdf.tsx"
                                                                           ],
