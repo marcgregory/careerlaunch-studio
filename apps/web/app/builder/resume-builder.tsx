@@ -28,7 +28,7 @@ import {
 import { fieldClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import type { ApplyOperation } from "@careerlaunch/ai";
 import { HealthDashboard } from "./_analysis/health-dashboard";
-import { JobMatchPanel } from "./_analysis/job-match-panel";
+import { TailoringPanel } from "./_analysis/tailoring-panel";
 import { CoverLetterPanel } from "./_analysis/cover-letter-panel";
 import { useAnalytics } from "../../lib/analytics";
 
@@ -280,7 +280,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[460px_1fr]">
         <aside className="no-print space-y-5">
           <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
-          <JobMatchPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
+          <TailoringPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
           <CoverLetterPanel resumeId={resume.id} onUpgradeRequired={setUpgradePrompt} />
 
           <Panel title="Target">

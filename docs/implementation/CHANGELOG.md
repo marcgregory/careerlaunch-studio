@@ -2,6 +2,24 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.8.0-alpha - 2026-07-05
+
+### Added
+
+- **Sprint 6B — AI Resume Tailoring (Flagship Feature).** Tagged `v0.8.0-alpha`.
+- **Job Analysis module** (`packages/ai/src/job-analysis/`) — Phase 1 of the tailoring pipeline. Extracts structured data from a job description: required/preferred skills, seniority, responsibilities, ATS keywords, and industry.
+- **Gap Analysis module** (`packages/ai/src/gap-analysis/`) — Phase 2 of the tailoring pipeline. Compares analyzed job against normalized resume to produce match score, matched/missing skills, weak section detection, and recommendations.
+- **Tailoring module** (`packages/ai/src/tailoring/`) — Phase 3 of the tailoring pipeline. Generates before/after rewrite suggestions for summary, experience bullets, and skills. Post-processing validates suggestions: before text must exist in resume, fabricated metrics capped at confidence 0.3, no invented experience.
+- **Prompt files** — job-analysis/v1.md, gap-analysis/v1.md, tailor-summary/v1.md, tailor-bullets/v1.md, tailor-skills/v1.md, tailor/v1.md.
+- **Prompt builders** — `buildJobAnalysisPrompt()`, `buildGapAnalysisPrompt()`, `buildTailorPrompt()`.
+- **AIProvider interface extended** — optional `analyzeJob()`, `analyzeGap()`, `tailorResume()` methods.
+- **MockProvider updated** — mock implementations for all three new methods.
+- **Gap analysis API route** — `POST /api/resumes/:resumeId/gap-analysis`.
+- **Tailor API route** — `POST /api/resumes/:resumeId/tailor` — full 3-phase pipeline.
+- **Bulk apply API route** — `POST /api/resumes/:resumeId/suggestions/apply-bulk`.
+- **TailoringPanel UI** — unified panel replacing old JobMatchPanel. Match score, skill comparison, weak sections, collapsible suggestion groups with inline diff preview and per-category "Apply all".
+- **Tests** — 162 AI tests (18 new), 41 web, 13 domain. All passing.
+
 ## 0.7.0-alpha - 2026-07-05
 
 ### Added

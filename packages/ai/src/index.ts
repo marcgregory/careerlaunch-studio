@@ -119,3 +119,18 @@ export {
   clearCache,
   getCacheStats,
 } from "./lib/cache";
+
+// Job analysis (Phase 1 — Sprint 6B)
+export { runJobAnalysis, deterministicAnalyzeJob } from "./job-analysis/index";
+export type { JobAnalysis, JobAnalysisInput } from "./job-analysis/types";
+
+// Gap analysis (Phase 2 — Sprint 6B)
+export { runGapAnalysis, deterministicGapAnalysis } from "./gap-analysis/index";
+export type { GapAnalysis, GapAnalysisInput, GapWeakSection, GapRecommendation, GapRecommendationType } from "./gap-analysis/types";
+
+// Resume tailoring (Phase 3 — Sprint 6B)
+export { runTailoring, deterministicTailor, validateTailorSuggestions } from "./tailoring/index";
+export type { TailoringInput, TailorSuggestion } from "./tailoring/types";
+
+// Prompt loaders — NOT exported from barrel (use node:fs)
+// Import directly from @careerlaunch/ai/lib/prompts in server-only code

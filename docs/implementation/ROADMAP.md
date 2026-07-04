@@ -29,10 +29,15 @@ Last updated: 2026-07-05
 - Sprint 5 — Billing & Entitlement System. Stripe integration, entitlement domain model, plan registry (Free/Professional/Enterprise), feature gates for PDF export (watermark), resume limit, and template access. Pricing page, account billing page, webhook handler, Checkout/Customer Portal. `v0.6.0-alpha` tagged.
 - Sprint 5.5 — Billing Stabilization. Webhook idempotency (ProcessedStripeEvent table), CANCELED grace period (paid access until period end), cancellation state visible in UI (banner with date + reactivation), fixed pricing page CTAs (downgrade → portal, cancellation badge), Stripe test suite (28 tests covering checkout/subscription/webhook/portal), production smoke checklist. `v0.6.1-alpha` tagged.
 - Sprint 6A — Real AI Foundation. AIProvider interface expanded (generateCoverLetter, matchJob), GeminiProvider (Gemini 2.5 Flash), GroqProvider (Llama 4 Scout), 8 prompt files extracted to packages/ai/prompts/, structured output validation, cost controls (token budget, retry/backoff, caching). `v0.7.0-alpha` tagged.
+- Sprint 6B — AI Resume Tailoring (Flagship Feature). Job analysis, gap analysis, resume tailoring, before/after diff, apply suggestions (individual + bulk per category), unified TailoringPanel UI. 3 new provider methods. Post-processing safety validation. `v0.8.0-alpha` tagged.
+
+## Completed
+
+- Sprint 6B — AI Resume Tailoring (Flagship Feature). Phase 1 (Job Analysis), Phase 2 (Gap Analysis), Phase 3 (Tailoring Rewrites), Phase 4 (Diff Display), Phase 5 (Apply Suggestions), Phase 6 (Unified TailoringPanel UI). `v0.8.0-alpha` tagged.
 
 ## Sprint Queue
 
-- Sprint 6B — AI Quality & Public Beta (to be decided).
+- Sprint 6C — AI Quality, User Testing, and Beta Polish.
 
 ## Future
 

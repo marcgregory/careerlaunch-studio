@@ -4,36 +4,58 @@ Last updated: 2026-07-05
 
 ## Current Sprint
 
-Sprint 6A — Real AI Foundation. ✅ Complete and tagged `v0.7.0-alpha`.
+Sprint 6B — AI Resume Tailoring (Flagship Feature). ✅ Complete and tagged `v0.8.0-alpha`.
 
-### Delivered This Sprint (Sprint 6A)
+**Goal achieved:** AI-powered resume tailoring against job descriptions. Users paste a JD, see how well their resume matches, get targeted AI rewrite suggestions for summary, bullets, and skills, review changes via before/after diff, and apply selectively (individual or bulk per category).
 
-**AIProvider interface expanded:**
-- Added optional `generateCoverLetter()` and `matchJob()` methods to `AIProvider` interface.
-- Providers can now handle cover letter generation and job match — optional methods preserve backward compatibility with MockProvider.
-- New imports: `NormalizedResume`, `CoverLetterInput`, `GeneratedCoverLetter`, `JobMatchResult`.
+### Delivered This Sprint (Sprint 6B)
 
-**GeminiProvider (`packages/ai/src/providers/gemini.ts`):**
-- Full `AIProvider` implementation using Google's Gemini 2.5 Flash model.
-- Structured JSON output via `responseMimeType: "application/json"`.
-- All 6 analysis dimensions (ats, grammar, impact, keywords, summary, tone).
-- `generateCoverLetter()` with resume + optional job description/company.
-- `matchJob()` with AI-powered skill extraction and score calculation.
-- Graceful error handling: silences per-dimension failures so one dimension doesn't block others.
+**Job Analysis module (`packages/ai/src/job-analysis/`):**
+- Phase 1 of the tailoring pipeline — extracts structured data from job descriptions.
+- Required/preferred skills, seniority level, responsibilities, ATS keywords, and industry.
+- AI-powered via provider (Gemini/Groq) with deterministic dictionary-based fallback.
+- Prompt: `packages/ai/prompts/job-analysis/v1.md`.
+- `analyzeJob()` method added to AIProvider interface (optional).
 
-**GroqProvider (`packages/ai/src/providers/groq.ts`):**
-- Full `AIProvider` implementation using Groq's fast inference (Llama 4 Scout).
-- OpenAI-compatible API at `https://api.groq.com/openai/v1`.
-- Same prompt files and response parsing as GeminiProvider.
-- `response_format: { type: "json_object" }` for reliable structured output.
-- Same method coverage as GeminiProvider.
+**Gap Analysis module (`packages/ai/src/gap-analysis/`):**
+- Phase 2 — compares analyzed job against normalized resume.
+- Match score (0–100), matched/missing skills, weak section detection, actionable recommendations.
+- AI-powered with fallback to existing `deterministicRunJobMatch()`.
+- Prompt: `packages/ai/prompts/gap-analysis/v1.md`.
+- `analyzeGap()` method added to AIProvider interface (optional).
+- API route: `POST /api/resumes/:resumeId/gap-analysis`.
 
-**LLM helpers (`packages/ai/src/lib/llm.ts`):**
-- `callGemini()` — wraps Google GenAI SDK with timeout, retry, JSON parsing.
-- `callOpenAICompatible()` — generic OpenAI-compatible client (works with Groq, OpenRouter, future providers).
-- `LLMError` class with typed error codes: `auth`, `provider`, `empty`, `timeout`, `parse`.
-- Exponential backoff on retry (200ms initial, 2× multiplier).
-- One automatic retry on transient errors.
+**Resume Tailoring module (`packages/ai/src/tailoring/`):**
+- Phase 3 — generates before/after rewrite suggestions for summary, experience bullets, and skills.
+- Post-processing enforces safety rules: before text must exist in resume, fabricated metrics cap at 0.3 confidence, no invented experience.
+- Deterministic fallback generates skill-add and summary-expand suggestions.
+- 6 prompt files: `tailor-summary/v1.md`, `tailor-bullets/v1.md`, `tailor-skills/v1.md`, `tailor/v1.md`.
+- `tailorResume()` method added to AIProvider interface (optional).
+- API route: `POST /api/resumes/:resumeId/tailor` (full 3-phase pipeline).
+
+**Unified TailoringPanel UI (`apps/web/app/builder/_analysis/tailoring-panel.tsx`):**
+- Replaces the old JobMatchPanel in the builder sidebar.
+- States: idle (paste JD), analyzing (loading with status), error (retry), success (results).
+- Results show: match score with color coding, skill comparison grid, weak sections alert, collapsible suggestion groups by category.
+- Each suggestion shows inline before/after diff preview with Review/Accept/Dismiss controls.
+- "Apply all" per category for bulk application.
+- Reuses existing SuggestionDiffModal for detailed review.
+- Bulk apply API: `POST /api/resumes/:resumeId/suggestions/apply-bulk`.
+
+**MockProvider updated:**
+- Mock implementations for `analyzeJob()`, `analyzeGap()`, `tailorResume()` — realistic fake data for development/demo.
+
+**AIProvider interface extended:**
+- 3 new optional methods: `analyzeJob()`, `analyzeGap()`, `tailorResume()`.
+- Backward compatible — existing providers continue to work.
+
+**Prompt builders added:**
+- `buildJobAnalysisPrompt()`, `buildGapAnalysisPrompt()`, `buildTailorPrompt()` in `packages/ai/src/lib/prompts.ts`.
+
+**Tests added:**
+- 18 new tests across job-analysis, gap-analysis, and tailoring modules.
+- Post-process validation tests: rejects missing before text, caps fabricated metrics.
+- Full test suite: 162 AI tests + 41 web tests + 13 domain tests = 216 total, all passing.
 
 **Token utilities (`packages/ai/src/lib/tokens.ts`):**
 - `estimateTokens()` — ~4 chars per token heuristic.
@@ -86,7 +108,7 @@ Sprint 6A — Real AI Foundation. ✅ Complete and tagged `v0.7.0-alpha`.
 
 ### Next Up
 
-- Sprint 6B — AI Quality Improvements or Public Beta Polish (to be decided).
+- Sprint 6B — AI Resume Tailoring (Flagship Feature) — **In progress**. See `docs/implementation/SPRINT_6B_BUILD_PLAN.md`.
 
 ## Completed
 
@@ -238,7 +260,7 @@ TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with sig
 
 ## Platform Status
 
-Build passes with 199 tests (144 AI + 14 domain + 41 web). TypeScript passes across all workspaces.
+Build passes with 216 tests (162 AI + 41 web + 13 domain). TypeScript passes across all workspaces. TailoringPanel integrated into builder sidebar replacing old JobMatchPanel.
 
 ## Blockers
 
@@ -251,12 +273,12 @@ Build passes with 199 tests (144 AI + 14 domain + 41 web). TypeScript passes acr
 
 ## Next Milestone
 
-Complete Sprint 6B — AI quality improvements, job tailoring, or public beta polish (to be decided).
+Sprint 6C — AI quality improvements, user testing, and public beta preparation. Polish the tailoring feature with real user feedback, improve AI prompt quality, and prepare for beta launch.
 ## Last Build
 
-Local build verification passed on 2026-07-04:
+Local build verification passed on 2026-07-05:
 
-- `npm run build` — passes (all routes, including new billing API routes and pages)
-- `npm run test` — 144/144 AI tests + 14/14 domain tests pass
+- `npm run build` — passes (all routes, including new gap-analysis, tailor, and apply-bulk API routes)
+- `npm run test` — 162/162 AI tests + 41/41 web tests + 13/13 domain tests pass
 - `npm run typecheck` — passes (all workspaces)
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability

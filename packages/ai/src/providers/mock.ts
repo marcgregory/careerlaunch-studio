@@ -47,6 +47,160 @@ export class MockProvider implements AIProvider {
     return { available: true, model: "mock-v1", latency: 1 };
   }
 
+  // ── Job analysis ─────────────────────────────────────────────────
+
+  async analyzeJob(jobDescription: string): Promise<import("../job-analysis/types").JobAnalysis> {
+    await sleep(50 + Math.random() * 100);
+
+    const text = jobDescription.toLowerCase();
+    const words = text.split(/\s+/).filter(w => w.length > 3);
+
+    // Extract plausible skills from the JD text
+    const skills = words.filter(w =>
+      /^(react|angular|vue|node|python|java|typescript|javascript|aws|docker|kubernetes|sql|mongodb|graphql|rest|api|css|html|git|agile|scrum|devops|machine.learning|ai|cloud|ci.cd|terraform|linux|go|rust|ruby|php|swift|kotlin|flutter|react.native)$/i.test(w)
+    );
+
+    return {
+      requiredSkills: skills.length > 0 ? skills.slice(0, 5) : ["JavaScript", "React", "Communication", "Problem Solving"],
+      preferredSkills: skills.length > 3 ? skills.slice(5, 8) : ["TypeScript", "GraphQL"],
+      seniority: /\bsenior\b|\bstaff\b|\b5\+/i.test(text) ? "senior" : /\blead\b|\bmanager\b/i.test(text) ? "lead" : "mid",
+      responsibilities: [
+        "Build and maintain web applications",
+        "Collaborate with cross-functional teams",
+        "Participate in code reviews",
+        "Write unit and integration tests",
+      ],
+      atsKeywords: [...new Set(skills)],
+      industry: /\b(healthcare|medical|clinical|hospital)\b/i.test(text) ? "healthcare"
+        : /\b(finance|banking|accounting|insurance)\b/i.test(text) ? "finance"
+        : /\b(software|engineer|developer|tech)\b/i.test(text) ? "technology"
+        : "technology",
+    };
+  }
+
+  // ── Gap analysis ─────────────────────────────────────────────────
+
+  async analyzeGap(
+    input: import("../gap-analysis/types").GapAnalysisInput
+  ): Promise<import("../gap-analysis/types").GapAnalysis> {
+    await sleep(50 + Math.random() * 100);
+
+    const { resume, jobAnalysis } = input;
+
+    // Compare resume skills against job required skills
+    const resumeSkills = new Set(resume.skills.map(s => s.toLowerCase()));
+    const matchedSkills: string[] = [];
+    const missingSkills: string[] = [];
+
+    for (const skill of jobAnalysis.requiredSkills) {
+      if (resumeSkills.has(skill.toLowerCase())) {
+        matchedSkills.push(skill);
+      } else {
+        missingSkills.push(skill);
+      }
+    }
+
+    const matchScore = jobAnalysis.requiredSkills.length > 0
+      ? Math.round((matchedSkills.length / jobAnalysis.requiredSkills.length) * 100)
+      : 50;
+
+    const weakSections: import("../gap-analysis/types").GapAnalysis["weakSections"] = [];
+    const recommendations: import("../gap-analysis/types").GapAnalysis["recommendations"] = [];
+
+    if (!resume.summary || resume.summary.trim().length < 60) {
+      weakSections.push({
+        sectionId: "summary",
+        field: "summary",
+        reason: "Summary is too short or missing.",
+        severity: "major",
+      });
+      recommendations.push({
+        type: "rewrite_summary",
+        sectionId: "summary",
+        reason: "Expand summary to highlight relevant skills.",
+      });
+    }
+
+    for (const skill of missingSkills) {
+      recommendations.push({
+        type: "add_skill",
+        sectionId: "skills",
+        reason: `Add "${skill}" to match job requirements.`,
+      });
+    }
+
+    return { matchScore, matchedSkills, missingSkills, weakSections, recommendations };
+  }
+
+  // ── Tailoring ────────────────────────────────────────────────────
+
+  async tailorResume(
+    input: import("../tailoring/types").TailoringInput
+  ): Promise<import("../tailoring/types").TailorSuggestion[]> {
+    await sleep(100 + Math.random() * 150);
+
+    const { resume, gapAnalysis } = input;
+    const suggestions: import("../tailoring/types").TailorSuggestion[] = [];
+
+    // Summary rewrite
+    if (resume.summary && resume.summary.trim().length > 0) {
+      suggestions.push({
+        id: suggestionId("summary", "mock-tailor", "summary"),
+        category: "summary",
+        location: { sectionId: "summary" },
+        before: resume.summary,
+        after: resume.summary.length < 100
+          ? `${resume.summary.trim()} I bring expertise in ${(gapAnalysis.matchedSkills.length > 0 ? gapAnalysis.matchedSkills : ["relevant technologies"]).slice(0, 3).join(", ")}, with a proven track record of delivering high-quality results.`
+          : resume.summary.replace(/(\.\s*$)/, ` and expertise in ${gapAnalysis.matchedSkills.slice(0, 2).join(", ")}.$1`),
+        reason: "Tailor your summary to highlight skills matching this role.",
+        confidence: 0.7,
+        severity: "medium",
+      });
+    }
+
+    // Skill suggestions
+    for (let i = 0; i < gapAnalysis.missingSkills.length; i++) {
+      suggestions.push({
+        id: suggestionId("skills", `mock-add-${i}`, "skills"),
+        category: "skills",
+        location: { sectionId: "skills" },
+        before: "",
+        after: gapAnalysis.missingSkills[i],
+        reason: `Add "${gapAnalysis.missingSkills[i]}" to match the job requirements.`,
+        confidence: 0.9,
+        severity: "major",
+      });
+    }
+
+    // Experience bullet rewrites (first 2)
+    const firstExp = resume.sections.find(s => s.type === "experience");
+    if (firstExp) {
+      for (let i = 0; i < Math.min(firstExp.bullets.length, 2); i++) {
+        const bullet = firstExp.bullets[i];
+        if (bullet && bullet.trim().length > 0) {
+          suggestions.push({
+            id: suggestionId("experience", `mock-rewrite-${i}`, firstExp.id),
+            category: "experience",
+            location: {
+              sectionId: firstExp.id,
+              entryId: firstExp.id,
+              field: `bullets[${i}]`,
+            },
+            before: bullet,
+            after: bullet.length < 80
+              ? `${bullet.trim().replace(/\.$/, "")} to drive business outcomes and deliver measurable results.`
+              : `${bullet.trim().replace(/\.$/, "")}, leveraging domain expertise to maximize impact.`,
+            reason: "Strengthen this bullet with outcome-focused language.",
+            confidence: 0.6,
+            severity: "minor",
+          });
+        }
+      }
+    }
+
+    return suggestions;
+  }
+
   private analyzeATS(input: AnalysisInput): DimensionResult {
     const { resume } = input;
     const suggestions: DimensionResult["suggestions"] = [];

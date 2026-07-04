@@ -141,3 +141,75 @@ export function buildJobMatchPrompt(
 
   return { system, user };
 }
+
+/**
+ * Build a system prompt and user message for job analysis (Phase 1 of tailoring).
+ *
+ * Takes only the job description — the resume is not needed for analysis.
+ */
+export function buildJobAnalysisPrompt(
+  jobDescription: string,
+): ResolvedPrompt {
+  const template = loadPrompt("job-analysis");
+
+  const roleMatch = template.match(/^# Role\s*\n([\s\S]*?)(?=\n# )/);
+  const system = roleMatch
+    ? roleMatch[1].trim()
+    : "You are a job analyst.";
+
+  let user = template.replace(/{job_description}/g, jobDescription);
+
+  return { system, user };
+}
+
+/**
+ * Build a prompt for the gap analysis phase.
+ * Compares the resume against the structured job analysis.
+ */
+export function buildGapAnalysisPrompt(
+  resume: NormalizedResume,
+  jobAnalysis: unknown,
+): ResolvedPrompt {
+  const template = loadPrompt("gap-analysis");
+
+  const resumeJson = JSON.stringify(resume, null, 2);
+  const jobAnalysisJson = JSON.stringify(jobAnalysis, null, 2);
+
+  const roleMatch = template.match(/^# Role\s*\n([\s\S]*?)(?=\n# )/);
+  const system = roleMatch
+    ? roleMatch[1].trim()
+    : "You are a resume gap analyst.";
+
+  let user = template
+    .replace(/{resume_json}/g, resumeJson)
+    .replace(/{job_analysis_json}/g, jobAnalysisJson);
+
+  return { system, user };
+}
+
+/**
+ * Build a prompt for resume tailoring (combined summary/bullets/skills).
+ */
+export function buildTailorPrompt(
+  resume: NormalizedResume,
+  jobAnalysis: unknown,
+  gapAnalysis: unknown,
+): ResolvedPrompt {
+  const template = loadPrompt("tailor");
+
+  const resumeJson = JSON.stringify(resume, null, 2);
+  const jobAnalysisJson = JSON.stringify(jobAnalysis, null, 2);
+  const gapAnalysisJson = JSON.stringify(gapAnalysis, null, 2);
+
+  const roleMatch = template.match(/^# Role\s*\n([\s\S]*?)(?=\n# )/);
+  const system = roleMatch
+    ? roleMatch[1].trim()
+    : "You are an expert resume tailor.";
+
+  let user = template
+    .replace(/{resume_json}/g, resumeJson)
+    .replace(/{job_analysis_json}/g, jobAnalysisJson)
+    .replace(/{gap_analysis_json}/g, gapAnalysisJson);
+
+  return { system, user };
+}

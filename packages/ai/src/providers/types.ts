@@ -8,6 +8,9 @@ import type {
 import type { Suggestion } from "../suggestion/types";
 import type { CoverLetterInput, GeneratedCoverLetter } from "../cover-letter/types";
 import type { JobMatchResult } from "../job-match/types";
+import type { JobAnalysis } from "../job-analysis/types";
+import type { GapAnalysis, GapAnalysisInput } from "../gap-analysis/types";
+import type { TailoringInput, TailorSuggestion } from "../tailoring/types";
 
 /** Result from a single dimension analysis */
 export interface DimensionResult {
@@ -46,6 +49,24 @@ export interface AIProvider {
    * If not implemented, the caller falls back to the dictionary-based matcher.
    */
   matchJob?(resume: NormalizedResume, jobDescription: string): Promise<JobMatchResult>;
+
+  /**
+   * Analyze a job description to extract structured data.
+   * If not implemented, the caller falls back to the dictionary-based analyzer.
+   */
+  analyzeJob?(jobDescription: string): Promise<JobAnalysis>;
+
+  /**
+   * Compare a resume against a job analysis to produce a gap report.
+   * If not implemented, the caller falls back to the deterministic matcher.
+   */
+  analyzeGap?(input: GapAnalysisInput): Promise<GapAnalysis>;
+
+  /**
+   * Generate targeted rewrite suggestions for resume sections.
+   * If not implemented, the caller falls back to skill-add-only suggestions.
+   */
+  tailorResume?(input: TailoringInput): Promise<TailorSuggestion[]>;
 
   /** Check if the provider is available */
   healthCheck(): Promise<ProviderHealth>;
