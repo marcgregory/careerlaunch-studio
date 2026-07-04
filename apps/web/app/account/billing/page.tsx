@@ -39,6 +39,15 @@ function formatDate(date: string | null) {
   });
 }
 
+function formatInvoiceDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function formatMoney(amount: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -266,7 +275,7 @@ function AccountBillingContent() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 size={18} className="mt-0.5 text-[#6bbf22]" />
                   <div>
-                    <p className="text-sm font-black text-[#123c3a]">{formatDate(invoice.date)}</p>
+                    <p className="text-sm font-black text-[#123c3a]">{formatInvoiceDate(invoice.date)}</p>
                     <p className="text-sm font-medium text-[#4b4b4b]">{invoice.description}</p>
                   </div>
                 </div>
