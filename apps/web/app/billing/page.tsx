@@ -19,6 +19,35 @@ type SubscriptionData = {
   plans: PlanInfo[];
 };
 
+const DEFAULT_SUBSCRIPTION_DATA: SubscriptionData = {
+  currentPlan: "free",
+  cancelAtPeriodEnd: false,
+  currentPeriodEnd: null,
+  plans: [
+    { id: "free", label: "Free", isCurrent: true },
+    { id: "professional", label: "Professional", isCurrent: false },
+    { id: "enterprise", label: "Enterprise", isCurrent: false },
+  ],
+};
+
+function normalizeSubscriptionData(value: Partial<SubscriptionData> | null | undefined): SubscriptionData {
+  const currentPlan = ["free", "professional", "enterprise"].includes(value?.currentPlan ?? "")
+    ? value?.currentPlan ?? "free"
+    : "free";
+
+  return {
+    currentPlan,
+    cancelAtPeriodEnd: Boolean(value?.cancelAtPeriodEnd),
+    currentPeriodEnd: typeof value?.currentPeriodEnd === "string" ? value.currentPeriodEnd : null,
+    plans: Array.isArray(value?.plans)
+      ? value.plans
+      : DEFAULT_SUBSCRIPTION_DATA.plans.map((plan) => ({
+          ...plan,
+          isCurrent: plan.id === currentPlan,
+        })),
+  };
+}
+
 const FEATURE_LABELS: Record<string, string> = {
   resume_limit: "Resume drafts",
   templates: "Templates",
@@ -84,6 +113,7 @@ function BillingContent() {
   const searchParams = useSearchParams();
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncingCheckout, setSyncingCheckout] = useState(false);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +134,38 @@ function BillingContent() {
           : null;
 
   useEffect(() => {
-    // Only poll when returning from Stripe Checkout success
+    let cancelled = false;
+
+    async function loadSubscription() {
+      setLoading(true);
+
+      try {
+        const res = await fetch("/api/billing/subscription");
+        if (!res.ok) throw new Error("Failed to load subscription");
+
+        const result = await res.json();
+        if (!cancelled) {
+          setData(normalizeSubscriptionData(result));
+        }
+      } catch {
+        if (!cancelled) {
+          setData(DEFAULT_SUBSCRIPTION_DATA);
+          setError("We couldn't refresh your subscription yet. You can still compare plans below.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadSubscription();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    // Only poll when returning from Stripe Checkout success. Keep cards visible while syncing.
     if (checkoutStatus !== "success") return;
 
     let cancelled = false;
@@ -114,25 +175,28 @@ function BillingContent() {
     let attempts = 0;
 
     async function poll() {
+      setSyncingCheckout(true);
       const deadline = Date.now() + TIMEOUT_MS;
 
       while (!cancelled && attempts < MAX_ATTEMPTS && Date.now() < deadline) {
         attempts++;
         try {
           const res = await fetch("/api/billing/subscription");
-          const d = await res.json();
+          if (!res.ok) throw new Error("Failed to refresh subscription");
+
+          const d = normalizeSubscriptionData(await res.json());
           if (cancelled) return;
 
           // If the plan is no longer "free", the subscription is active
           if (d.currentPlan !== "free") {
             setData(d);
-            setLoading(false);
+            setSyncingCheckout(false);
             // Strip the checkout=success param so refreshing doesn't re-poll
             router.replace("/billing", { scroll: false });
             return;
           }
         } catch {
-          // Transient network error — retry on next iteration
+          // Transient network error - retry on next iteration
         }
 
         if (!cancelled && attempts < MAX_ATTEMPTS) {
@@ -140,9 +204,10 @@ function BillingContent() {
         }
       }
 
-      // Exhausted all attempts or timed out — stop loading and clean URL
+      // Exhausted all attempts or timed out - keep plans visible and clean URL
       if (!cancelled) {
-        setLoading(false);
+        setSyncingCheckout(false);
+        setError("Payment succeeded, but we're still waiting for Stripe to confirm your subscription. The plan cards remain available below.");
         router.replace("/billing", { scroll: false });
       }
     }
@@ -165,7 +230,7 @@ function BillingContent() {
       const result = await res.json();
 
       if (res.ok && result.url) {
-        window.location.href = result.url;
+        window.location.assign(result.url);
       } else {
         setError(result.error || "Failed to start checkout.");
         setUpgrading(null);
@@ -189,7 +254,7 @@ function BillingContent() {
       const result = await res.json();
 
       if (res.ok && result.url) {
-        window.location.href = result.url;
+        window.location.assign(result.url);
       } else {
         setError(result.error || "Failed to open billing portal.");
         setPortalLoading(false);
@@ -239,6 +304,12 @@ function BillingContent() {
         {message && (
           <div className="mt-6 rounded-2xl border border-[#b9ff66] bg-[#b9ff66]/20 p-4 text-sm font-black text-[#123c3a]">
             {message}
+          </div>
+        )}
+
+        {syncingCheckout && (
+          <div className="mt-6 rounded-2xl border border-[#b9ff66] bg-[#b9ff66]/20 p-4 text-sm font-black text-[#123c3a]">
+            Confirming your Stripe checkout. Plan cards are available while we sync your subscription.
           </div>
         )}
 
