@@ -22,11 +22,18 @@ type PanelState =
   | { status: "exporting" }
   | { status: "error"; error: string };
 
+type UpgradePrompt = {
+  title: string;
+  message: string;
+  upgradeUrl: string;
+};
+
 interface CoverLetterPanelProps {
   resumeId: string;
+  onUpgradeRequired?: (prompt: UpgradePrompt) => void;
 }
 
-export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
+export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPanelProps) {
   const analytics = useAnalytics();
   const [jobDescription, setJobDescription] = useState("");
   const [panelState, setPanelState] = useState<PanelState>({ status: "idle" });
@@ -59,11 +66,11 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
           setPanelState({ status: "ready", coverLetter: cl });
         }
       })
-      .catch(() => { /* silent — user sees idle state */ });
+      .catch(() => { /* silent; user sees idle state */ });
     return () => { cancelled = true; };
   }, [resumeId]);
 
-  // ── Generate draft ────────────────────────────────────────────
+  // Generate draft
   const generateDraft = useCallback(async () => {
     setPanelState({ status: "generating" });
 
@@ -99,9 +106,9 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
         error: error instanceof Error ? error.message : "Generation failed",
       });
     }
-  }, [resumeId, jobDescription]);
+  }, [resumeId, jobDescription, analytics]);
 
-  // ── Save ──────────────────────────────────────────────────────
+  // Save draft
   const saveDraft = useCallback(async () => {
     setPanelState((prev) => ({ ...prev, status: "saving" as const }));
 
@@ -152,7 +159,7 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
     jobDescription,
   ]);
 
-  // ── Export PDF ────────────────────────────────────────────────
+  // Export PDF
   const exportPdf = useCallback(async () => {
     if (!coverLetter?.id) return;
     setPanelState({ status: "exporting" });
@@ -163,6 +170,17 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coverLetterId: coverLetter.id }),
       });
+
+      if (response.status === 402 || response.status === 403) {
+        const data = await response.json().catch(() => ({}));
+        onUpgradeRequired?.({
+          title: "Monthly export limit reached",
+          message: formatUpgradeMessage(data.error),
+          upgradeUrl: data.upgradeUrl ?? "/billing",
+        });
+        setPanelState({ status: "ready", coverLetter });
+        return;
+      }
 
       if (!response.ok) throw new Error("PDF export failed");
 
@@ -185,16 +203,16 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
         error: error instanceof Error ? error.message : "Export failed",
       });
     }
-  }, [coverLetter]);
+  }, [coverLetter, onUpgradeRequired, analytics]);
 
-  // ── Reset to idle ──────────────────────────────────────────────
+  // Reset to idle
   function resetToIdle() {
     setPanelState({ status: "idle" });
     setCoverLetter(null);
     setEditBody("");
   }
 
-  // ── Render: idle state ────────────────────────────────────────
+  // Render: idle state
   if (panelState.status === "idle") {
     return (
       <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
@@ -232,7 +250,7 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
     );
   }
 
-  // ── Render: generating state ──────────────────────────────────
+  // Render: generating state
   if (panelState.status === "generating") {
     return (
       <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
@@ -251,7 +269,7 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
     );
   }
 
-  // ── Render: error state ───────────────────────────────────────
+  // Render: error state
   if (panelState.status === "error") {
     return (
       <section className="rounded-[30px] border border-red-200 bg-red-50 p-6 shadow-sm">
@@ -286,7 +304,7 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
     );
   }
 
-  // ── Render: ready / saving / exporting ────────────────────────
+  // Render: ready / saving / exporting
   const isSaving = panelState.status === "saving";
   const isExporting = panelState.status === "exporting";
 
@@ -437,4 +455,9 @@ export function CoverLetterPanel({ resumeId }: CoverLetterPanelProps) {
       </div>
     </section>
   );
+}
+
+function formatUpgradeMessage(message: unknown) {
+  if (typeof message !== "string" || !message.trim()) return "Upgrade to Professional for unlimited exports.";
+  return message.replace(/^Monthly export limit reached\.\s*/i, "");
 }

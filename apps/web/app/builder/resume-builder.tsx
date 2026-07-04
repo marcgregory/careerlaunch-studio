@@ -34,6 +34,11 @@ import { useAnalytics } from "../../lib/analytics";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
 type ValidationErrors = Partial<Record<string, string>>;
+type UpgradePrompt = {
+  title: string;
+  message: string;
+  upgradeUrl: string;
+};
 
 const sectionLabels: Record<ResumeSectionId, string> = {
   summary: "Summary",
@@ -49,6 +54,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   const [resume, setResume] = useState<ResumeDocument>(() => normalizeResume(initialResume));
   const [saveState, setSaveState] = useState<SaveState>("Saved");
   const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
+  const [upgradePrompt, setUpgradePrompt] = useState<UpgradePrompt | null>(null);
   const savedSnapshot = useRef(JSON.stringify(normalizeResume(initialResume)));
 
   const validation = useMemo(() => validateResume(resume), [resume]);
@@ -210,6 +216,17 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         body: JSON.stringify({ resumeId: resume.id })
       });
 
+      if (response.status === 402 || response.status === 403) {
+        const data = await response.json().catch(() => ({}));
+        setUpgradePrompt({
+          title: "Monthly export limit reached",
+          message: formatUpgradeMessage(data.error),
+          upgradeUrl: data.upgradeUrl ?? "/billing",
+        });
+        setExportState("Idle");
+        return;
+      }
+
       if (!response.ok) throw new Error("PDF export failed");
 
       analytics.capture("resume_exported", {
@@ -264,7 +281,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         <aside className="no-print space-y-5">
           <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
           <JobMatchPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
-          <CoverLetterPanel resumeId={resume.id} />
+          <CoverLetterPanel resumeId={resume.id} onUpgradeRequired={setUpgradePrompt} />
 
           <Panel title="Target">
             <div className="space-y-3">
@@ -433,7 +450,34 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           </div>
         </aside>
       </div>
+      {upgradePrompt && (
+        <UpgradeModal
+          prompt={upgradePrompt}
+          onClose={() => setUpgradePrompt(null)}
+        />
+      )}
     </main>
+  );
+}
+
+function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[#123c3a]/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title">
+      <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 text-[#123c3a] shadow-2xl">
+        <h2 id="upgrade-modal-title" className="font-signal text-2xl font-black tracking-[-0.05em]">
+          {prompt.title}
+        </h2>
+        <p className="mt-3 text-sm font-medium leading-6 text-[#4b4b4b]">{prompt.message}</p>
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <button type="button" className={secondaryButtonClass} onClick={onClose}>
+            Cancel
+          </button>
+          <Link href={prompt.upgradeUrl} className={primaryButtonClass} onClick={onClose}>
+            Upgrade
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -653,6 +697,11 @@ function StackEmpty({ when, label, action }: { when: boolean; label: string; act
 function ErrorText({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="mt-1 text-xs font-black text-red-700">{message}</p>;
+}
+
+function formatUpgradeMessage(message: unknown) {
+  if (typeof message !== "string" || !message.trim()) return "Upgrade to Professional for unlimited exports.";
+  return message.replace(/^Monthly export limit reached\.\s*/i, "");
 }
 
 function normalizeResume(resume: ResumeDocument): ResumeDocument {

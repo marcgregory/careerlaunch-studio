@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   if (!exportCheck.allowed) {
     return Response.json(
       { error: "Monthly export limit reached. Upgrade to Professional for unlimited exports.", upgradeUrl: "/billing" },
-      { status: 403 },
+      { status: 402 },
     );
   }
 
