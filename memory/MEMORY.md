@@ -1,0 +1,1 @@
+- [PDF architecture separation](pdf-architecture-separation.md) — PDF rendering moved to standalone Docker service to avoid Vercel Chromium workarounds

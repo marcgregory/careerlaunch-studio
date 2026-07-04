@@ -3,57 +3,41 @@ import {
   type ResumeDocument,
   type ResumeSectionId,
 } from "@careerlaunch/domain";
-import type { ReactElement } from "react";
 import { getResumeTemplate, type TemplateDefinition } from "./index";
-import { launchBrowser } from "./browser";
+import { renderHtmlToPdf } from "./render";
 
+/**
+ * Render a resume to a PDF buffer using an in-process Playwright browser.
+ *
+ * For local development — on Vercel you should set `PDF_RENDERER_URL`
+ * and use `resumeToHtml()` + external renderer instead.
+ */
 export async function renderResumePdf(
   resume: ResumeDocument,
 ): Promise<ArrayBuffer> {
-  const [{ renderToStaticMarkup }] = await Promise.all([
-    import("react-dom/server"),
-  ]);
-  const browser = await launchBrowser();
+  const html = resumeToHtml(resume);
+  return renderHtmlToPdf(html);
+}
 
-  try {
-    const page = await browser.newPage({
-      viewport: { width: 794, height: 1123 },
-    });
-    await page.setContent(
-      renderResumeHtml(resume, renderToStaticMarkup),
-      { waitUntil: "networkidle" },
-    );
-
-    const pdf = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: {
-        top: "0.35in",
-        right: "0.35in",
-        bottom: "0.35in",
-        left: "0.35in",
-      },
-    });
-
-    return pdf.buffer.slice(
-      pdf.byteOffset,
-      pdf.byteOffset + pdf.byteLength,
-    ) as ArrayBuffer;
-  } finally {
-    await browser.close();
-  }
+/**
+ * Generate the full HTML document (including <style> and scaffolding)
+ * for a resume.  Use this when you want to send the HTML to an external
+ * PDF renderer service instead of rendering in-process.
+ */
+export function resumeToHtml(resume: ResumeDocument): string {
+  // Synchronous — only needs a renderToStaticMarkup import
+  const html = renderInlineHtml(resume);
+  return html;
 }
 
 /* ------------------------------------------------------------------ */
-/*  HTML & CSS generation from the template definition                 */
+/*  Internal helpers                                                   */
 /* ------------------------------------------------------------------ */
 
-function renderResumeHtml(
-  resume: ResumeDocument,
-  renderToStaticMarkup: (element: ReactElement) => string,
-) {
+function renderInlineHtml(resume: ResumeDocument): string {
   const template = getResumeTemplate(resume.templateId);
-  const markup = renderToStaticMarkup(<ResumePdfDocument resume={resume} />);
+  const markup = /* raw HTML string to avoid the async import dance */
+    buildResumeHtml(resume);
 
   return `<!doctype html>
 <html lang="en">
@@ -77,7 +61,110 @@ function renderResumeHtml(
 </html>`;
 }
 
-/** Generate the full CSS block for a given template from its definition. */
+/* ------------------------------------------------------------------ */
+/*  HTML construction from renderToStaticMarkup                        */
+/* ------------------------------------------------------------------ */
+
+function buildResumeHtml(resume: ResumeDocument): string {
+  const template = getResumeTemplate(resume.templateId);
+
+  const sections = normalizeSectionOrder(resume.sectionOrder)
+    .map((section) => renderPdfSection(section, resume))
+    .filter(Boolean)
+    .join("\n");
+
+  return `<main class="pdf-root">
+    <header class="pdf-header">
+      <p class="pdf-role">${escapeHtml(resume.targetRole || "Target Role")}</p>
+      <h1>${escapeHtml(resume.contact.fullName || "Your Name")}</h1>
+      <div class="pdf-contact">
+        ${[resume.contact.email, resume.contact.phone, resume.contact.location, resume.contact.website]
+          .filter(Boolean)
+          .map((item) => `<span>${escapeHtml(item)}</span>`)
+          .join("")}
+      </div>
+    </header>
+    ${sections}
+  </main>`;
+}
+
+function renderPdfSection(section: string, resume: ResumeDocument): string | null {
+  if (section === "summary" && resume.summary.trim()) {
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Profile</h2></div>
+      <p class="pdf-summary">${escapeHtml(resume.summary)}</p>
+    </section>`;
+  }
+
+  if (section === "experience" && resume.experience.length > 0) {
+    const entries = resume.experience.map((item) => `
+      <article class="pdf-entry">
+        <div class="pdf-entry-top">
+          <div>
+            <h3>${escapeHtml(item.role)}</h3>
+            <p class="pdf-muted">${[item.company, item.location].filter(Boolean).map(escapeHtml).join(" - ")}</p>
+          </div>
+          <p class="pdf-dates">${[item.start, item.end].filter(Boolean).map(escapeHtml).join(" - ")}</p>
+        </div>
+        ${item.bullets.filter(Boolean).length > 0 ? `<ul>${item.bullets.filter(Boolean).map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>` : ""}
+      </article>`).join("\n");
+
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Experience</h2></div>
+      ${entries}
+    </section>`;
+  }
+
+  if (section === "education" && resume.education.length > 0) {
+    const items = resume.education.map((item) => `
+      <div class="pdf-edu-item">
+        <strong>${escapeHtml(item.degree)}</strong>
+        <div>${[item.school, item.location].filter(Boolean).map(escapeHtml).join(" - ")}</div>
+        <div>${escapeHtml(item.graduation)}</div>
+      </div>`).join("\n");
+
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Education</h2></div>
+      ${items}
+    </section>`;
+  }
+
+  if (section === "skills" && resume.skills.filter(Boolean).length > 0) {
+    const skills = resume.skills.filter(Boolean).map((s) => `<span class="pdf-skill">${escapeHtml(s)}</span>`).join("");
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Skills</h2></div>
+      <div class="pdf-skills">${skills}</div>
+    </section>`;
+  }
+
+  if (section === "certifications" && resume.certifications.filter(Boolean).length > 0) {
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Certifications</h2></div>
+      <p class="pdf-summary">${resume.certifications.filter(Boolean).map(escapeHtml).join(", ")}</p>
+    </section>`;
+  }
+
+  if (section === "projects" && resume.projects.length > 0) {
+    const entries = resume.projects.map((item) => `
+      <article class="pdf-entry">
+        <h3 class="pdf-project-title">${escapeHtml(item.name)}</h3>
+        ${item.description ? `<p class="pdf-description">${escapeHtml(item.description)}</p>` : ""}
+        ${item.bullets.filter(Boolean).length > 0 ? `<ul>${item.bullets.filter(Boolean).map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>` : ""}
+      </article>`).join("\n");
+
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Projects</h2></div>
+      ${entries}
+    </section>`;
+  }
+
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/*  CSS generation                                                     */
+/* ------------------------------------------------------------------ */
+
 function pdfCss(t: TemplateDefinition): string {
   const nameColor = pdfColor(0, "#123c3a", t.swatches);
   const roleColor = roleHeadingPdfColor(t);
@@ -161,7 +248,6 @@ function pdfCss(t: TemplateDefinition): string {
   `;
 }
 
-/** Pick a colour from swatches by index, falling back to default. */
 function pdfColor(index: number, fallback: string, swatches: string[]): string {
   return swatches[index] ?? fallback;
 }
@@ -208,164 +294,6 @@ function skillPdfCss(t: TemplateDefinition): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  PDF React component                                                */
-/* ------------------------------------------------------------------ */
-
-function ResumePdfDocument({ resume }: { resume: ResumeDocument }) {
-  const template = getResumeTemplate(resume.templateId);
-
-  return (
-    <main className={`pdf-root`}>
-      <header className="pdf-header">
-        <p className="pdf-role">{resume.targetRole || "Target Role"}</p>
-        <h1>{resume.contact.fullName || "Your Name"}</h1>
-        <div className="pdf-contact">
-          {[
-            resume.contact.email,
-            resume.contact.phone,
-            resume.contact.location,
-            resume.contact.website,
-          ]
-            .filter(Boolean)
-            .map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-        </div>
-      </header>
-
-      {normalizeSectionOrder(resume.sectionOrder).map((section) =>
-        renderPdfSection(section, resume),
-      )}
-    </main>
-  );
-}
-
-function renderPdfSection(
-  section: ResumeSectionId,
-  resume: ResumeDocument,
-) {
-  if (section === "summary" && resume.summary.trim()) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Profile</h2>
-        </div>
-        <p className="pdf-summary">{resume.summary}</p>
-      </section>
-    );
-  }
-
-  if (section === "experience" && resume.experience.length > 0) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Experience</h2>
-        </div>
-        {resume.experience.map((item) => (
-          <article className="pdf-entry" key={item.id}>
-            <div className="pdf-entry-top">
-              <div>
-                <h3>{item.role}</h3>
-                <p className="pdf-muted">
-                  {[item.company, item.location].filter(Boolean).join(" - ")}
-                </p>
-              </div>
-              <p className="pdf-dates">
-                {[item.start, item.end].filter(Boolean).join(" - ")}
-              </p>
-            </div>
-            {item.bullets.filter(Boolean).length > 0 && (
-              <ul>
-                {item.bullets.filter(Boolean).map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-            )}
-          </article>
-        ))}
-      </section>
-    );
-  }
-
-  if (section === "education" && resume.education.length > 0) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Education</h2>
-        </div>
-        {resume.education.map((item) => (
-          <div className="pdf-edu-item" key={item.id}>
-            <strong>{item.degree}</strong>
-            <div>{[item.school, item.location].filter(Boolean).join(" - ")}</div>
-            <div>{item.graduation}</div>
-          </div>
-        ))}
-      </section>
-    );
-  }
-
-  if (section === "skills" && resume.skills.filter(Boolean).length > 0) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Skills</h2>
-        </div>
-        <div className="pdf-skills">
-          {resume.skills.filter(Boolean).map((skill) => (
-            <span className="pdf-skill" key={skill}>
-              {skill}
-            </span>
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  if (
-    section === "certifications" &&
-    resume.certifications.filter(Boolean).length > 0
-  ) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Certifications</h2>
-        </div>
-        <p className="pdf-summary">
-          {resume.certifications.filter(Boolean).join(", ")}
-        </p>
-      </section>
-    );
-  }
-
-  if (section === "projects" && resume.projects.length > 0) {
-    return (
-      <section key={section}>
-        <div className="pdf-section-title-wrap">
-          <h2 className="pdf-section-title">Projects</h2>
-        </div>
-        {resume.projects.map((item) => (
-          <article className="pdf-entry" key={item.id}>
-            <h3 className="pdf-project-title">{item.name}</h3>
-            {item.description && (
-              <p className="pdf-description">{item.description}</p>
-            )}
-            {item.bullets.filter(Boolean).length > 0 && (
-              <ul>
-                {item.bullets.filter(Boolean).map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-            )}
-          </article>
-        ))}
-      </section>
-    );
-  }
-
-  return null;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Shared helpers                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -390,4 +318,3 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }
-

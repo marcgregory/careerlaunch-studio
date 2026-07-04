@@ -1,7 +1,10 @@
-import { renderResumePdf } from "@careerlaunch/rendering/pdf";
+import { renderResumePdf, resumeToHtml } from "@careerlaunch/rendering/pdf";
 import { requireApiUser } from "../../../../lib/auth";
 import { prisma } from "../../../../lib/prisma";
 import { fromStoredResume } from "../../../../lib/resume-store";
+
+const RENDERER_URL = process.env.PDF_RENDERER_URL;
+const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
 
 export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
@@ -26,8 +29,36 @@ export async function POST(request: Request) {
 
   try {
     const resume = fromStoredResume(record);
-    const pdf = await renderResumePdf(resume);
     const filename = `${toSafeFilename(resume.title || "resume")}.pdf`;
+
+    let pdf: ArrayBuffer;
+
+    if (RENDERER_URL) {
+      // Production: proxy to the external Docker PDF renderer service
+      const html = resumeToHtml(resume);
+      const requestId = crypto.randomUUID();
+
+      const res = await fetch(RENDERER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(RENDERER_TOKEN ? { Authorization: `Bearer ${RENDERER_TOKEN}` } : {}),
+          "X-Request-ID": requestId,
+        },
+        body: JSON.stringify({ html }),
+        signal: AbortSignal.timeout(35000),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "unknown");
+        throw new Error(`PDF renderer returned ${res.status}: ${errBody}`);
+      }
+
+      pdf = await res.arrayBuffer();
+    } else {
+      // Local dev: use in-process Playwright renderer
+      pdf = await renderResumePdf(resume);
+    }
 
     await prisma.exportJob.update({
       where: { id: exportJob.id },
@@ -67,6 +98,3 @@ function toSafeFilename(value: string) {
       .replace(/^-+|-+$/g, "") || "resume"
   );
 }
-
-
-

@@ -1,8 +1,14 @@
-import { renderCoverLetterPdf } from "@careerlaunch/rendering/cover-letter-pdf";
+import {
+  renderCoverLetterPdf,
+  coverLetterToHtml,
+} from "@careerlaunch/rendering/cover-letter-pdf";
 import { requireApiUser } from "../../../../lib/auth";
 import { prisma } from "../../../../lib/prisma";
 import { fromStoredResume } from "../../../../lib/resume-store";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
+
+const RENDERER_URL = process.env.PDF_RENDERER_URL;
+const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
 
 /**
  * POST /api/export/cover-letter-pdf
@@ -54,8 +60,35 @@ export async function POST(request: Request) {
       jobDescription: coverLetterRecord.jobDescription ?? "",
     };
 
-    const pdf = await renderCoverLetterPdf(coverLetter, resume);
     const filename = `cover-letter-${toSafeFilename(resume.title || "resume")}.pdf`;
+    let pdf: ArrayBuffer;
+
+    if (RENDERER_URL) {
+      // Production: proxy to the external Docker PDF renderer service
+      const html = coverLetterToHtml(coverLetter, resume);
+      const requestId = crypto.randomUUID();
+
+      const res = await fetch(RENDERER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(RENDERER_TOKEN ? { Authorization: `Bearer ${RENDERER_TOKEN}` } : {}),
+          "X-Request-ID": requestId,
+        },
+        body: JSON.stringify({ html }),
+        signal: AbortSignal.timeout(35000),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "unknown");
+        throw new Error(`PDF renderer returned ${res.status}: ${errBody}`);
+      }
+
+      pdf = await res.arrayBuffer();
+    } else {
+      // Local dev: use in-process Playwright renderer
+      pdf = await renderCoverLetterPdf(coverLetter, resume);
+    }
 
     return new Response(pdf, {
       status: 200,

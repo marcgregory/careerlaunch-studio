@@ -1,6 +1,29 @@
 # CareerLaunch Studio Deployment
 
-Last updated: 2026-07-03
+Last updated: 2026-07-04
+
+## Architecture
+
+```
+                Vercel (Next.js)
+        ┌─────────────────────────┐
+        │ Resume Builder          │
+        │ Job Match               │
+        │ AI Analysis             │
+        │ Cover Letter            │
+        │ Authentication          │
+        └──────────┬──────────────┘
+                   │ HTTPS (POST /render, body: { html })
+                   ▼
+        ┌─────────────────────────┐
+        │ PDF Renderer Service    │
+        │ Railway / Docker        │
+        │                         │
+        │ Playwright + Chromium   │
+        └─────────────────────────┘
+```
+
+PDF rendering is isolated into a standalone Docker service. The Vercel app generates HTML and sends it to the renderer via HTTP. This avoids bundling Chromium (~200 MB) into serverless deployments.
 
 ## Environments
 
@@ -11,7 +34,11 @@ Last updated: 2026-07-03
 
 ## Deployment Target
 
-Recommended MVP target: Vercel for the Next.js app and Neon or Supabase for managed Postgres. This keeps operations light while supporting previews, rollbacks, managed TLS, and environment separation.
+- **Vercel** for the Next.js app.
+- **Neon** or **Supabase** for managed Postgres.
+- **Railway** (or any Docker host) for the PDF renderer service.
+
+This keeps operations light while supporting previews, rollbacks, managed TLS, and environment separation.
 
 ## CI/CD
 
@@ -24,25 +51,73 @@ Every pull request should run:
 - Playwright smoke tests for critical paths.
 - Prisma migration validation.
 
-## Runtime Dependencies
+## PDF Renderer Service
 
-PDF export uses `@sparticuz/chromium-min` + `playwright-core` from the server-only renderer. The `@sparticuz/chromium-min` package downloads the Chromium binary at runtime from a hosted pack URL (set via `CHROMIUM_PACK_URL`). This avoids bundling the ~200 MB binary into the serverless deployment.
+A standalone Node.js HTTP server at `services/pdf-renderer/`:
 
-**Vercel**: set `CHROMIUM_PACK_URL` to a publicly accessible URL of a Chromium pack tarball. No binary bundling is needed.
-
-**Other platforms** (Docker, VPS): set `CHROMIUM_PACK_URL` the same way, or install Chromium via the system package manager and omit `@sparticuz/chromium-min`.
-
-To generate your own Chromium pack for self-hosting:
-
-```bash
-# From an environment with @sparticuz/chromium-min installed
-node -e "
-  const c = require('@sparticuz/chromium-min');
-  c.executablePath('https://your-bucket.example.com/chromium-pack.tar').then(console.log);
-"
+```
+POST /render
+Content-Type: application/json
+Body: { "html": "<!doctype html>..." }
+Response: application/pdf
 ```
 
-Then upload the downloaded pack to a CDN, S3 bucket, or your app's `/public` directory on Vercel.
+### Building and running (Docker)
+
+```bash
+cd services/pdf-renderer
+
+docker build -t careerlaunch-pdf-renderer .
+
+docker run -d \
+  -p 3001:3001 \
+  --name pdf-renderer \
+  careerlaunch-pdf-renderer
+```
+
+### Environment variables
+
+| Variable                      | Default   | Description                                              |
+|-------------------------------|-----------|----------------------------------------------------------|
+| `PORT`                        | `3001`    | Port to listen on                                        |
+| `CHROMIUM_PATH`               | —         | Path to system Chromium binary (optional)                |
+| `PDF_RENDERER_TOKEN`          | —         | Shared secret for bearer-auth (omit to disable auth)     |
+| `PDF_RENDERER_TIMEOUT_MS`     | `30000`   | Per-request render timeout in ms                         |
+| `PDF_RENDERER_MAX_HTML_SIZE`  | `5242880` | Max accepted HTML payload in bytes (default 5 MB)        |
+
+### Deploying to Railway
+
+1. Create a new Railway project from the `services/pdf-renderer/` directory.
+2. Railway auto-detects the Dockerfile.
+3. Set `PORT=3001` and `PDF_RENDERER_TOKEN` in Railway environment.
+4. Note the public URL (e.g. `https://pdf-renderer.up.railway.app`).
+
+## Vercel Environment Variables
+
+| Variable            | Required | Description                                              |
+|---------------------|----------|----------------------------------------------------------|
+| `DATABASE_URL`      | Yes      | PostgreSQL connection string                             |
+| `AUTH_SECRET`       | Yes      | Secret for session signing                               |
+| `PDF_RENDERER_URL`  | Yes*     | URL of the PDF renderer service (e.g. `https://pdf-renderer.up.railway.app/render`) |
+| `PDF_RENDERER_TOKEN`| Yes*     | Shared secret matching the renderer's `PDF_RENDERER_TOKEN` |
+
+Set both `PDF_RENDERER_URL` and `PDF_RENDERER_TOKEN` in Vercel production/preview environments.
+When `PDF_RENDERER_URL` is unset (local dev), the app falls back to the in-process Playwright renderer.
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Install Playwright Chromium for local PDF rendering
+npx playwright install chromium
+
+# Start dev server
+npm run dev
+```
+
+PDF export will use the in-process Playwright renderer when `PDF_RENDERER_URL` is not set.
 
 ## Release Process
 

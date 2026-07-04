@@ -32,6 +32,9 @@
                                                               ],
                                           "@careerlaunch/rendering/pdf":  [
                                                                               "packages/rendering/src/pdf.tsx"
+                                                                          ],
+                                          "@careerlaunch/rendering/cover-letter-pdf":  [
+                                                                              "packages/rendering/src/cover-letter-pdf.tsx"
                                                                           ]
                                       }
                         }

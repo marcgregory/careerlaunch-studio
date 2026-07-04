@@ -1,54 +1,30 @@
 import { type ResumeDocument, type CoverLetterDocument } from "@careerlaunch/domain";
 import { getResumeTemplate } from "./index";
-import { launchBrowser } from "./browser";
+import { renderHtmlToPdf } from "./render";
 
+/**
+ * Render a cover letter to a PDF buffer using an in-process Playwright browser.
+ *
+ * For local development — on Vercel you should set `PDF_RENDERER_URL`
+ * and use `coverLetterToHtml()` + external renderer instead.
+ */
 export async function renderCoverLetterPdf(
   coverLetter: CoverLetterDocument,
   resume: ResumeDocument,
 ): Promise<ArrayBuffer> {
-  const [{ renderToStaticMarkup }] = await Promise.all([
-    import("react-dom/server"),
-  ]);
-  const browser = await launchBrowser();
-
-  try {
-    const page = await browser.newPage({
-      viewport: { width: 794, height: 1123 },
-    });
-    await page.setContent(
-      renderCoverLetterHtml(coverLetter, resume, renderToStaticMarkup),
-      { waitUntil: "networkidle" },
-    );
-
-    const pdf = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: {
-        top: "0.75in",
-        right: "0.75in",
-        bottom: "0.75in",
-        left: "0.75in",
-      },
-    });
-
-    return pdf.buffer.slice(
-      pdf.byteOffset,
-      pdf.byteOffset + pdf.byteLength,
-    ) as ArrayBuffer;
-  } finally {
-    await browser.close();
-  }
+  const html = coverLetterToHtml(coverLetter, resume);
+  return renderHtmlToPdf(html);
 }
 
-/* ------------------------------------------------------------------ */
-/*  HTML & CSS generation from the template definition                 */
-/* ------------------------------------------------------------------ */
-
-function renderCoverLetterHtml(
+/**
+ * Generate the full HTML document (including <style> and scaffolding)
+ * for a cover letter.  Use this when you want to send the HTML to an
+ * external PDF renderer service instead of rendering in-process.
+ */
+export function coverLetterToHtml(
   coverLetter: CoverLetterDocument,
   resume: ResumeDocument,
-  renderToStaticMarkup: (element: React.ReactElement) => string,
-) {
+): string {
   const template = getResumeTemplate(resume.templateId);
 
   return `<!doctype html>
@@ -153,6 +129,10 @@ function renderCoverLetterHtml(
   </body>
 </html>`;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Shared helpers used by both resume and cover-letter PDF            */
+/* ------------------------------------------------------------------ */
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
