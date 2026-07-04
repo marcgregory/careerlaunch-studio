@@ -46,8 +46,8 @@ const sampleResume: ResumeDocument = {
 };
 
 describe("generateCoverLetter", () => {
-  it("generates a cover letter body from resume data", () => {
-    const result = generateCoverLetter({ resume: sampleResume });
+  it("generates a cover letter body from resume data", async () => {
+    const result = await generateCoverLetter({ resume: sampleResume });
 
     expect(result.body).toBeTruthy();
     expect(result.body.length).toBeGreaterThan(100);
@@ -55,14 +55,14 @@ describe("generateCoverLetter", () => {
     expect(result.closing).toBe("Sincerely,");
   });
 
-  it("includes the target role in the body", () => {
-    const result = generateCoverLetter({ resume: sampleResume });
+  it("includes the target role in the body", async () => {
+    const result = await generateCoverLetter({ resume: sampleResume });
 
     expect(result.body).toContain("Customer Success Manager");
   });
 
-  it("uses first-person voice throughout the body", () => {
-    const result = generateCoverLetter({ resume: sampleResume });
+  it("uses first-person voice throughout the body", async () => {
+    const result = await generateCoverLetter({ resume: sampleResume });
 
     // Cover letters use first-person ("I") — the applicant's name goes in the signature
     expect(result.body).toContain("my experience");
@@ -70,15 +70,15 @@ describe("generateCoverLetter", () => {
     expect(result.body).toContain("I thrive");
   });
 
-  it("references skills from the resume", () => {
-    const result = generateCoverLetter({ resume: sampleResume });
+  it("references skills from the resume", async () => {
+    const result = await generateCoverLetter({ resume: sampleResume });
 
     expect(result.body).toContain("Customer onboarding");
     expect(result.body).toContain("CRM documentation");
   });
 
-  it("references job description when provided", () => {
-    const result = generateCoverLetter({
+  it("references job description when provided", async () => {
+    const result = await generateCoverLetter({
       resume: sampleResume,
       jobDescription: "Looking for a CSM with SaaS experience.",
     });
@@ -86,30 +86,30 @@ describe("generateCoverLetter", () => {
     expect(result.body).toContain("recent posting");
   });
 
-  it("handles resume with no experience gracefully", () => {
+  it("handles resume with no experience gracefully", async () => {
     const noExpResume: ResumeDocument = {
       ...sampleResume,
       experience: [],
     };
-    const result = generateCoverLetter({ resume: noExpResume });
+    const result = await generateCoverLetter({ resume: noExpResume });
 
     expect(result.body).toBeTruthy();
     expect(result.body.length).toBeGreaterThan(50);
   });
 
-  it("handles resume with no skills gracefully", () => {
+  it("handles resume with no skills gracefully", async () => {
     const noSkillsResume: ResumeDocument = {
       ...sampleResume,
       skills: [],
     };
-    const result = generateCoverLetter({ resume: noSkillsResume });
+    const result = await generateCoverLetter({ resume: noSkillsResume });
 
     expect(result.body).toBeTruthy();
     expect(result.body.length).toBeGreaterThan(50);
   });
 
-  it("produces multiple paragraphs separated by double newlines", () => {
-    const result = generateCoverLetter({ resume: sampleResume });
+  it("produces multiple paragraphs separated by double newlines", async () => {
+    const result = await generateCoverLetter({ resume: sampleResume });
 
     const paragraphs = result.body.split("\n\n").filter(Boolean);
     expect(paragraphs.length).toBeGreaterThanOrEqual(2);

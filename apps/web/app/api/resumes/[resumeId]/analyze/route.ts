@@ -5,10 +5,11 @@ import { reportError } from "../../../../../lib/error-reporting";
 import { getRequestId } from "../../../../../lib/request-id";
 import { captureServerEvent } from "../../../../../lib/server-analytics";
 import { checkRateLimit } from "../../../../../lib/rate-limit";
-import { analyzeResume, registerProvider, MockProvider } from "@careerlaunch/ai";
+import { analyzeResume } from "@careerlaunch/ai";
+import { initializeAI } from "../../../../../lib/ai-config";
 
-// Register the MockProvider on first import
-registerProvider("mock", new MockProvider());
+// Initialize AI providers (idempotent — only runs once)
+initializeAI();
 
 async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
   const params = await context.params;

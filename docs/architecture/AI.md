@@ -1,6 +1,6 @@
 # AI Architecture
 
-Last updated: 2026-07-03
+Last updated: 2026-07-05
 
 ## Design Principles
 
@@ -178,9 +178,10 @@ function getProvider(name?: string): AIProvider {
 | Provider | Status | Use Case |
 |----------|--------|----------|
 | Mock | Always available | Tests, development, demo mode |
-| OpenAI | Planned | Primary provider for production |
-| Anthropic | Planned | Fallback / comparison |
-| Gemini | Future | Cost-sensitive tier |
+| Gemini | ✅ Implemented (Sprint 6A) | Development, free-tier production |
+| Groq | ✅ Implemented (Sprint 6A) | Fast inference, free dev tier |
+| OpenAI | Post-MVP | Primary provider for paid production |
+| Anthropic | Post-MVP | Fallback / comparison |
 | Local (Ollama) | Future | Offline development, privacy-sensitive deployments |
 
 ## Prompt Architecture
@@ -501,72 +502,74 @@ packages/ai/
   src/
     providers/
       index.ts           — Registry and provider resolution
-      types.ts           — AIProvider interface
-      openai.ts          — OpenAI implementation
-      anthropic.ts       — Anthropic implementation
+      types.ts           — AIProvider interface (analyze, generateCoverLetter, matchJob)
       mock.ts            — Mock provider for tests and demos
+      gemini.ts          — ✅ Gemini implementation (Sprint 6A)
+      groq.ts            — ✅ Groq implementation (Sprint 6A)
+      openai.ts          — 🚧 Planned (post-MVP)
+      anthropic.ts       — 🚧 Planned (post-MVP)
+
+    lib/
+      llm.ts             — ✅ Shared LLM helpers (callGemini, callOpenAICompatible)
+      tokens.ts          — ✅ Token estimation and truncation
+      prompts.ts         — ✅ Prompt loader and builder
+      validate.ts        — ✅ Structured output validation
+      cost-control.ts    — ✅ Token budget, retry/backoff
+      cache.ts           — ✅ In-memory result cache
 
     analysis/
       index.ts           — Orchestrator: runs all dimensions, merges results
       types.ts           — Analysis dimensions, input/output types
       normalize.ts       — Resume normalization before analysis
-      ats.ts             — ATS dimension orchestrator
-      grammar.ts         — Grammar dimension orchestrator
-      impact.ts          — Impact dimension orchestrator
-      keywords.ts        — Keywords dimension orchestrator
-      summary.ts         — Summary dimension orchestrator
+      static.ts          — Static (non-AI) analysis — always runs first
 
     prompts/
       ats/
-        v1.md            — Prompt text
-        schema.ts        — Zod schema for response
+        v1.md            — ✅ ATS analysis prompt
       grammar/
-        v1.md
-        schema.ts
+        v1.md            — ✅ Grammar analysis prompt
       impact/
-        v1.md
-        schema.ts
+        v1.md            — ✅ Impact analysis prompt
       keywords/
-        v1.md
-        schema.ts
+        v1.md            — ✅ Keyword analysis prompt
       summary/
-        v1.md
-        schema.ts
-
-    validators/
-      index.ts           — Validate response against its schema
-      sanitize.ts        — Sanity checks
-
-    cache/
-      index.ts           — Cache abstraction (in-memory, Redis later)
-      keys.ts            — Cache key generation
+        v1.md            — ✅ Summary analysis prompt
+      tone/
+        v1.md            — ✅ Tone analysis prompt
+      cover-letter/
+        v1.md            — ✅ Cover letter generation prompt
+      job-match/
+        v1.md            — ✅ Job match analysis prompt
 
     scoring/
-      index.ts           — Overall score computation from dimensions
-      weights.ts         — Dimension weights for overall score
+      index.ts           — Overall score computation from dimension suggestions
 
     suggestion/
-      index.ts           — Build Suggestion[] from analysis results
-      ranking.ts         — Priority ranking logic
+      types.ts           — Suggestion schema and suggestionId()
+      index.ts           — Suggestion utilities
 
-    index.ts             — Public API: analyze(), getProvider(), etc.
+    operations/
+      factory.ts         — Suggestion-to-ApplyOperation mapping
 
-  __tests__/
-    analysis/
-      ats.test.ts
-      grammar.test.ts
-      impact.test.ts
-      keywords.test.ts
-    providers/
-      mock.test.ts
-      openai.test.ts
-    scoring.test.ts
-    suggestion.test.ts
-    normalize.test.ts
+    apply/
+      apply.ts           — Pure-function apply engine
+      types.ts           — ApplyOperation types
+      operations/        — Individual operation implementations
 
-  package.json
-  tsconfig.json
-```
+    cover-letter/
+      generate.ts        — ✅ Async generator (provider delegation + deterministic fallback)
+      index.ts
+      types.ts
+
+    job-match/
+      index.ts           — ✅ Async matcher (provider delegation + dictionary fallback)
+      normalize-job.ts
+      compare.ts
+      keywords.ts
+      score.ts
+      types.ts
+
+    index.ts             — Public API exports
 
 ## Integration with Existing Architecture
 

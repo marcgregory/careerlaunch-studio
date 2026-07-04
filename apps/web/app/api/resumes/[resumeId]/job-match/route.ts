@@ -9,12 +9,11 @@ import { requireEntitlement, FeatureKeys } from "../../../../../lib/entitlements
 import {
   runJobMatch,
   normalizeResume,
-  registerProvider,
-  MockProvider,
 } from "@careerlaunch/ai";
+import { initializeAI } from "../../../../../lib/ai-config";
 
-// Register the MockProvider on first import (needed by analysis pipeline)
-registerProvider("mock", new MockProvider());
+// Initialize AI providers (idempotent — only runs once)
+initializeAI();
 
 async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
   const params = await context.params;
@@ -86,7 +85,7 @@ export async function POST(
     const resume = fromStoredResume(record);
     const normalized = normalizeResume(resume);
 
-    const result = runJobMatch({ resume: normalized, jobDescription });
+    const result = await runJobMatch({ resume: normalized, jobDescription });
 
     await prisma.analysisRun.create({
       data: {

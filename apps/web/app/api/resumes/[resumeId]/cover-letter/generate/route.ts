@@ -38,7 +38,7 @@ export async function POST(request: Request, context: { params: Promise<{ resume
 
   try {
     const resume = fromStoredResume(record);
-    const generated = generateCoverLetter({
+    const generated = await generateCoverLetter({
       resume,
       jobDescription: body.jobDescription || undefined,
     });

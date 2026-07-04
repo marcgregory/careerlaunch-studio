@@ -1,12 +1,94 @@
 # CareerLaunch Studio Project Status
 
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 ## Current Sprint
 
-Sprint 5.5 — Billing Stabilization. ✅ Complete and tagged `v0.6.1-alpha`.
+Sprint 6A — Real AI Foundation. ✅ Complete and tagged `v0.7.0-alpha`.
 
-### Delivered This Sprint (Sprint 5.5)
+### Delivered This Sprint (Sprint 6A)
+
+**AIProvider interface expanded:**
+- Added optional `generateCoverLetter()` and `matchJob()` methods to `AIProvider` interface.
+- Providers can now handle cover letter generation and job match — optional methods preserve backward compatibility with MockProvider.
+- New imports: `NormalizedResume`, `CoverLetterInput`, `GeneratedCoverLetter`, `JobMatchResult`.
+
+**GeminiProvider (`packages/ai/src/providers/gemini.ts`):**
+- Full `AIProvider` implementation using Google's Gemini 2.5 Flash model.
+- Structured JSON output via `responseMimeType: "application/json"`.
+- All 6 analysis dimensions (ats, grammar, impact, keywords, summary, tone).
+- `generateCoverLetter()` with resume + optional job description/company.
+- `matchJob()` with AI-powered skill extraction and score calculation.
+- Graceful error handling: silences per-dimension failures so one dimension doesn't block others.
+
+**GroqProvider (`packages/ai/src/providers/groq.ts`):**
+- Full `AIProvider` implementation using Groq's fast inference (Llama 4 Scout).
+- OpenAI-compatible API at `https://api.groq.com/openai/v1`.
+- Same prompt files and response parsing as GeminiProvider.
+- `response_format: { type: "json_object" }` for reliable structured output.
+- Same method coverage as GeminiProvider.
+
+**LLM helpers (`packages/ai/src/lib/llm.ts`):**
+- `callGemini()` — wraps Google GenAI SDK with timeout, retry, JSON parsing.
+- `callOpenAICompatible()` — generic OpenAI-compatible client (works with Groq, OpenRouter, future providers).
+- `LLMError` class with typed error codes: `auth`, `provider`, `empty`, `timeout`, `parse`.
+- Exponential backoff on retry (200ms initial, 2× multiplier).
+- One automatic retry on transient errors.
+
+**Token utilities (`packages/ai/src/lib/tokens.ts`):**
+- `estimateTokens()` — ~4 chars per token heuristic.
+- `truncateToTokens()` — word-boundary-aware truncation with ellipsis.
+- `estimateObjectTokens()` — JSON-stringify then estimate.
+
+**Prompt system (`packages/ai/prompts/`):**
+- 8 prompt files extracted from code to versioned markdown: `ats/v1.md`, `grammar/v1.md`, `impact/v1.md`, `keywords/v1.md`, `summary/v1.md`, `tone/v1.md`, `cover-letter/v1.md`, `job-match/v1.md`.
+- Consistent template format: `# Role` → `# Instructions` → `# Resume` → `# Response Format` (JSON schema).
+- Template variables: `{resume_json}`, `{job_description}`.
+- Prompt loader (`packages/ai/src/lib/prompts.ts`) — file-based loading with in-memory caching, `# Role` section extraction as system prompt.
+- `buildSystemPrompt()`, `buildCoverLetterPrompt()`, `buildJobMatchPrompt()` for each use case.
+
+**Structured output validation (`packages/ai/src/lib/validate.ts`):**
+- Validators for all 6 dimensions: `validateATS`, `validateGrammar`, `validateImpact`, `validateKeywords`, `validateSummary`, `validateTone`.
+- `validateCoverLetter` and `validateJobMatch` for generation/match endpoints.
+- Partial results: returns lowered confidence instead of throwing when some fields are valid.
+- `ValidationError` class with field and reason context.
+- Score range enforcement (0–100), string type checking, array element validation.
+
+**Cost controls (`packages/ai/src/lib/cost-control.ts`):**
+- `withCostControls()` — wraps any provider call with budget check, timeout, retry.
+- Token budget per user (24h sliding window, configurable via `CostConfig`).
+- `checkTokenBudget()`, `recordTokenUsage()`, `getCallCount()` for usage tracking.
+- `CostLimitError` when budget is exceeded.
+- `estimateAnalysisTokens()` for input + estimated output tokens.
+
+**In-memory cache (`packages/ai/src/lib/cache.ts`):**
+- Dimension-aware TTLs: 1h for ats/grammar/summary/cover-letter, 24h for impact/tone, 30min for job-match.
+- `hashValue()` — simple deterministic hash for cache keys.
+- `buildCacheKey()` — `{provider}:{dimension}:{resumeHash}[:{jdHash}]` format.
+- `invalidateCache()` — substring-pattern invalidation.
+- Automatic expired entry cleanup on stats retrieval.
+
+**Centralized provider initialization (`apps/web/lib/ai-config.ts`):**
+- `initializeAI()` — idempotent, registers MockProvider + any configured providers.
+- Auto-detects `AI_DEFAULT_PROVIDER` env var, falls back to first available provider with valid API key, then mock.
+- `hasRealAIProvider()` — quick check for real provider availability.
+- `resetAIInitialization()` — test support.
+
+**Cover letter generator update (`packages/ai/src/cover-letter/generate.ts`):**
+- `generateCoverLetter()` now async — delegates to provider if available, falls back to deterministic.
+- Original synchronous logic preserved as `deterministicGenerateCoverLetter()`.
+- Graceful error handling: provider errors fall through to deterministic fallback.
+
+**Job match engine update (`packages/ai/src/job-match/index.ts`):**
+- `runJobMatch()` now async — delegates to provider if available, falls back to dictionary-based.
+- Original deterministic logic preserved as `deterministicRunJobMatch()`.
+- Graceful error handling: provider errors fall through to deterministic fallback.
+
+### Next Up
+
+- Sprint 6B — AI Quality Improvements or Public Beta Polish (to be decided).
+
+## Completed
 
 **Webhook idempotency:**
 - New `ProcessedStripeEvent` model records each processed Stripe event ID.
@@ -42,7 +124,7 @@ Sprint 5.5 — Billing Stabilization. ✅ Complete and tagged `v0.6.1-alpha`.
 
 - Sprint 6 — Public Beta Polish or AI Quality Improvements (to be decided).
 
-**Billing architecture:**
+**Billing architecture (from Sprint 5.5):**
 - `docs/architecture/BILLING.md` — comprehensive design covering entitlement model, plan registry, feature gate strategy, webhook flow, subscription lifecycle, upgrade/downgrade behavior, failure handling, and testing strategy.
 - Principles: entitlements over tiers, code-defined plans, Stripe as source of truth, grace over strictness, watermark before block.
 
@@ -106,9 +188,13 @@ Sprint 5.5 — Billing Stabilization. ✅ Complete and tagged `v0.6.1-alpha`.
 
 ### Next Up
 
-- Sprint 6 — Polish, Performance, and Pre-Launch QA.
+- Sprint 6B — AI Quality & Public Beta (to be decided).
 
 ## Completed
+
+### Sprint 6A — Real AI Foundation ✅
+
+Covered above.
 
 ### Sprint 5 — Billing & Entitlement System ✅
 
@@ -148,11 +234,11 @@ Covered in previous status.
 
 ## Architecture Status
 
-TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering separated into standalone Docker service. Template registry is single source of truth. Entitlement system decouples feature logic from billing state — every feature asks `can(user, feature_key)` rather than checking plan status directly. Plans are code-defined in `@careerlaunch/domain`. Stripe handles payments, webhooks sync subscription state. Sentry, PostHog, rate limiting, and health endpoint in place.
+TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering separated into standalone Docker service. Template registry is single source of truth. Entitlement system decouples feature logic from billing state — every feature asks `can(user, feature_key)` rather than checking plan status directly. Plans are code-defined in `@careerlaunch/domain`. Stripe handles payments, webhooks sync subscription state. Sentry, PostHog, rate limiting, and health endpoint in place. AI provider abstraction decouples app code from LLM vendors — `AIProvider` interface with GeminiProvider, GroqProvider, and MockProvider implementations. Provider selection via `AI_DEFAULT_PROVIDER` env var. Prompts extracted to versioned files. Structured output validation ensures reliable typed responses.
 
 ## Platform Status
 
-Build passes with 186 tests (144 AI + 14 domain + 28 billing). TypeScript passes across all workspaces.
+Build passes with 199 tests (144 AI + 14 domain + 41 web). TypeScript passes across all workspaces.
 
 ## Blockers
 
@@ -165,8 +251,7 @@ Build passes with 186 tests (144 AI + 14 domain + 28 billing). TypeScript passes
 
 ## Next Milestone
 
-Complete Sprint 6 — polish, performance optimization, and pre-launch QA.
-
+Complete Sprint 6B — AI quality improvements, job tailoring, or public beta polish (to be decided).
 ## Last Build
 
 Local build verification passed on 2026-07-04:

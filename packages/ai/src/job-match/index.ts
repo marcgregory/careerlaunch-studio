@@ -4,6 +4,7 @@ import { compare } from "./compare";
 import { analyzeKeywords } from "./keywords";
 import { computeMatchScore } from "./score";
 import type { JobMatchResult, JobMatchInput } from "./types";
+import { getProvider } from "../providers/index";
 
 export type { JobMatchResult, JobMatchInput, NormalizedJob } from "./types";
 export { normalizeJobDescription } from "./normalize-job";
@@ -14,16 +15,43 @@ export { computeMatchScore } from "./score";
 /**
  * Run the full job-match pipeline.
  *
- * Steps:
- * 1. Normalize the job description text → structured tokens + skill list
- * 2. Compare the resume to the job's required skills
- * 3. Compute a match score
- * 4. Return the score, skill lists, and actionable suggestions
+ * Delegates to the configured AI provider if it supports `matchJob`.
+ * Falls back to the deterministic, dictionary-based matcher.
  *
  * The result flows into the existing Review → Diff → Apply pipeline
  * via the returned Suggestion objects.
  */
-export function runJobMatch(input: JobMatchInput): JobMatchResult {
+export async function runJobMatch(
+  input: JobMatchInput,
+  options?: { providerName?: string },
+): Promise<JobMatchResult> {
+  // Try the AI provider first (gracefully handles no provider registered)
+  try {
+    const provider = options?.providerName ? getProvider(options.providerName) : getProvider();
+
+    if (provider.matchJob) {
+      try {
+        return await provider.matchJob(input.resume, input.jobDescription);
+      } catch {
+        // Fall through to deterministic matcher on error
+      }
+    }
+  } catch {
+    // No provider registered — fall through to deterministic
+  }
+
+  // Fallback to dictionary-based matching
+  return deterministicRunJobMatch(input);
+}
+
+/**
+ * Deterministic, dictionary-based job match engine.
+ *
+ * Uses tokenizer and skill dictionary for comparison.
+ * Zero AI calls — used as a fallback when no AI provider supports matchJob.
+ * This is the original implementation, preserved for fallback and testing.
+ */
+export function deterministicRunJobMatch(input: JobMatchInput): JobMatchResult {
   const { resume, jobDescription } = input;
 
   // Step 1: Normalize

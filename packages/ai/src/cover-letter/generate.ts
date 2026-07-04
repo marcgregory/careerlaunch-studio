@@ -1,15 +1,47 @@
 import type { CoverLetterInput, GeneratedCoverLetter } from "./types";
+import type { ResumeDocument } from "@careerlaunch/domain";
+import { getProvider } from "../providers/index";
 
 /**
  * Generate a cover letter draft from resume data and optional job description.
  *
- * This is a deterministic, template-based generator (no AI calls) for the MVP.
- * It produces a realistic placeholder that the user can then edit manually.
+ * Delegates to the configured AI provider if it supports `generateCoverLetter`.
+ * Falls back to a deterministic, template-based generator if the provider
+ * doesn't implement the method (or isn't configured).
  *
  * The output is structured as a standard business letter: opening statement,
  * body paragraphs highlighting relevant experience and skills, and a closing.
  */
-export function generateCoverLetter(input: CoverLetterInput): GeneratedCoverLetter {
+export async function generateCoverLetter(
+  input: CoverLetterInput,
+  options?: { providerName?: string },
+): Promise<GeneratedCoverLetter> {
+  // Try the AI provider first (gracefully handles no provider registered)
+  try {
+    const provider = options?.providerName ? getProvider(options.providerName) : getProvider();
+
+    if (provider.generateCoverLetter) {
+      try {
+        return await provider.generateCoverLetter(input);
+      } catch {
+        // Fall through to deterministic generator on error
+      }
+    }
+  } catch {
+    // No provider registered — fall through to deterministic
+  }
+
+  // Fallback to deterministic template
+  return deterministicGenerateCoverLetter(input);
+}
+
+/**
+ * Deterministic, template-based cover letter generator.
+ *
+ * Produces a realistic placeholder that the user can then edit manually.
+ * Zero AI calls — used as a fallback when no AI provider is configured.
+ */
+export function deterministicGenerateCoverLetter(input: CoverLetterInput): GeneratedCoverLetter {
   const { resume, jobDescription } = input;
   const name = resume.contact.fullName || "the candidate";
   const role = resume.targetRole || "the position";
@@ -54,7 +86,6 @@ export function generateCoverLetter(input: CoverLetterInput): GeneratedCoverLett
 
   const body = [opening, ...bodyParts, closingParagraph].join("\n\n");
 
-  // Simulate realistic latency for the mock
   return {
     body,
     salutation: "Dear Hiring Manager,",

@@ -27,8 +27,8 @@ const SAMPLE_RESUME: NormalizedResume = {
 };
 
 describe("runJobMatch integration", () => {
-  it("returns a complete result for a matching JD", () => {
-    const result = runJobMatch({
+  it("returns a complete result for a matching JD", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Looking for a React developer with TypeScript experience.",
     });
@@ -39,8 +39,8 @@ describe("runJobMatch integration", () => {
     expect(Array.isArray(result.suggestions)).toBe(true);
   });
 
-  it("returns present skills that match", () => {
-    const result = runJobMatch({
+  it("returns present skills that match", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Need React and Python skills.",
     });
@@ -49,8 +49,8 @@ describe("runJobMatch integration", () => {
     expect(result.presentSkills).toContain("Python");
   });
 
-  it("returns missing skills not in resume", () => {
-    const result = runJobMatch({
+  it("returns missing skills not in resume", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Need React, Docker, and Kubernetes.",
     });
@@ -59,8 +59,8 @@ describe("runJobMatch integration", () => {
     expect(result.missingSkills).toContain("Kubernetes");
   });
 
-  it("returns null score when no skills extracted from JD", () => {
-    const result = runJobMatch({
+  it("returns null score when no skills extracted from JD", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Looking for a great team player with synergistic paradigm-shifting skills.",
     });
@@ -69,8 +69,8 @@ describe("runJobMatch integration", () => {
     expect(result.suggestions).toEqual([]);
   });
 
-  it("all suggestions have category job-match", () => {
-    const result = runJobMatch({
+  it("all suggestions have category job-match", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Need React, Docker, and Kubernetes.",
     });
@@ -80,8 +80,8 @@ describe("runJobMatch integration", () => {
     }
   });
 
-  it("all suggestions have a suggestedText for add_skill operation", () => {
-    const result = runJobMatch({
+  it("all suggestions have a suggestedText for add_skill operation", async () => {
+    const result = await runJobMatch({
       resume: SAMPLE_RESUME,
       jobDescription: "Need React, Docker, and Kubernetes.",
     });

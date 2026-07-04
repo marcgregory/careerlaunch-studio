@@ -2,6 +2,35 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.7.0-alpha - 2026-07-05
+
+### Added
+
+- **Sprint 6A — Real AI Foundation.** Tagged `v0.7.0-alpha`.
+- **Expanded AIProvider interface** (`packages/ai/src/providers/types.ts`) — added optional `generateCoverLetter()` and `matchJob()` methods so cover letter and job match features can be routed through AI providers.
+- **GeminiProvider** (`packages/ai/src/providers/gemini.ts`) — full `AIProvider` implementation using Google's Gemini 2.5 Flash model with structured JSON output (`responseMimeType: "application/json"`). Supports all 6 analysis dimensions, cover letter generation, and job match.
+- **GroqProvider** (`packages/ai/src/providers/groq.ts`) — full `AIProvider` implementation using Groq's fast inference API (Llama 4 Scout) via OpenAI-compatible endpoint. Shares prompts and response parsing with GeminiProvider.
+- **LLM helpers** (`packages/ai/src/lib/llm.ts`) — `callGemini()` and `callOpenAICompatible()` functions with timeout, retry with exponential backoff, and JSON parsing. `LLMError` class with typed error codes (`auth`, `provider`, `empty`, `timeout`, `parse`).
+- **Token utilities** (`packages/ai/src/lib/tokens.ts`) — `estimateTokens()`, `truncateToTokens()`, `estimateObjectTokens()` for token budgeting.
+- **Prompt system** (`packages/ai/prompts/`) — 8 prompt files extracted from code into versioned markdown files: `ats/v1.md`, `grammar/v1.md`, `impact/v1.md`, `keywords/v1.md`, `summary/v1.md`, `tone/v1.md`, `cover-letter/v1.md`, `job-match/v1.md`. Prompt loader (`packages/ai/src/lib/prompts.ts`) with file-based loading, caching, and template variable injection.
+- **Structured output validation** (`packages/ai/src/lib/validate.ts`) — validators for all dimension responses (ATS, grammar, impact, keywords, summary, tone) plus cover letter and job match. Partial results supported for graceful degradation.
+- **Cost controls** (`packages/ai/src/lib/cost-control.ts`) — `withCostControls()` wrapper with token budget enforcement, exponential backoff retry, timeout, and usage tracking. `CostLimitError` for budget exhaustion.
+- **In-memory cache** (`packages/ai/src/lib/cache.ts`) — dimension-aware TTL caching (1h for most dimensions, 24h for impact/tone, 30min for job match). `invalidateCache()` for targeted invalidation.
+- **Centralized provider initialization** (`apps/web/lib/ai-config.ts`) — replaces inline `registerProvider("mock")` calls in route files. `initializeAI()` auto-detects configured API keys and sets the appropriate default provider. Environment-controlled via `AI_DEFAULT_PROVIDER`, `GEMINI_API_KEY`, `GROQ_API_KEY`.
+
+### Changed
+
+- **`generateCoverLetter()`** (`packages/ai/src/cover-letter/generate.ts`) — now async. Delegates to provider's `generateCoverLetter()` if available, falls back to deterministic template. Original synchronous logic preserved as `deterministicGenerateCoverLetter()`.
+- **`runJobMatch()`** (`packages/ai/src/job-match/index.ts`) — now async. Delegates to provider's `matchJob()` if available, falls back to dictionary-based matcher. Original synchronous logic preserved as `deterministicRunJobMatch()`.
+- **Provider registration** — removed inline `registerProvider("mock", ...)` from `analyze/route.ts` and `job-match/route.ts`. Replaced with `initializeAI()` call that registers all providers centrally.
+- **`packages/ai/src/index.ts`** — added exports for all new modules: `GeminiProvider`, `GroqProvider`, LLM helpers, token utilities, prompt loader, validators, cost controls, cache.
+- **`packages/ai/src/providers/types.ts`** — added imports for `NormalizedResume`, `CoverLetterInput`, `GeneratedCoverLetter`, `JobMatchResult`.
+
+### Added
+
+- **Environment variables** — `GEMINI_API_KEY`, `GROQ_API_KEY`, `AI_DEFAULT_PROVIDER` documented in `.env.example`.
+- **Dependencies** — `@google/genai` added to `packages/ai/package.json`.
+
 ## 0.6.0-alpha - 2026-07-04
 
 ### Added
