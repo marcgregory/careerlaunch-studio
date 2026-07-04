@@ -8,11 +8,12 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
       resume_limit: 3,
       templates: { kind: "list", templateIds: ["modern", "minimal"] },
       ai_analysis: true,
-      job_match: false,
+      run_job_match: false,
       cover_letter: true,
       pdf_export: "watermarked",
+      export_clean_pdf: false,
       monthly_exports: 5,
-      premium_templates: false,
+      use_premium_templates: false,
       priority_support: false,
     },
   },
@@ -23,11 +24,12 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
       resume_limit: Infinity,
       templates: { kind: "all" },
       ai_analysis: true,
-      job_match: true,
+      run_job_match: true,
       cover_letter: true,
       pdf_export: "clean",
+      export_clean_pdf: true,
       monthly_exports: Infinity,
-      premium_templates: true,
+      use_premium_templates: true,
       priority_support: false,
     },
   },
@@ -38,11 +40,12 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
       resume_limit: Infinity,
       templates: { kind: "all" },
       ai_analysis: true,
-      job_match: true,
+      run_job_match: true,
       cover_letter: true,
       pdf_export: "clean",
+      export_clean_pdf: true,
       monthly_exports: Infinity,
-      premium_templates: true,
+      use_premium_templates: true,
       priority_support: true,
     },
   },
@@ -62,7 +65,6 @@ export function getEntitlements(planId: PlanId): Entitlements {
 
 /**
  * Check whether a specific feature resolves to a truthy value for a plan.
- * Works for boolean features.
  */
 export function can(planId: PlanId, feature: string): boolean {
   const entitlements = getEntitlements(planId);

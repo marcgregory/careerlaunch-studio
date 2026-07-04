@@ -1,266 +1,248 @@
-# Billing & Entitlement Architecture
+# Billing & Entitlements Architecture
 
 Last updated: 2026-07-04
 
-## Overview
+## Sprint 5 Order
 
-The billing system wraps Stripe into an **entitlement layer** that decouples feature logic from subscription state. Every feature asks `can(user, feature_key)` rather than checking `user.isPremium` or inspecting billing status directly.
+1. `docs/architecture/BILLING.md`
+2. Entitlement system
+3. Plan limits
+4. Premium template gates
+5. Free PDF watermark / export limits
+6. Stripe checkout
+7. Stripe webhooks
+8. Billing portal
 
-This keeps feature gates consistent across API routes, server-rendered pages, and client components, and makes future plan changes (trials, coupons, enterprise accounts) a configuration change rather than a code hunt.
+This architecture intentionally puts the entitlement layer before Stripe. Product code should never ask whether a user is "premium". Product code asks whether the user has a capability:
 
-## Principles
+```ts
+await can(user.id, "export_clean_pdf");
+await can(user.id, "use_premium_templates");
+await can(user.id, "run_job_match");
+```
 
-1. **Entitlements over tiers.** Code checks capabilities (`can_export_pdf`, `can_use_template_id`), not plan names.
-2. **Code-defined plans.** Plan configurations live in a registry so they're versioned with the app. No database plan table that drifts from code.
-3. **Stripe is source of truth for billing.** Webhooks update local subscription state. The app never writes to Stripe.
-4. **Grace over strictness.** Expired cards get a grace period. Webhook failures don't lock users out permanently. The entitlement service returns generous defaults when Stripe state is ambiguous.
-5. **Watermark before block.** Free exports get a subtle watermark rather than a hard block — the user sees the value before being asked to pay.
+Stripe changes subscription state. The entitlement layer translates subscription state into product capabilities.
+
+## Goals
+
+- Keep feature access independent from plan names and Stripe status strings.
+- Make Free, Professional, and Enterprise limits code-defined and testable.
+- Support watermarked Free exports before paid clean exports.
+- Enforce premium gates on both the client and server.
+- Add Stripe only after local entitlements are stable.
+
+## Non-Goals
+
+- No hardcoded `isPremium`, `plan === "professional"`, or direct Stripe checks in feature code.
+- No database-backed plan catalog in Sprint 5.
+- No coupons, metered billing, invoices UI, annual plans, or team seats yet.
 
 ## Architecture
 
-```
-┌──────────────┐     ┌──────────────────┐     ┌─────────────┐
-│   Feature    │ ──> │  Entitlement     │ ──> │  Plan       │
-│   Gate       │     │  Service         │     │  Registry   │
-│ (can(user,)) │     │  (runtime check) │     │  (config)   │
-└──────────────┘     └──────────────────┘     └─────────────┘
-                             │
-                             v
-                     ┌───────────────┐
-                     │  Subscription │
-                     │  (DB row)     │
-                     └───────┬───────┘
-                             │
-                     ┌───────┴───────┐
-                     │  Stripe       │
-                     │  (webhooks)   │
-                     └───────────────┘
+```text
+Feature route / component
+        |
+        v
+can(userId, featureKey) / getFeatureValue(userId, featureKey)
+        |
+        v
+Effective subscription state from local DB
+        |
+        v
+Code-defined plan registry
+        |
+        v
+Boolean or typed feature value
 ```
 
-### Data Model
+Stripe sits outside the feature path:
 
-The existing `Subscription` model is extended:
-
-| Field | Type | Purpose |
-|-------|------|---------|
-| `id` | String | PK |
-| `userId` | String | FK to User |
-| `plan` | Plan enum | `FREE`, `PROFESSIONAL`, `ENTERPRISE` |
-| `stripeCustomerId` | String? | Stripe customer reference |
-| `stripeSubscriptionId` | String? | Stripe subscription reference (unique) |
-| `status` | SubscriptionStatus | `FREE`, `TRIALING`, `ACTIVE`, `PAST_DUE`, `CANCELED` |
-| `currentPeriodEnd` | DateTime? | End of current billing period |
-| `cancelAtPeriodEnd` | Boolean | Whether cancellation is pending |
-
-Plans are defined in code (`packages/domain/src/entitlements/plans.ts`), not in the database.
-
-### Plan Registry
-
-```typescript
-const PLANS = {
-  free: {
-    label: "Free",
-    entitlements: {
-      resume_limit: 3,
-      templates: ["modern", "minimal"],
-      ai_analysis: true,        // basic score + checks
-      job_match: false,
-      cover_letter: true,
-      pdf_export: "watermarked",
-      monthly_exports: 5,
-      premium_templates: false,
-      priority_support: false,
-    },
-  },
-  professional: {
-    label: "Professional",
-    entitlements: {
-      resume_limit: Infinity,
-      templates: "all",
-      ai_analysis: true,        // full analysis
-      job_match: true,
-      cover_letter: true,
-      pdf_export: "clean",
-      monthly_exports: Infinity,
-      premium_templates: true,
-      priority_support: false,
-    },
-  },
-  enterprise: {
-    label: "Enterprise",
-    entitlements: {
-      resume_limit: Infinity,
-      templates: "all",
-      ai_analysis: true,
-      job_match: true,
-      cover_letter: true,
-      pdf_export: "clean",
-      monthly_exports: Infinity,
-      premium_templates: true,
-      priority_support: true,
-    },
-  },
-};
+```text
+Stripe checkout / portal / webhook
+        |
+        v
+Subscription row
+        |
+        v
+Entitlement service
+        |
+        v
+Feature gates
 ```
 
-### Entitlement Service
+## Entitlement Contract
 
-Located at `apps/web/lib/entitlements.ts`. Exposes:
+Canonical feature keys live in `@careerlaunch/domain` and are re-exported by `apps/web/lib/entitlements.ts`.
 
-```typescript
-getSubscription(userId): Promise<Subscription>
-can(userId, feature, context?): Promise<boolean>
-getFeatureValue(userId, feature): Promise<FeatureValue>
-requireEntitlement(userId, feature, context?): Response | null
+| Feature key | Type | Purpose |
+| --- | --- | --- |
+| `resume_limit` | number | Maximum active resume drafts. |
+| `templates` | template access | Exact template IDs or all templates. |
+| `ai_analysis` | boolean | Resume analysis access. |
+| `run_job_match` | boolean | Job description match access. |
+| `cover_letter` | boolean | Cover letter builder access. |
+| `pdf_export` | `watermarked` or `clean` | Render mode for PDF exports. |
+| `export_clean_pdf` | boolean | Whether non-watermarked PDF export is allowed. |
+| `monthly_exports` | number | Monthly PDF export quota. |
+| `use_premium_templates` | boolean | Premium template access. |
+| `priority_support` | boolean | Enterprise support flag. |
+
+Feature code should use helpers like:
+
+```ts
+const gate = await requireEntitlement(user.id, FeatureKeys.RUN_JOB_MATCH);
+if (gate) return gate;
+
+const exportKind = await getPdfExportKind(user.id);
+const pdfOptions = { watermarked: exportKind !== "clean" };
 ```
 
-The service:
-1. Loads the user's subscription (with fallback to FREE defaults)
-2. Looks up the plan definition
-3. Checks the requested feature against the plan's entitlements
-4. Returns boolean or feature value
+## Plan Registry
 
-`requireEntitlement` returns a JSON `403` response object for API routes:
+Plans are defined in `packages/domain/src/entitlements/plans.ts`.
 
-```typescript
-const gate = await requireEntitlement(user.id, "pdf_export_clean");
-if (gate) return gate; // 403
+```ts
+free: {
+  resume_limit: 3,
+  templates: { kind: "list", templateIds: ["modern", "minimal"] },
+  ai_analysis: true,
+  run_job_match: false,
+  cover_letter: true,
+  pdf_export: "watermarked",
+  export_clean_pdf: false,
+  monthly_exports: 5,
+  use_premium_templates: false,
+  priority_support: false,
+}
+
+professional: {
+  resume_limit: Infinity,
+  templates: { kind: "all" },
+  ai_analysis: true,
+  run_job_match: true,
+  cover_letter: true,
+  pdf_export: "clean",
+  export_clean_pdf: true,
+  monthly_exports: Infinity,
+  use_premium_templates: true,
+  priority_support: false,
+}
+
+enterprise: {
+  resume_limit: Infinity,
+  templates: { kind: "all" },
+  ai_analysis: true,
+  run_job_match: true,
+  cover_letter: true,
+  pdf_export: "clean",
+  export_clean_pdf: true,
+  monthly_exports: Infinity,
+  use_premium_templates: true,
+  priority_support: true,
+}
 ```
 
-### Stripe Integration
+## Data Model
 
-**Products & Prices** are configured in Stripe dashboard, referenced by ID in env:
+`Subscription` stores the local billing projection:
 
-```
-STRIPE_PROFESSIONAL_PRICE_ID="price_xxx"
-STRIPE_ENTERPRISE_PRICE_ID="price_yyy"
-```
+| Field | Purpose |
+| --- | --- |
+| `userId` | Owner. Unique per user. |
+| `plan` | `FREE`, `PROFESSIONAL`, or `ENTERPRISE`. |
+| `status` | `FREE`, `TRIALING`, `ACTIVE`, `PAST_DUE`, or `CANCELED`. |
+| `stripeCustomerId` | Stripe customer reference. |
+| `stripeSubscriptionId` | Stripe subscription reference. |
+| `currentPeriodEnd` | Billing period end or grace anchor. |
+| `cancelAtPeriodEnd` | Pending cancellation flag. |
 
-**Checkout flow:**
-1. User clicks "Upgrade" on pricing page
-2. Server creates Stripe Checkout Session with `?prefilled_promo_code=...`
-3. User completes payment on Stripe
-4. Stripe redirects to `/dashboard?upgrade=success`
-5. Webhook `checkout.session.completed` creates/updates Subscription row
+If a user has no subscription row, `getSubscription(userId)` creates a Free row.
 
-**Webhook flow:**
-- `customer.subscription.updated` → update status, plan, period end
-- `customer.subscription.deleted` → set status to CANCELED, plan to FREE
-- `invoice.payment_failed` → set status to PAST_DUE
-- `checkout.session.completed` → create Subscription row
+## Effective Plan Rules
 
-**Customer Portal:**
-- A `/api/billing/portal` endpoint creates a Stripe Customer Portal session
-- Redirects user to Stripe for plan changes, cancellation, payment methods, invoices
+- `FREE` uses Free entitlements.
+- `ACTIVE` and `TRIALING` use the row's plan.
+- `PAST_DUE` keeps the row's plan until the grace window expires.
+- `CANCELED` and expired `PAST_DUE` use Free entitlements.
 
-### Watermark Strategy
+Grace defaults to 3 days via `PAST_DUE_GRACE_DAYS`.
 
-Free PDF exports include a subtle diagonal watermark "Created with CareerLaunch Studio" in light gray. The watermark is applied server-side during PDF rendering in `packages/rendering/src/pdf.tsx` when `options.watermarked` is true.
+## Gates
 
-The watermark:
-- Semi-transparent gray text, rotated ~30 degrees
-- Placed across the page as a repeating pattern
-- Does not obscure resume content
-- Removed entirely at the Professional plan
+| Area | Gate |
+| --- | --- |
+| Creating resumes | `can(user, "resume_limit")` |
+| Saving premium templates | `canUseTemplateByUser(user, templateId)` and `can(user, "use_premium_templates")` |
+| Job matching | `can(user, "run_job_match")` |
+| PDF export quota | `canExportPdf(user)` using `monthly_exports` |
+| Clean PDF rendering | `can(user, "export_clean_pdf")` or `getPdfExportKind(user)` |
 
-### Feature Gates by Component
+Server routes are the source of enforcement. Client gates are for user experience only.
 
-| Component | Free | Professional | Enterprise |
-|-----------|------|-------------|------------|
-| Resume drafts | 3 | Unlimited | Unlimited |
-| Templates | Modern, Minimal | All 4 | All 4 |
-| AI analysis | Basic score | Full analysis | Full analysis |
-| Job match | — | ✓ | ✓ |
-| Cover letter | ✓ | ✓ | ✓ |
-| PDF export | Watermarked (5/mo) | Clean (unlimited) | Clean (unlimited) |
-| Support | Community | Community | Priority |
+## Free PDF Watermark / Export Limits
 
-### Subscription Lifecycle
+Free users can export PDFs, but exports are watermarked and limited monthly. Professional and Enterprise users export clean PDFs with unlimited monthly quota.
 
-```
-Registration
-    │
-    v
-FREE ──────────────────────────────────────────┐
-    │                                            │
-    │  User clicks "Upgrade"                     │
-    v                                            │
-ACTIVE (Professional / Enterprise)              │
-    │                                            │
-    ├── Period end, card declined ──> PAST_DUE   │
-    │       │                                    │
-    │       └── 7-day grace period               │
-    │              │                             │
-    │              ├── User updates card ──> ACTIVE
-    │              └── Grace expires ──> CANCELED │
-    │                                            │
-    ├── User cancels ──> CANCELED (end of period)│
-    │       │                                    │
-    │       └── Period end ──> FREE              │
-    │                                            │
-    └── Admin refund ──> FREE                    │
+Watermarking is applied in the rendering layer through `PdfOptions.watermarked`, not in client code.
+
+## Stripe Checkout
+
+Checkout is introduced after local gates work.
+
+- `POST /api/billing/checkout` accepts `professional` or `enterprise`.
+- The route creates or reuses a Stripe customer.
+- The route creates a Stripe Checkout Session with metadata `{ userId, plan }`.
+- The user returns to `/billing?checkout=success` or `/billing?checkout=canceled`.
+
+Environment variables:
+
+```text
+STRIPE_SECRET_KEY=
+STRIPE_PROFESSIONAL_PRICE_ID=
+STRIPE_ENTERPRISE_PRICE_ID=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 ```
 
-### Failure Handling
+## Stripe Webhooks
 
-- **Webhook delivery failure:** Stripe retries for up to 3 days. The app's subscription status may lag behind Stripe. The entitlement service treats PAST_DUE as degraded (reduced but not zero access) for 3 days, then treats as FREE.
-- **Expired card:** Stripe sends `invoice.payment_failed`. Status → PAST_DUE. A "Update payment method" banner appears in the dashboard. After 7 days without resolution, the subscription is canceled.
-- **Grace period:** During PAST_DUE, the user retains Professional entitlements for 3 days (configurable via env `PAST_DUE_GRACE_DAYS`), then downgrades to Free-like access except existing resumes remain editable.
-- **Concurrent webhook:** Stripe webhooks are idempotent via the Stripe `Idempotency-Key` header. The app stores the Stripe event ID to prevent double-processing.
+Webhook handlers update local `Subscription` rows. Feature routes do not call Stripe.
 
-### API Routes
+Required events:
 
-| Route | Purpose |
-|-------|---------|
-| `POST /api/billing/checkout` | Create Stripe Checkout Session |
-| `POST /api/billing/portal` | Create Stripe Customer Portal session |
-| `POST /api/billing/webhook` | Stripe webhook receiver |
-| `GET /api/billing/subscription` | Get current subscription + entitlements |
+| Event | Local action |
+| --- | --- |
+| `checkout.session.completed` | Link customer/subscription and set selected plan. |
+| `customer.subscription.created` | Upsert subscription row. |
+| `customer.subscription.updated` | Sync plan, status, period end, cancellation flag. |
+| `customer.subscription.deleted` | Downgrade to Free or mark canceled. |
+| `invoice.payment_failed` | Mark `PAST_DUE`. |
 
-### Directory Structure
+Webhook processing must be idempotent before production launch. If an event log table is not added in Sprint 5, the webhook must at least tolerate repeated subscription upserts.
 
-```
-apps/web/
-  lib/
-    entitlements.ts        ← Entitlement service
-  app/
-    api/
-      billing/
-        checkout/route.ts  ← Create checkout session
-        portal/route.ts    ← Create portal session
-        webhook/route.ts   ← Stripe webhook handler
-        subscription/route.ts ← Current subscription
-    billing/
-      page.tsx             ← Pricing/plans page
-    account/
-      billing/page.tsx     ← Customer portal wrapper (or link)
-    dashboard/
-      page.tsx             ← Updated with usage indicators
-packages/domain/src/
-  entitlements/
-    plans.ts               ← Plan definitions
-    types.ts               ← Entitlement types
-    feature-keys.ts        ← Feature key constants
-```
+## Billing Portal
 
-### Environment Variables
+`POST /api/billing/portal` creates a Stripe Customer Portal session for users with a Stripe customer ID. Users without a Stripe customer are redirected to `/billing`.
 
-```
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_PROFESSIONAL_PRICE_ID=price_xxx
-STRIPE_ENTERPRISE_PRICE_ID=price_yyy
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-PAST_DUE_GRACE_DAYS=3
-```
+Portal responsibilities:
 
-### Migration Path
+- Change plan.
+- Cancel subscription.
+- Update payment method.
+- View invoices in Stripe.
 
-For existing users, all current accounts initialize as FREE with the legacy entitlement set. No data migration is needed beyond adding the `plan` and `cancelAtPeriodEnd` columns to Subscription.
+Local app state still changes through webhooks.
 
-### Testing Strategy
+## Testing Strategy
 
-- **Unit:** Plan definitions return correct entitlements. `can()` resolves correctly for each plan × feature.
-- **Integration:** Webhook signature verification, subscription state transitions, checkout session creation.
-- **E2E:** Upgrade flow (mocked Stripe), PDF watermark visible on free, removed on paid, template lock overlay on premium templates, resume limit enforcement.
+- Unit test plan definitions and `can(plan, feature)` for `export_clean_pdf`, `use_premium_templates`, and `run_job_match`.
+- Integration test API gates for resume limits, premium template saves, job match, and export limits.
+- E2E test Free users see locked premium templates and watermarked exports.
+- E2E test paid users can use premium templates, run job match, and export clean PDFs.
+- Webhook tests should cover duplicate delivery, cancellation, payment failure, and recovery.
+
+## Operational Notes
+
+- Billing and export routes must use `Cache-Control: no-store`.
+- Stripe secrets must never be exposed to client bundles.
+- Entitlement failures should return `403` with `{ feature, upgradeUrl }`.
+- Existing resumes remain editable after downgrade unless the user attempts to save a newly gated premium template.

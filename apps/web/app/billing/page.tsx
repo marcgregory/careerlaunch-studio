@@ -21,11 +21,11 @@ const FEATURE_LABELS: Record<string, string> = {
   resume_limit: "Resume drafts",
   templates: "Templates",
   ai_analysis: "AI analysis & scoring",
-  job_match: "Job description matching",
+  run_job_match: "Job description matching",
   cover_letter: "Cover letter builder",
   pdf_export: "PDF export",
   monthly_exports: "Monthly exports",
-  premium_templates: "Premium templates",
+  use_premium_templates: "Premium templates",
   priority_support: "Priority support",
 };
 
@@ -34,34 +34,34 @@ const FEATURE_VALUES: Record<string, Record<string, string>> = {
     resume_limit: "3 drafts",
     templates: "2 templates",
     ai_analysis: "Basic score",
-    job_match: "—",
-    cover_letter: "✓",
+    run_job_match: "No",
+    cover_letter: "Yes",
     pdf_export: "Watermarked",
     monthly_exports: "5/mo",
-    premium_templates: "—",
-    priority_support: "—",
+    use_premium_templates: "No",
+    priority_support: "No",
   },
   professional: {
     resume_limit: "Unlimited",
     templates: "All templates",
     ai_analysis: "Full analysis",
-    job_match: "✓",
-    cover_letter: "✓",
+    run_job_match: "Yes",
+    cover_letter: "Yes",
     pdf_export: "Clean",
     monthly_exports: "Unlimited",
-    premium_templates: "✓",
-    priority_support: "—",
+    use_premium_templates: "Yes",
+    priority_support: "No",
   },
   enterprise: {
     resume_limit: "Unlimited",
     templates: "All templates",
     ai_analysis: "Full analysis",
-    job_match: "✓",
-    cover_letter: "✓",
+    run_job_match: "Yes",
+    cover_letter: "Yes",
     pdf_export: "Clean",
     monthly_exports: "Unlimited",
-    premium_templates: "✓",
-    priority_support: "✓",
+    use_premium_templates: "Yes",
+    priority_support: "Yes",
   },
 };
 
@@ -230,13 +230,13 @@ function BillingContent() {
                         <Check
                           size={16}
                           className={`mt-0.5 shrink-0 ${
-                            values?.[key] && values[key] !== "—"
+                            values?.[key] && values[key] !== "No"
                               ? "text-[#6bbf22]"
                               : "text-gray-300"
                           }`}
                         />
                         <span className="font-medium text-[#4b4b4b]">
-                          {label}: <span className="font-black text-[#123c3a]">{values?.[key] || "—"}</span>
+                          {label}: <span className="font-black text-[#123c3a]">{values?.[key] || "No"}</span>
                         </span>
                       </li>
                     ))}

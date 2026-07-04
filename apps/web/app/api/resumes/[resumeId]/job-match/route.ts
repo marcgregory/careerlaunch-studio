@@ -5,6 +5,7 @@ import { reportError } from "../../../../../lib/error-reporting";
 import { getRequestId } from "../../../../../lib/request-id";
 import { captureServerEvent } from "../../../../../lib/server-analytics";
 import { checkRateLimit } from "../../../../../lib/rate-limit";
+import { requireEntitlement, FeatureKeys } from "../../../../../lib/entitlements";
 import {
   runJobMatch,
   normalizeResume,
@@ -28,14 +29,6 @@ async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
  *
  * Body:
  *   { "jobDescription": "..." }
- *
- * Response:
- *   {
- *     "matchScore": 76,
- *     "missingSkills": ["TypeScript"],
- *     "presentSkills": ["Python"],
- *     "suggestions": [...]
- *   }
  */
 export async function POST(
   request: Request,
@@ -43,6 +36,9 @@ export async function POST(
 ) {
   const { user, response } = await requireApiUser();
   if (response) return response;
+
+  const entitlementGate = await requireEntitlement(user.id, FeatureKeys.RUN_JOB_MATCH);
+  if (entitlementGate) return entitlementGate;
 
   const resumeId = await getResumeId(context);
 
@@ -92,7 +88,6 @@ export async function POST(
 
     const result = runJobMatch({ resume: normalized, jobDescription });
 
-    // Persist the analysis run for audit and analytics
     await prisma.analysisRun.create({
       data: {
         resumeId,
@@ -105,7 +100,6 @@ export async function POST(
       },
     });
 
-    // Fire server-side analytics event
     captureServerEvent("job_match_run", user.id, {
       resumeId,
       matchScore: result.matchScore,

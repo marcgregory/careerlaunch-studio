@@ -4,7 +4,7 @@ import { SentryErrorBoundary } from "../../components/sentry-error-boundary";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { createStarterResume, fromStoredResume, toStoredResume } from "../../lib/resume-store";
-import { can } from "../../lib/entitlements";
+import { can, FeatureKeys } from "../../lib/entitlements";
 
 type BuilderPageProps = {
   searchParams?: Promise<{ resumeId?: string }>;
@@ -15,8 +15,7 @@ export default async function BuilderPage({ searchParams }: BuilderPageProps) {
   const params = searchParams ? await searchParams : {};
 
   if (!params.resumeId) {
-    // Entitlement check: resume limit
-    const allowed = await can(user.id, "resume_limit");
+    const allowed = await can(user.id, FeatureKeys.RESUME_LIMIT);
     if (!allowed) {
       redirect("/billing?reason=resume_limit");
     }
@@ -47,9 +46,11 @@ export default async function BuilderPage({ searchParams }: BuilderPageProps) {
 
   if (!resume) redirect("/dashboard");
 
+  const canUsePremiumTemplates = await can(user.id, FeatureKeys.USE_PREMIUM_TEMPLATES);
+
   return (
     <SentryErrorBoundary context={{ resumeId: params.resumeId }}>
-      <ResumeBuilder initialResume={fromStoredResume(resume)} />
+      <ResumeBuilder initialResume={fromStoredResume(resume)} canUsePremiumTemplates={canUsePremiumTemplates} />
     </SentryErrorBoundary>
   );
 }

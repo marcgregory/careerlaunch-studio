@@ -7,8 +7,9 @@ describe("PLANS", () => {
     expect(free.label).toBe("Free");
     expect(free.entitlements.resume_limit).toBe(3);
     expect(free.entitlements.pdf_export).toBe("watermarked");
-    expect(free.entitlements.premium_templates).toBe(false);
-    expect(free.entitlements.job_match).toBe(false);
+    expect(free.entitlements.export_clean_pdf).toBe(false);
+    expect(free.entitlements.use_premium_templates).toBe(false);
+    expect(free.entitlements.run_job_match).toBe(false);
     expect(free.entitlements.monthly_exports).toBe(5);
   });
 
@@ -17,8 +18,9 @@ describe("PLANS", () => {
     expect(pro.label).toBe("Professional");
     expect(pro.entitlements.resume_limit).toBe(Infinity);
     expect(pro.entitlements.pdf_export).toBe("clean");
-    expect(pro.entitlements.premium_templates).toBe(true);
-    expect(pro.entitlements.job_match).toBe(true);
+    expect(pro.entitlements.export_clean_pdf).toBe(true);
+    expect(pro.entitlements.use_premium_templates).toBe(true);
+    expect(pro.entitlements.run_job_match).toBe(true);
     expect(pro.entitlements.templates).toEqual({ kind: "all" });
   });
 
@@ -27,29 +29,25 @@ describe("PLANS", () => {
     expect(ent.entitlements.priority_support).toBe(true);
     expect(ent.entitlements.resume_limit).toBe(Infinity);
     expect(ent.entitlements.pdf_export).toBe("clean");
+    expect(ent.entitlements.export_clean_pdf).toBe(true);
   });
 });
 
 describe("can()", () => {
-  it("returns false for features not in a plan", () => {
-    expect(can("free", "job_match")).toBe(false);
-    expect(can("free", "premium_templates")).toBe(false);
+  it("returns false for unavailable capabilities", () => {
+    expect(can("free", "run_job_match")).toBe(false);
+    expect(can("free", "export_clean_pdf")).toBe(false);
+    expect(can("free", "use_premium_templates")).toBe(false);
     expect(can("free", "priority_support")).toBe(false);
   });
 
-  it("returns true for features available in a plan", () => {
+  it("returns true for available capabilities", () => {
     expect(can("free", "ai_analysis")).toBe(true);
     expect(can("free", "cover_letter")).toBe(true);
-    expect(can("professional", "job_match")).toBe(true);
-    expect(can("professional", "premium_templates")).toBe(true);
+    expect(can("professional", "run_job_match")).toBe(true);
+    expect(can("professional", "export_clean_pdf")).toBe(true);
+    expect(can("professional", "use_premium_templates")).toBe(true);
     expect(can("enterprise", "priority_support")).toBe(true);
-  });
-
-  it("returns true for professional plan full features", () => {
-    expect(can("professional", "ai_analysis")).toBe(true);
-    expect(can("professional", "cover_letter")).toBe(true);
-    expect(can("professional", "job_match")).toBe(true);
-    expect(can("professional", "premium_templates")).toBe(true);
   });
 });
 
@@ -88,6 +86,8 @@ describe("getFeatureValue()", () => {
   it("returns exact feature values", () => {
     expect(getFeatureValue("free", "pdf_export")).toBe("watermarked");
     expect(getFeatureValue("professional", "pdf_export")).toBe("clean");
+    expect(getFeatureValue("free", "export_clean_pdf")).toBe(false);
+    expect(getFeatureValue("professional", "export_clean_pdf")).toBe(true);
     expect(getFeatureValue("free", "monthly_exports")).toBe(5);
     expect(getFeatureValue("professional", "monthly_exports")).toBe(Infinity);
   });

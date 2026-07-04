@@ -44,7 +44,7 @@ const sectionLabels: Record<ResumeSectionId, string> = {
   projects: "Projects"
 };
 
-export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument }) {
+export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initialResume: ResumeDocument; canUsePremiumTemplates: boolean }) {
   const analytics = useAnalytics();
   const [resume, setResume] = useState<ResumeDocument>(() => normalizeResume(initialResume));
   const [saveState, setSaveState] = useState<SaveState>("Saved");
@@ -281,7 +281,7 @@ export function ResumeBuilder({ initialResume }: { initialResume: ResumeDocument
               </span>
             }
           >
-            <TemplateGallery selectedTemplateId={resume.templateId} onSelect={(templateId) => patchResume({ templateId })} />
+            <TemplateGallery selectedTemplateId={resume.templateId} canUsePremiumTemplates={canUsePremiumTemplates} onSelect={(templateId) => patchResume({ templateId })} />
           </Panel>
           <Panel title="Contact">
             <div className="space-y-3">
@@ -449,12 +449,12 @@ function Panel({ title, action, children }: { title: string; action?: React.Reac
   );
 }
 
-function TemplateGallery({ selectedTemplateId, onSelect }: { selectedTemplateId: ResumeTemplateId; onSelect: (templateId: ResumeTemplateId) => void }) {
+function TemplateGallery({ selectedTemplateId, canUsePremiumTemplates, onSelect }: { selectedTemplateId: ResumeTemplateId; canUsePremiumTemplates: boolean; onSelect: (templateId: ResumeTemplateId) => void }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {resumeTemplates.map((template) => {
         const selected = template.id === selectedTemplateId;
-        const locked = template.premium;
+        const locked = template.premium && !canUsePremiumTemplates;
         return (
           <button
             key={template.id}

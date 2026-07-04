@@ -19,11 +19,12 @@ export type Entitlements = {
   resume_limit: number;
   templates: TemplateAccess;
   ai_analysis: boolean;
-  job_match: boolean;
+  run_job_match: boolean;
   cover_letter: boolean;
   pdf_export: PdfExportKind;
+  export_clean_pdf: boolean;
   monthly_exports: number;
-  premium_templates: boolean;
+  use_premium_templates: boolean;
   priority_support: boolean;
 };
 
@@ -56,15 +57,17 @@ export const FeatureKeys = {
   /** Whether AI analysis is available */
   AI_ANALYSIS: "ai_analysis",
   /** Whether job match is available */
-  JOB_MATCH: "job_match",
+  RUN_JOB_MATCH: "run_job_match",
   /** Whether cover letter builder is available */
   COVER_LETTER: "cover_letter",
   /** Whether PDF export is watermarked or clean */
   PDF_EXPORT: "pdf_export",
+  /** Whether clean, non-watermarked PDF export is available */
+  EXPORT_CLEAN_PDF: "export_clean_pdf",
   /** Number of exports allowed per month */
   MONTHLY_EXPORTS: "monthly_exports",
   /** Whether premium templates are unlocked */
-  PREMIUM_TEMPLATES: "premium_templates",
+  USE_PREMIUM_TEMPLATES: "use_premium_templates",
   /** Whether priority support is available */
   PRIORITY_SUPPORT: "priority_support",
 } as const;

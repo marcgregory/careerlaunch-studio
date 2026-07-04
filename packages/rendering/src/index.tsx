@@ -69,7 +69,7 @@ export const resumeTemplates: TemplateDefinition[] = [
     tone: "Executive",
     description:
       "A boardroom-ready layout with a refined rule system and restrained navy-gold contrast.",
-    premium: false,
+    premium: true,
     accentColor: "#c9a44c",
     swatches: ["#162033", "#c9a44c", "#eef1f4"],
     headerStyle: "double-rule",
@@ -107,7 +107,7 @@ export const resumeTemplates: TemplateDefinition[] = [
     tone: "ATS",
     description:
       "Single-column, parser-friendly formatting that keeps typography and section order conservative.",
-    premium: false,
+    premium: true,
     accentColor: "#d9dde3",
     swatches: ["#111111", "#ffffff", "#d9dde3"],
     headerStyle: "simple",
