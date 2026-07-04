@@ -88,7 +88,7 @@ export async function POST(request: Request) {
           subscription.stripeSubscriptionId,
           {
             items: [{ id: itemId, price: priceId }],
-            proration_behavior: "create_prorations",
+            proration_behavior: "always_invoice",
           },
         );
 

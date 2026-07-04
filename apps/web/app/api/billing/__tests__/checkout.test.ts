@@ -249,7 +249,7 @@ describe("POST /api/billing/checkout", () => {
       "sub_active",
       expect.objectContaining({
         items: [{ id: "si_item1", price: "price_enterprise_mock" }],
-        proration_behavior: "create_prorations",
+        proration_behavior: "always_invoice",
       }),
     );
     // Should redirect back to billing page with upgrade success

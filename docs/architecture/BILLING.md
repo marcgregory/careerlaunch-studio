@@ -191,7 +191,8 @@ Checkout is introduced after local gates work.
 
 - `POST /api/billing/checkout` accepts `professional` or `enterprise`.
 - The route creates or reuses a Stripe customer.
-- The route creates a Stripe Checkout Session with metadata `{ userId, plan }`.
+- The route creates a Stripe Checkout Session with metadata `{ userId, plan }` for first-time paid subscriptions.
+- Existing active subscribers are upgraded in-place with `proration_behavior: "always_invoice"` so Stripe charges the prorated plan difference immediately instead of rolling it into the next renewal invoice.
 - The user returns to `/billing?checkout=success` or `/billing?checkout=canceled`.
 
 Environment variables:
