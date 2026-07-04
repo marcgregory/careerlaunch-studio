@@ -164,6 +164,7 @@ function BillingContent() {
   const [confirmingUpgrade, setConfirmingUpgrade] = useState(false);
   const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
   const [downgradePlan, setDowngradePlan] = useState<string | null>(null);
+  const [cancelingScheduledDowngrade, setCancelingScheduledDowngrade] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -324,10 +325,10 @@ function BillingContent() {
     setSuccess(null);
 
     try {
-      const res = await fetch("/api/billing/schedule-downgrade", {
+      const res = await fetch("/api/billing/subscription-change", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: downgradePlan }),
+        body: JSON.stringify({ action: "schedule_downgrade", plan: downgradePlan }),
       });
 
       const result = await res.json();
@@ -343,6 +344,30 @@ function BillingContent() {
     }
   };
 
+  const confirmCancelScheduledDowngrade = async () => {
+    setBusyPlan(data?.currentPlan ?? "enterprise");
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch("/api/billing/subscription-change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_scheduled_downgrade" }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to cancel scheduled downgrade.");
+
+      setCancelingScheduledDowngrade(false);
+      setSuccess(`Your scheduled downgrade was canceled. ${result.currentPlan} will renew on ${formatDate(result.renewalDate)}.`);
+      await refreshSubscription();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to cancel scheduled downgrade.");
+    } finally {
+      setBusyPlan(null);
+    }
+  };
   if (loading) {
     return (
       <main className="signal-site flex min-h-screen items-center justify-center px-5">
@@ -458,9 +483,22 @@ function BillingContent() {
 
                   <div className="mt-8">
                     {isCurrent ? (
-                      <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
-                        {scheduledChange ? `Current until ${formatDate(scheduledChange.effectiveDate)}` : "Current plan"}
-                      </span>
+                      <div className="space-y-3">
+                        <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                          {scheduledChange ? `Current until ${formatDate(scheduledChange.effectiveDate)}` : "Current plan"}
+                        </span>
+                        {scheduledChange && (
+                          <button
+                            type="button"
+                            onClick={() => setCancelingScheduledDowngrade(true)}
+                            disabled={busyPlan === planId}
+                            className={`${secondaryButtonClass} w-full justify-center`}
+                          >
+                            {busyPlan === planId ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                            Keep {planLabel(planId)}
+                          </button>
+                        )}
+                      </div>
                     ) : isScheduledPlan ? (
                       <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
                         Scheduled {formatDate(scheduledChange.effectiveDate)}
@@ -610,6 +648,37 @@ function BillingContent() {
               >
                 {busyPlan === downgradePlan ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                 Schedule downgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {cancelingScheduledDowngrade && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6bbf22]">Keep current plan</p>
+            <h2 className="mt-2 font-signal text-3xl font-black tracking-[-0.05em]">
+              Keep {planLabel(data?.currentPlan ?? "Enterprise")}?
+            </h2>
+            <p className="mt-4 text-sm font-medium leading-6 text-[#4b4b4b]">
+              Your scheduled downgrade to {planLabel(data?.scheduledChange?.plan ?? "Professional")} will be canceled. Your {planLabel(data?.currentPlan ?? "current")} plan will renew on {formatDate(data?.scheduledChange?.effectiveDate ?? data?.currentPeriodEnd ?? null)}.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setCancelingScheduledDowngrade(false)}
+                className={secondaryButtonClass}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmCancelScheduledDowngrade}
+                disabled={busyPlan !== null}
+                className={primaryButtonClass}
+              >
+                {busyPlan !== null ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                Keep {planLabel(data?.currentPlan ?? "plan")}
               </button>
             </div>
           </div>

@@ -123,13 +123,43 @@ test.describe("Billing page", () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test("shows scheduled downgrade state on plan cards", async ({ page }) => {
+  test("shows scheduled downgrade state and lets users cancel it", async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on("pageerror", (error) => pageErrors.push(error));
-    await mockSubscription(page, {
-      currentPlan: "enterprise",
-      currentPeriodEnd: "2026-08-04T00:00:00.000Z",
-      scheduledChange: { plan: "professional", effectiveDate: "2026-08-04T00:00:00.000Z" },
+    let scheduledChange: MockSubscription["scheduledChange"] = {
+      plan: "professional",
+      effectiveDate: "2026-08-04T00:00:00.000Z",
+    };
+
+    await page.route("**/api/billing/subscription", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...defaultSubscription,
+          currentPlan: "enterprise",
+          currentPeriodEnd: "2026-08-04T00:00:00.000Z",
+          scheduledChange,
+          plans: defaultSubscription.plans.map((plan) => ({
+            ...plan,
+            isCurrent: plan.id === "enterprise",
+          })),
+        }),
+      });
+    });
+    await page.route("**/api/billing/subscription-change", async (route) => {
+      const body = route.request().postDataJSON() as { action?: string };
+      expect(body.action).toBe("cancel_scheduled_downgrade");
+      scheduledChange = null;
+
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          currentPlan: "Enterprise",
+          renewalDate: "2026-08-04T00:00:00.000Z",
+        }),
+      });
     });
 
     await page.goto("/billing");
@@ -137,6 +167,14 @@ test.describe("Billing page", () => {
     await expect(page.getByText("Scheduled Aug 4, 2026")).toBeVisible();
     await expect(page.getByText("Current until Aug 4, 2026")).toBeVisible();
     await expect(page.getByRole("button", { name: /^Downgrade$/ })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Keep Enterprise" }).click();
+    await expect(page.getByRole("heading", { name: "Keep Enterprise?" })).toBeVisible();
+    await page.getByRole("button", { name: "Keep Enterprise" }).last().click();
+
+    await expect(page.getByText("Your scheduled downgrade was canceled. Enterprise will renew on Aug 4, 2026.")).toBeVisible();
+    await expect(page.getByText("Current plan")).toBeVisible();
+    await expect(page.getByText("Scheduled Aug 4, 2026")).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   });
 });
