@@ -12,8 +12,11 @@ const nextConfig = {
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
+  release: process.env.VERCEL_GIT_COMMIT_SHA,
 
   // Only print logs for warning and error messages
   silent: !process.env.CI,
