@@ -118,6 +118,13 @@ model Subscription {
   @@unique([userId])
 }
 
+model ProcessedStripeEvent {
+  id        String   @id
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum ExportFormat {
   PDF
   DOCX

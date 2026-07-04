@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Sparkles, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 
@@ -14,6 +14,8 @@ type PlanInfo = {
 
 type SubscriptionData = {
   currentPlan: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
   plans: PlanInfo[];
 };
 
@@ -83,6 +85,7 @@ function BillingContent() {
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reason = searchParams?.get("reason");
@@ -157,6 +160,30 @@ function BillingContent() {
     } catch {
       setError("Network error. Please try again.");
       setUpgrading(null);
+    }
+  };
+
+  const handlePortal = async () => {
+    setPortalLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.url) {
+        window.location.href = result.url;
+      } else {
+        setError(result.error || "Failed to open billing portal.");
+        setPortalLoading(false);
+      }
+    } catch {
+      setError("Network error. Please try again.");
+      setPortalLoading(false);
     }
   };
 
@@ -274,17 +301,57 @@ function BillingContent() {
                       const cardRank = PLAN_RANK[planId];
 
                       if (isCurrent) {
+                        const cancelDate = data?.cancelAtPeriodEnd && data?.currentPeriodEnd
+                          ? new Date(data.currentPeriodEnd).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : null;
+
                         return (
-                          <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
-                            Current plan
-                          </span>
+                          <div className="space-y-2">
+                            <span className="block w-full rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                              {cancelDate ? `Current plan — cancels ${cancelDate}` : "Current plan"}
+                            </span>
+                            {cancelDate && (
+                              <button
+                                onClick={handlePortal}
+                                disabled={portalLoading}
+                                className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-2 text-center text-xs font-black uppercase tracking-[0.08em] text-[#6bbf22] hover:bg-[#f3f3f3]"
+                              >
+                                {portalLoading ? (
+                                  <Loader2 size={14} className="mx-auto animate-spin" />
+                                ) : (
+                                  "Reactivate"
+                                )}
+                              </button>
+                            )}
+                          </div>
                         );
                       }
 
                       if (currentRank > cardRank) {
+                        // Downgrade — send to Stripe Customer Portal (or show contact support if no portal)
+                        const hasStripeCustomer = data?.currentPlan !== "free";
+                        if (hasStripeCustomer) {
+                          return (
+                            <button
+                              onClick={handlePortal}
+                              disabled={portalLoading}
+                              className={`${secondaryButtonClass} w-full justify-center`}
+                            >
+                              {portalLoading ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <ExternalLink size={16} />
+                              )}
+                              Change plan
+                            </button>
+                          );
+                        }
                         return (
                           <span className="block w-full rounded-full border border-[#123c3a]/10 bg-white px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#4b4b4b]">
-                            Downgrade (contact support)
+                            Contact support
                           </span>
                         );
                       }

@@ -16,6 +16,10 @@ import { reportError } from "../../../../lib/error-reporting";
  *   customer.subscription.updated — via price lookup → update
  *   customer.subscription.deleted — mark canceled, reset to FREE
  *   invoice.payment_failed        — mark PAST_DUE
+ *
+ * Idempotency:
+ *   Each event is tracked by its Stripe event ID (evt_xxx) in
+ *   ProcessedStripeEvent. Duplicate delivery is silently acked.
  */
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -25,13 +29,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "Missing stripe-signature header" }, { status: 400 });
   }
 
-  let event: { type: string; data: { object: Record<string, unknown> } };
+  let event: { id: string; type: string; data: { object: Record<string, unknown> } };
   try {
     event = getStripe().webhooks.constructEvent(
       rawBody,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET ?? "",
-    ) as unknown as { type: string; data: { object: Record<string, unknown> } };
+    ) as unknown as { id: string; type: string; data: { object: Record<string, unknown> } };
   } catch (err) {
     reportError(err, "webhook", { route: "billing-webhook" });
     return Response.json({ error: "Invalid webhook signature" }, { status: 401 });
@@ -39,9 +43,20 @@ export async function POST(request: Request) {
 
   const obj = event.data.object;
   const eventType = event.type;
-  const logMeta = { eventType, route: "billing-webhook" };
+  const eventId = event.id;
+  const logMeta = { eventType, eventId, route: "billing-webhook" };
 
-  console.log(`[webhook] received ${eventType}`, { stripeId: obj.id });
+  console.log(`[webhook] received ${eventType}`, { eventId, stripeId: obj.id });
+
+  // ─── Idempotency check ───────────────────────────────────
+  // Strip delivers events at least once. Skip events we've already processed.
+  const alreadyProcessed = await prisma.processedStripeEvent.findUnique({
+    where: { id: eventId },
+  });
+  if (alreadyProcessed) {
+    console.log(`[webhook] skipping duplicate event ${eventId}`);
+    return Response.json({ received: true });
+  }
 
   try {
     switch (eventType) {
@@ -208,6 +223,13 @@ export async function POST(request: Request) {
         console.log(`[webhook] unhandled event type: ${eventType}`);
         break;
     }
+
+    // Record the event ID for idempotency.
+    // Use create with a catch for any rare race condition where two deliveries
+    // of the same event arrive simultaneously.
+    await prisma.processedStripeEvent.create({ data: { id: eventId } }).catch(() => {});
+
+    return Response.json({ received: true });
   } catch (err) {
     reportError(err, "webhook", logMeta);
     console.error(`[webhook] handler failed for ${eventType}`, {
@@ -215,8 +237,6 @@ export async function POST(request: Request) {
     });
     return Response.json({ error: "Webhook handler failed" }, { status: 500 });
   }
-
-  return Response.json({ received: true });
 }
 
 function mapStripeStatus(

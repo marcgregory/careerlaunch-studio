@@ -7,6 +7,8 @@ import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 
 type SubscriptionResponse = {
   currentPlan: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
   pdfExportKind: string;
   monthlyExportsUsed: number;
 };
@@ -81,6 +83,40 @@ function AccountBillingContent() {
         {error && (
           <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700">
             {error}
+          </div>
+        )}
+
+        {data?.cancelAtPeriodEnd && data?.currentPlan !== "free" && data?.currentPeriodEnd && (
+          <div className="mt-6 rounded-2xl border border-orange-300 bg-orange-50 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.08em] text-orange-800">
+                  Subscription ending
+                </p>
+                <p className="mt-1 text-sm font-medium text-orange-700">
+                  Your subscription will end on{" "}
+                  <span className="font-black">
+                    {new Date(data.currentPeriodEnd).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  . You&apos;ll retain paid access until that date.
+                </p>
+              </div>
+              <button
+                onClick={handleManageBilling}
+                disabled={portalLoading}
+                className="shrink-0 rounded-full border-2 border-orange-400 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-orange-800 hover:bg-orange-100"
+              >
+                {portalLoading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  "Reactivate"
+                )}
+              </button>
+            </div>
           </div>
         )}
 

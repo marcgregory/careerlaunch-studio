@@ -4,9 +4,43 @@ Last updated: 2026-07-04
 
 ## Current Sprint
 
-Sprint 5 — Billing & Entitlement System. ✅ Complete and tagged `v0.6.0-alpha`.
+Sprint 5.5 — Billing Stabilization. ✅ Complete and tagged `v0.6.1-alpha`.
 
-### Delivered This Sprint (Sprint 5)
+### Delivered This Sprint (Sprint 5.5)
+
+**Webhook idempotency:**
+- New `ProcessedStripeEvent` model records each processed Stripe event ID.
+- Webhook handler checks for duplicates at the top of processing; already-processed events return 200 and skip all side effects.
+- Migration adds `ProcessedStripeEvent` table with index on `createdAt` for TTL cleanup.
+
+**CANCELED grace period:**
+- `getEffectivePlan()` now returns the subscription's paid plan for CANCELED status as long as `currentPeriodEnd` is in the future.
+- Stripe's default behavior is honored: customers paid for the full period, so they keep access until period end.
+
+**Cancellation state in UI:**
+- `/account/billing` page: orange banner showing "Your subscription will end on {date}" with "Reactivate" button that opens Stripe Customer Portal.
+- Subscription API (`GET /api/billing/subscription`) now returns `cancelAtPeriodEnd` and `currentPeriodEnd`.
+- `/billing` pricing page: Current plan badge shows "Current plan — cancels {date}" for canceling subscriptions.
+
+**Fixed pricing page CTAs:**
+- Enterprise users viewing Professional: shows "Change plan" button that opens Stripe Customer Portal (instead of inert "Downgrade (contact support)" text).
+- Free users viewing Professional/Enterprise: "Upgrade to {plan}" button as before.
+- Current plan with cancellation: shows "Reactivate" link below the cancellation badge.
+- Paid users can downgrade through the Stripe portal without contacting support.
+
+**Stripe test suite (28 tests):**
+- `vitest.config.ts` and `vitest.setup.ts` for the `@careerlaunch/web` workspace.
+- `checkout.test.ts` — 7 tests: invalid plan, missing plan, customer creation, enterprise price, customer reuse, Stripe error, auth required.
+- `subscription.test.ts` — 4 tests: free plan, paid plan, cancellation state, auth required.
+- `webhook.test.ts` — 12 tests: missing signature, invalid signature, checkout completed (professional/enterprise/missing metadata), subscription updated (plan/enterprise/cancellation), subscription deleted, payment failed, idempotency, unhandled events.
+- `portal.test.ts` — 5 tests: no customer ID, no subscription, session creation, Stripe error, auth required.
+
+**Production smoke checklist:**
+- `docs/implementation/BILLING_SMOKE_CHECKLIST.md` documents 10 scenarios covering the full paid-user lifecycle.
+
+### Next Up
+
+- Sprint 6 — Public Beta Polish or AI Quality Improvements (to be decided).
 
 **Billing architecture:**
 - `docs/architecture/BILLING.md` — comprehensive design covering entitlement model, plan registry, feature gate strategy, webhook flow, subscription lifecycle, upgrade/downgrade behavior, failure handling, and testing strategy.
@@ -78,6 +112,10 @@ Sprint 5 — Billing & Entitlement System. ✅ Complete and tagged `v0.6.0-alpha
 
 ### Sprint 5 — Billing & Entitlement System ✅
 
+First version: Stripe integration, entitlement domain model, plan registry (Free/Professional/Enterprise), feature gates for PDF export (watermark), resume limit, and template access. Pricing page, account billing page, webhook handler, Checkout/Customer Portal. `v0.6.0-alpha`.
+
+### Sprint 5.5 — Billing Stabilization ✅
+
 Covered above.
 
 ### Sprint 4.5 — Production Readiness ✅
@@ -114,7 +152,7 @@ TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with sig
 
 ## Platform Status
 
-Build passes with 158 tests (144 AI + 14 domain). TypeScript passes across all workspaces. Entitlement system: 14 tests covering all plan definitions, feature gates, template access, and limits. Stripe integration tested for checkout session creation, webhook signature verification, and subscription state transitions. PDF watermark renders correctly. All existing Playwright tests pass.
+Build passes with 186 tests (144 AI + 14 domain + 28 billing). TypeScript passes across all workspaces.
 
 ## Blockers
 

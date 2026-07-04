@@ -12,7 +12,8 @@ export async function GET() {
   const { user, response } = await requireApiUser();
   if (response) return response;
 
-  const planId = (await getSubscription(user.id)).plan.toLowerCase();
+  const sub = await getSubscription(user.id);
+  const planId = sub.plan.toLowerCase();
   const pdfExportKind = await getPdfExportKind(user.id);
   const monthlyExportsUsed = await getMonthlyExportCount(user.id);
 
@@ -25,6 +26,8 @@ export async function GET() {
 
   return Response.json({
     currentPlan: planId,
+    cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+    currentPeriodEnd: sub.currentPeriodEnd?.toISOString() ?? null,
     pdfExportKind,
     monthlyExportsUsed,
     plans,

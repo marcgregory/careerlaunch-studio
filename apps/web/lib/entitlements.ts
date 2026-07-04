@@ -39,7 +39,13 @@ export async function getSubscription(userId: string): Promise<PlanRecord> {
 }
 
 /**
- * Get the effective plan ID for a user, accounting for payment grace periods.
+ * Get the effective plan ID for a user, accounting for payment grace periods
+ * and post-cancellation access.
+ *
+ * - FREE / ACTIVE / TRIALING → use the row's plan.
+ * - PAST_DUE → keep the row's plan until grace window expires.
+ * - CANCELED → keep the row's plan until currentPeriodEnd, then fall to free.
+ * - Anything else → free.
  */
 function getEffectivePlan(sub: PlanRecord): PlanId {
   if (sub.status === "PAST_DUE" && sub.currentPeriodEnd) {
@@ -50,6 +56,12 @@ function getEffectivePlan(sub: PlanRecord): PlanId {
   }
 
   if (sub.status === "ACTIVE" || sub.status === "TRIALING" || sub.status === "FREE") {
+    return sub.plan;
+  }
+
+  // Canceled subscriptions retain paid access until the end of the billing period.
+  // This is Stripe's default behavior — the customer paid for the full period.
+  if (sub.status === "CANCELED" && sub.currentPeriodEnd && new Date() < sub.currentPeriodEnd) {
     return sub.plan;
   }
 

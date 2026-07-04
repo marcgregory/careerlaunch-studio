@@ -27,10 +27,11 @@ Last updated: 2026-07-04
 - PDF rendering separated into standalone Docker service (`services/pdf-renderer/`). Removed `@sparticuz/chromium-min`, `CHROMIUM_PACK_URL`, and all Vercel Chromium workarounds. Production hardening: bearer auth, timeouts, health endpoint, request validation, browser reuse, correlation ID logging.
 - Sprint 4.5 — Production Readiness. Request ID middleware, Sentry error monitoring, PostHog product analytics, in-memory rate limiting on 5 high-risk routes, `GET /api/health` endpoint for app/renderer/DB checks, backup recovery documentation.
 - Sprint 5 — Billing & Entitlement System. Stripe integration, entitlement domain model, plan registry (Free/Professional/Enterprise), feature gates for PDF export (watermark), resume limit, and template access. Pricing page, account billing page, webhook handler, Checkout/Customer Portal. `v0.6.0-alpha` tagged.
+- Sprint 5.5 — Billing Stabilization. Webhook idempotency (ProcessedStripeEvent table), CANCELED grace period (paid access until period end), cancellation state visible in UI (banner with date + reactivation), fixed pricing page CTAs (downgrade → portal, cancellation badge), Stripe test suite (28 tests covering checkout/subscription/webhook/portal), production smoke checklist. `v0.6.1-alpha` tagged.
 
 ## Sprint Queue
 
-- Sprint 6 — Polish, Performance, and Pre-Launch QA.
+- Sprint 6 — Public Beta Polish or AI Quality Improvements (to be decided).
 
 ## Future
 
