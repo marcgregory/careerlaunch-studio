@@ -186,10 +186,19 @@ function buildRecoveryPrompt(
     2,
   );
 
-  const user = template
-    .replace(/{original_text}/g, truncatedText)
-    .replace(/{parser_output}/g, parserSummary)
-    .replace(/{low_coverage_sections}/g, coverageSummary);
+  const user = [
+    `## Original Resume Text`,
+    truncatedText,
+    ``,
+    `## Parser Output (Incomplete)`,
+    parserSummary,
+    ``,
+    `## Low Coverage Sections`,
+    coverageSummary,
+    ``,
+    `Return ONLY valid JSON — no markdown, no code fences, no additional text.`,
+    `Omit any section key that you could not recover.`,
+  ].join("\n");
 
   return { system, user };
 }
