@@ -60,6 +60,7 @@ export default function ImportPage() {
         experience: result.parsed.experience || [],
         education: result.parsed.education || [],
         certifications: result.parsed.certifications || [],
+        professionalQualities: result.parsed.professionalQualities || [],
         projects: result.parsed.projects || [],
         summary: result.parsed.summary || "",
       };

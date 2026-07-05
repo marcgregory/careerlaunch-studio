@@ -10,12 +10,13 @@ export type ResumeDocument = {
   education: EducationItem[];
   skills: string[];
   certifications: string[];
+  professionalQualities: string[];
   projects: ProjectItem[];
 };
 
 export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
 
-export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "projects";
+export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "professionalQualities" | "projects" | "references";
 
 export const defaultSectionOrder: ResumeSectionId[] = [
   "summary",
@@ -23,6 +24,7 @@ export const defaultSectionOrder: ResumeSectionId[] = [
   "education",
   "skills",
   "certifications",
+  "professionalQualities",
   "projects"
 ];
 
@@ -149,6 +151,7 @@ export const sampleResume: ResumeDocument = {
     "Conflict resolution"
   ],
   certifications: ["HubSpot Customer Success Certificate"],
+  professionalQualities: [],
   projects: [
     {
       id: "proj-1",
@@ -221,6 +224,7 @@ export function estimateWordCount(resume: ResumeDocument): number {
     ...resume.education.flatMap((item) => [item.school, item.degree]),
     ...resume.skills,
     ...resume.certifications,
+    ...resume.professionalQualities,
     ...resume.projects.flatMap((item) => [item.name, item.description, ...item.bullets])
   ].join(" ");
 

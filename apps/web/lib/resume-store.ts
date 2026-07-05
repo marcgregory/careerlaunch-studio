@@ -10,6 +10,7 @@ export function createStarterResume(): ResumeDocument {
     education: sampleResume.education.map((item) => ({ ...item })),
     skills: [...sampleResume.skills],
     certifications: [...sampleResume.certifications],
+    professionalQualities: [...sampleResume.professionalQualities],
     projects: sampleResume.projects.map((item) => ({ ...item, bullets: [...item.bullets] }))
   };
 }
@@ -28,6 +29,7 @@ export function toStoredResume(resume: ResumeDocument): any {
     education: resume.education,
     skills: resume.skills,
     certifications: resume.certifications,
+    professionalQualities: resume.professionalQualities,
     projects: resume.projects
   };
 }
@@ -63,6 +65,7 @@ export function parseResumePayload(value: unknown): ResumeDocument {
     education: Array.isArray(resume.education) ? resume.education : [],
     skills: Array.isArray(resume.skills) ? resume.skills : [],
     certifications: Array.isArray(resume.certifications) ? resume.certifications : [],
+    professionalQualities: Array.isArray(resume.professionalQualities) ? resume.professionalQualities : [],
     projects: Array.isArray(resume.projects) ? resume.projects : []
   };
 }

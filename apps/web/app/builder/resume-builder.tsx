@@ -46,7 +46,9 @@ const sectionLabels: Record<ResumeSectionId, string> = {
   education: "Education",
   skills: "Skills",
   certifications: "Certifications",
-  projects: "Projects"
+  professionalQualities: "Professional Qualities",
+  projects: "Projects",
+  references: "References"
 };
 
 export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initialResume: ResumeDocument; canUsePremiumTemplates: boolean }) {
@@ -146,22 +148,22 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     }));
   }
 
-  function updateList(section: "skills" | "certifications", index: number, value: string) {
+  function updateList(section: "skills" | "certifications" | "professionalQualities", index: number, value: string) {
     setResume((current) => ({
       ...current,
       [section]: current[section].map((item, itemIndex) => (itemIndex === index ? value : item))
     }));
   }
 
-  function addListItem(section: "skills" | "certifications") {
+  function addListItem(section: "skills" | "certifications" | "professionalQualities") {
     setResume((current) => ({ ...current, [section]: [...current[section], ""] }));
   }
 
-  function removeListItem(section: "skills" | "certifications", index: number) {
+  function removeListItem(section: "skills" | "certifications" | "professionalQualities", index: number) {
     setResume((current) => ({ ...current, [section]: current[section].filter((_, itemIndex) => itemIndex !== index) }));
   }
 
-  function moveListItem(section: "skills" | "certifications", index: number, direction: -1 | 1) {
+  function moveListItem(section: "skills" | "certifications" | "professionalQualities", index: number, direction: -1 | 1) {
     setResume((current) => ({ ...current, [section]: moveItem(current[section], index, direction) }));
   }
 
@@ -415,6 +417,18 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
             onChange={(index, value) => updateList("certifications", index, value)}
             onDelete={(index) => removeListItem("certifications", index)}
             onMove={(index, direction) => moveListItem("certifications", index, direction)}
+          />
+
+          <EditableListPanel
+            title="Professional Qualities"
+            addLabel="Add quality"
+            emptyLabel="No professional qualities listed."
+            emptyAction="Add top traits or strengths like 'Detail-oriented', 'Team player'."
+            values={resume.professionalQualities}
+            onAdd={() => addListItem("professionalQualities")}
+            onChange={(index, value) => updateList("professionalQualities", index, value)}
+            onDelete={(index) => removeListItem("professionalQualities", index)}
+            onMove={(index, direction) => moveListItem("professionalQualities", index, direction)}
           />
 
           <Panel title="Projects" action={<button className={tinyButtonClass} type="button" onClick={addProject}><Plus size={15} /> Add project</button>}>

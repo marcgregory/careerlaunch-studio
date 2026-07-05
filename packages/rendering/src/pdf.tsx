@@ -86,7 +86,7 @@ function buildResumeHtml(resume: ResumeDocument): string {
 
   return `<main class="pdf-root">
     <header class="pdf-header">
-      <p class="pdf-role">${escapeHtml(resume.targetRole || "Target Role")}</p>
+      ${resume.targetRole ? `<p class="pdf-role">${escapeHtml(resume.targetRole)}</p>` : ""}
       <h1>${escapeHtml(resume.contact.fullName || "Your Name")}</h1>
       <div class="pdf-contact">
         ${[resume.contact.email, resume.contact.phone, resume.contact.location, resume.contact.website]
@@ -152,6 +152,14 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
     return `<section>
       <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Certifications</h2></div>
       <p class="pdf-summary">${resume.certifications.filter(Boolean).map(escapeHtml).join(", ")}</p>
+    </section>`;
+  }
+
+  if (section === "professionalQualities" && resume.professionalQualities.filter(Boolean).length > 0) {
+    const quals = resume.professionalQualities.filter(Boolean).map((q) => `<span class="pdf-skill">${escapeHtml(q)}</span>`).join("");
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Professional Qualities</h2></div>
+      <div class="pdf-skills">${quals}</div>
     </section>`;
   }
 

@@ -216,9 +216,11 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
       data-template={template.id}
     >
       <header className={headerBorderClass(template.headerStyle)}>
-        <p className={`leading-none ${roleClass(template.roleStyle)} ${template.headingClass}`}>
-          {resume.targetRole || "Target Role"}
-        </p>
+        {resume.targetRole && (
+          <p className={`leading-none ${roleClass(template.roleStyle)} ${template.headingClass}`}>
+            {resume.targetRole}
+          </p>
+        )}
         <h1 className={`mt-4 leading-none ${nameClass(template.nameStyle)}`}>
           {resume.contact.fullName || "Your Name"}
         </h1>
@@ -269,6 +271,14 @@ function renderSection(
   if (section === "certifications")
     return (
       <CertificationsSection
+        key={section}
+        resume={resume}
+        template={template}
+      />
+    );
+  if (section === "professionalQualities")
+    return (
+      <ProfessionalQualitiesSection
         key={section}
         resume={resume}
         template={template}
@@ -385,6 +395,29 @@ function EducationSection({
             </p>
             <p className="font-black text-[#777]">{item.graduation}</p>
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProfessionalQualitiesSection({
+  resume,
+  template,
+}: {
+  resume: ResumeDocument;
+  template: TemplateDefinition;
+}) {
+  const quals = resume.professionalQualities.filter(Boolean);
+  if (quals.length === 0) return null;
+  return (
+    <section className="mt-8">
+      <ResumeHeading template={template}>Professional Qualities</ResumeHeading>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {quals.map((q) => (
+          <span key={q} className={template.skillClass}>
+            {q}
+          </span>
         ))}
       </div>
     </section>

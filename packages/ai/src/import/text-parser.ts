@@ -62,8 +62,24 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
   {
     id: "projects",
     patterns: [
-      /\bprojects?\b/i,
+      /^(?:personal\s+)?projects?$/im,
       /\bpersonal\s+projects?\b/i,
+    ],
+  },
+  {
+    id: "references",
+    patterns: [
+      /\breferences?\b/i,
+      /\breferences?\s+available\b/i,
+    ],
+  },
+  {
+    id: "professionalQualities",
+    patterns: [
+      /\bprofessional\s+qualities\b/i,
+      /\bprofessional\s+qualifications\b/i,
+      /\bcore\s+qualifications\b/i,
+      /\bqualifications\b/i,
     ],
   },
 ];
@@ -80,7 +96,11 @@ function detectSections(
     { start: number; end: number }
   >();
 
-  // Build ordered list of all matched headers
+  // Track which section IDs have been matched (not the same as the sections
+  // map, which we build AFTER collecting all candidates).
+  const seen = new Set<ResumeSectionId>();
+
+  // Build ordered list of all matched headers (first match wins per section)
   const headers: { index: number; id: ResumeSectionId; header: string }[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -88,9 +108,10 @@ function detectSections(
     if (!line || /^[•\-*]\s/.test(line)) continue;
 
     for (const { id, patterns } of SECTION_PATTERNS) {
-      if (sections.has(id)) continue; // first match wins per section
+      if (seen.has(id)) continue; // first match wins per section
       for (const pattern of patterns) {
         if (pattern.test(line) && line.length < 60) {
+          seen.add(id);
           headers.push({ index: i, id, header: line });
           break;
         }
@@ -205,7 +226,7 @@ function parseExperience(lines: string[]): {
       let role = fullText;
       let company = "";
 
-      // Try to split on " at " or " - " or " | "
+      // Try to split on " at " or " | " or " - "
       const atSplit = fullText.split(/\s+at\s+/);
 
       if (atSplit.length >= 2) {
@@ -213,10 +234,19 @@ function parseExperience(lines: string[]): {
         company = atSlice(atSplit, dateMatch);
       } else {
         const withoutDate = fullText.replace(dateMatch[0], "").trim();
-        const dashSplit = withoutDate.split(/\s+[-–]\s+/);
-        if (dashSplit.length >= 2) {
-          company = dashSplit[0].trim();
-          role = dashSplit.slice(1).join(" - ").trim();
+        // Try pipe split first: "Role | Company | Dates"
+        const pipeSplit = withoutDate.split(/\s*\|\s*/);
+        if (pipeSplit.length >= 2) {
+          role = pipeSplit[0].trim();
+          // For "Role | Company | (dates removed)", take the middle parts
+          const companyParts = pipeSplit.slice(1).filter(Boolean);
+          company = companyParts.join(" | ").replace(/\|\s*$/, "").trim();
+        } else {
+          const dashSplit = withoutDate.split(/\s+[-–]\s+/);
+          if (dashSplit.length >= 2) {
+            company = dashSplit[0].trim();
+            role = dashSplit.slice(1).join(" - ").trim();
+          }
         }
       }
 
@@ -246,9 +276,14 @@ function parseExperience(lines: string[]): {
         i++;
       }
 
+      // Deduplicate: if role ends with company text, strip company from role
+      const cleanRole = company && role.toLowerCase().endsWith(company.toLowerCase())
+        ? role.slice(0, -company.length).replace(/[-–|]\s*$/, "").trim()
+        : role;
+
       experience.push({
         id: `import-exp-${experience.length + 1}`,
-        role: role || "Unknown Role",
+        role: cleanRole || "Unknown Role",
         company,
         location: "",
         start: normalizeDate(start),
@@ -435,6 +470,15 @@ export function parseResumeText(text: string): ParseResult {
 
   const lines = text.split("\n");
 
+  // Filter out known non-resume boilerplate lines
+  const BOILERPLATE_RE = /references?\s+(available|furnished)\s+(upon\s+)?(request)?/i;
+  const PAGE_NUMBER_RE = /^-?\d+\s*-?$/;
+  for (let i = 0; i < lines.length; i++) {
+    if (BOILERPLATE_RE.test(lines[i].trim()) || PAGE_NUMBER_RE.test(lines[i].trim())) {
+      lines[i] = "";
+    }
+  }
+
   // Detect sections
   const sections = detectSections(lines);
 
@@ -464,6 +508,7 @@ export function parseResumeText(text: string): ParseResult {
     education: [],
     skills: [],
     certifications: [],
+    professionalQualities: [],
     projects: [],
     summary: "",
   };
@@ -519,6 +564,22 @@ export function parseResumeText(text: string): ParseResult {
         if (certs.length > 0) {
           parsed.certifications = certs;
         }
+        totalFields++;
+        break;
+      }
+      case "professionalQualities": {
+        const quals = sectionLines
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0 && !BULLET_RE.test(l));
+        if (quals.length > 0) {
+          parsed.professionalQualities = quals;
+        }
+        totalFields++;
+        break;
+      }
+      case "references": {
+        // References are intentionally excluded from resume output.
+        // Do not include in resume export by default.
         totalFields++;
         break;
       }
