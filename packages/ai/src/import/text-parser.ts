@@ -42,6 +42,9 @@ export type ParseResult = {
   aiRecovered?: boolean;
   /** Which sections were reconstructed by the AI recovery pass */
   aiRecoveredSections?: string[];
+  /** Debug status of the AI recovery pass. Present in dev to help diagnose
+   *  why recovery was or wasn't applied. */
+  aiRecoveryStatus?: "skipped_coverage_sufficient" | "skipped_no_provider" | "failed_no_api_key" | "attempted_no_recovery" | "succeeded";
   /** Pre-recovery data snapshot for the comparison UI toggle.
    *  Only populated when AI recovery was applied. Maps sectionId to the
    *  pre-recovery content so users can see what changed. */

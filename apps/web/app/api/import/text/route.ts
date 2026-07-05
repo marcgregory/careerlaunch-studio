@@ -70,12 +70,19 @@ export async function POST(request: Request) {
     // If critical sections have low coverage, attempt AI reconstruction
     // using the original resume text. This runs automatically so users
     // rarely need to manually fix low-quality imports.
-    if (needsAICoverageRecovery(result.coverage)) {
+    const needsRecovery = needsAICoverageRecovery(result.coverage);
+    console.log("[import] needsAICoverageRecovery:", needsRecovery, "coverage:", JSON.stringify(result.coverage.map(c => ({ id: c.sectionId, ratio: c.ratio }))));
+    if (needsRecovery) {
       const providerName = pickImportRecoveryProvider();
+      console.log("[import] pickImportRecoveryProvider:", providerName);
+      console.log("[import] GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY, "GROQ_API_KEY present:", !!process.env.GROQ_API_KEY);
+
       if (providerName) {
         const apiKey = providerName === "groq"
           ? process.env.GROQ_API_KEY
           : process.env.GEMINI_API_KEY;
+
+        console.log("[import] apiKey resolved:", !!apiKey, "provider:", providerName);
 
         if (apiKey) {
           // Snapshot pre-recovery data so the UI can offer a comparison view
@@ -93,7 +100,13 @@ export async function POST(request: Request) {
             provider: { name: providerName, apiKey },
           });
 
+          console.log("[import] recovery result keys:", Object.keys(recovery));
+          console.log("[import] recovery experience:", recovery.experience?.length ?? 0, "entries, education:", recovery.education?.length ?? 0, "entries");
+
           const merged = mergeRecovery(result, recovery);
+
+          console.log("[import] mergeRecovery completed — recoveredSections:", merged.recoveredSections, "aiRecovered:", merged.aiRecovered);
+          console.log("[import] merged experience count:", merged.parsed.experience?.length ?? 0, "education count:", merged.parsed.education?.length ?? 0);
 
           // Update coverage for recovered sections — mark them as 100%
           // (the AI has reconstructed the content from the original text).
@@ -103,19 +116,34 @@ export async function POST(request: Request) {
               : c,
           );
 
+          const finalImportQuality = deriveImportQuality(updatedCoverage);
+          console.log("[import] final importQuality:", finalImportQuality, "coverage:", JSON.stringify(updatedCoverage.map(c => ({ id: c.sectionId, ratio: c.ratio }))));
+
           result = {
             ...result,
             parsed: merged.parsed,
             coverage: updatedCoverage,
-            importQuality: deriveImportQuality(updatedCoverage),
+            importQuality: finalImportQuality,
             aiRecovered: merged.aiRecovered,
             aiRecoveredSections: merged.recoveredSections,
+            aiRecoveryStatus: merged.aiRecovered ? "succeeded" : "attempted_no_recovery",
             /** Pre-recovery snapshot for the comparison UI toggle.
              *  Only populated when AI recovery was applied. */
             preRecoveryData,
           };
+        } else {
+          // apiKey was empty string or falsy despite provider being selected
+          console.warn("[import] apiKey was falsy for provider:", providerName);
+          result = { ...result, aiRecoveryStatus: "failed_no_api_key" };
         }
+      } else {
+        // No AI provider configured — not an error, just no recovery possible
+        console.warn("[import] No AI provider available — AI recovery skipped. Set GEMINI_API_KEY or GROQ_API_KEY in .env");
+        result = { ...result, aiRecoveryStatus: "skipped_no_provider" };
       }
+    } else {
+      // Coverage was already sufficient — no recovery needed
+      result = { ...result, aiRecoveryStatus: "skipped_coverage_sufficient" };
     }
   } catch (error) {
     reportError(error, getRequestId(request), { route: "import-text" });
