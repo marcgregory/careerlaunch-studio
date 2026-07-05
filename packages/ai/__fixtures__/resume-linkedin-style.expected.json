@@ -51,7 +51,7 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University of the Philippines, 2015",
+        "school": "University of the Philippines",
         "degree": "Bachelor of Science in Business Administration",
         "location": "",
         "graduation": "2015"
@@ -113,8 +113,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 12,
-      "parsedWordCount": 11,
-      "ratio": 0.9166666666666666,
+      "parsedWordCount": 10,
+      "ratio": 0.8333333333333334,
       "status": "good"
     },
     {

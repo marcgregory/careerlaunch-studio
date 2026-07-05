@@ -49,15 +49,15 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University, 2014",
+        "school": "University",
         "degree": "M.S. Computer Science - Stanford",
         "location": "",
         "graduation": "2014"
       },
       {
         "id": "import-edu-2",
-        "school": "B.S. Computer Engineering - UC Berkeley, 2012",
-        "degree": "B.S. Computer Engineering - UC Berkeley,",
+        "school": "B.S. Computer Engineering - UC Berkeley",
+        "degree": "B.S. Computer Engineering - UC Berkeley",
         "location": "",
         "graduation": "2012"
       }
@@ -119,7 +119,7 @@
     {
       "sectionId": "education",
       "originalWordCount": 14,
-      "parsedWordCount": 20,
+      "parsedWordCount": 18,
       "ratio": 1,
       "status": "good"
     },

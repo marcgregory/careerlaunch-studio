@@ -37,7 +37,7 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University, 2018",
+        "school": "University",
         "degree": "B.A. Communication Studies - Texas State",
         "location": "",
         "graduation": "2018"
@@ -102,8 +102,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 8,
-      "parsedWordCount": 8,
-      "ratio": 1,
+      "parsedWordCount": 7,
+      "ratio": 0.875,
       "status": "good"
     },
     {

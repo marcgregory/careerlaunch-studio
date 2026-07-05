@@ -24,7 +24,7 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "School of Design, 2021",
+        "school": "School of Design",
         "degree": "B.A. Graphic Design - Rhode Island",
         "location": "",
         "graduation": "2021"
@@ -67,8 +67,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 10,
-      "parsedWordCount": 10,
-      "ratio": 1,
+      "parsedWordCount": 9,
+      "ratio": 0.9,
       "status": "good"
     },
     {

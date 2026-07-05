@@ -24,7 +24,7 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University of Washington, 2022",
+        "school": "University of Washington",
         "degree": "B.S. Computer Science",
         "location": "",
         "graduation": "2022"
@@ -87,9 +87,9 @@
     {
       "sectionId": "education",
       "originalWordCount": 8,
-      "parsedWordCount": 7,
-      "ratio": 0.875,
-      "status": "good"
+      "parsedWordCount": 6,
+      "ratio": 0.75,
+      "status": "partial"
     },
     {
       "sectionId": "skills",

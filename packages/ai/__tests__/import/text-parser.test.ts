@@ -291,6 +291,212 @@ References available upon request.`;
 });
 
 
+describe("parseResumeText Bug Fix regression tests", () => {
+  /* ------------------------------------------------------------------ */
+  /*  Bug 1: Skills "Category Proficiency" table bleeds into Summary     */
+  /* ------------------------------------------------------------------ */
+  it("Bug 1: should NOT append skills category/proficiency table to summary", () => {
+    const text = `Jane Smith
+jane@example.com
+
+Professional Summary
+Experienced engineer with cloud infrastructure expertise.
+
+Category                    Proficiency
+Frontend                    Advanced
+Backend                     Advanced
+
+Skills
+React, TypeScript, Node.js, PostgreSQL`;
+
+    const result = parseResumeText(text);
+    const summary = result.parsed.summary || "";
+    // Summary should contain only the prose, not the table rows
+    expect(summary).toContain("Experienced engineer");
+    expect(summary).not.toContain("Category");
+    expect(summary).not.toContain("Proficiency");
+    expect(summary).not.toContain("Frontend");
+    expect(summary).not.toContain("Advanced");
+  });
+
+  /* ------------------------------------------------------------------ */
+  /*  Bug 2: Experience bullet continuation lines are preserved          */
+  /* ------------------------------------------------------------------ */
+  it("Bug 2: should preserve bullet continuation lines without dropping fragments", () => {
+    const text = `Test User
+test@email.com
+
+Experience
+Senior Developer
+CompanyXYZ
+Jan 2020 - Present
+- Led team through major migration project
+with multiple subsystems and cross-team coordination.
+timelines were met.
+- Built CI/CD pipeline reducing deploy time.
+- Mentored 3 junior developers.`;
+
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+    expect(experience.length).toBeGreaterThanOrEqual(1);
+
+    const entry = experience[0];
+    // The continuation lines should be merged into the preceding bullet
+    const mergedBullet = entry.bullets.find((b) =>
+      b.includes("major migration project")
+    );
+    expect(mergedBullet).toBeDefined();
+    expect(mergedBullet).toContain("timelines were met");
+    // All bullets should be present
+    expect(entry.bullets.length).toBe(3);
+  });
+
+  /* ------------------------------------------------------------------ */
+  /*  Bug 3: Education retains all fields (graduation year extracted)    */
+  /* ------------------------------------------------------------------ */
+  it("Bug 3: should extract graduation year from school line", () => {
+    const text = `Test User
+test@email.com
+
+Education
+Bachelor of Science in Computer Science
+University of Washington, 2016
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const education = result.parsed.education || [];
+    expect(education.length).toBe(1);
+
+    const edu = education[0];
+    expect(edu.school).toBe("University of Washington");
+    expect(edu.graduation).toBe("2016");
+    expect(edu.degree).toBe("Bachelor of Science in Computer Science");
+  });
+
+  it("Bug 3: should handle single-line education with year embedded in school", () => {
+    const text = `Test User
+test@email.com
+
+Education
+B.S. Computer Science - University of Washington, 2016
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const education = result.parsed.education || [];
+    expect(education.length).toBe(1);
+    const edu = education[0];
+    expect(edu.school).toBe("University of Washington");
+    expect(edu.graduation).toBe("2016");
+    expect(edu.degree).toBe("B.S. Computer Science");
+  });
+
+  /* ------------------------------------------------------------------ */
+  /*  Bug 4: Skills section coverage is accurate                        */
+  /* ------------------------------------------------------------------ */
+  it("Bug 4: Skills coverage should reflect parsed skill words", () => {
+    const text = `Test User
+test@email.com
+
+Skills
+Frontend                    HTML, CSS, TypeScript, React
+Backend                     Node.js, Python, PostgreSQL
+Cloud                       AWS, Docker, CI/CD
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const skillsCoverage = result.coverage.find((c) => c.sectionId === "skills");
+    expect(skillsCoverage).toBeDefined();
+    // Skills should have non-zero original word count
+    expect(skillsCoverage!.originalWordCount).toBeGreaterThan(0);
+    // Skills should have non-zero parsed word count (we parse the last column)
+    expect(skillsCoverage!.parsedWordCount).toBeGreaterThan(0);
+    // Skills array should have items
+    expect(result.parsed.skills!.length).toBeGreaterThanOrEqual(3);
+    // Should include actual skills not just proficiency levels
+    expect(result.parsed.skills).toContain("HTML");
+    expect(result.parsed.skills).toContain("React");
+  });
+
+  /* ------------------------------------------------------------------ */
+  /*  Bug 5: Projects are detected and preserved                        */
+  /* ------------------------------------------------------------------ */
+  it("Bug 5: should detect projects section and preserve project entries with bullets", () => {
+    const text = `Test User
+test@email.com
+
+Skills
+React, TypeScript
+
+Projects
+Task Manager App
+- Built a full-stack task management application.
+- Implemented real-time collaboration features.
+- Deployed on AWS with Docker.
+
+Portfolio Website
+- Designed and developed personal portfolio.
+- Integrated with headless CMS.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const projects = result.parsed.projects || [];
+    expect(projects.length).toBe(2);
+
+    const taskManager = projects.find((p) => p.name === "Task Manager App");
+    expect(taskManager).toBeDefined();
+    expect(taskManager!.bullets.length).toBe(3);
+    expect(taskManager!.bullets[0]).toContain("full-stack task management");
+
+    const portfolio = projects.find((p) => p.name === "Portfolio Website");
+    expect(portfolio).toBeDefined();
+    expect(portfolio!.bullets.length).toBe(2);
+  });
+
+  it("Bug 5: should detect projects when they appear before experience section and preserve bullet continuations", () => {
+    const text = `Test User
+test@email.com
+
+Skills
+React, TypeScript
+
+Projects
+Data Pipeline
+- Built ETL pipeline processing 10M records/day.
+- Used Apache Kafka and Spark for stream processing.
+
+Analytics Dashboard
+- Created real-time dashboard with React and D3.js.
+- Implemented WebSocket-based live updates.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const projects = result.parsed.projects || [];
+    expect(projects.length).toBe(2);
+    const pipeline = projects.find((p) => p.name === "Data Pipeline");
+    expect(pipeline).toBeDefined();
+    expect(pipeline!.bullets.length).toBe(2);
+
+    const dashboard = projects.find((p) => p.name === "Analytics Dashboard");
+    expect(dashboard).toBeDefined();
+    expect(dashboard!.bullets.length).toBe(2);
+  });
+});
+
 describe("parseResumeText date-only line format", () => {
   it("should handle date-only line format (role + company on separate lines)", () => {
     const text = `Maria Santos

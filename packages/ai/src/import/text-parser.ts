@@ -66,6 +66,8 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
       /\bskills\b/i,
       /\b(?:core\s+)?competencies\b/i,
       /\btechnical\s+skills\b/i,
+      /\bproficiency\b/i,
+      /\bcategory\s+proficiency\b/i,
     ],
   },
   {
@@ -82,8 +84,9 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
     patterns: [
       /^(?:personal\s+)?projects?\s*$/im,
       /^(?:personal\s+)?projects?:/im,
-      /\b(?:personal|key|technical|academic|side)\s+projects?\b/i,
+      /\b(?:personal|key|technical|academic|side|other|relevant|software|open[- ]source)\s+projects?\b/i,
       /\bprojects?\s+undertaken\b/i,
+      /\bprojects?\s+include\b/i,
     ],
   },
   {
@@ -309,8 +312,9 @@ function parseExperience(lines: string[]): {
             bulletCount++;
             i++;
           } else if (bulletCount > 0) {
-            // We have collected bullets — if this line is short and the
-            // next 1-3 lines contain a date range, this is the next entry.
+            // Unmarked continuation line after a bullet marker.
+            // Check if this is actually the start of the next entry by
+            // peeking ahead for a date range in the next 1-3 lines.
             let nextHasDate = false;
             const peekLimit = Math.min(i + 3, lines.length - 1);
             for (let look = 1; look <= peekLimit - i; look++) {
@@ -320,9 +324,12 @@ function parseExperience(lines: string[]): {
                 break;
               }
             }
-            if (nextHasDate) break;
-            // Otherwise treat it as a bullet (may be unmarked prose)
-            bullets.push(cleaned);
+            // Also check if this line itself looks like a role/company entry
+            // (short line without being a continuation phrase)
+            const isNextEntry = cleaned.length < 80 && !startsWithArticle(cleaned) && nextHasDate;
+            if (nextHasDate && isNextEntry) break;
+            // Otherwise treat it as a continuation of the last bullet
+            bullets[bullets.length - 1] += " " + cleaned;
             bulletCount++;
             i++;
           } else {
@@ -393,7 +400,29 @@ function parseExperience(lines: string[]): {
           break;
         }
         const cleaned = bline.replace(BULLET_RE, "").trim();
-        if (cleaned && !isLikelyHeader(cleaned)) bullets.push(cleaned);
+        if (!cleaned) { i++; continue; }
+
+        // If this is a bullet marker line, add as new bullet
+        if (BULLET_RE.test(bline)) {
+          bullets.push(cleaned);
+        } else if (bullets.length > 0) {
+          // Unmarked continuation — merge with the previous bullet
+          // Check if it looks like the start of the next entry (role/company name)
+          let nextHasDate = false;
+          const peekLimit = Math.min(i + 3, lines.length - 1);
+          for (let look = 1; look <= peekLimit - i; look++) {
+            const peekLine = lines[i + look].trim();
+            if (peekLine.match(DATE_RANGE_RE) || peekLine.match(YEAR_RANGE_RE)) {
+              nextHasDate = true;
+              break;
+            }
+          }
+          const isNextEntry = cleaned.length < 80 && !startsWithArticle(cleaned) && nextHasDate;
+          if (nextHasDate && isNextEntry) break;
+          bullets[bullets.length - 1] += " " + cleaned;
+        } else {
+          break;
+        }
         i++;
       }
 
@@ -452,6 +481,8 @@ function parseEducation(lines: string[]): {
       const gradMatch = trimmed.match(GRAD_RE);
       // Look ahead for the school line (non-degree, non-empty line that follows)
       let school = extractSchool(trimmed);
+      let gradYear = gradMatch ? gradMatch[1].trim() : "";
+
       if (i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
         if (
@@ -467,30 +498,41 @@ function parseEducation(lines: string[]): {
           } else if (school === trimmed) {
             school = nextLine;
           }
-          // Try to extract graduation year from next line too
+          // Extract graduation year from the school line and strip it from school
           const nextGrad = nextLine.match(GRAD_RE);
           if (nextGrad) {
-            // Set graduation from the school line
-            const entry = education.find((e) => e.school === school && !e.graduation);
-            // Actually, we handle this inline below
+            gradYear = nextGrad[1].trim();
           }
         }
       }
 
-      const gradYear = gradMatch ? gradMatch[1].trim() : "";
+      // Strip graduation year from school field if embedded
+      if (gradYear && school.endsWith(`, ${gradYear}`)) {
+        school = school.slice(0, -`, ${gradYear}`.length).trim();
+      } else if (gradYear && school.endsWith(` ${gradYear}`)) {
+        school = school.slice(0, -` ${gradYear}`.length).trim();
+      }
+
       // Build degree text — strip school only if it's embedded
       let degree = gradMatch
-        ? trimmed.replace(gradMatch[0], "").trim()
+        ? trimmed.replace(gradMatch[0], "").replace(/[-–,;]\s*$/, "").trim()
         : trimmed;
 
       // For multi-line: ensure school isn't embedded in degree text
       // e.g. "Bachelor of Science in Information Technology - University of Santo Tomas, 2019"
       // becomes school="University of Santo Tomas", degree="Bachelor of Science in Information Technology"
       if (school !== trimmed) {
-        degree = trimmed.replace(school, "").replace(/[-–,]\s*$/, "").trim() || degree;
-        // Clean the degree of grad year remnants
-        degree = degree.replace(gradYear, "").replace(/[-–,]\s*$/, "").trim() || degree;
+        // Find where the school name starts in the trimmed line
+        const schoolIndex = trimmed.indexOf(school);
+        if (schoolIndex > 0) {
+          // School is embedded after a degree title — extract the degree
+          degree = trimmed.slice(0, schoolIndex).replace(/[-–,]\s*$/, "").trim();
+        }
+        // If schoolIndex === 0, the school spans the whole line (no degree prefix),
+        // so the degree was already correctly computed as the trimmed grad year
       }
+      // Final cleanup: ensure degree doesn't end with stray punctuation
+      degree = degree.replace(/[-–,]\s*$/, "").trim();
 
       education.push({
         id: `import-edu-${education.length + 1}`,
@@ -573,7 +615,13 @@ function parseSkills(lines: string[]): string[] {
 function parseSummary(lines: string[]): string {
   return lines
     .map((l) => l.trim())
-    .filter((l) => l.length > 0 && !BULLET_RE.test(l))
+    .filter((l) => {
+      if (l.length === 0 || BULLET_RE.test(l)) return false;
+      // Filter out table-format lines (2+ consecutive spaces indicating columns)
+      // These belong to skills tables, not summary prose.
+      if (/\s{3,}/.test(l)) return false;
+      return true;
+    })
     .join(" ")
     .trim();
 }
@@ -591,6 +639,14 @@ function isLikelyHeader(line: string): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Check if text starts with a lowercase article, preposition, or conjunction
+ * — a sign this line is a continuation of the previous bullet, not a new entry.
+ */
+function startsWithArticle(text: string): boolean {
+  return /^(?:with|and|through|using|by|for|in|on|at|to|the|a|an|of|its|their|his|her|our|enabling|ensuring|focusing|leveraging|including|providing|while|during|across|within|after|before|under|over|between|throughout|following|resulting)\b/i.test(text.trim());
 }
 
 function normalizeDate(value: string): string {
@@ -978,7 +1034,8 @@ export function parseResumeText(text: string): ParseResult {
         for (const rawLine of sectionLines) {
           const l = rawLine.trim();
           if (!l) { currentProject = null; continue; }
-          if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/)) continue;
+          // Skip lines that look like OTHER section headers (not projects itself)
+          if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/) && !/projects?/i.test(l)) continue;
 
           // Check if this is a bullet line
           if (/^[•\-*\d.]+\s/.test(l)) {

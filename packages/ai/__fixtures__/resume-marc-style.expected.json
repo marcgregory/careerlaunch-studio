@@ -41,10 +41,10 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University of Santo Tomas, 2019",
+        "school": "University of Santo Tomas",
         "degree": "Bachelor of Science in Information Technology",
         "location": "",
-        "graduation": ""
+        "graduation": "2019"
       }
     ],
     "skills": [
@@ -150,8 +150,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 11,
-      "parsedWordCount": 11,
-      "ratio": 1,
+      "parsedWordCount": 10,
+      "ratio": 0.9090909090909091,
       "status": "good"
     },
     {

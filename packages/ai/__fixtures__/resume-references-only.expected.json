@@ -37,8 +37,8 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "B.S. Computer Science - NYU, 2018",
-        "degree": "B.S. Computer Science - NYU,",
+        "school": "B.S. Computer Science - NYU",
+        "degree": "B.S. Computer Science - NYU",
         "location": "",
         "graduation": "2018"
       }
@@ -80,7 +80,7 @@
     {
       "sectionId": "education",
       "originalWordCount": 6,
-      "parsedWordCount": 11,
+      "parsedWordCount": 10,
       "ratio": 1,
       "status": "good"
     },

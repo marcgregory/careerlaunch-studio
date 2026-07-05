@@ -1,0 +1,63 @@
+Alex Rivera
+alex.rivera@email.com
+(555) 000-1234
+Seattle, WA
+
+Professional Summary
+Versatile engineer with experience across the full stack. Proven track record of delivering production-grade systems and leading technical initiatives.
+
+Category                    Proficiency
+Frontend                    Advanced
+Backend                     Advanced
+Cloud / Infra               Intermediate
+DevOps                      Intermediate
+Database                    Advanced
+
+Experience
+Senior Software Engineer
+TechCorp Solutions
+Jan 2022 - Present
+- Designed and implemented microservices architecture serving 1M+ daily users.
+- Led migration from monolith to distributed system, reducing deploy time by 80%.
+- Established CI/CD pipelines and monitoring infrastructure.
+- Mentored 5 junior engineers through structured onboarding program
+with documented learning paths and weekly check-ins. timelines were met.
+- Authored technical design documents adopted across 3 teams.
+
+Software Engineer
+StartupXYZ Inc.
+Mar 2019 - Dec 2021
+- Built core REST APIs handling 50K requests per minute.
+- Optimized database queries reducing average response time from 400ms to 45ms.
+- Implemented real-time notification system using WebSockets and Redis.
+
+Education
+Bachelor of Science in Computer Science
+University of Washington, 2016
+
+Skills
+React, TypeScript, Node.js, PostgreSQL, Docker, AWS, GraphQL, Redis, Python, Go, Kubernetes, Terraform
+
+Certifications
+AWS Solutions Architect - Professional
+Google Cloud Associate Engineer
+
+Professional Qualities
+Detail-oriented
+Strong communicator
+Problem solver
+Team leader
+
+Projects
+Distributed Task Scheduler
+- Built a fault-tolerant distributed task scheduler handling 10K tasks/min.
+- Used consistent hashing for workload distribution across worker nodes.
+- Implemented retry logic with exponential backoff and dead-letter queues.
+
+Open Source Contributions
+- Contributed to React's core documentation (merged 3 PRs).
+- Maintained a popular VS Code extension with 50K+ installs.
+- Published 5 npm packages for developer tooling.
+
+References
+Available upon request.
