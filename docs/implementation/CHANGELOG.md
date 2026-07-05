@@ -2,6 +2,31 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.9.0-alpha - 2026-07-05
+
+### Added
+
+- **Sprint 6C — AI Quality & Beta Polish.** Tagged `v0.9.0-alpha`.
+- **User Feedback System** — 👍/👎 buttons after every AI suggestion. Clicking 👎 shows a reason picker ("Too generic", "Incorrect", "Invented information", "Doesn't match my writing", "Other"). Feedback persisted with suggestionId, provider, model, and promptVersion metadata.
+- **SuggestionFeedback model** — new Prisma model storing per-suggestion user feedback.
+- **Feedback API** — `POST /api/resumes/:resumeId/suggestions/feedback` (non-blocking, fire-and-forget).
+- **Lifecycle event tracking** — new `SuggestionEvent` Prisma model. `POST /api/resumes/:resumeId/suggestions/event` logs viewed/accepted/rejected/applied actions.
+- **Acceptance analytics** — `GET /api/analytics/acceptance` returns aggregated acceptance rates by category, rejection reason distribution, and overall stats.
+- **AnalysisRun counters** — added `viewedCount`, `acceptedCount`, `appliedCount`, `rejectedCount` columns.
+- **Explainability UI** — new `ConfidenceBar` component with green/yellow/red color coding. "Why" heading added to all suggestion reasons in diff modal, suggestion cards, and tailoring panel.
+- **Safety review** — post-processing now detects 3 types of safety flags: fabricated metrics, leadership inflation, and responsibility expansion. Flagged suggestions show a yellow "⚠ Review carefully" badge with explanation.
+- **SafetyFlag types** — `SafetyFlag`, `SafetyFlagType` exported from `@careerlaunch/ai`.
+- **Evaluation suite** — `scripts/eval/` with 15 resume and 15 job description fixtures. Runs job analysis, gap analysis, and tailoring through all pipeline phases. Reports latency and pass/fail per test case. `npm run eval` to execute.
+- **7 new safety detection tests** — covering fabricated metrics, leadership inflation, responsibility expansion, and edge cases.
+
+### Changed
+
+- `packages/ai/src/tailoring/types.ts` — `TailorSuggestion` now has optional `safetyFlags` array.
+- `packages/ai/src/tailoring/post-process.ts` — `validateTailorSuggestions()` now attaches safety flags. New `detectSafetyFlags()` export.
+- TailoringPanel, SuggestionCard, JobMatchPanel — all now fire lifecycle events and show feedback widgets after suggestion actions.
+- SuggestionDiffModal — enhanced reason section with "Why" heading and confidence bar.
+- Root `package.json` — added `"eval": "tsx scripts/eval/run.ts"` script.
+
 ## 0.8.0-alpha - 2026-07-05
 
 ### Added

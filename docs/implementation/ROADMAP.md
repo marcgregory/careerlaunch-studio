@@ -34,10 +34,11 @@ Last updated: 2026-07-05
 ## Completed
 
 - Sprint 6B — AI Resume Tailoring (Flagship Feature). Phase 1 (Job Analysis), Phase 2 (Gap Analysis), Phase 3 (Tailoring Rewrites), Phase 4 (Diff Display), Phase 5 (Apply Suggestions), Phase 6 (Unified TailoringPanel UI). `v0.8.0-alpha` tagged.
+- Sprint 6C — AI Quality & Beta Polish. User feedback system, acceptance analytics, explainability UI, safety warnings, evaluation suite. `v0.9.0-alpha` tagged.
 
 ## Sprint Queue
 
-- Sprint 6C — AI Quality, User Testing, and Beta Polish.
+- Sprint 6D — v0.9.5: Bug fixes, performance optimization, accessibility hardening, and closed beta preparation.
 
 ## Future
 

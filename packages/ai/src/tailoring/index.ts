@@ -14,8 +14,8 @@ import { getProvider } from "../providers/index";
 import { validateTailorSuggestions } from "./post-process";
 import { suggestionId } from "../suggestion/types";
 
-export type { TailoringInput, TailorSuggestion } from "./types";
-export { validateTailorSuggestions } from "./post-process";
+export type { TailoringInput, TailorSuggestion, SafetyFlag, SafetyFlagType } from "./types";
+export { validateTailorSuggestions, detectSafetyFlags } from "./post-process";
 
 /**
  * Run AI resume tailoring — generate rewrite suggestions.

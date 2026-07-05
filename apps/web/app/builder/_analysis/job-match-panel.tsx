@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
+import { SuggestionFeedback } from "../../../components/suggestion-feedback";
 import { createOperations } from "@careerlaunch/ai";
 import { useAnalytics } from "../../../lib/analytics";
 import type { Suggestion, ApplyOperation } from "@careerlaunch/ai";
@@ -59,6 +60,18 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
   const [reviewingSuggestion, setReviewingSuggestion] = useState<SuggestionWithStatus | null>(null);
   const [applyState, setApplyState] = useState<ApplyState>("idle");
   const [modalError, setModalError] = useState<string | undefined>();
+  const [feedbackTriggered, setFeedbackTriggered] = useState<Set<string>>(new Set());
+
+  // Fire-and-forget lifecycle event
+  const fireEvent = async (suggestionId: string, action: string) => {
+    try {
+      await fetch(`/api/resumes/${resumeId}/suggestions/event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suggestionId, action, category: "job-match" }),
+      });
+    } catch { /* non-critical */ }
+  };
 
   const runMatch = useCallback(async () => {
     if (!jobDescription.trim()) return;
@@ -120,6 +133,7 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
     });
     setApplyState("idle");
     setModalError(undefined);
+    fireEvent(id, "viewed");
   }
 
   // ── Apply handler — called from the modal ─────────────────────────
@@ -157,6 +171,8 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
     } else {
       setSuggestionStatuses((prev) => ({ ...prev, [id]: "accepted" }));
       setApplyState("applied");
+      fireEvent(id, "applied");
+      setFeedbackTriggered((prev) => new Set(prev).add(id));
     }
   }
 
@@ -168,6 +184,8 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
 
   function handleReject(id: string) {
     setSuggestionStatuses((prev) => ({ ...prev, [id]: "rejected" }));
+    fireEvent(id, "rejected");
+    setFeedbackTriggered((prev) => new Set(prev).add(id));
   }
 
   // ── Score color ───────────────────────────────────────────────────
@@ -404,6 +422,15 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
                         </span>
                       )}
                     </div>
+                    {(status === "accepted" || status === "rejected") && feedbackTriggered.has(suggestion.id) && (
+                      <div className="mt-2 border-t border-[#123c3a]/5 pt-2">
+                        <SuggestionFeedback
+                          resumeId={resumeId}
+                          suggestionId={suggestion.id}
+                          category="job-match"
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })}

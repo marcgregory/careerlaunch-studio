@@ -1,0 +1,77 @@
+[
+  {
+    "id": "jd-01",
+    "label": "Senior Software Engineer",
+    "text": "We are looking for a Senior Software Engineer to join our engineering team. You will build and maintain web applications using React, TypeScript, Node.js, and AWS. The ideal candidate has 5+ years of experience in full-stack development, strong knowledge of cloud infrastructure, and experience with CI/CD pipelines. We value engineers who can mentor junior developers and contribute to architectural decisions. Experience with GraphQL, Docker, and PostgreSQL is a plus."
+  },
+  {
+    "id": "jd-02",
+    "label": "Senior Product Manager — SaaS",
+    "text": "CloudSoft Corp is seeking a Senior Product Manager to own our B2B SaaS platform roadmap. You will work with engineering, design, and sales to define and deliver features that drive retention and revenue. The ideal candidate has 5+ years of product management experience in SaaS, strong analytical skills, and a track record of launching successful products. Experience with A/B testing, user research, and agile development is required. Knowledge of the enterprise software market is highly preferred."
+  },
+  {
+    "id": "jd-03",
+    "label": "Digital Marketing Manager",
+    "text": "BrandBoost Agency is hiring a Digital Marketing Manager to lead our client campaigns. You will manage paid advertising budgets, develop content strategies, and optimize conversion funnels. The ideal candidate has 4+ years of digital marketing experience with expertise in Google Ads, SEO, social media marketing, and email campaigns. Experience with HubSpot, Google Analytics, and A/B testing is required. You will lead a team of 3-5 marketing specialists."
+  },
+  {
+    "id": "jd-04",
+    "label": "Senior Data Scientist — ML",
+    "text": "AI Analytics Inc is looking for a Senior Data Scientist to build predictive models and drive data-informed decisions. You will work on customer churn prediction, recommendation systems, and NLP pipelines. The ideal candidate has 4+ years of experience in machine learning, strong Python skills, and experience with TensorFlow or PyTorch. Knowledge of SQL, data visualization, and cloud platforms (AWS/GCP) is required. Experience with MLOps and model deployment is a plus."
+  },
+  {
+    "id": "jd-05",
+    "label": "Senior Graphic Designer",
+    "text": "CreativeStudio LLC is looking for a Senior Graphic Designer to lead visual design projects for our clients. You will create brand identities, design UI mockups, and produce marketing materials. The ideal candidate has 4+ years of experience in graphic design, expert knowledge of Figma and Adobe Creative Suite, and a strong portfolio. Experience with motion graphics, web design, and art direction is highly valued."
+  },
+  {
+    "id": "jd-06",
+    "label": "Registered Nurse — Emergency Department",
+    "text": "City General Hospital seeks an experienced Registered Nurse for our busy Emergency Department. You will provide direct patient care, triage patients, and collaborate with physicians in a fast-paced environment. Requires a valid RN license, BLS and ACLS certification, and 2+ years of ER experience. Strong communication skills and ability to work 12-hour shifts required. Experience with Epic EHR is preferred."
+  },
+  {
+    "id": "jd-07",
+    "label": "Senior DevOps Engineer",
+    "text": "CloudScale Solutions is hiring a Senior DevOps Engineer to manage and improve our cloud infrastructure. You will build CI/CD pipelines, manage Kubernetes clusters, and automate deployments using Terraform. The ideal candidate has 5+ years of DevOps experience, deep knowledge of AWS, and expertise in Docker and Kubernetes. Experience with monitoring tools like Prometheus and Grafana is required. Knowledge of security best practices is a plus."
+  },
+  {
+    "id": "jd-08",
+    "label": "Enterprise Sales Representative — SaaS",
+    "text": "EnterpriseSoft Corp is looking for an Enterprise Sales Representative to join our high-performing sales team. You will manage a pipeline of enterprise prospects, conduct product demos, and close deals worth $100K+. The ideal candidate has 4+ years of B2B SaaS sales experience with a consistent track record of exceeding quota. Experience with Salesforce, MEDDIC selling methodology, and enterprise account management is required."
+  },
+  {
+    "id": "jd-09",
+    "label": "HR Business Partner",
+    "text": "MidSize Corp is seeking an HR Business Partner to support our growing organization. You will manage employee relations, drive recruitment initiatives, and implement HR policies. The ideal candidate has 4+ years of HR experience, strong knowledge of employment law, and experience with HRIS systems. PHR or SPHR certification preferred. Experience with performance management and organizational development is a plus."
+  },
+  {
+    "id": "jd-10",
+    "label": "Investment Banking Analyst",
+    "text": "InvestmentBank Group is hiring an Investment Banking Analyst for our M&A team. You will build financial models, prepare pitch books, and support deal execution. The ideal candidate has 2+ years of experience in investment banking or corporate finance, strong Excel skills, and knowledge of valuation methodologies. Experience with Bloomberg Terminal is preferred. CFA candidates are encouraged to apply."
+  },
+  {
+    "id": "jd-11",
+    "label": "Customer Success Manager — SaaS",
+    "text": "SaaSCare Inc is looking for a Customer Success Manager to drive retention and expansion in our enterprise accounts. You will manage a portfolio of accounts, conduct QBRs, and identify upsell opportunities. The ideal candidate has 3+ years of customer success experience in SaaS, strong communication skills, and experience with CRM platforms. Data-driven approach and ability to present to C-level executives required."
+  },
+  {
+    "id": "jd-12",
+    "label": "Senior UX Researcher",
+    "text": "DesignFirst Product Co is seeking a Senior UX Researcher to lead user research studies across our product portfolio. You will plan and conduct usability tests, gather user insights, and collaborate with product and design teams. The ideal candidate has 4+ years of UX research experience, expertise in qualitative and quantitative research methods, and experience with tools like UserTesting. A portfolio demonstrating research impact is required."
+  },
+  {
+    "id": "jd-13",
+    "label": "Cybersecurity Engineer — SOC",
+    "text": "SecureNet Inc is hiring a Cybersecurity Engineer for our Security Operations Center. You will monitor security events, respond to incidents, and improve security posture. The ideal candidate has 3+ years of cybersecurity experience, knowledge of SIEM tools, and incident response expertise. Experience with cloud security, penetration testing, and compliance frameworks (SOC 2, ISO 27001) is required. Security+ and CEH certifications preferred."
+  },
+  {
+    "id": "jd-14",
+    "label": "Logistics Operations Manager",
+    "text": "LogisticsPro Corp is seeking a Logistics Operations Manager to oversee our warehouse and distribution operations. You will manage inventory, optimize supply chain processes, and lead a team of warehouse staff. The ideal candidate has 6+ years of logistics and operations experience, strong leadership skills, and experience with SAP or similar ERP systems. Lean Six Sigma certification is required. Knowledge of international shipping regulations is a plus."
+  },
+  {
+    "id": "jd-15",
+    "label": "Senior Content Marketing Manager",
+    "text": "ContentFactory Agency is looking for a Senior Content Marketing Manager to lead our content strategy practice. You will create content calendars, manage freelance writers, and optimize content for SEO. The ideal candidate has 4+ years of content marketing experience, excellent writing and editing skills, and expertise in SEO tools like SEMrush. Experience with WordPress, editorial planning, and measuring content ROI is required. B2B SaaS content experience is highly preferred."
+  }
+]

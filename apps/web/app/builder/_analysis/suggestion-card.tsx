@@ -2,6 +2,8 @@
 
 import { Check, X, AlertTriangle, AlertCircle, Info, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { SuggestionFeedback } from "../../../components/suggestion-feedback";
+import { ConfidenceBar } from "../../../components/confidence-bar";
 import type { ClientSuggestion } from "./types";
 
 const severityConfig = {
@@ -16,10 +18,12 @@ export function SuggestionCard({
   suggestion,
   onReview,
   onReject,
+  resumeId,
 }: {
   suggestion: ClientSuggestion;
   onReview: (id: string) => void;
   onReject: (id: string) => void;
+  resumeId?: string;
 }) {
   const config = severityConfig[suggestion.severity];
   const Icon = config.icon;
@@ -64,7 +68,13 @@ export function SuggestionCard({
 
           {expanded && (
             <div className="mt-2 space-y-2 text-sm leading-relaxed">
+              <p className="text-xs font-black text-[#123c3a]">Why</p>
               <p>{suggestion.reason}</p>
+              {typeof suggestion.confidence === "number" && (
+                <div className="max-w-[180px]">
+                  <ConfidenceBar confidence={suggestion.confidence} />
+                </div>
+              )}
               {suggestion.targetText && (
                 <div className="rounded-xl border border-current/15 bg-white/40 p-3">
                   <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] opacity-60">
@@ -122,6 +132,16 @@ export function SuggestionCard({
           </div>
         )}
       </div>
+      {/* Feedback widget after action taken */}
+      {(suggestion.status === "accepted" || suggestion.status === "rejected") && resumeId && (
+        <div className="mt-2 border-t border-[#123c3a]/5 pt-2">
+          <SuggestionFeedback
+            resumeId={resumeId}
+            suggestionId={suggestion.id}
+            category={suggestion.category}
+          />
+        </div>
+      )}
     </div>
   );
 }

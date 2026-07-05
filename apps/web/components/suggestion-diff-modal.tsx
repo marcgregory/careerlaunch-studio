@@ -3,6 +3,7 @@
 import { Check, X, Loader2, AlertCircle, Eye } from "lucide-react";
 import { useEffect, useCallback } from "react";
 import { DiffView } from "./diff-view";
+import { ConfidenceBar } from "./confidence-bar";
 import type { ClientSuggestion } from "../app/builder/_analysis/types";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -96,9 +97,17 @@ export function SuggestionDiffModal({
               {suggestion.title}
             </h2>
             {suggestion.reason && (
-              <p className="mt-1 text-sm leading-relaxed text-[#4b4b4b]">
-                {suggestion.reason}
-              </p>
+              <div className="mt-1 space-y-1">
+                <p className="text-xs font-black text-[#123c3a]">Why</p>
+                <p className="text-sm leading-relaxed text-[#4b4b4b]">
+                  {suggestion.reason}
+                </p>
+                {typeof suggestion.confidence === "number" && (
+                  <div className="mt-1 max-w-[200px]">
+                    <ConfidenceBar confidence={suggestion.confidence} />
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <button

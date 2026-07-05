@@ -53,6 +53,17 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   const [applyState, setApplyState] = useState<ApplyState>("idle");
   const [modalError, setModalError] = useState<string | undefined>();
 
+  // Fire-and-forget lifecycle event
+  const fireEvent = async (suggestionId: string, action: string, category: string) => {
+    try {
+      await fetch(`/api/resumes/${resumeId}/suggestions/event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suggestionId, action, category }),
+      });
+    } catch { /* non-critical */ }
+  };
+
   const runAnalysis = useCallback(async () => {
     setAnalysis((prev) => ({ ...prev, status: "loading", error: null }));
     setApplyError(null);
@@ -100,6 +111,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
     setReviewingSuggestion(suggestion);
     setApplyState("idle");
     setModalError(undefined);
+    fireEvent(id, "viewed", suggestion.category);
   }
 
   // ── Apply handler — called from the modal ─────────────────────────
@@ -133,6 +145,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         ),
       }));
       setApplyState("applied");
+      if (suggestion) fireEvent(id, "applied", suggestion.category);
       // Modal auto-closes after 1.5s (handled in SuggestionDiffModal)
     }
   }
@@ -144,12 +157,14 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   }
 
   function handleReject(id: string) {
+    const suggestion = analysis.suggestions.find((s) => s.id === id);
     setAnalysis((prev) => ({
       ...prev,
       suggestions: prev.suggestions.map((s) =>
         s.id === id ? { ...s, status: "rejected" as const } : s,
       ),
     }));
+    if (suggestion) fireEvent(id, "rejected", suggestion.category);
   }
 
   // Group suggestions by severity for display
@@ -345,6 +360,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
                   suggestion={suggestion}
                   onReview={handleReview}
                   onReject={handleReject}
+                  resumeId={resumeId}
                 />
               ))}
             </div>

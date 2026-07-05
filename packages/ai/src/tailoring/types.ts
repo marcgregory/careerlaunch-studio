@@ -20,6 +20,18 @@ export interface TailoringInput {
   gapAnalysis: GapAnalysis;
 }
 
+// ─── Safety Flag Types ───────────────────────────────────────────────────
+
+export type SafetyFlagType =
+  | "fabricated_metric"
+  | "leadership_inflation"
+  | "responsibility_expansion";
+
+export interface SafetyFlag {
+  type: SafetyFlagType;
+  message: string;
+}
+
 export interface TailorSuggestion {
   /** Stable ID for deduplication */
   id: string;
@@ -37,6 +49,8 @@ export interface TailorSuggestion {
   confidence: number;
   /** Severity level */
   severity: "critical" | "major" | "medium" | "minor" | "info";
+  /** Safety flags — set when the post-processor detects potential fabrications */
+  safetyFlags?: SafetyFlag[];
 }
 
 /** Default empty result */

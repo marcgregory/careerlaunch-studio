@@ -50,6 +50,10 @@ export type {
   SuggestionStatus,
   SuggestionLocation,
   StoredSuggestion,
+  FeedbackReason,
+  SuggestionFeedback,
+  SuggestionEventAction,
+  SuggestionEventInput,
 } from "./suggestion/types";
 
 export { computeOverallScore, computeCategoryScores } from "./scoring/index";
@@ -129,8 +133,8 @@ export { runGapAnalysis, deterministicGapAnalysis } from "./gap-analysis/index";
 export type { GapAnalysis, GapAnalysisInput, GapWeakSection, GapRecommendation, GapRecommendationType } from "./gap-analysis/types";
 
 // Resume tailoring (Phase 3 — Sprint 6B)
-export { runTailoring, deterministicTailor, validateTailorSuggestions } from "./tailoring/index";
-export type { TailoringInput, TailorSuggestion } from "./tailoring/types";
+export { runTailoring, deterministicTailor, validateTailorSuggestions, detectSafetyFlags } from "./tailoring/index";
+export type { TailoringInput, TailorSuggestion, SafetyFlag, SafetyFlagType } from "./tailoring/types";
 
 // Prompt loaders — NOT exported from barrel (use node:fs)
 // Import directly from @careerlaunch/ai/lib/prompts in server-only code

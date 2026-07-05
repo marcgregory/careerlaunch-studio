@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   Sparkles,
   Loader2,
@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import { DiffView } from "../../../components/diff-view";
+import { SuggestionFeedback } from "../../../components/suggestion-feedback";
+import { ConfidenceBar } from "../../../components/confidence-bar";
 import { createOperations } from "@careerlaunch/ai";
 import { useAnalytics } from "../../../lib/analytics";
 import type { Suggestion, ApplyOperation } from "@careerlaunch/ai";
@@ -45,6 +47,7 @@ interface TailorSuggestionState {
   category: string;
   location: { sectionId: string; entryId?: string; field?: string };
   status: "pending" | "accepted" | "applied" | "rejected";
+  safetyFlags?: Array<{ type: string; message: string }>;
 }
 
 interface TailoringPanelProps {
@@ -93,6 +96,19 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
   const [applyState, setApplyState] = useState<ApplyState>("idle");
   const [modalError, setModalError] = useState<string | undefined>();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  // Track which suggestions have triggered feedback widget display
+  const [feedbackTriggered, setFeedbackTriggered] = useState<Set<string>>(new Set());
+
+  // Fire-and-forget lifecycle event
+  const fireEvent = async (suggestionId: string, action: string) => {
+    try {
+      await fetch(`/api/resumes/${resumeId}/suggestions/event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suggestionId, action, category: "tailoring" }),
+      });
+    } catch { /* non-critical */ }
+  };
 
   // ── Run analysis & tailoring ─────────────────────────────────────
   const runAnalysis = useCallback(async () => {
@@ -165,6 +181,7 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
     setReviewingSuggestion(suggestion);
     setApplyState("idle");
     setModalError(undefined);
+    fireEvent(suggestion.id, "viewed");
   }
 
   // ── Apply single suggestion ────────────────────────────────────────
@@ -220,6 +237,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
       // Update the local status
       setApplyState("applied");
       updateSuggestionStatus(suggestion.id, "applied");
+      fireEvent(suggestion.id, "applied");
+      setFeedbackTriggered((prev) => new Set(prev).add(suggestion.id));
     }
   }
 
@@ -279,6 +298,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
 
   function handleReject(id: string) {
     updateSuggestionStatus(id, "rejected");
+    fireEvent(id, "rejected");
+    setFeedbackTriggered((prev) => new Set(prev).add(id));
   }
 
   function handleCloseModal() {
@@ -495,6 +516,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
             handleReview,
             handleReject,
             handleApplyCategory,
+            resumeId,
+            feedbackTriggered,
           )}
 
           {/* Experience bullet suggestions */}
@@ -508,6 +531,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
             handleReview,
             handleReject,
             handleApplyCategory,
+            resumeId,
+            feedbackTriggered,
           )}
 
           {/* Skills suggestions */}
@@ -521,6 +546,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
             handleReview,
             handleReject,
             handleApplyCategory,
+            resumeId,
+            feedbackTriggered,
           )}
         </div>
 
@@ -587,6 +614,8 @@ function renderSuggestionSection(
   handleReview: (s: TailorSuggestionState) => void,
   handleReject: (id: string) => void,
   handleApplyAll: (suggestions: TailorSuggestionState[]) => void,
+  resumeId: string,
+  feedbackTriggered: Set<string>,
 ) {
   if (all.length === 0) return null;
 
@@ -647,6 +676,20 @@ function renderSuggestionSection(
                       : "bg-white"
                 }`}
               >
+                {/* Safety warning badge */}
+                {suggestion.safetyFlags && suggestion.safetyFlags.length > 0 && (
+                  <div className="mb-2 rounded-xl border border-[#e0aa22]/40 bg-[#fff7df] p-2">
+                    <p className="text-[0.55rem] font-black uppercase tracking-[0.08em] text-[#7b5300]">
+                      ⚠ Review carefully
+                    </p>
+                    {suggestion.safetyFlags.map((flag, i) => (
+                      <p key={i} className="mt-0.5 text-[0.65rem] font-medium text-[#7b5300]">
+                        {flag.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
                 {/* Inline diff preview */}
                 <div className="mb-2">
                   <DiffView
@@ -661,12 +704,13 @@ function renderSuggestionSection(
                 {/* Reason and actions */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
+                    <p className="text-xs font-black text-[#123c3a]">Why</p>
                     <p className="text-xs font-medium leading-5 text-[#4b4b4b]">
                       {suggestion.reason}
                     </p>
-                    <p className="mt-0.5 text-[0.6rem] font-medium text-[#4b4b4b]/50">
-                      Confidence: {Math.round(suggestion.confidence * 100)}%
-                    </p>
+                    <div className="mt-1.5 max-w-[180px]">
+                      <ConfidenceBar confidence={suggestion.confidence} />
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     {isPending && (
@@ -704,6 +748,16 @@ function renderSuggestionSection(
                     )}
                   </div>
                 </div>
+                {/* Feedback widget after action taken */}
+                {(isDone || isRejected) && feedbackTriggered.has(suggestion.id) && (
+                  <div className="mt-2 border-t border-[#123c3a]/5 pt-2">
+                    <SuggestionFeedback
+                      resumeId={resumeId}
+                      suggestionId={suggestion.id}
+                      category={suggestion.category}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

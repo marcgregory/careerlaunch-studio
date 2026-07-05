@@ -4,58 +4,48 @@ Last updated: 2026-07-05
 
 ## Current Sprint
 
-Sprint 6B — AI Resume Tailoring (Flagship Feature). ✅ Complete and tagged `v0.8.0-alpha`.
+Sprint 6C — AI Quality & Beta Polish. ✅ Complete and tagged `v0.9.0-alpha`.
 
-**Goal achieved:** AI-powered resume tailoring against job descriptions. Users paste a JD, see how well their resume matches, get targeted AI rewrite suggestions for summary, bullets, and skills, review changes via before/after diff, and apply selectively (individual or bulk per category).
+**Goal achieved:** Every AI suggestion now supports user feedback with 👍/👎. Acceptance analytics track the full viewed → accepted → applied → rejected lifecycle. AI suggestions explain themselves with confidence bars and "Why" sections. Risky rewrites are flagged with safety warnings. An internal evaluation suite runs regression checks against 15 resume/JD pairs.
 
-### Delivered This Sprint (Sprint 6B)
+### Delivered This Sprint (Sprint 6C)
 
-**Job Analysis module (`packages/ai/src/job-analysis/`):**
-- Phase 1 of the tailoring pipeline — extracts structured data from job descriptions.
-- Required/preferred skills, seniority level, responsibilities, ATS keywords, and industry.
-- AI-powered via provider (Gemini/Groq) with deterministic dictionary-based fallback.
-- Prompt: `packages/ai/prompts/job-analysis/v1.md`.
-- `analyzeJob()` method added to AIProvider interface (optional).
+**User Feedback System:**
+- New `SuggestionFeedback` Prisma model stores per-suggestion feedback with provider/model/promptVersion metadata.
+- `POST /api/resumes/:resumeId/suggestions/feedback` — non-blocking, fire-and-forget API for feedback submission.
+- `SuggestionFeedback` component (`apps/web/components/suggestion-feedback.tsx`) — 👍/👎 buttons on every suggestion.
+- On 👎 click, reason picker appears: "Too generic", "Incorrect", "Invented information", "Doesn't match my writing", "Other" (with free text).
+- Feedback integrated into TailoringPanel, SuggestionCard, and JobMatchPanel — shown after suggestion is acted on.
 
-**Gap Analysis module (`packages/ai/src/gap-analysis/`):**
-- Phase 2 — compares analyzed job against normalized resume.
-- Match score (0–100), matched/missing skills, weak section detection, actionable recommendations.
-- AI-powered with fallback to existing `deterministicRunJobMatch()`.
-- Prompt: `packages/ai/prompts/gap-analysis/v1.md`.
-- `analyzeGap()` method added to AIProvider interface (optional).
-- API route: `POST /api/resumes/:resumeId/gap-analysis`.
+**Acceptance Analytics:**
+- New `SuggestionEvent` Prisma model tracks lifecycle: viewed, accepted, rejected, applied.
+- `POST /api/resumes/:resumeId/suggestions/event` — lightweight, fire-and-forget lifecycle logger.
+- `GET /api/analytics/acceptance` — aggregated endpoint returning acceptance rate by category, rejection reasons, and overall stats.
+- `AnalysisRun` extended with `viewedCount`, `acceptedCount`, `appliedCount`, `rejectedCount` columns.
 
-**Resume Tailoring module (`packages/ai/src/tailoring/`):**
-- Phase 3 — generates before/after rewrite suggestions for summary, experience bullets, and skills.
-- Post-processing enforces safety rules: before text must exist in resume, fabricated metrics cap at 0.3 confidence, no invented experience.
-- Deterministic fallback generates skill-add and summary-expand suggestions.
-- 6 prompt files: `tailor-summary/v1.md`, `tailor-bullets/v1.md`, `tailor-skills/v1.md`, `tailor/v1.md`.
-- `tailorResume()` method added to AIProvider interface (optional).
-- API route: `POST /api/resumes/:resumeId/tailor` (full 3-phase pipeline).
+**Explainability UI:**
+- `ConfidenceBar` component (`apps/web/components/confidence-bar.tsx`) — colored bar (green ≥80%, yellow ≥50%, red <50%) with percentage label.
+- "Why" section heading added above every suggestion reason in TailoringPanel, SuggestionCard, and SuggestionDiffModal.
+- Confidence bar displayed alongside every suggestion reason.
 
-**Unified TailoringPanel UI (`apps/web/app/builder/_analysis/tailoring-panel.tsx`):**
-- Replaces the old JobMatchPanel in the builder sidebar.
-- States: idle (paste JD), analyzing (loading with status), error (retry), success (results).
-- Results show: match score with color coding, skill comparison grid, weak sections alert, collapsible suggestion groups by category.
-- Each suggestion shows inline before/after diff preview with Review/Accept/Dismiss controls.
-- "Apply all" per category for bulk application.
-- Reuses existing SuggestionDiffModal for detailed review.
-- Bulk apply API: `POST /api/resumes/:resumeId/suggestions/apply-bulk`.
+**Safety Review:**
+- Post-processing (`packages/ai/src/tailoring/post-process.ts`) now detects 3 safety flag types:
+  - `fabricated_metric` — new numbers in `after` not present in `before`
+  - `leadership_inflation` — weak verbs replaced with strong ones without evidence
+  - `responsibility_expansion` — specific responsibilities added not in the original
+- `SafetyFlag` type added to `TailorSuggestion` interface.
+- Yellow warning badge shown in TailoringPanel for flagged suggestions: "⚠ Review carefully" with explanation.
 
-**MockProvider updated:**
-- Mock implementations for `analyzeJob()`, `analyzeGap()`, `tailorResume()` — realistic fake data for development/demo.
+**Evaluation Suite:**
+- `scripts/eval/` — CLI runner with 15 resume and 15 job description fixtures.
+- Tests job analysis, gap analysis, and tailoring through all pipeline phases.
+- Measures latency per call, validates output shape, reports pass/fail.
+- Supports `--ai` flag for AI-powered runs alongside deterministic, `--json` for CI output.
+- `npm run eval` to execute.
 
-**AIProvider interface extended:**
-- 3 new optional methods: `analyzeJob()`, `analyzeGap()`, `tailorResume()`.
-- Backward compatible — existing providers continue to work.
-
-**Prompt builders added:**
-- `buildJobAnalysisPrompt()`, `buildGapAnalysisPrompt()`, `buildTailorPrompt()` in `packages/ai/src/lib/prompts.ts`.
-
-**Tests added:**
-- 18 new tests across job-analysis, gap-analysis, and tailoring modules.
-- Post-process validation tests: rejects missing before text, caps fabricated metrics.
-- Full test suite: 162 AI tests + 41 web tests + 13 domain tests = 216 total, all passing.
+**Tests:**
+- 7 new safety detection tests covering all 3 flag types and edge cases.
+- Full test suite: 169 AI tests + 41 web tests + 13 domain tests = 223 total, all passing.
 
 **Token utilities (`packages/ai/src/lib/tokens.ts`):**
 - `estimateTokens()` — ~4 chars per token heuristic.
@@ -256,11 +246,11 @@ Covered in previous status.
 
 ## Architecture Status
 
-TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering separated into standalone Docker service. Template registry is single source of truth. Entitlement system decouples feature logic from billing state — every feature asks `can(user, feature_key)` rather than checking plan status directly. Plans are code-defined in `@careerlaunch/domain`. Stripe handles payments, webhooks sync subscription state. Sentry, PostHog, rate limiting, and health endpoint in place. AI provider abstraction decouples app code from LLM vendors — `AIProvider` interface with GeminiProvider, GroqProvider, and MockProvider implementations. Provider selection via `AI_DEFAULT_PROVIDER` env var. Prompts extracted to versioned files. Structured output validation ensures reliable typed responses.
+TypeScript monorepo, Next.js modular monolith, PostgreSQL, Prisma, auth with signed HTTP-only cookies. PDF rendering separated into standalone Docker service. Template registry is single source of truth. Entitlement system decouples feature logic from billing state — every feature asks `can(user, feature_key)` rather than checking plan status directly. Plans are code-defined in `@careerlaunch/domain`. Stripe handles payments, webhooks sync subscription state. Sentry, PostHog, rate limiting, and health endpoint in place. AI provider abstraction decouples app code from LLM vendors — `AIProvider` interface with GeminiProvider, GroqProvider, and MockProvider implementations. Provider selection via `AI_DEFAULT_PROVIDER` env var. Prompts extracted to versioned files. Structured output validation ensures reliable typed responses. User feedback system captures suggestion quality signals. Acceptance analytics track the full lifecycle. Evaluation suite provides regression detection for prompt changes.
 
 ## Platform Status
 
-Build passes with 216 tests (162 AI + 41 web + 13 domain). TypeScript passes across all workspaces. TailoringPanel integrated into builder sidebar replacing old JobMatchPanel.
+Build passes with 223 tests (169 AI + 41 web + 13 domain). TypeScript passes across all workspaces. All new routes registered: feedback, event, and analytics/acceptance. Safety detection and confidence explainability integrated into all suggestion UI. User feedback flows non-blocking — AI UX never fails if analytics logging fails.
 
 ## Blockers
 
@@ -273,12 +263,13 @@ Build passes with 216 tests (162 AI + 41 web + 13 domain). TypeScript passes acr
 
 ## Next Milestone
 
-Sprint 6C — AI quality improvements, user testing, and public beta preparation. Polish the tailoring feature with real user feedback, improve AI prompt quality, and prepare for beta launch.
+Sprint 6D — v0.9.5-alpha: Bug fixes, performance optimization, accessiblity review. Final polish before closed beta. Consider interview preparation feature.
+
 ## Last Build
 
 Local build verification passed on 2026-07-05:
 
-- `npm run build` — passes (all routes, including new gap-analysis, tailor, and apply-bulk API routes)
-- `npm run test` — 162/162 AI tests + 41/41 web tests + 13/13 domain tests pass
+- `npm run build` — passes (all routes, including new feedback, event, and analytics/acceptance API routes)
+- `npm run test` — 169/169 AI tests + 41/41 web tests + 13/13 domain tests = 223 pass
 - `npm run typecheck` — passes (all workspaces)
 - `npm run test:e2e --workspace @careerlaunch/web` — pending database availability

@@ -80,6 +80,38 @@ export interface StoredSuggestion extends Suggestion {
  * @param path     — location context: sectionId, entryId, or a composite path.
  *                  Omit for whole-resume suggestions. Defaults to "resume".
  */
+// ─── Feedback Types ─────────────────────────────────────────────────────
+
+/** Reason a user rejected a suggestion */
+export type FeedbackReason =
+  | "too_generic"
+  | "incorrect"
+  | "invented"
+  | "doesnt_match"
+  | "other";
+
+/** User-submitted feedback on a suggestion */
+export interface SuggestionFeedback {
+  suggestionId: string;
+  helpful: boolean;
+  reason?: FeedbackReason;
+  reasonText?: string;
+  category: string;
+  provider?: string;
+  model?: string;
+  promptVersion?: string;
+}
+
+/** Lifecycle event for a suggestion */
+export type SuggestionEventAction = "viewed" | "accepted" | "rejected" | "applied";
+
+export interface SuggestionEventInput {
+  suggestionId: string;
+  action: SuggestionEventAction;
+  category: string;
+  analysisRunId?: string;
+}
+
 export function suggestionId(category: string, code: string, path?: string): string {
   return [category, code, path ?? "resume"].join(":").replace(/[^a-zA-Z0-9:_-]/g, "-");
 }

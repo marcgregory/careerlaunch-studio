@@ -1,0 +1,182 @@
+[
+  {
+    "id": "resume-01",
+    "label": "Software Engineer — Mid Level",
+    "contact": { "fullName": "Alex Chen", "email": "alex@example.com", "phone": "555-0101", "location": "San Francisco", "website": "" },
+    "summary": "Software engineer with 4 years of experience building web applications using React, TypeScript, and Node.js.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Software Engineer", "company": "TechStart Inc", "bullets": ["Built React components for the customer dashboard", "Developed REST APIs using Node.js and Express", "Wrote unit tests with Jest and React Testing Library"], "dateRange": { "start": "2021-03", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Junior Developer", "company": "WebAgency Co", "bullets": ["Maintained legacy PHP applications", "Created email templates using HTML and CSS", "Assisted senior developers with code reviews"], "dateRange": { "start": "2019-06", "end": "2021-02" } }
+    ],
+    "skills": ["JavaScript", "TypeScript", "React", "Node.js", "Express", "Jest", "HTML", "CSS", "Git"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-02",
+    "label": "Senior Product Manager",
+    "contact": { "fullName": "Sarah Johnson", "email": "sarah@example.com", "phone": "555-0102", "location": "New York", "website": "" },
+    "summary": "Product manager with 8 years of experience in SaaS product development, leading cross-functional teams from ideation to launch.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Senior Product Manager", "company": "CloudSoft Corp", "bullets": ["Led product roadmap for B2B SaaS platform serving 500+ enterprise customers", "Defined and tracked KPIs including NPS, retention, and monthly active users", "Managed backlog of 100+ features with a team of 5 engineers and 2 designers"], "dateRange": { "start": "2020-04", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Product Manager", "company": "DataViz Inc", "bullets": ["Launched analytics dashboard used by 50,000+ users", "Conducted user research with 200+ customers", "Collaborated with engineering on quarterly release planning"], "dateRange": { "start": "2017-02", "end": "2020-03" } }
+    ],
+    "skills": ["Product Management", "SaaS", "Agile", "User Research", "Analytics", "A/B Testing", "Jira", "SQL", "Figma"],
+    "certifications": ["Certified Scrum Product Owner"], "projects": []
+  },
+  {
+    "id": "resume-03",
+    "label": "Marketing Manager",
+    "contact": { "fullName": "Maria Garcia", "email": "maria@example.com", "phone": "555-0103", "location": "Chicago", "website": "" },
+    "summary": "Marketing professional with 6 years of experience in digital marketing, content strategy, and campaign management.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Marketing Manager", "company": "BrandBoost Agency", "bullets": ["Managed $2M annual advertising budget across Google Ads and social media", "Developed content strategy that increased organic traffic by 60%", "Led team of 4 marketing specialists"], "dateRange": { "start": "2020-01", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Marketing Coordinator", "company": "LocalBusiness Co", "bullets": ["Coordinated email marketing campaigns reaching 100K subscribers", "Analyzed campaign performance using Google Analytics", "Created social media content calendar"], "dateRange": { "start": "2017-03", "end": "2019-12" } }
+    ],
+    "skills": ["Digital Marketing", "Content Strategy", "Google Ads", "Google Analytics", "SEO", "Social Media", "Email Marketing", "HubSpot", "Mailchimp"],
+    "certifications": ["Google Analytics Certified"], "projects": []
+  },
+  {
+    "id": "resume-04",
+    "label": "Data Scientist",
+    "contact": { "fullName": "James Wilson", "email": "james@example.com", "phone": "555-0104", "location": "Seattle", "website": "" },
+    "summary": "Data scientist with 5 years of experience in machine learning, statistical analysis, and building predictive models.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Data Scientist", "company": "AI Analytics Inc", "bullets": ["Built ML models for customer churn prediction achieving 85% accuracy", "Developed ETL pipelines processing 10TB of data daily", "Created dashboards for executive reporting using Tableau"], "dateRange": { "start": "2021-01", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Junior Data Analyst", "company": "FinanceFirst Bank", "bullets": ["Analyzed customer transaction data to identify fraud patterns", "Created weekly reporting dashboards using Python and SQL", "Presented findings to senior leadership"], "dateRange": { "start": "2019-02", "end": "2020-12" } }
+    ],
+    "skills": ["Python", "TensorFlow", "PyTorch", "SQL", "Machine Learning", "Statistical Analysis", "Data Visualization", "Tableau", "ETL", "A/B Testing"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-05",
+    "label": "Graphic Designer",
+    "contact": { "fullName": "Emily Park", "email": "emily@example.com", "phone": "555-0105", "location": "Los Angeles", "website": "emilypark.design" },
+    "summary": "Creative graphic designer with 4 years of experience in brand identity, UI/UX design, and print materials.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Graphic Designer", "company": "CreativeStudio LLC", "bullets": ["Designed brand identities for 20+ startup clients", "Created UI mockups and prototypes using Figma", "Produced marketing collateral including brochures and social media assets"], "dateRange": { "start": "2021-05", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Junior Designer", "company": "PrintHouse Media", "bullets": ["Assisted senior designers with layout and production", "Prepared print-ready files for commercial printing", "Maintained digital asset library"], "dateRange": { "start": "2019-08", "end": "2021-04" } }
+    ],
+    "skills": ["Figma", "Adobe Creative Suite", "Photoshop", "Illustrator", "InDesign", "UI/UX Design", "Brand Identity", "Typography", "Print Design"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-06",
+    "label": "Registered Nurse",
+    "contact": { "fullName": "David Kim", "email": "david@example.com", "phone": "555-0106", "location": "Boston", "website": "" },
+    "summary": "Registered nurse with 6 years of experience in emergency medicine and critical care.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Registered Nurse — ER", "company": "City General Hospital", "bullets": ["Managed care for 20+ patients per shift in a Level 1 Trauma Center", "Administered medications and monitored vital signs for critical patients", "Collaborated with physicians on emergency treatment plans"], "dateRange": { "start": "2020-03", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Staff Nurse", "company": "Community Health Clinic", "bullets": ["Provided patient education on chronic disease management", "Assisted with minor surgical procedures", "Maintained accurate electronic health records"], "dateRange": { "start": "2018-01", "end": "2020-02" } }
+    ],
+    "skills": ["Patient Care", "Emergency Medicine", "Critical Care", "EHR Systems", "IV Therapy", "Wound Care", "Patient Assessment", "Team Collaboration"],
+    "certifications": ["ACLS", "BLS", "PALS"], "projects": []
+  },
+  {
+    "id": "resume-07",
+    "label": "DevOps Engineer",
+    "contact": { "fullName": "Michael Brown", "email": "michael@example.com", "phone": "555-0107", "location": "Austin", "website": "" },
+    "summary": "DevOps engineer with 5 years of experience in cloud infrastructure, CI/CD pipelines, and containerization.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "DevOps Engineer", "company": "CloudScale Solutions", "bullets": ["Managed AWS infrastructure serving 1M+ users across 3 regions", "Built CI/CD pipelines using GitHub Actions and Jenkins", "Containerized microservices using Docker and Kubernetes"], "dateRange": { "start": "2021-02", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Systems Administrator", "company": "DataCenter Inc", "bullets": ["Maintained Linux servers for a 200-person organization", "Automated server provisioning with Ansible", "Monitored system performance and resolved incidents"], "dateRange": { "start": "2019-01", "end": "2021-01" } }
+    ],
+    "skills": ["AWS", "Docker", "Kubernetes", "Terraform", "Ansible", "CI/CD", "Linux", "GitHub Actions", "Jenkins", "Prometheus"],
+    "certifications": ["AWS Solutions Architect Associate"], "projects": []
+  },
+  {
+    "id": "resume-08",
+    "label": "Sales Representative",
+    "contact": { "fullName": "Jessica Taylor", "email": "jessica@example.com", "phone": "555-0108", "location": "Dallas", "website": "" },
+    "summary": "Results-driven sales professional with 7 years of experience in B2B software sales exceeding quota consistently.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Senior Sales Representative", "company": "EnterpriseSoft Corp", "bullets": ["Exceeded annual quota of $1.5M by 25% in 2023", "Managed pipeline of 100+ enterprise prospects using Salesforce", "Closed 15 enterprise deals worth $500K+ each"], "dateRange": { "start": "2020-06", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Sales Development Rep", "company": "StartupSales Inc", "bullets": ["Generated 50+ qualified leads per month", "Conducted product demonstrations for prospective clients", "Maintained CRM data quality and lead tracking"], "dateRange": { "start": "2017-09", "end": "2020-05" } }
+    ],
+    "skills": ["B2B Sales", "Salesforce", "Pipeline Management", "Enterprise Sales", "Lead Generation", "Negotiation", "CRM", "Cold Outreach", "Product Demos"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-09",
+    "label": "HR Generalist",
+    "contact": { "fullName": "Rachel Adams", "email": "rachel@example.com", "phone": "555-0109", "location": "Denver", "website": "" },
+    "summary": "Human resources professional with 5 years of experience in recruitment, employee relations, and benefits administration.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "HR Generalist", "company": "MidSize Corp", "bullets": ["Managed full-cycle recruitment for 50+ positions annually", "Reduced time-to-hire by 30% through process improvements", "Administered employee benefits and 401(k) programs"], "dateRange": { "start": "2021-03", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "HR Coordinator", "company": "Staffing Solutions Inc", "bullets": ["Coordinated onboarding for 100+ new hires per year", "Maintained HRIS records and generated compliance reports", "Supported employee engagement initiatives"], "dateRange": { "start": "2019-01", "end": "2021-02" } }
+    ],
+    "skills": ["Recruitment", "Employee Relations", "Benefits Administration", "HRIS", "Onboarding", "Compliance", "Payroll", "Performance Management", "ATS"],
+    "certifications": ["PHR"], "projects": []
+  },
+  {
+    "id": "resume-10",
+    "label": "Financial Analyst",
+    "contact": { "fullName": "Kevin Lee", "email": "kevin@example.com", "phone": "555-0110", "location": "Atlanta", "website": "" },
+    "summary": "Financial analyst with 4 years of experience in financial modeling, forecasting, and investment analysis.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Financial Analyst", "company": "InvestmentBank Group", "bullets": ["Built financial models for M&A deals worth $500M+", "Prepared quarterly earnings reports for executive leadership", "Conducted industry research and competitive analysis"], "dateRange": { "start": "2021-01", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Junior Analyst", "company": "Wealth Management Inc", "bullets": ["Assisted with portfolio analysis and rebalancing", "Created investor presentation materials", "Monitored market trends and economic indicators"], "dateRange": { "start": "2019-06", "end": "2020-12" } }
+    ],
+    "skills": ["Financial Modeling", "Excel", "Bloomberg Terminal", "M&A", "Valuation", "Forecasting", "Data Analysis", "Financial Reporting", "SQL"],
+    "certifications": ["CFA Level 2"], "projects": []
+  },
+  {
+    "id": "resume-11",
+    "label": "Customer Success Manager",
+    "contact": { "fullName": "Amanda Foster", "email": "amanda@example.com", "phone": "555-0111", "location": "Portland", "website": "" },
+    "summary": "Customer success professional with 4 years of experience driving retention and expansion in SaaS companies.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Customer Success Manager", "company": "SaaSCare Inc", "bullets": ["Managed portfolio of 50 enterprise accounts worth $2M ARR", "Achieved 95% retention rate and 20% expansion revenue", "Led quarterly business reviews with C-level executives"], "dateRange": { "start": "2021-04", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Support Specialist", "company": "TechHelp Corp", "bullets": ["Resolved 1000+ customer tickets with 98% satisfaction rate", "Created knowledge base articles for self-service", "Trained new support team members"], "dateRange": { "start": "2019-05", "end": "2021-03" } }
+    ],
+    "skills": ["Customer Success", "Account Management", "SaaS", "Retention Strategies", "CRM", "Data Analysis", "Communication", "Conflict Resolution"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-12",
+    "label": "UX Researcher",
+    "contact": { "fullName": "Chris Nguyen", "email": "chris@example.com", "phone": "555-0112", "location": "San Jose", "website": "" },
+    "summary": "UX researcher with 5 years of experience conducting user studies and translating insights into product improvements.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "UX Researcher", "company": "DesignFirst Product Co", "bullets": ["Conducted 50+ usability studies across web and mobile products", "Developed research insights that improved task completion by 35%", "Built and maintained user research repository"], "dateRange": { "start": "2021-02", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Research Assistant", "company": "University Research Lab", "bullets": ["Assisted with qualitative research studies on human-computer interaction", "Analyzed interview transcripts using thematic coding", "Presented findings at academic conference"], "dateRange": { "start": "2019-01", "end": "2021-01" } }
+    ],
+    "skills": ["User Research", "Usability Testing", "Qualitative Analysis", "Survey Design", "Interviewing", "Data Analysis", "Figma", "UserTesting"],
+    "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-13",
+    "label": "Cybersecurity Analyst",
+    "contact": { "fullName": "Ryan Patel", "email": "ryan@example.com", "phone": "555-0113", "location": "Washington DC", "website": "" },
+    "summary": "Cybersecurity analyst with 4 years of experience in threat detection, incident response, and security compliance.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Security Analyst", "company": "SecureNet Inc", "bullets": ["Monitored security events across 10,000+ endpoints using SIEM tools", "Responded to 200+ security incidents with average resolution under 1 hour", "Implemented security policies achieving SOC 2 compliance"], "dateRange": { "start": "2021-06", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "IT Support Specialist", "company": "MidSized Corp", "bullets": ["Managed user access controls and permissions", "Performed vulnerability assessments using Nessus", "Supported security awareness training programs"], "dateRange": { "start": "2019-08", "end": "2021-05" } }
+    ],
+    "skills": ["SIEM", "Incident Response", "Vulnerability Assessment", "SOC 2", "Network Security", "Python", "Nessus", "Firewalls", "Security Compliance"],
+    "certifications": ["Security+", "CEH"], "projects": []
+  },
+  {
+    "id": "resume-14",
+    "label": "Operations Manager",
+    "contact": { "fullName": "Lisa Thompson", "email": "lisa@example.com", "phone": "555-0114", "location": "Miami", "website": "" },
+    "summary": "Operations manager with 8 years of experience optimizing supply chain, logistics, and warehouse operations.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Operations Manager", "company": "LogisticsPro Corp", "bullets": ["Managed warehouse operations with $10M annual throughput", "Reduced operational costs by 15% through process optimization", "Led team of 25 warehouse staff and 5 supervisors"], "dateRange": { "start": "2019-03", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Logistics Coordinator", "company": "ShipFast Logistics", "bullets": ["Coordinated shipments for 500+ clients monthly", "Negotiated carrier contracts saving $200K annually", "Implemented inventory management system"], "dateRange": { "start": "2016-01", "end": "2019-02" } }
+    ],
+    "skills": ["Operations Management", "Supply Chain", "Logistics", "Inventory Management", "Process Optimization", "Team Leadership", "SAP", "Lean Six Sigma"],
+    "certifications": ["Lean Six Sigma Green Belt"], "projects": []
+  },
+  {
+    "id": "resume-15",
+    "label": "Content Writer",
+    "contact": { "fullName": "Nathan Brooks", "email": "nathan@example.com", "phone": "555-0115", "location": "Remote", "website": "nathanbrooks.portfolio" },
+    "summary": "Content writer with 5 years of experience creating SEO-optimized content for B2B and B2C audiences.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Senior Content Writer", "company": "ContentFactory Agency", "bullets": ["Produced 200+ articles achieving 3M+ annual organic page views", "Developed content strategies for 15 B2B SaaS clients", "Managed editorial calendar and freelance writer team"], "dateRange": { "start": "2021-01", "end": "2024-01" } },
+      { "id": "exp-2", "type": "experience", "role": "Content Writer", "company": "MediaPublish Inc", "bullets": ["Wrote 50+ blog posts per month on technology topics", "Optimized content for SEO achieving 40% traffic increase", "Interviewed subject matter experts for feature articles"], "dateRange": { "start": "2019-03", "end": "2020-12" } }
+    ],
+    "skills": ["SEO", "Content Strategy", "Copywriting", "Blogging", "WordPress", "SEMrush", "Google Analytics", "Editorial Planning"],
+    "certifications": [], "projects": []
+  }
+]
