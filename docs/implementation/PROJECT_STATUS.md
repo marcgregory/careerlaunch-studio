@@ -4,9 +4,23 @@ Last updated: 2026-07-05
 
 ## Current Sprint
 
-Sprint 6C — AI Quality & Beta Polish. ✅ Complete and tagged `v0.9.0-alpha`.
+Sprint 6D — Beta Hardening & Release Candidate (v0.9.5).
 
-**Goal achieved:** Every AI suggestion now supports user feedback with 👍/👎. Acceptance analytics track the full viewed → accepted → applied → rejected lifecycle. AI suggestions explain themselves with confidence bars and "Why" sections. Risky rewrites are flagged with safety warnings. An internal evaluation suite runs regression checks against 15 resume/JD pairs.
+**Goal:** Validate that CareerLaunch Studio is ready for a closed beta with real users.
+
+**Golden Rule:** No new features. Only bug fixes, UX improvements, performance, accessibility, reliability, and documentation.
+
+### Phases
+
+1. **Dogfooding** — Run the full workflow for 6 personas (Junior Developer, Senior React, WordPress, Marketing, Designer, Support). Log every UX problem, crash, layout issue, and AI quality problem.
+2. **AI Benchmark** — 50 resumes × 50 job descriptions. Measure match score consistency, JSON validity, prompt failures, latency, fabricated experience rate. Target: ≥99% valid structured output, <1% fabrication rate.
+3. **Error Recovery** — Test Gemini quota exceeded, Groq timeout, invalid JSON, provider unavailable, slow response, network disconnect. Every case must degrade gracefully with no uncaught exceptions.
+4. **Mobile QA** — Verify login, builder, AI tailoring, billing, export on 375px viewport. No overflow, no unusable controls.
+5. **Accessibility Audit** — Keyboard-only audit of dialogs, AI suggestions, diff views, billing, export, navigation. WCAG 2.1 AA focus indicators, tab order, screen reader labels.
+6. **Performance** — Measure P50/P95/P99 for builder load (<2s), AI latency (<5s), PDF export (<10s), saves (<500ms). Fix what's over budget.
+7. **Closed Beta Checklist** — Production deployment, Stripe, Sentry, PostHog, health endpoint, backups, docs, legal review. All checked before tagging v0.9.5.
+
+See `docs/implementation/SPRINT_6D_BUILD_PLAN.md` for the full build plan.
 
 ### Delivered This Sprint (Sprint 6C)
 
@@ -98,9 +112,18 @@ Sprint 6C — AI Quality & Beta Polish. ✅ Complete and tagged `v0.9.0-alpha`.
 
 ### Next Up
 
-- Sprint 6B — AI Resume Tailoring (Flagship Feature) — **In progress**. See `docs/implementation/SPRINT_6B_BUILD_PLAN.md`.
+- Sprint 6D — active (see Current Sprint above).
 
 ## Completed
+
+**Sprint 6C — AI Quality & Beta Polish (v0.9.0-alpha):**
+- User feedback system with 👍/👎 and reason picker
+- Acceptance analytics (viewed → accepted → applied → rejected lifecycle)
+- Explainability UI (confidence bars, "Why" sections)
+- Safety detection (fabricated metrics, leadership inflation, responsibility expansion)
+- Evaluation suite with 15 resume/JD fixture pairs
+- Token utilities, prompt system, structured output validation, cost controls, cache layer
+- 7 new safety detection tests
 
 **Webhook idempotency:**
 - New `ProcessedStripeEvent` model records each processed Stripe event ID.
@@ -263,7 +286,7 @@ Build passes with 223 tests (169 AI + 41 web + 13 domain). TypeScript passes acr
 
 ## Next Milestone
 
-Sprint 6D — v0.9.5-alpha: Bug fixes, performance optimization, accessiblity review. Final polish before closed beta. Consider interview preparation feature.
+Sprint 6D — active (see Current Sprint above). Target: v0.9.5-alpha, closed beta readiness.
 
 ## Last Build
 

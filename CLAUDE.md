@@ -10,11 +10,11 @@ Build an original SaaS product for creating, improving, and exporting resumes, C
 
 ## Current Sprint
 
-Sprint 3 — AI Resume Review, Scoring, and Cover Letter Builder.
+Sprint 6D — Beta Hardening & Release Candidate (v0.9.5). No new features. See `docs/implementation/SPRINT_6D_BUILD_PLAN.md`.
 
 ## Current Implementation Summary
 
-The project has completed Sprints 1 and 2. The resume builder is fully functional with authenticated draft creation, four registry-driven templates (Modern, Executive, Minimal, ATS Classic), guided sections with add/remove/reorder flows, resume scoring, autosave, and real PDF export via Playwright. The template system uses a metadata-driven registry with semantic properties, eliminating per-template conditionals from renderers. Visual regression tests and per-template PDF QA are in place.
+The project has completed Sprints 1 through 6C. The resume builder is fully functional with authenticated draft creation, four registry-driven templates (Modern, Executive, Minimal, ATS Classic), guided sections with add/remove/reorder flows, resume scoring, autosave, and real PDF export via Playwright. Cover letter builder shares the template engine and PDF renderer. AI analysis engine supports full review, job matching, and resume tailoring with Gemini 2.5 Flash and Groq (Llama 4 Scout) providers. User feedback, acceptance analytics, explainability UI, and safety warnings are integrated into all suggestion surfaces. Billing system handles subscriptions via Stripe with feature gating (PDF watermark, resume limits, template access). Sprint 6D is a stabilization sprint — no new features, only quality, performance, and beta readiness.
 
 ## Architecture Summary
 
@@ -98,7 +98,7 @@ Initial debt is planning debt only: implementation scaffolding, legal review, co
 
 ## Next Priority
 
-Implement Sprint 3: AI resume review and scoring (ATS analysis, keyword match, grammar, action verbs), cover letter builder using the existing template and PDF infrastructure.
+Sprint 6D — Beta Hardening & Release Candidate. Dogfooding, AI benchmark, error recovery, mobile QA, accessibility, performance measurement, closed beta checklist. See `docs/implementation/SPRINT_6D_BUILD_PLAN.md`.
 
 ## AI Handoff
 
