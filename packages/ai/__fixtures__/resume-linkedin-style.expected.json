@@ -93,6 +93,7 @@
     "projects": "low",
     "references": "low"
   },
+  "importQuality": "fair",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [

@@ -60,6 +60,7 @@
     "projects": "low",
     "references": "high"
   },
+  "importQuality": "fair",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [

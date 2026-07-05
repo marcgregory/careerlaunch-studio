@@ -82,6 +82,7 @@
     "projects": "high",
     "references": "high"
   },
+  "importQuality": "good",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [

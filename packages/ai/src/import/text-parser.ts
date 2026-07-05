@@ -8,6 +8,12 @@ export type SectionConfidence = "high" | "medium" | "low";
 
 export type CoverageStatus = "good" | "partial" | "poor" | "missing";
 
+/**
+ * Overall import quality — derived from per-section coverage ratios.
+ * This is the source of truth for the import UI headline and CTA behavior.
+ */
+export type ImportQuality = "excellent" | "good" | "fair" | "poor" | "failed";
+
 export type SectionCoverageItem = {
   sectionId: ResumeSectionId;
   originalWordCount: number;
@@ -18,8 +24,14 @@ export type SectionCoverageItem = {
 
 export type ParseResult = {
   parsed: Partial<ResumeDocument>;
+  /** Legacy overall confidence (0–100). Replaced by `importQuality` for
+   *  user-facing display. Kept for analytics backward-compatibility. */
   confidence: number;
   confidenceBySection: Record<string, SectionConfidence>;
+  /** Overall import quality — the source of truth for headline display
+   *  and CTA behavior. Derived from per-section coverage ratios of
+   *  critical sections (experience, education, skills). */
+  importQuality: ImportQuality;
   warnings: string[];
   /** Raw text from sections where the parser could not fully structure the content.
    *  Keyed by section ID. This allows the UI to show what was lost. */
@@ -858,6 +870,42 @@ function evaluateSection(
   }
 }
 
+/* ------------------------------------------------------------------ */
+/*  Import quality (coverage-derived, not heuristic)                  */
+/* ------------------------------------------------------------------ */
+
+const CRITICAL_SECTIONS = new Set(["experience", "education", "skills"]);
+
+/**
+ * Derive overall import quality from per-section coverage.
+ *
+ * The quality reflects the worst-performing critical section, so the
+ * headline never contradicts what the coverage table shows.
+ *
+ * Thresholds:
+ *   excellent  – all critical sections ≥ 90%
+ *   good       – all critical sections ≥ 80%
+ *   fair       – all critical sections ≥ 50%
+ *   poor       – no critical section is "missing" but some are below 50%
+ *   failed     – any critical section is completely "missing" (ratio === 0)
+ */
+export function deriveImportQuality(coverage: SectionCoverageItem[]): ImportQuality {
+  const critical = coverage.filter((c) => CRITICAL_SECTIONS.has(c.sectionId));
+  if (critical.length === 0) return "fair";
+
+  // If any critical section is completely missing, the import failed
+  const anyMissing = critical.some((c) => c.ratio === 0);
+  if (anyMissing) return "failed";
+
+  // Find the minimum ratio across critical sections
+  const minRatio = Math.min(...critical.map((c) => c.ratio));
+
+  if (minRatio >= 0.9) return "excellent";
+  if (minRatio >= 0.8) return "good";
+  if (minRatio >= 0.5) return "fair";
+  return "poor";
+}
+
 export function parseResumeText(text: string): ParseResult {
   const warnings: string[] = [];
 
@@ -870,6 +918,7 @@ export function parseResumeText(text: string): ParseResult {
       parsed: {},
       confidence: 0,
       confidenceBySection: emptyConfidence,
+      importQuality: "failed",
       warnings: ["No text provided"],
       unparsedContent: {},
       coverage: [],
@@ -1095,6 +1144,9 @@ export function parseResumeText(text: string): ParseResult {
     coverage.push(computeSectionCoverage(sectionId, rawLines, parsed));
   }
 
+  // Derive overall import quality from coverage (source of truth)
+  const importQuality = deriveImportQuality(coverage);
+
   // Calculate overall confidence
   const emailFound = !!contact.email;
   const experienceCount = parsed.experience?.length ?? 0;
@@ -1135,5 +1187,5 @@ export function parseResumeText(text: string): ParseResult {
     }
   }
 
-  return { parsed, confidence, confidenceBySection, warnings, unparsedContent, coverage };
+  return { parsed, confidence, confidenceBySection, importQuality, warnings, unparsedContent, coverage };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseResumeText } from "../../src/import/text-parser";
+import { parseResumeText, deriveImportQuality } from "../../src/import/text-parser";
 
 /* ------------------------------------------------------------------ */
 /*  Import parser regression test                                      */
@@ -552,5 +552,135 @@ Jan 2020 -- Dec 2022
     const dateOnlyEntry = experience[1];
     expect(dateOnlyEntry.role).toBe("IT Staff");
     expect(dateOnlyEntry.company).toBe("Tech Co.");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  deriveImportQuality regression tests                               */
+/* ------------------------------------------------------------------ */
+
+describe("deriveImportQuality", () => {
+  function makeCoverageItem(sectionId: string, ratio: number, status: string) {
+    return {
+      sectionId,
+      originalWordCount: 100,
+      parsedWordCount: Math.round(100 * ratio),
+      ratio,
+      status,
+    };
+  }
+
+  it("should return excellent when all critical sections are >= 90%", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.95, "good"),
+      makeCoverageItem("education", 0.92, "good"),
+      makeCoverageItem("skills", 0.91, "good"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("excellent");
+  });
+
+  it("should return good when all critical sections are >= 80%", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.85, "good"),
+      makeCoverageItem("education", 0.88, "good"),
+      makeCoverageItem("skills", 0.81, "good"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("good");
+  });
+
+  it("should return fair when all critical sections are >= 50%", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.65, "partial"),
+      makeCoverageItem("education", 0.72, "partial"),
+      makeCoverageItem("skills", 0.55, "partial"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("fair");
+  });
+
+  it("should return poor when any critical section is below 50%", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.21, "poor"),
+      makeCoverageItem("education", 0.24, "poor"),
+      makeCoverageItem("skills", 0.45, "partial"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("poor");
+  });
+
+  it("should return failed when any critical section ratio is 0", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.0, "missing"),
+      makeCoverageItem("education", 0.0, "missing"),
+      makeCoverageItem("skills", 0.0, "missing"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("failed");
+  });
+
+  it("should return failed when one critical section is preserved but another is 0", () => {
+    const coverage = [
+      makeCoverageItem("experience", 0.9, "good"),
+      makeCoverageItem("education", 0.0, "missing"),
+      makeCoverageItem("skills", 0.85, "good"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("failed");
+  });
+
+  it("should return fair when there are no critical sections in coverage", () => {
+    const coverage = [
+      makeCoverageItem("summary", 0.9, "good"),
+      makeCoverageItem("references", 1.0, "good"),
+    ];
+    expect(deriveImportQuality(coverage)).toBe("fair");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  importQuality integration — must NOT contradict coverage           */
+/* ------------------------------------------------------------------ */
+
+describe("parseResumeText importQuality integration", () => {
+  it("should not report high quality when critical coverage is below threshold", () => {
+    // Regression: confidence heuristic used to report 90 when
+    // experience/education coverage was 21%/24%.
+    const text = `Jordan Lee
+jordan.lee@email.com
+
+Experience
+Ops person
+Some Company
+2021 - Present
+• Worked.
+
+Education
+B.A. Studies
+State University, 2018
+
+Skills
+Stuff`;
+
+    const result = parseResumeText(text);
+    // importQuality must reflect actual coverage — not a crude heuristic
+    const expCov = result.coverage.find((c) => c.sectionId === "experience");
+    const eduCov = result.coverage.find((c) => c.sectionId === "education");
+    if (expCov && eduCov) {
+      const minRatio = Math.min(expCov.ratio, eduCov.ratio);
+      if (minRatio < 0.8) {
+        expect(result.importQuality).not.toBe("good");
+        expect(result.importQuality).not.toBe("excellent");
+      }
+    }
+  });
+
+  it("should return importQuality consistent with coverage for a full resume", () => {
+    const result = parseResumeText(SAMPLE_RESUME_TEXT);
+    // The sample resume is clean and well-structured
+    expect(["excellent", "good"]).toContain(result.importQuality);
+    // Legacy confidence field should still exist
+    expect(result.confidence).toBeGreaterThanOrEqual(50);
+  });
+
+  it("should return failed for empty text", () => {
+    const result = parseResumeText("");
+    expect(result.importQuality).toBe("failed");
+    expect(result.confidence).toBe(0);
   });
 });

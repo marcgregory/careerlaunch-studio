@@ -95,6 +95,7 @@
     "projects": "high",
     "references": "high"
   },
+  "importQuality": "poor",
   "warnings": [
     "Low import quality for \"education\": 39% coverage (9/23 words preserved).",
     "Low import quality for \"skills\": 17% coverage (2/12 words preserved)."

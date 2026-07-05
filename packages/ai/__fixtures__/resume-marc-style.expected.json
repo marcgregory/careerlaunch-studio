@@ -130,6 +130,7 @@
     "projects": "high",
     "references": "high"
   },
+  "importQuality": "fair",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [

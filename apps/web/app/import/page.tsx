@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, Chec
 import { primaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
-import type { ParseResult, CoverageStatus, SectionCoverageItem } from "@careerlaunch/ai/import";
+import type { ParseResult, CoverageStatus, SectionCoverageItem, ImportQuality } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 
@@ -19,12 +19,55 @@ export default function ImportPage() {
   const [error, setError] = useState("");
   const [showUnparsed, setShowUnparsed] = useState<string | null>(null);
 
-  function hasCriticalLowCoverage(coverage: SectionCoverageItem[]): boolean {
-    // Critical sections where low coverage is a hard blocker
-    const critical = new Set(["experience", "education", "skills"]);
-    return coverage.some(
-      (c) => critical.has(c.sectionId) && (c.status === "missing" || c.status === "poor"),
-    );
+  /** Whether the overall import quality is low enough to block draft creation */
+  function isQualityBlocked(quality: ImportQuality): boolean {
+    return quality === "poor" || quality === "failed";
+  }
+
+  function getQualityBanner(quality: ImportQuality): {
+    icon: typeof AlertTriangle | typeof CheckCircle2;
+    border: string;
+    bg: string;
+    title: string;
+    description: string;
+  } {
+    switch (quality) {
+      case "excellent":
+      case "good":
+        return {
+          icon: CheckCircle2,
+          border: "border-green-200",
+          bg: "bg-green-50",
+          title: quality === "excellent" ? "Resume imported successfully" : "Resume imported with minor issues",
+          description: quality === "excellent"
+            ? "All critical sections have excellent coverage. You can safely create a draft."
+            : "Most sections parsed well. Review the coverage below before creating a draft.",
+        };
+      case "fair":
+        return {
+          icon: AlertTriangle,
+          border: "border-amber-200",
+          bg: "bg-amber-50",
+          title: "Import quality needs review",
+          description: "Some critical sections have low coverage. Review and fix the data in the builder.",
+        };
+      case "poor":
+        return {
+          icon: AlertTriangle,
+          border: "border-orange-200",
+          bg: "bg-orange-50",
+          title: "Import quality is low",
+          description: "Critical information was lost during parsing. We recommend fixing the import before creating a draft.",
+        };
+      case "failed":
+        return {
+          icon: AlertTriangle,
+          border: "border-red-200",
+          bg: "bg-red-50",
+          title: "Import failed — critical sections could not be parsed",
+          description: "The parser could not reliably preserve your resume. Please review the raw text and fix content below.",
+        };
+    }
   }
 
   function getCoverageColorClass(status: CoverageStatus): string {
@@ -75,11 +118,11 @@ export default function ImportPage() {
   async function handleCreateDraft() {
     if (!result?.parsed) return;
 
-    // Block saving if critical sections have poor/missing coverage
-    if (result.coverage && hasCriticalLowCoverage(result.coverage)) {
+    // Block saving if overall import quality is poor or failed
+    if (result.importQuality && isQualityBlocked(result.importQuality)) {
       setError(
-        "Import quality is too low for critical sections (experience, education, or skills). " +
-        "Review the coverage table below and paste the missing content before continuing.",
+        "Import quality is too low to create a reliable draft. " +
+        "Review the coverage table below, paste the missing content, and try again.",
       );
       return;
     }
@@ -113,7 +156,10 @@ export default function ImportPage() {
       }
 
       const created = await res.json();
-      analytics.capture("resume_imported", { confidence: result.confidence });
+      analytics.capture("resume_imported", {
+        confidence: result.confidence,
+        importQuality: result.importQuality,
+      });
       router.push(`/builder?resumeId=${created.resume.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create resume");
@@ -205,34 +251,27 @@ export default function ImportPage() {
         {/* State: preview or saving */}
         {(state === "preview" || state === "saving") && result && (
           <div className="mt-8 space-y-6">
-            {/* Confidence banner */}
-            {result.confidence < 50 && (
-              <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                <AlertTriangle size={20} className="mt-0.5 shrink-0 text-amber-500" />
-                <div>
-                  <p className="text-sm font-bold text-amber-800">Low confidence parse</p>
-                  <p className="mt-1 text-sm text-amber-700">
-                    The parser could not confidently detect all sections. You may need to manually adjust the data in the builder.
-                  </p>
+            {/* Import quality banner — derived from section coverage, not heuristic */}
+            {(() => {
+              const banner = getQualityBanner(result.importQuality);
+              const Icon = banner.icon;
+              return (
+                <div className={`flex items-start gap-3 rounded-2xl border ${banner.border} ${banner.bg} p-4`} role="alert">
+                  <Icon size={20} className="mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">{banner.title}</p>
+                    <p className="mt-1 text-sm">{banner.description}</p>
+                    {result.warnings.length > 0 && (
+                      <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">
+                        {result.warnings.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {result.confidence >= 50 && (
-              <div className="flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4">
-                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-green-500" />
-                <div>
-                  <p className="text-sm font-bold text-green-800">Resume parsed ({result.confidence}% confidence)</p>
-                  {result.warnings.length > 0 && (
-                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-green-700">
-                      {result.warnings.map((w, i) => (
-                        <li key={i}>{w}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Coverage table */}
             {result.coverage && result.coverage.length > 0 && (
@@ -369,32 +408,47 @@ export default function ImportPage() {
 
             {/* Actions */}
             <div className="flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={handleReset}
-                className="text-xs font-black uppercase tracking-[0.12em] text-[#999] transition hover:text-[#123c3a]"
-              >
-                Start over
-              </button>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleCreateDraft}
-                  disabled={state === "saving"}
-                  className={primaryButtonClass + " disabled:opacity-40"}
-                >
-                  {state === "saving" ? (
-                    <>
-                      <Loader2 size={18} className="animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      Create draft <ArrowRight size={18} />
-                    </>
-                  )}
-                </button>
-              </div>
+              {result.importQuality === "poor" || result.importQuality === "failed" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="rounded-xl border border-[#123c3a]/15 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.12em] text-[#123c3a] transition hover:bg-[#b9ff66] hover:border-[#b9ff66]"
+                  >
+                    Fix import
+                  </button>
+                  <span className="text-xs font-medium text-[#999]">
+                    Import quality is too low to create a reliable draft.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-xs font-black uppercase tracking-[0.12em] text-[#999] transition hover:text-[#123c3a]"
+                  >
+                    Start over
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateDraft}
+                    disabled={state === "saving"}
+                    className={primaryButtonClass + " disabled:opacity-40"}
+                  >
+                    {state === "saving" ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        Create draft <ArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
