@@ -1,6 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { requireApiUser } from "../../../lib/auth";
-import { createStarterResume, fromStoredResume, toStoredResume } from "../../../lib/resume-store";
+import { fromStoredResume, parseResumePayload, toStoredResume } from "../../../lib/resume-store";
 import { can, FeatureKeys } from "../../../lib/entitlements";
 
 export async function GET() {
@@ -16,7 +16,7 @@ export async function GET() {
   return Response.json({ resumes });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const { user, response } = await requireApiUser();
   if (response) return response;
 
@@ -28,21 +28,28 @@ export async function POST() {
     );
   }
 
-  const starter = createStarterResume();
-  const resume = await prisma.resumeDocument.create({
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const resume = parseResumePayload(body);
+  const stored = await prisma.resumeDocument.create({
     data: {
       userId: user.id,
-      title: starter.title,
-      targetRole: starter.targetRole,
-      body: toStoredResume(starter),
+      title: resume.title,
+      targetRole: resume.targetRole,
+      body: toStoredResume(resume),
       versions: {
         create: {
-          body: toStoredResume(starter),
+          body: toStoredResume(resume),
           note: "Initial draft"
         }
       }
     }
   });
 
-  return Response.json({ resume: fromStoredResume(resume) }, { status: 201 });
+  return Response.json({ resume: fromStoredResume(stored) }, { status: 201 });
 }
