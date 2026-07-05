@@ -72,5 +72,15 @@
     "summary": "Customer-focused operations specialist with 6 years of experience improving service workflows, training frontline teams, and translating customer feedback into measurable retention gains."
   },
   "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "high",
+    "projects": "high",
+    "references": "high"
+  },
   "warnings": []
 }

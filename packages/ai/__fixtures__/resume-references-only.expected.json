@@ -50,5 +50,15 @@
     "summary": ""
   },
   "confidence": 90,
+  "confidenceBySection": {
+    "summary": "low",
+    "experience": "high",
+    "education": "high",
+    "skills": "low",
+    "certifications": "low",
+    "professionalQualities": "low",
+    "projects": "low",
+    "references": "high"
+  },
   "warnings": []
 }

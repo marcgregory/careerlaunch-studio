@@ -4,9 +4,12 @@ import type { ResumeDocument, ResumeSectionId } from "@careerlaunch/domain";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
+export type SectionConfidence = "high" | "medium" | "low";
+
 export type ParseResult = {
   parsed: Partial<ResumeDocument>;
   confidence: number;
+  confidenceBySection: Record<string, SectionConfidence>;
   warnings: string[];
 };
 
@@ -457,13 +460,98 @@ function normalizeDate(value: string): string {
 /*  Main parser                                                        */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/*  Section confidence scoring                                        */
+/* ------------------------------------------------------------------ */
+
+type SectionQuality = {
+  headerDetected: boolean;
+  parsedCount: number;
+  hasStructure: boolean;
+  textLength: number;
+};
+
+function evaluateSection(
+  sectionId: ResumeSectionId,
+  sectionLines: string[],
+  parsed: Partial<ResumeDocument>,
+  headerDetected: boolean,
+): SectionConfidence {
+  if (!headerDetected) return "low";
+
+  const nonEmptyLines = sectionLines.filter((l) => l.trim().length > 0);
+
+  switch (sectionId) {
+    case "summary": {
+      const text = parsed.summary || "";
+      if (text.length >= 30) return "high";
+      if (text.length >= 10) return "medium";
+      return "low";
+    }
+    case "experience": {
+      const entries = parsed.experience || [];
+      if (entries.length === 0) return "low";
+      const wellStructured = entries.every(
+        (e) => e.role && e.role !== "Unknown Role" && e.company,
+      );
+      if (entries.length >= 1 && wellStructured) return "high";
+      return "medium";
+    }
+    case "education": {
+      const entries = parsed.education || [];
+      if (entries.length === 0) return "low";
+      const wellStructured = entries.every((e) => e.degree && e.school);
+      if (entries.length >= 1 && wellStructured) return "high";
+      return "medium";
+    }
+    case "skills": {
+      const skills = parsed.skills || [];
+      if (skills.length >= 5) return "high";
+      if (skills.length >= 1) return "medium";
+      return "low";
+    }
+    case "certifications": {
+      const certs = parsed.certifications || [];
+      if (certs.length >= 2 && certs.every((c) => c.split(/\s+/).length >= 2))
+        return "high";
+      if (certs.length >= 1) return "medium";
+      return "low";
+    }
+    case "professionalQualities": {
+      const quals = parsed.professionalQualities || [];
+      if (quals.length >= 3) return "high";
+      if (quals.length >= 1) return "medium";
+      return "low";
+    }
+    case "projects": {
+      const projs = parsed.projects || [];
+      if (projs.length >= 1 && projs.every((p) => p.name)) return "high";
+      if (projs.length >= 1) return "medium";
+      return "low";
+    }
+    case "references": {
+      // References are intentionally excluded — if we detected the header
+      // we know they're there.
+      if (nonEmptyLines.length >= 1) return "high";
+      return "low";
+    }
+    default:
+      return "low";
+  }
+}
+
 export function parseResumeText(text: string): ParseResult {
   const warnings: string[] = [];
 
   if (!text || text.trim().length === 0) {
+    const emptyConfidence: Record<string, SectionConfidence> = {};
+    for (const sid of ["summary","experience","education","skills","certifications","professionalQualities","projects","references"]) {
+      emptyConfidence[sid] = "low";
+    }
     return {
       parsed: {},
       confidence: 0,
+      confidenceBySection: emptyConfidence,
       warnings: ["No text provided"],
     };
   }
@@ -513,7 +601,17 @@ export function parseResumeText(text: string): ParseResult {
     summary: "",
   };
 
+  // Track which section IDs were explicitly detected via headers,
+  // vs sections whose content was parsed from an adjacent/ambiguous location.
+  const headerDetected = new Set<ResumeSectionId>(sections.keys());
+
   let totalFields = 0;
+
+  // Collect raw section lines for confidence evaluation (before mutation)
+  const sectionLinesMap = new Map<string, string[]>();
+  for (const [sectionId, bounds] of sections) {
+    sectionLinesMap.set(sectionId, lines.slice(bounds.start, bounds.end));
+  }
 
   for (const [sectionId, bounds] of sections) {
     const sectionLines = lines.slice(bounds.start, bounds.end);
@@ -607,7 +705,24 @@ export function parseResumeText(text: string): ParseResult {
     }
   }
 
-  // Calculate confidence
+  // Calculate confidence by section
+  const allSectionIds: ResumeSectionId[] = [
+    "summary", "experience", "education", "skills",
+    "certifications", "professionalQualities", "projects", "references",
+  ];
+
+  const confidenceBySection: Record<string, SectionConfidence> = {};
+  for (const sectionId of allSectionIds) {
+    const rawLines = sectionLinesMap.get(sectionId) ?? [];
+    confidenceBySection[sectionId] = evaluateSection(
+      sectionId,
+      rawLines,
+      parsed,
+      headerDetected.has(sectionId),
+    );
+  }
+
+  // Calculate overall confidence
   const emailFound = !!contact.email;
   const experienceCount = parsed.experience?.length ?? 0;
 
@@ -636,5 +751,5 @@ export function parseResumeText(text: string): ParseResult {
     );
   }
 
-  return { parsed, confidence, warnings };
+  return { parsed, confidence, confidenceBySection, warnings };
 }

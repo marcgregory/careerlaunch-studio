@@ -89,5 +89,15 @@
     "summary": "Senior cloud architect with 10+ years designing scalable infrastructure for SaaS platforms."
   },
   "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "medium",
+    "professionalQualities": "low",
+    "projects": "low",
+    "references": "low"
+  },
   "warnings": []
 }

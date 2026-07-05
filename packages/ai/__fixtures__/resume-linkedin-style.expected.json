@@ -83,5 +83,15 @@
     "summary": "Marketing professional with 8 years of experience in brand management, digital strategy, and content marketing across Southeast Asian markets."
   },
   "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "high",
+    "projects": "low",
+    "references": "low"
+  },
   "warnings": []
 }

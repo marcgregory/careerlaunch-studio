@@ -1,3 +1,4 @@
 - [Sprint 2 complete](sprint-2-complete.md) — Sprint 2 tagged, assessed, and next direction
 - [AI Architecture Rule](ai-architecture-rule.md) — AI must never mutate the resume directly; suggestion → accept pipeline
 - [Apply Engine Architecture](apply-engine-architecture.md) — Every accepted suggestion goes through a pure Apply Engine before touching the resume
+- [Resume Parser Confidence Scoring](resume-parser-confidence-scoring.md) — Section-level confidence scoring in text-parser.ts

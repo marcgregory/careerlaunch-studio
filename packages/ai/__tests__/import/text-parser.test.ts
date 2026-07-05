@@ -142,6 +142,129 @@ describe("parseResumeText", () => {
   });
 });
 
+describe("parseResumeText confidence scoring", () => {
+  const fullResume = `Jordan Lee
+jordan.lee@email.com
+(555) 014-7291
+Austin, TX
+
+Professional Summary
+Customer-focused operations specialist with 6 years of experience.
+
+Experience
+Operations Lead | Northstar Market | 2021 - Present
+• Improved resolution time by 28%.
+
+Retail Supervisor | Harbor Outfitters | 2018 - 2021
+• Managed a team of 12.
+
+Education
+B.A. Communication Studies - Texas State University, 2018
+
+Skills
+Customer onboarding, CRM documentation, Process improvement, Team training
+
+Certifications
+HubSpot Customer Success Certificate
+Project Management Professional (PMP)
+
+Professional Qualities
+Detail-oriented
+Team player
+Strong communicator
+Problem solver`;
+
+  it("should return confidenceBySection with all section keys", () => {
+    const result = parseResumeText(fullResume);
+    const sections = Object.keys(result.confidenceBySection);
+    expect(sections).toContain("summary");
+    expect(sections).toContain("experience");
+    expect(sections).toContain("education");
+    expect(sections).toContain("skills");
+    expect(sections).toContain("certifications");
+    expect(sections).toContain("professionalQualities");
+  });
+
+  it("should score high for sections with strong headers and clean content", () => {
+    const result = parseResumeText(fullResume);
+    expect(result.confidenceBySection.summary).toBe("high");
+    expect(result.confidenceBySection.experience).toBe("high");
+    expect(result.confidenceBySection.education).toBe("high");
+  });
+
+  it("should score low for sections not present in the text", () => {
+    const result = parseResumeText(fullResume);
+    // No projects section in text
+    expect(result.confidenceBySection.projects).toBe("low");
+  });
+
+  it("should score medium when a section header exists but content is weak", () => {
+    // Certifications header exists but only 1 entry
+    const text = `Test User\ntest@email.com\n\nCertifications\nBasic Cert\n\nExperience\nDeveloper | Acme | 2020 - Present\n• Worked.`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.certifications).toBe("medium");
+  });
+
+  it("should score high for certifications with 2+ full-name entries", () => {
+    const text = `Test User\ntest@email.com\n\nCertifications\nProject Management Professional (PMP)\nAWS Solutions Architect Professional`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.certifications).toBe("high");
+  });
+
+  it("should score high for skills with 5+ entries", () => {
+    const text = `Test User\ntest@email.com\n\nSkills\nPython, TypeScript, React, Node.js, PostgreSQL, Docker`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.skills).toBe("high");
+  });
+
+  it("should score medium for skills with 1-4 entries", () => {
+    const text = `Test User\ntest@email.com\n\nSkills\nPython, TypeScript`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.skills).toBe("medium");
+  });
+
+  it("should score low for missing sections with no header detected", () => {
+    const result = parseResumeText("John Doe\njohn@example.com");
+    expect(result.confidenceBySection.experience).toBe("low");
+    expect(result.confidenceBySection.education).toBe("low");
+  });
+
+  it("should score high for professional qualities with 3+ entries", () => {
+    const text = `Test User\ntest@email.com\n\nProfessional Qualities\nDetail-oriented\nTeam player\nStrong communicator`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.professionalQualities).toBe("high");
+  });
+
+  it("should score high for references with content when header detected", () => {
+    const text = `Test User\ntest@email.com\n\nReferences\nJane Doe, Manager\nJohn Smith, Director`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.references).toBe("high");
+  });
+
+  it("should score medium for experience with entries but weak structure", () => {
+    // Experience section with an entry that has "Unknown Role"
+    const text = `Test User\ntest@email.com\n\nExperience\nSome random text without date pattern\nOther text`;
+    const result = parseResumeText(text);
+    // Should be medium since entries may have unknown role
+    expect(["medium", "low"]).toContain(result.confidenceBySection.experience);
+  });
+
+  it("should score low for empty text", () => {
+    const result = parseResumeText("");
+    const allLow = Object.values(result.confidenceBySection).every(
+      (v) => v === "low",
+    );
+    expect(allLow).toBe(true);
+  });
+
+  it("should score low when section header detected but no content parsed", () => {
+    // A header line is detected but no actionable content follows
+    const text = `Test User\ntest@email.com\n\nSkills\n\nExperience\nDeveloper | Acme | 2020 - Present\n• Worked.`;
+    const result = parseResumeText(text);
+    expect(result.confidenceBySection.skills).toBe("low");
+  });
+});
+
 describe("parseResumeText edge cases", () => {
   it("should handle empty text", () => {
     const result = parseResumeText("");
