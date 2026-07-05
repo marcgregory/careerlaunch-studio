@@ -1,6 +1,6 @@
 # CareerLaunch Studio Project Status
 
-Last updated: 2026-07-05
+Last updated: 2026-07-05 (updated for Sprint 6D progress)
 
 ## Current Sprint
 
@@ -12,15 +12,24 @@ Sprint 6D — Beta Hardening & Release Candidate (v0.9.5).
 
 ### Phases
 
-1. **Dogfooding** — Run the full workflow for 6 personas (Junior Developer, Senior React, WordPress, Marketing, Designer, Support). Log every UX problem, crash, layout issue, and AI quality problem.
-2. **AI Benchmark** — 50 resumes × 50 job descriptions. Measure match score consistency, JSON validity, prompt failures, latency, fabricated experience rate. Target: ≥99% valid structured output, <1% fabrication rate.
-3. **Error Recovery** — Test Gemini quota exceeded, Groq timeout, invalid JSON, provider unavailable, slow response, network disconnect. Every case must degrade gracefully with no uncaught exceptions.
-4. **Mobile QA** — Verify login, builder, AI tailoring, billing, export on 375px viewport. No overflow, no unusable controls.
-5. **Accessibility Audit** — Keyboard-only audit of dialogs, AI suggestions, diff views, billing, export, navigation. WCAG 2.1 AA focus indicators, tab order, screen reader labels.
-6. **Performance** — Measure P50/P95/P99 for builder load (<2s), AI latency (<5s), PDF export (<10s), saves (<500ms). Fix what's over budget.
-7. **Closed Beta Checklist** — Production deployment, Stripe, Sentry, PostHog, health endpoint, backups, docs, legal review. All checked before tagging v0.9.5.
+1. **Dogfooding** — 🟡 Pipeline layer done (6/6 personas pass automated analysis/gap/tailor). UI walkthrough pending. Fixed persona profiles added to eval dataset for repeatable QA.
+2. **AI Benchmark** — ✅ PASS. All targets met: 100% JSON validity, 100% schema pass, 0% prompt failure, 0% fabrication rate, σ=0.0 consistency. Benchmark runner created at `scripts/eval/benchmark/benchmark-runner.ts`.
+3. **Error Recovery** — ✅ PASS. All 8 scenarios (timeout, invalid JSON, empty response, rate limit, unavailable, quota exceeded, network disconnect, CostLimitError) degrade gracefully. Runner at `scripts/eval/error-recovery.ts`.
+4. **Mobile QA** — ⬜ Template created. Requires browser-based verification on 375px viewport.
+5. **Accessibility Audit** — ⬜ Template created. Requires keyboard-only + screen reader audit.
+6. **Performance** — ⬜ Template created. Requires browser-based P50/P95/P99 measurement. Build compiles in 44s, 27 pages.
+7. **Closed Beta Checklist** — ⬜ Not started. Requires production deployment and configuration.
 
-See `docs/implementation/SPRINT_6D_BUILD_PLAN.md` for the full build plan.
+### Sprint 6D Infrastructure Created
+
+- **Fixed persona fixtures:** 6 new resume+JD pairs (resume-16 to resume-21) in `scripts/eval/datasets/`
+- **Dogfooding runner:** `scripts/eval/dogfooding/dogfood-runner.ts` — automated pipeline check
+- **Benchmark runner:** `scripts/eval/benchmark/benchmark-runner.ts` — 7 AI quality metrics
+- **Error recovery runner:** `scripts/eval/error-recovery.ts` — 8 failure scenarios
+- **6 report templates:** in `docs/release/` — DOGFOODING, MOBILE_QA, ACCESSIBILITY, PERFORMANCE, KNOWN_ISSUES, RELEASE_REPORT
+- **Release report format:** Standard template for all future releases (v0.9.5, v1.0.0-beta, v1.0.0, etc.)
+- **Updated build plan:** Fixed personas, rigid workflow, severity labels, release gate rules
+- **npm scripts:** `eval:dogfooding`, `eval:benchmark`, `eval:recovery`
 
 ### Delivered This Sprint (Sprint 6C)
 

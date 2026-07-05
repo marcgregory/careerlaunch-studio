@@ -21,7 +21,6 @@ import {
   deterministicAnalyzeJob,
   deterministicGapAnalysis,
   deterministicTailor,
-  normalizeResume,
 } from "@careerlaunch/ai";
 import type {
   NormalizedResume,
@@ -138,14 +137,21 @@ async function run() {
     }
 
     const testCase = `${resume.label} vs ${jd.label}`;
-    const normalized = normalizeResume({
+    // Fixtures are stored in NormalizedResume format, but normalizeResume
+    // expects ResumeDocument (experience/education arrays). Bypass the
+    // conversion for eval fixtures and construct the object directly.
+    const normalized: NormalizedResume = {
       contact: resume.contact,
       summary: resume.summary,
-      sections: resume.sections,
-      skills: resume.skills,
-      certifications: resume.certifications,
-      projects: resume.projects,
-    });
+      sections: resume.sections ?? [],
+      skills: resume.skills ?? [],
+      certifications: resume.certifications ?? [],
+      projects: (resume.projects ?? []).map((p: any) => ({
+        name: p.name ?? "",
+        description: p.description ?? "",
+        bullets: p.bullets ?? [],
+      })),
+    };
 
     // Phase 1: Job Analysis
     {

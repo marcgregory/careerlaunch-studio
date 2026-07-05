@@ -1,0 +1,735 @@
+{
+  "timestamp": "2026-07-05T06:22:17.602Z",
+  "config": {
+    "useAI": false
+  },
+  "totalPersonas": 6,
+  "results": [
+    {
+      "persona": "Junior Frontend Developer",
+      "personaId": "resume-16",
+      "jobLabel": "React Developer — Junior",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 16,
+      "suggestionCount": 0,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "persona": "Senior Backend Engineer",
+      "personaId": "resume-17",
+      "jobLabel": "Senior Backend Engineer — Go/AWS",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 4,
+      "suggestionCount": 0,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 1,
+          "p50latencyMs": 1,
+          "p95latencyMs": 1,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "persona": "WordPress Developer",
+      "personaId": "resume-18",
+      "jobLabel": "WordPress Developer — Agency",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 4,
+      "suggestionCount": 2,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 1,
+          "p50latencyMs": 1,
+          "p95latencyMs": 1,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "persona": "Marketing Specialist",
+      "personaId": "resume-19",
+      "jobLabel": "Digital Marketing Specialist",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 3,
+      "suggestionCount": 2,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "persona": "Graphic Designer",
+      "personaId": "resume-20",
+      "jobLabel": "Visual Designer — Brand & UI",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 3,
+      "suggestionCount": 0,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "persona": "Customer Support Specialist",
+      "personaId": "resume-21",
+      "jobLabel": "Customer Support Specialist — SaaS",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 3,
+      "suggestionCount": 2,
+      "fabricatedCount": 0,
+      "fabricatedExamples": [],
+      "errors": [],
+      "dimensionTimes": [
+        {
+          "dimension": "ats",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "grammar",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "impact",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "keywords",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "summary",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        },
+        {
+          "dimension": "tone",
+          "avgLatencyMs": 0,
+          "p50latencyMs": 0,
+          "p95latencyMs": 0,
+          "sampleCount": 1
+        }
+      ]
+    }
+  ],
+  "consistency": [
+    {
+      "persona": "Junior Frontend Developer",
+      "personaId": "resume-16",
+      "jobLabel": "React Developer — Junior",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Css",
+            "Git",
+            "React",
+            "Tailwind",
+            "Typescript"
+          ],
+          "missingSkills": [],
+          "latencyMs": 1
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Css",
+            "Git",
+            "React",
+            "Tailwind",
+            "Typescript"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Css",
+            "Git",
+            "React",
+            "Tailwind",
+            "Typescript"
+          ],
+          "missingSkills": [],
+          "latencyMs": 1
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Senior Backend Engineer",
+      "personaId": "resume-17",
+      "jobLabel": "Senior Backend Engineer — Go/AWS",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Aws",
+            "Docker",
+            "Go",
+            "Kubernetes",
+            "Microservices",
+            "Node.js",
+            "Postgres",
+            "Postgresql",
+            "Sql"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Aws",
+            "Docker",
+            "Go",
+            "Kubernetes",
+            "Microservices",
+            "Node.js",
+            "Postgres",
+            "Postgresql",
+            "Sql"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Aws",
+            "Docker",
+            "Go",
+            "Kubernetes",
+            "Microservices",
+            "Node.js",
+            "Postgres",
+            "Postgresql",
+            "Sql"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "WordPress Developer",
+      "personaId": "resume-18",
+      "jobLabel": "WordPress Developer — Agency",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Git",
+            "Php",
+            "Seo"
+          ],
+          "missingSkills": [
+            "Api",
+            "Rest"
+          ],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Git",
+            "Php",
+            "Seo"
+          ],
+          "missingSkills": [
+            "Api",
+            "Rest"
+          ],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Git",
+            "Php",
+            "Seo"
+          ],
+          "missingSkills": [
+            "Api",
+            "Rest"
+          ],
+          "latencyMs": 1
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Marketing Specialist",
+      "personaId": "resume-19",
+      "jobLabel": "Digital Marketing Specialist",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 60,
+          "matchedSkills": [
+            "A/b Testing",
+            "Analytics",
+            "Go"
+          ],
+          "missingSkills": [
+            "Git",
+            "Growth"
+          ],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 60,
+          "matchedSkills": [
+            "A/b Testing",
+            "Analytics",
+            "Go"
+          ],
+          "missingSkills": [
+            "Git",
+            "Growth"
+          ],
+          "latencyMs": 1
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 60,
+          "matchedSkills": [
+            "A/b Testing",
+            "Analytics",
+            "Go"
+          ],
+          "missingSkills": [
+            "Git",
+            "Growth"
+          ],
+          "latencyMs": 1
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Graphic Designer",
+      "personaId": "resume-20",
+      "jobLabel": "Visual Designer — Brand & UI",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Figma"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Figma"
+          ],
+          "missingSkills": [],
+          "latencyMs": 0
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 100,
+          "matchedSkills": [
+            "Figma"
+          ],
+          "missingSkills": [],
+          "latencyMs": 2
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Customer Support Specialist",
+      "personaId": "resume-21",
+      "jobLabel": "Customer Support Specialist — SaaS",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Crm",
+            "Customer Support",
+            "Zendesk"
+          ],
+          "missingSkills": [
+            "Communication",
+            "Saas"
+          ],
+          "latencyMs": 1
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Crm",
+            "Customer Support",
+            "Zendesk"
+          ],
+          "missingSkills": [
+            "Communication",
+            "Saas"
+          ],
+          "latencyMs": 1
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 60,
+          "matchedSkills": [
+            "Crm",
+            "Customer Support",
+            "Zendesk"
+          ],
+          "missingSkills": [
+            "Communication",
+            "Saas"
+          ],
+          "latencyMs": 1
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    }
+  ],
+  "aggregated": {
+    "jsonValidityPct": 100,
+    "schemaPassPct": 100,
+    "promptFailurePct": 0,
+    "fabricationRatePct": 0,
+    "avgLatencyPerDimension": {
+      "ats": 0,
+      "grammar": 0,
+      "impact": 0,
+      "keywords": 0,
+      "summary": 0.3333333333333333,
+      "tone": 0
+    },
+    "dimensionMetrics": [
+      {
+        "dimension": "ats",
+        "avgLatencyMs": 0,
+        "p50latencyMs": 0,
+        "p95latencyMs": 0,
+        "sampleCount": 6
+      },
+      {
+        "dimension": "grammar",
+        "avgLatencyMs": 0,
+        "p50latencyMs": 0,
+        "p95latencyMs": 0,
+        "sampleCount": 6
+      },
+      {
+        "dimension": "impact",
+        "avgLatencyMs": 0,
+        "p50latencyMs": 0,
+        "p95latencyMs": 0,
+        "sampleCount": 6
+      },
+      {
+        "dimension": "keywords",
+        "avgLatencyMs": 0,
+        "p50latencyMs": 0,
+        "p95latencyMs": 0,
+        "sampleCount": 6
+      },
+      {
+        "dimension": "summary",
+        "avgLatencyMs": 0.3333333333333333,
+        "p50latencyMs": 0,
+        "p95latencyMs": 1,
+        "sampleCount": 6
+      },
+      {
+        "dimension": "tone",
+        "avgLatencyMs": 0,
+        "p50latencyMs": 0,
+        "p95latencyMs": 0,
+        "sampleCount": 6
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "metric": "JSON validity",
+      "value": 100,
+      "target": ">=99%",
+      "passed": true
+    },
+    {
+      "metric": "Schema validation pass rate",
+      "value": 100,
+      "target": ">=90%",
+      "passed": true
+    },
+    {
+      "metric": "Prompt failure rate",
+      "value": 0,
+      "target": "<=2%",
+      "passed": true
+    },
+    {
+      "metric": "Fabricated experience rate",
+      "value": 0,
+      "target": "<1%",
+      "passed": true
+    }
+  ],
+  "overallPass": true
+}

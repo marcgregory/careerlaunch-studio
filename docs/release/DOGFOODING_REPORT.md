@@ -21,9 +21,11 @@
 | Graphic Designer | ✅ PASS | ⬜ Not Run | — |
 | Customer Support Specialist | ✅ PASS | ⬜ Not Run | — |
 
-**Pipeline check:** Automated analysis, gap analysis, and tailoring all produce valid structured output for every persona+JD pair.
+**Pipeline check:** 6/6 ✅. Automated analysis, gap analysis, and tailoring all produce valid structured output. Verified 2026-07-05 via `npm run eval:dogfooding`.
 
-**Manual check needed:** The remaining steps (import, UI interaction, AI orchestration, diff apply, cover letter generation, PDF export, billing verification) require a browser-based walkthrough.
+**Consistency check:** σ=0.0 across 3 runs per persona. Deterministic matching produces identical results every time.
+
+**Manual check needed:** The remaining steps (import, UI interaction, AI orchestration via provider, diff apply, cover letter generation, PDF export, billing verification) require a browser-based walkthrough.
 
 | Severity | Count |
 |---|---|

@@ -11,9 +11,10 @@
         "lint": "npm run lint --workspaces --if-present",
         "test": "npm run test --workspaces --if-present",
         "typecheck": "npm run typecheck --workspaces --if-present",
-        "eval": "tsx scripts/eval/run.ts",
-        "eval:dogfooding": "tsx scripts/eval/dogfooding/dogfood-runner.ts",
-        "eval:benchmark": "tsx scripts/eval/dogfooding/dogfood-runner.ts --json"
+        "eval": "npx tsx scripts/eval/run.ts",
+        "eval:dogfooding": "npx tsx scripts/eval/dogfooding/dogfood-runner.ts",
+        "eval:benchmark": "npx tsx scripts/eval/benchmark/benchmark-runner.ts",
+        "eval:recovery": "npx tsx scripts/eval/error-recovery.ts"
     },
     "workspaces": [
         "apps/*",
