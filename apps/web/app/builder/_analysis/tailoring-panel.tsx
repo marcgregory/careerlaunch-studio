@@ -14,6 +14,7 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
+  Info as InfoIcon,
 } from "lucide-react";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import { DiffView } from "../../../components/diff-view";
@@ -717,16 +718,23 @@ function renderSuggestionSection(
                   <div className="flex shrink-0 items-center gap-1.5">
                     {isPending && (
                       <>
-                        <button
-                          type="button"
-                          aria-label="Review suggestion"
-                          title="Review suggestion"
-                          onClick={() => handleReview(suggestion)}
-                          className="inline-flex h-8 items-center gap-1 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
-                        >
-                          <Eye size={14} />
-                          Review
-                        </button>
+                        {suggestion.after ? (
+                          <button
+                            type="button"
+                            aria-label="Review suggestion"
+                            title="Review suggestion"
+                            onClick={() => handleReview(suggestion)}
+                            className="inline-flex h-8 items-center gap-1 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
+                          >
+                            <Eye size={14} />
+                            Review
+                          </button>
+                        ) : (
+                          <span className="inline-flex h-8 items-center gap-1 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-2.5 text-[0.65rem] font-medium text-[#4b4b4b]">
+                            <InfoIcon size={12} />
+                            Info
+                          </span>
+                        )}
                         <button
                           type="button"
                           aria-label="Dismiss suggestion"

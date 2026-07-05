@@ -126,8 +126,14 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
 
     const operations = suggestionToOperation(suggestion);
     if (!operations) {
-      setModalError("This suggestion cannot be applied automatically yet.");
-      setApplyState("error");
+      // For info-only suggestions (no suggestedText), skip apply entirely
+      if (!suggestion.suggestedText) {
+        setModalError("This is an informational suggestion — no automatic text change available.");
+        setApplyState("error");
+      } else {
+        setModalError("This suggestion cannot be applied automatically yet.");
+        setApplyState("error");
+      }
       return;
     }
 

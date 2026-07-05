@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X, AlertTriangle, AlertCircle, Info, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, AlertTriangle, AlertCircle, Info as InfoIcon, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { SuggestionFeedback } from "../../../components/suggestion-feedback";
 import { ConfidenceBar } from "../../../components/confidence-bar";
@@ -10,8 +10,8 @@ const severityConfig = {
   critical: { icon: AlertCircle, label: "Critical", color: "border-red-400 bg-red-50 text-red-800" },
   major: { icon: AlertTriangle, label: "Major", color: "border-orange-300 bg-orange-50 text-orange-800" },
   medium: { icon: AlertTriangle, label: "Medium", color: "border-[#e0aa22]/40 bg-[#fff7df] text-[#7b5300]" },
-  minor: { icon: Info, label: "Minor", color: "border-[#123c3a]/10 bg-[#f8f8f5] text-[#4b4b4b]" },
-  info: { icon: Info, label: "Info", color: "border-blue-200 bg-blue-50 text-blue-800" },
+  minor: { icon: InfoIcon, label: "Minor", color: "border-[#123c3a]/10 bg-[#f8f8f5] text-[#4b4b4b]" },
+  info: { icon: InfoIcon, label: "Info", color: "border-blue-200 bg-blue-50 text-blue-800" },
 };
 
 export function SuggestionCard({
@@ -99,16 +99,23 @@ export function SuggestionCard({
         {/* Action buttons — only shown when pending */}
         {!isResolved && (
           <div className="flex shrink-0 gap-1.5">
-            <button
-              type="button"
-              aria-label="Review suggestion"
-              title="Review suggestion"
-              onClick={() => onReview(suggestion.id)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
-            >
-              <Eye size={15} />
-              Review
-            </button>
+            {suggestion.suggestedText ? (
+              <button
+                type="button"
+                aria-label="Review suggestion"
+                title="Review suggestion"
+                onClick={() => onReview(suggestion.id)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
+              >
+                <Eye size={15} />
+                Review
+              </button>
+            ) : (
+              <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 text-xs font-medium text-[#4b4b4b]">
+                <InfoIcon size={14} />
+                Info
+              </span>
+            )}
             <button
               type="button"
               aria-label="Dismiss suggestion"

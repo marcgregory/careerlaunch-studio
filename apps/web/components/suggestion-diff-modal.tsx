@@ -200,8 +200,8 @@ export function SuggestionDiffModal({
             {applyState === "applied" ? "Close" : "Cancel"}
           </button>
 
-          {/* Show Apply button only when not already applied */}
-          {applyState !== "applied" && (
+          {/* Show Apply button only when the suggestion has actionable content */}
+          {applyState !== "applied" && suggestion.suggestedText && (
             <button
               type="button"
               onClick={() => onApply(suggestion.id)}
