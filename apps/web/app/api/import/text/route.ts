@@ -103,6 +103,12 @@ export async function POST(request: Request) {
           console.log("[import] recovery result keys:", Object.keys(recovery));
           console.log("[import] recovery experience:", recovery.experience?.length ?? 0, "entries, education:", recovery.education?.length ?? 0, "entries");
 
+          // If recovery came back empty despite being called, it likely hit
+          // an API quota/rate limit. The LLM logs the real reason via console.warn.
+          if (recovery.experience?.length === 0 && recovery.education?.length === 0 && recovery.skills?.length === 0) {
+            console.warn("[import] AI recovery returned empty — likely quota/rate limit on provider:", providerName);
+          }
+
           const merged = mergeRecovery(result, recovery);
 
           console.log("[import] mergeRecovery completed — recoveredSections:", merged.recoveredSections, "aiRecovered:", merged.aiRecovered);
