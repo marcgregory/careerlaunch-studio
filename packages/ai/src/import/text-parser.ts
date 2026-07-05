@@ -51,6 +51,10 @@ export type ParseResult = {
     failedProviders: string[];
     reason?: string;
   };
+  /** Categorized skills from AI recovery, preserved for the UI to render
+   *  grouped skill display (headings with pills per category).
+   *  Only populated when the AI recovery pass provided categorized skills. */
+  recoveredSkillCategories?: Array<{ category: string; items: string[] }>;
   /** Pre-recovery data snapshot for the comparison UI toggle.
    *  Only populated when AI recovery was applied. Maps sectionId to the
    *  pre-recovery content so users can see what changed. */

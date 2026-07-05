@@ -270,7 +270,7 @@ describe("mergeRecovery", () => {
     expect(merged.parsed.contact?.phone).toBe("+63 912 345 6789");
   });
 
-  it("should deduplicate experience entries from AI and parser", () => {
+  it("should replace parser experience entries with AI entries", () => {
     const parserExperience = [
       {
         id: "import-exp-1",
@@ -302,18 +302,21 @@ describe("mergeRecovery", () => {
 
     const aiRecovery: RecoveryResult = {
       experience: [
-        // Same entry as parser (should be deduplicated)
+        // Same role/company as parser but now AI entry replaces parser entirely
         { role: "Developer", company: "Acme Inc", start: "2020", end: "Present", bullets: ["Built things."] },
-        // New entry (should be added)
+        // New entry from AI
         { role: "Junior Dev", company: "Startup XYZ", start: "2018", end: "2019", bullets: ["Helped out."] },
       ],
     };
 
     const merged = mergeRecovery(parserResult, aiRecovery);
 
+    // With replace semantics, only AI entries survive (both)
     expect(merged.parsed.experience).toHaveLength(2);
     expect(merged.parsed.experience![0].role).toBe("Developer");
     expect(merged.parsed.experience![1].role).toBe("Junior Dev");
+    // Parser entries are not included; all entries have AI-generated IDs
+    expect(merged.parsed.experience![0].id).toMatch(/^import-exp-recovered-/);
   });
 
   it("should return aiRecovered=false when no recovery data applied", () => {
@@ -450,7 +453,7 @@ describe("mergeRecovery", () => {
     expect(merged.parsed.skills).toContain("JavaScript");
   });
 
-  it("should filter out fragment parser entries before merging", () => {
+  it("should replace all parser experience entries including fragments with AI entries", () => {
     // Fragment entry: no company, no bullets, no dates (parser artifact)
     const parserResult = makeParseResult({
       parsed: {
@@ -480,13 +483,14 @@ describe("mergeRecovery", () => {
 
     const merged = mergeRecovery(parserResult, aiRecovery);
 
-    // Fragment should be removed. Real entry + AI entry = 2
-    expect(merged.parsed.experience).toHaveLength(2);
-    // Fragment entries (no company, no bullets, no dates) are filtered
+    // With replace semantics, only the AI entry survives (parser entries are gone)
+    expect(merged.parsed.experience).toHaveLength(1);
+    expect(merged.parsed.experience![0].role).toBe("Junior Developer");
+    // The orphan fragment "timelines were met." is gone
     expect(merged.parsed.experience!.every((e) => e.company.length > 0)).toBe(true);
   });
 
-  it("should soft-dedup education entries with reformatted text", () => {
+  it("should replace parser education entries with AI entries", () => {
     const parserResult = makeParseResult({
       parsed: {
         contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
@@ -515,12 +519,11 @@ describe("mergeRecovery", () => {
 
     const merged = mergeRecovery(parserResult, aiRecovery);
 
-    // First edu should be deduplicated (same school/degree with reformatted text)
-    // Second edu is new and should be added
+    // With replace semantics, AI entries are the only source
     expect(merged.parsed.education).toHaveLength(2);
-    // The AI version should be used for the first entry
     expect(merged.parsed.education![0].degree).toBe("BS in Computer Engineering");
     expect(merged.parsed.education![0].school).toBe("Cagayan de Oro College - PHINMA");
+    expect(merged.parsed.education![1].school).toBe("Some Other University");
   });
 
   it("should merge AI categorized skills when parser coverage is low", () => {
@@ -562,5 +565,7 @@ describe("mergeRecovery", () => {
     expect(merged.parsed.skills).toContain("Backend: PostgreSQL");
     expect(merged.parsed.skills).toContain("Cloud & Tools: Docker");
     expect(merged.parsed.skills).toContain("Cloud & Tools: AWS");
+    // No duplicates — each flat skill appears exactly once
+    expect(merged.parsed.skills).toHaveLength(6);
   });
 });

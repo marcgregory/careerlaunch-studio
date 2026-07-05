@@ -196,6 +196,8 @@ export async function POST(request: Request) {
             aiRecovered: merged.aiRecovered,
             aiRecoveredSections: merged.recoveredSections,
             aiRecovery,
+            /** Preserve AI's categorized skills for grouped UI display */
+            recoveredSkillCategories: recovery.skills ?? undefined,
             /** Pre-recovery snapshot for the comparison UI toggle.
              *  Only populated when AI recovery was applied. */
             preRecoveryData,

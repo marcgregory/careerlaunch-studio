@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, Chec
 import { primaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
-import type { ParseResult, CoverageStatus, SectionCoverageItem, ImportQuality, ExperienceItem, EducationItem } from "@careerlaunch/ai/import";
+import type { ParseResult, CoverageStatus, SectionCoverageItem, ImportQuality, ExperienceItem, EducationItem, RecoveryResult } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 
@@ -307,7 +307,7 @@ export default function ImportPage() {
                     .filter((c) => c.sectionId !== "references")
                     .map((c) => {
                       const isRecovered = result.aiRecoveredSections?.includes(c.sectionId);
-                      const colorClass = isRecovered ? "text-green-600 bg-green-50 border-green-200" : getCoverageColorClass(c.status);
+                      const colorClass = isRecovered ? "text-[#555] bg-[#f0f0f0] border-[#ddd]" : getCoverageColorClass(c.status);
                       const hasUnparsed = showUnparsed === c.sectionId && result.unparsedContent?.[c.sectionId];
                       return (
                         <div key={c.sectionId}>
@@ -317,7 +317,7 @@ export default function ImportPage() {
                             <span className="flex items-center gap-1.5 capitalize">
                               {c.sectionId}
                               {isRecovered && (
-                                <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700" title="Reconstructed by AI">
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-[#f0f0f0] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#555]" title="Reconstructed by AI">
                                   <Wand2 size={9} />
                                   Recovered
                                 </span>
@@ -371,13 +371,15 @@ export default function ImportPage() {
                 <div className="mt-5">
                   <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Summary
-                    {result.aiRecoveredSections?.includes("summary") && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
-                        <Wand2 size={9} />
+                  </h3>
+                  {result.aiRecoveredSections?.includes("summary") && (
+                    <div className="mt-1.5 flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#f0f0f0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#555]">
+                        <Wand2 size={10} />
                         AI recovered
                       </span>
-                    )}
-                  </h3>
+                    </div>
+                  )}
                   <p className="mt-2 text-sm font-medium leading-6 text-[#33343b]">{result.parsed.summary}</p>
                 </div>
               )}
@@ -386,23 +388,25 @@ export default function ImportPage() {
                 <div className="mt-5">
                   <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Experience ({result.parsed.experience.length})
-                    {result.aiRecoveredSections?.includes("experience") && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
-                        <Wand2 size={9} />
+                  </h3>
+                  {result.aiRecoveredSections?.includes("experience") && (
+                    <div className="mt-1.5 flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#f0f0f0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#555]">
+                        <Wand2 size={10} />
                         AI recovered
                       </span>
-                    )}
-                    {result.aiRecoveredSections?.includes("experience") && result.preRecoveryData && (
-                      <button
-                        type="button"
-                        onClick={() => setCompareSection(compareSection === "experience" ? null : "experience")}
-                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
-                      >
-                        <GitCompare size={12} />
-                        {compareSection === "experience" ? "View recovered" : "View original"}
-                      </button>
-                    )}
-                  </h3>
+                      {result.preRecoveryData && (
+                        <button
+                          type="button"
+                          onClick={() => setCompareSection(compareSection === "experience" ? null : "experience")}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                        >
+                          <GitCompare size={11} />
+                          {compareSection === "experience" ? "View recovered" : "View original"}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="mt-2 space-y-3">
                     {(compareSection === "experience" && result.preRecoveryData
                       ? result.preRecoveryData.experience
@@ -433,23 +437,25 @@ export default function ImportPage() {
                 <div className="mt-5">
                   <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Education ({result.parsed.education.length})
-                    {result.aiRecoveredSections?.includes("education") && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
-                        <Wand2 size={9} />
+                  </h3>
+                  {result.aiRecoveredSections?.includes("education") && (
+                    <div className="mt-1.5 flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#f0f0f0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#555]">
+                        <Wand2 size={10} />
                         AI recovered
                       </span>
-                    )}
-                    {result.aiRecoveredSections?.includes("education") && result.preRecoveryData && (
-                      <button
-                        type="button"
-                        onClick={() => setCompareSection(compareSection === "education" ? null : "education")}
-                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
-                      >
-                        <GitCompare size={12} />
-                        {compareSection === "education" ? "View recovered" : "View original"}
-                      </button>
-                    )}
-                  </h3>
+                      {result.preRecoveryData && (
+                        <button
+                          type="button"
+                          onClick={() => setCompareSection(compareSection === "education" ? null : "education")}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                        >
+                          <GitCompare size={11} />
+                          {compareSection === "education" ? "View recovered" : "View original"}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="mt-2 space-y-2">
                     {(compareSection === "education" && result.preRecoveryData
                       ? result.preRecoveryData.education
@@ -468,36 +474,62 @@ export default function ImportPage() {
                 <div className="mt-5">
                   <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Skills ({result.parsed.skills.length})
-                    {result.aiRecoveredSections?.includes("skills") && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
-                        <Wand2 size={9} />
+                  </h3>
+                  {result.aiRecoveredSections?.includes("skills") && (
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#f0f0f0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#555]">
+                        <Wand2 size={10} />
                         AI recovered
                       </span>
-                    )}
-                    {result.aiRecoveredSections?.includes("skills") && result.preRecoveryData && (
-                      <button
-                        type="button"
-                        onClick={() => setCompareSection(compareSection === "skills" ? null : "skills")}
-                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
-                      >
-                        <GitCompare size={12} />
-                        {compareSection === "skills" ? "View recovered" : "View original"}
-                      </button>
-                    )}
-                  </h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(compareSection === "skills" && result.preRecoveryData
-                      ? result.preRecoveryData.skills
-                      : result.parsed.skills
-                    ).map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-full bg-[#b9ff66] px-3 py-1 text-xs font-black text-[#123c3a]"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+                      {result.preRecoveryData && (
+                        <button
+                          type="button"
+                          onClick={() => setCompareSection(compareSection === "skills" ? null : "skills")}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                        >
+                          <GitCompare size={11} />
+                          {compareSection === "skills" ? "View recovered" : "View original"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {/* Render as categorized groups when AI recovery provided categories */}
+                  {result.recoveredSkillCategories && result.recoveredSkillCategories.length > 0 ? (
+                    <div className="mt-3 space-y-4">
+                      {result.recoveredSkillCategories.map((cat) => (
+                        <div key={cat.category}>
+                          <h4 className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
+                            {cat.category}
+                          </h4>
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {cat.items.map((skill) => (
+                              <span
+                                key={skill}
+                                className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Fallback: flat pills when no categories available */
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {(compareSection === "skills" && result.preRecoveryData
+                        ? result.preRecoveryData.skills
+                        : result.parsed.skills
+                      ).map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
