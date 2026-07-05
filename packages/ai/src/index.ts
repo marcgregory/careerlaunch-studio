@@ -23,6 +23,7 @@ export type {
   ToneAnalysis,
   AnalysisMetadata,
   AnalysisResult,
+  ResumeStatistics,
   ProviderHealth,
   AnalysisQuota,
   AnalysisRunRecord,

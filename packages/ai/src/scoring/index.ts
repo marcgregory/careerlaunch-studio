@@ -8,10 +8,10 @@ import type { NormalizedResume } from "../analysis/types";
  * Each suggestion reduces the score based on its severity.
  */
 const SEVERITY_PENALTIES: Record<SuggestionSeverity, number> = {
-  critical: 25,
-  major: 12,
-  medium: 7,
-  minor: 3,
+  critical: 15,
+  major: 8,
+  medium: 5,
+  minor: 2,
   info: 0,
 };
 
@@ -30,8 +30,8 @@ export function computeOverallScore(
     return total + SEVERITY_PENALTIES[s.severity];
   }, 0);
 
-  // Base score, floored at 10 (every resume gets at least 10)
-  const baseScore = Math.max(10, MAX_POINTS - penalty);
+  // Base score, floored at 30 (every resume gets at least 30)
+  const baseScore = Math.max(30, MAX_POINTS - penalty);
 
   // Round to integer
   return Math.round(baseScore);
@@ -64,7 +64,7 @@ export function computeCategoryScores(
       (total, s) => total + SEVERITY_PENALTIES[s.severity],
       0,
     );
-    scores[cat] = Math.max(10, MAX_POINTS - penalty);
+    scores[cat] = Math.max(30, MAX_POINTS - penalty);
   }
 
   return scores;

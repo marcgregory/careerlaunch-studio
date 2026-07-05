@@ -1,6 +1,13 @@
 "use client";
 
 /** Circular score gauge showing 0–100 with colour coding */
+function healthLabel(score: number): string {
+  if (score >= 80) return "Excellent";
+  if (score >= 60) return "Good";
+  if (score >= 40) return "Needs Work";
+  return "Needs Improvement";
+}
+
 export function ScoreGauge({ score }: { score: number }) {
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
@@ -9,6 +16,7 @@ export function ScoreGauge({ score }: { score: number }) {
 
   const color =
     score >= 80 ? "#123c3a" : score >= 60 ? "#b9ff66" : score >= 40 ? "#e0aa22" : "#cf3a2a";
+  const label = healthLabel(score);
 
   return (
     <div className="inline-flex items-center gap-4">
@@ -47,8 +55,9 @@ export function ScoreGauge({ score }: { score: number }) {
         </p>
         <p className="font-signal text-5xl font-black leading-none tracking-[-0.06em]">
           {score}
-          <span className="text-2xl text-[#123c3a]/40">/100</span>
+          <span className="text-2xl font-black text-[#123c3a]">/100</span>
         </p>
+        <p className="mt-0.5 text-sm font-black text-[#4b4b4b]">{label}</p>
       </div>
     </div>
   );

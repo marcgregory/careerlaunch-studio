@@ -46,10 +46,18 @@ const SKILL_DICTIONARY = new Set([
  * Matches case-insensitively and returns matched skill strings
  * in their canonical form from the dictionary.
  */
+/**
+ * Build a regex from a dictionary entry that matches on word boundaries.
+ * Single-word skills use \b word boundaries; multi-word skills use the whole phrase.
+ */
+function skillPattern(skill: string): RegExp {
+  const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped.replace(/\s+/g, "\\s+")}\\b`, "i");
+}
+
 function extractSkills(text: string): string[] {
-  const lower = text.toLowerCase();
   return Array.from(SKILL_DICTIONARY)
-    .filter((skill) => lower.includes(skill))
+    .filter((skill) => skillPattern(skill).test(text))
     .sort();
 }
 

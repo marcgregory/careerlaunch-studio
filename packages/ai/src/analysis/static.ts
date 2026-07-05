@@ -1,4 +1,4 @@
-import type { NormalizedResume } from "./types";
+import type { NormalizedResume, ResumeStatistics } from "./types";
 import type { Suggestion } from "../suggestion/types";
 import { suggestionId } from "../suggestion/types";
 
@@ -13,7 +13,10 @@ import { suggestionId } from "../suggestion/types";
  * and confidence: 1.
  */
 
-export function runStaticAnalysis(resume: NormalizedResume): Suggestion[] {
+export function runStaticAnalysis(resume: NormalizedResume): {
+  suggestions: Suggestion[];
+  statistics: ResumeStatistics;
+} {
   const suggestions: Suggestion[] = [];
 
   suggestions.push(...checkContact(resume));
@@ -23,7 +26,20 @@ export function runStaticAnalysis(resume: NormalizedResume): Suggestion[] {
   suggestions.push(...checkEducation(resume));
   suggestions.push(...checkCompleteness(resume));
 
-  return suggestions;
+  const expSections = resume.sections.filter((sec) => sec.type === "experience");
+  const eduSections = resume.sections.filter((sec) => sec.type === "education");
+  const bulletCount = expSections.reduce((sum, e) => sum + e.bullets.length, 0);
+
+  const statistics: ResumeStatistics = {
+    skills: resume.skills.length,
+    certifications: resume.certifications.length,
+    projects: resume.projects.length,
+    experienceEntries: expSections.length,
+    educationEntries: eduSections.length,
+    bulletPoints: bulletCount,
+  };
+
+  return { suggestions, statistics };
 }
 
 // ─── Contact checks ─────────────────────────────────────────────
@@ -223,6 +239,19 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     "set up", "simplified", "solved", "spearheaded", "standardized", "started",
     "streamlined", "strengthened", "structured", "succeeded", "supervised", "surpassed",
     "trained", "transformed", "trimmed", "unified", "upgraded", "wrote",
+
+    // Tech / IT verbs
+    "installed", "troubleshot", "troubleshoot", "maintained", "configured",
+    "deployed", "tested", "monitored", "supported", "documented",
+    "responded", "resolved", "diagnosed", "authored", "refactored",
+    "migrated", "coded", "scaffolded", "validated", "triaged",
+    "patched", "provisioned",
+
+    // Common gerund forms (used as bullet starters)
+    "troubleshooting", "maintaining", "configuring", "deploying",
+    "testing", "monitoring", "supporting", "documenting", "training",
+    "responding", "resolving", "diagnosing", "refactoring", "migrating",
+    "coding", "validating", "triaging", "installing", "upgrading",
   ];
 
   for (const entry of expSections) {
@@ -266,7 +295,11 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         reason:
           "Bullets with numbers (percentages, revenue, time saved, team size) are 40% more likely to get interviews.",
         targetText: null,
-        suggestedText: null,
+        suggestedText:
+          "Add numbers, percentages, or other measurable outcomes. Examples:\n" +
+          "• \"Developed 15+ React components used across 4 internal applications\"\n" +
+          "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
+          "• \"Supported 200+ end users across 3 departments\"",
         location: { sectionId: "experience", entryId: entry.id },
         confidence: 1,
         source: "static",
@@ -383,23 +416,6 @@ function checkEducation(resume: NormalizedResume): Suggestion[] {
 
 function checkCompleteness(resume: NormalizedResume): Suggestion[] {
   const s: Suggestion[] = [];
-
-  // Certifications presence
-  if (resume.certifications.length > 0) {
-    s.push({
-      id: suggestionId("completeness", "certifications", "certifications"),
-      category: "completeness",
-      severity: "info",
-      title: `${resume.certifications.length} certification(s) listed`,
-      reason:
-        "Certifications are a plus. Make sure they are current and relevant to your target role.",
-      targetText: null,
-      suggestedText: null,
-      location: { sectionId: "certifications" },
-      confidence: 1,
-      source: "static",
-    });
-  }
 
   // Projects presence
   if (resume.projects.length === 0) {

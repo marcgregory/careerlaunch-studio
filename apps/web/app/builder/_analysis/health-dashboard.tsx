@@ -43,6 +43,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
     status: "idle",
     overallScore: null,
     suggestions: [],
+    statistics: null,
     analyzedAt: null,
     error: null,
   });
@@ -91,6 +92,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         status: "success",
         overallScore: data.result.overallScore ?? 0,
         suggestions,
+        statistics: data.result.resumeStatistics ?? null,
         analyzedAt: data.result.analyzedAt ?? null,
         error: null,
       });
@@ -296,9 +298,64 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
           </div>
         </div>
 
+        {/* Severity summary */}
+        <div className="mt-6 flex gap-3">
+          {(["critical", "major", "medium", "minor"] as const).map((sev) => {
+            const count = analysis.suggestions.filter(
+              (s) => s.severity === sev && s.status === "pending",
+            ).length;
+            if (count === 0) return null;
+            const sevColors: Record<string, string> = {
+              critical: "border-red-400/30 text-red-300",
+              major: "border-orange-300/30 text-orange-200",
+              medium: "border-amber-400/30 text-amber-200",
+              minor: "border-white/10 text-white/60",
+            };
+            return (
+              <div
+                key={sev}
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-black uppercase ${sevColors[sev]}`}
+              >
+                <span>{count}</span>
+                <span className="opacity-70">{sev}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Resume Statistics */}
+        {analysis.statistics && (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-3 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
+              <span>Resume Statistics</span>
+              <Gauge size={18} className="text-[#b9ff66]" />
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {[
+                { label: "Skills", value: analysis.statistics.skills },
+                { label: "Certifications", value: analysis.statistics.certifications },
+                { label: "Projects", value: analysis.statistics.projects },
+                { label: "Experience", value: analysis.statistics.experienceEntries },
+                { label: "Education", value: analysis.statistics.educationEntries },
+                { label: "Bullets", value: analysis.statistics.bulletPoints },
+              ].map(
+                (stat) =>
+                  stat.value > 0 && (
+                    <div key={stat.label} className="rounded-xl bg-white/8 p-2">
+                      <p className="text-lg font-black text-white">{stat.value}</p>
+                      <p className="text-[0.6rem] font-bold uppercase tracking-[0.08em] text-white/50">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ),
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Mini category breakdown */}
         {pendingByCategory.size > 0 && (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
             <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/45">
               <span>Issues found</span>
               <Gauge size={18} className="text-[#b9ff66]" />

@@ -190,6 +190,8 @@ Respond with JSON: { "statements": [{ "text": "...", "hasMetric": true, "hasActi
       }
       return `Compare the resume against the target job description. Identify matching and missing keywords, and calculate match score.
 
+IMPORTANT: Only list skills or keywords as "missing" if they clearly appear in the job description below. Do NOT infer or guess skills from the role title alone — only include what is explicitly mentioned.
+
 Resume:
 ${resumeJson}
 

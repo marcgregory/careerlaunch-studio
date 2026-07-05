@@ -34,25 +34,25 @@ describe("computeOverallScore", () => {
   it("reduces score for critical suggestions", () => {
     const suggestions = [makeSuggestion({ severity: "critical" })];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(75); // 100 - 25
+    expect(score).toBe(85); // 100 - 15
   });
 
   it("reduces score for major suggestions", () => {
     const suggestions = [makeSuggestion({ severity: "major" })];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(88); // 100 - 12
+    expect(score).toBe(92); // 100 - 8
   });
 
   it("reduces score for medium suggestions", () => {
     const suggestions = [makeSuggestion({ severity: "medium" })];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(93); // 100 - 7
+    expect(score).toBe(95); // 100 - 5
   });
 
   it("reduces score for minor suggestions", () => {
     const suggestions = [makeSuggestion({ severity: "minor" })];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(97); // 100 - 3
+    expect(score).toBe(98); // 100 - 2
   });
 
   it("info suggestions do not affect score", () => {
@@ -68,19 +68,32 @@ describe("computeOverallScore", () => {
       makeSuggestion({ severity: "medium", id: "test-3" }),
     ];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(56); // 100 - 25 - 12 - 7
+    expect(score).toBe(72); // 100 - 15 - 8 - 5
   });
 
-  it("floors at 10", () => {
+  it("handles many minor suggestions gracefully", () => {
+    const suggestions = [
+      makeSuggestion({ severity: "minor", id: "t1" }),
+      makeSuggestion({ severity: "minor", id: "t2" }),
+      makeSuggestion({ severity: "minor", id: "t3" }),
+      makeSuggestion({ severity: "info", id: "t4" }),
+      makeSuggestion({ severity: "info", id: "t5" }),
+    ];
+    const score = computeOverallScore(suggestions, minimalResume);
+    expect(score).toBe(94); // 100 - 3*2 - 2*0
+  });
+
+  it("floors at 30", () => {
     const suggestions = [
       makeSuggestion({ severity: "critical", id: "t1" }),
       makeSuggestion({ severity: "critical", id: "t2" }),
       makeSuggestion({ severity: "critical", id: "t3" }),
       makeSuggestion({ severity: "critical", id: "t4" }),
       makeSuggestion({ severity: "critical", id: "t5" }),
+      makeSuggestion({ severity: "critical", id: "t6" }),
     ];
     const score = computeOverallScore(suggestions, minimalResume);
-    expect(score).toBe(10); // floor at 10
+    expect(score).toBe(30); // floor at 30
   });
 });
 
@@ -100,8 +113,8 @@ describe("computeCategoryScores", () => {
       makeSuggestion({ category: "summary", severity: "major", id: "t2" }),
     ];
     const scores = computeCategoryScores(suggestions, minimalResume);
-    expect(scores.experience).toBe(75); // 100 - 25
-    expect(scores.summary).toBe(88); // 100 - 12
+    expect(scores.experience).toBe(85); // 100 - 15
+    expect(scores.summary).toBe(92); // 100 - 8
     expect(scores.skills).toBe(100); // no suggestions
   });
 });

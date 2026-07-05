@@ -16,6 +16,7 @@ export type {
   ToneAnalysis,
   AnalysisMetadata,
   AnalysisResult,
+  ResumeStatistics,
   ProviderHealth,
   AnalysisQuota,
 } from "./types";

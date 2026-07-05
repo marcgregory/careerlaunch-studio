@@ -129,6 +129,17 @@ export interface ToneAnalysis {
   suggestions: string[];
 }
 
+// ─── Resume Statistics (non-issue aggregate info) ────────────────
+
+export interface ResumeStatistics {
+  skills: number;
+  certifications: number;
+  projects: number;
+  experienceEntries: number;
+  educationEntries: number;
+  bulletPoints: number;
+}
+
 // ─── Combined result ────────────────────────────────────────────
 
 export interface AnalysisMetadata {
@@ -141,6 +152,7 @@ export interface AnalysisResult {
   resumeId: string;
   resumeVersion: number;
   analyzedAt: string;
+  resumeStatistics: ResumeStatistics;
   ats: ATSAnalysis | null;
   grammar: GrammarAnalysis | null;
   impact: ImpactAnalysis | null;
