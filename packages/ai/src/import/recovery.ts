@@ -13,7 +13,6 @@
  *   5. Result is returned with annotations for UI badge display
  */
 
-import { loadPrompt } from "../lib/prompts";
 import { callGemini, callOpenAICompatible } from "../lib/llm";
 import type { ParseResult, SectionCoverageItem } from "./text-parser";
 import type { ResumeDocument, ExperienceItem, EducationItem, ProjectItem } from "@careerlaunch/domain";
@@ -97,20 +96,56 @@ const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 /* ------------------------------------------------------------------ */
 
 /**
- * Build the recovery prompt from the template and configuration.
+ * Inline prompt for resume recovery.
+ * Inlined rather than loaded from file so it works in all environments
+ * (the file-based prompt loader does not work in production Next.js bundles).
+ */
+const RECOVERY_SYSTEM_PROMPT = [
+  `You are a resume reconstruction expert. Your task is to recover missing information from a resume that was only partially parsed by an automated system.`,
+  ``,
+  `You will receive:`,
+  `1. The **original resume text** — the full text the user pasted`,
+  `2. The **parser output** — what the automated parser extracted (may be incomplete)`,
+  `3. A list of **low-coverage sections** — sections where the parser preserved less than 80% of the content`,
+  ``,
+  `For EACH low-coverage section, carefully read the original resume text and extract ALL available information. Be thorough — the original text contains the information even if the parser missed or fragmented it.`,
+  ``,
+  `## Critical Rules`,
+  `- Return ONLY information that is explicitly present in the original text`,
+  `- Do NOT invent, infer, or rewrite content`,
+  `- Preserve the exact wording from the original text`,
+  `- If a section is truly absent from the resume (not just poorly parsed), return an empty result for that key`,
+  `- Maintain the original order of entries within each section`,
+  `- For experience: every entry must have role, company, start date, end date, and bullet points`,
+  `- For education: every entry must have school, degree, and graduation year`,
+  `- For projects: every entry must have at least a project name (bullets are optional)`,
+  ``,
+  `Return ONLY valid JSON in the following format — no markdown, no code fences, no additional text:`,
+  `{`,
+  `  "experience": [`,
+  `    { "role": "Job Title", "company": "Company Name", "start": "Month Year", "end": "Month Year or Present", "bullets": ["Accomplishment bullet point"] }`,
+  `  ],`,
+  `  "education": [`,
+  `    { "school": "University Name", "degree": "Full Degree Name", "graduation": "Year" }`,
+  `  ],`,
+  `  "projects": [`,
+  `    { "name": "Project Name", "bullets": ["Detail about the project"] }`,
+  `  ],`,
+  `  "summary": "Full summary text as written in the original resume"`,
+  `}`,
+  ``,
+  `Omit any section key that you could not recover.`,
+].join("\n");
+
+/**
+ * Build the recovery prompt from configuration.
  */
 function buildRecoveryPrompt(
   originalText: string,
   parserOutput: ParseResult,
   lowCoverageSections: SectionCoverageItem[],
 ): { system: string; user: string } {
-  const template = loadPrompt("resume-recovery");
-
-  // Extract the # Role section as the system prompt
-  const roleMatch = template.match(/^# Role\s*\n([\s\S]*?)(?=\n# )/);
-  const system = roleMatch
-    ? roleMatch[1].trim()
-    : "You are a resume reconstruction expert.";
+  const system = RECOVERY_SYSTEM_PROMPT;
 
   // Format low-coverage sections for the prompt
   const coverageSummary = lowCoverageSections
