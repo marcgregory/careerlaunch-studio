@@ -215,7 +215,9 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
         </div>
 
         <div className="space-y-3">
+          <label htmlFor="jobmatch-jd" className="text-xs font-black uppercase tracking-wide text-[#4b4b4b]">Paste job description</label>
           <textarea
+            id="jobmatch-jd"
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             placeholder="Paste job description here..."

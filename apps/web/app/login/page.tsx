@@ -33,7 +33,7 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           </div>
           <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#6bbf22]">Secure workspace</p>
           <h1 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">Sign in</h1>
-          {params.error && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">Email or password did not match.</p>}
+          {params.error && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">Email or password did not match.</p>}
           <form action="/api/auth/login" method="post" className="mt-7 space-y-5">
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>

@@ -282,7 +282,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
       <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
         {/* Apply error banner (for errors outside the modal) */}
         {applyError && (
-          <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200">
+          <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200" role="alert">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             <p className="font-medium">{applyError}</p>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, X, Loader2, AlertCircle, Eye } from "lucide-react";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { DiffView } from "./diff-view";
 import { ConfidenceBar } from "./confidence-bar";
 import type { ClientSuggestion } from "../app/builder/_analysis/types";
@@ -42,17 +42,49 @@ export function SuggestionDiffModal({
   onApply,
   onClose,
 }: SuggestionDiffModalProps) {
-  // Close on Escape
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap and Escape handler
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape" && applyState !== "applying") onClose();
+      if (e.key === "Escape" && applyState !== "applying") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const el = modalRef.current;
+      if (!el) return;
+      const focusable = el.querySelectorAll<HTMLElement>("button, a, input, [tabindex]:not([tabindex='-1'])");
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     },
     [onClose, applyState],
   );
 
   useEffect(() => {
+    const el = modalRef.current;
+    if (!el) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    // Focus the first focusable element inside the modal
+    const firstFocusable = el.querySelector<HTMLElement>("button, a, input, [tabindex]:not([tabindex='-1'])");
+    firstFocusable?.focus();
+
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
   }, [handleKeyDown]);
 
   // Auto-close after successful apply
@@ -68,6 +100,7 @@ export function SuggestionDiffModal({
 
   return (
     <div
+      ref={modalRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       onClick={(e) => {
         // Close on backdrop click (only when not applying)
@@ -141,7 +174,7 @@ export function SuggestionDiffModal({
 
           {/* ── Apply error ────────────────────────────────────────── */}
           {applyState === "error" && applyError && (
-            <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <p className="font-medium">{applyError}</p>
             </div>

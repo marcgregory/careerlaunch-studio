@@ -231,7 +231,9 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
         </div>
 
         <div className="space-y-3">
+          <label htmlFor="cl-jd" className="text-xs font-black uppercase tracking-wide text-[#4b4b4b]">Paste job description (optional)</label>
           <textarea
+            id="cl-jd"
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             placeholder="Optional: Paste job description for a tailored cover letter..."

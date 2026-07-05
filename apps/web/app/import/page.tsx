@@ -114,7 +114,7 @@ export default function ImportPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4" role="alert">
             <AlertTriangle size={20} className="mt-0.5 shrink-0 text-red-500" />
             <div className="text-sm font-medium text-red-700">{error}</div>
           </div>
@@ -124,11 +124,12 @@ export default function ImportPage() {
         {state === "idle" && (
           <div className="mt-8 space-y-6">
             <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
-              <div className="flex items-center gap-3 text-sm font-black text-[#4b4b4b] uppercase tracking-[0.1em]">
+              <label htmlFor="import-text" className="flex items-center gap-3 text-sm font-black text-[#4b4b4b] uppercase tracking-[0.1em]">
                 <FileText size={18} />
                 Paste your resume text
-              </div>
+              </label>
               <textarea
+                id="import-text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Paste your resume text here...&#10;&#10;Jordan Lee&#10;jordan.lee@email.com&#10;(555) 014-7291&#10;Austin, TX&#10;&#10;Professional Summary&#10;Customer-focused operations specialist...&#10;&#10;Experience&#10;Operations Lead | Northstar Market | 2021 - Present&#10;• Improved resolution time by 28%&#10;• Trained 18 team members&#10;&#10;Education&#10;B.A. Communication Studies - Texas State University, 2018&#10;&#10;Skills&#10;Customer onboarding, CRM, Process improvement"

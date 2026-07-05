@@ -331,7 +331,9 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
         </div>
 
         <div className="space-y-3">
+          <label htmlFor="tailor-jd" className="text-xs font-black uppercase tracking-wide text-[#4b4b4b]">Paste job description</label>
           <textarea
+            id="tailor-jd"
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             placeholder="Paste job description here..."

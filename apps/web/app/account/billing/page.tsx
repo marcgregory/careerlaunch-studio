@@ -127,7 +127,7 @@ function AccountBillingContent() {
         </header>
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700">
+          <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700" role="alert">
             {error}
           </div>
         )}

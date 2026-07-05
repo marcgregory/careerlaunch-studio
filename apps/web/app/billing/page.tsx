@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, Check, CreditCard, Sparkles, ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { FocusTrap } from "../../components/focus-trap";
 
 type PlanInfo = {
   id: string;
@@ -417,7 +418,7 @@ function BillingContent() {
         )}
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700">
+          <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700" role="alert">
             {error}
           </div>
         )}
@@ -544,7 +545,10 @@ function BillingContent() {
       </div>
 
       {upgradePreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+        <FocusTrap
+          onClose={() => setUpgradePreview(null)}
+          ariaLabel={`Upgrade to ${upgradePreview.newPlan}`}
+        >
           <div className="w-full max-w-lg rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -619,11 +623,14 @@ function BillingContent() {
               </button>
             </div>
           </div>
-        </div>
+        </FocusTrap>
       )}
 
       {downgradePlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+        <FocusTrap
+          onClose={() => setDowngradePlan(null)}
+          ariaLabel={`Downgrade to ${planLabel(downgradePlan)}`}
+        >
           <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-orange-600">Schedule downgrade</p>
             <h2 className="mt-2 font-signal text-3xl font-black tracking-[-0.05em]">
@@ -651,10 +658,13 @@ function BillingContent() {
               </button>
             </div>
           </div>
-        </div>
+        </FocusTrap>
       )}
       {cancelingScheduledDowngrade && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#123c3a]/55 px-4 py-8 backdrop-blur-sm">
+        <FocusTrap
+          onClose={() => setCancelingScheduledDowngrade(false)}
+          ariaLabel={`Keep ${planLabel(data?.currentPlan ?? "plan")}`}
+        >
           <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.28)]">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6bbf22]">Keep current plan</p>
             <h2 className="mt-2 font-signal text-3xl font-black tracking-[-0.05em]">
@@ -682,7 +692,7 @@ function BillingContent() {
               </button>
             </div>
           </div>
-        </div>
+        </FocusTrap>
       )}
     </main>
   );

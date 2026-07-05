@@ -128,10 +128,12 @@ export function SuggestionFeedback({
         {selectedReason === "other" && (
           <div className="flex items-center gap-1.5">
             <input
+              id="feedback-other"
               type="text"
               value={reasonText}
               onChange={(e) => setReasonText(e.target.value)}
               placeholder="Tell us more..."
+              aria-label="Tell us more about your feedback"
               className="flex-1 rounded-lg border border-[#123c3a]/10 bg-[#f8f8f5] px-2 py-1 text-xs placeholder:text-[#4b4b4b]/40 focus:border-[#00796f] focus:outline-none"
             />
             <button

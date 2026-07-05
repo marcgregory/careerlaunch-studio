@@ -461,8 +461,52 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 }
 
 function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    // Focus the first focusable element inside the modal
+    const firstFocusable = el.querySelector<HTMLElement>("button, a, input, [tabindex]:not([tabindex='-1'])");
+    if (firstFocusable) {
+      firstFocusable.focus();
+    } else {
+      el.focus();
+    }
+
+    // Focus trap
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = el.querySelectorAll<HTMLElement>("button, a, input, [tabindex]:not([tabindex='-1'])");
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[#123c3a]/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title">
+    <div ref={ref} className="fixed inset-0 z-50 grid place-items-center bg-[#123c3a]/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title" tabIndex={-1}>
       <div className="w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 text-[#123c3a] shadow-2xl">
         <h2 id="upgrade-modal-title" className="font-signal text-2xl font-black tracking-[-0.05em]">
           {prompt.title}
