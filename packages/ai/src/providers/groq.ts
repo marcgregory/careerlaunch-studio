@@ -18,7 +18,8 @@ import type {
   ProviderHealth,
 } from "../analysis/types";
 import type { Suggestion } from "../suggestion/types";
-import type { CoverLetterInput, GeneratedCoverLetter } from "../cover-letter/types";
+import type { CoverLetterInput, GeneratedCoverLetter, CoverLetterContext } from "../cover-letter/types";
+import { buildCoverLetterContext } from "../cover-letter/context";
 import type { JobMatchResult } from "../job-match/types";
 import { callOpenAICompatible } from "../lib/llm";
 import { suggestionId } from "../suggestion/types";
@@ -167,7 +168,15 @@ const DIMENSION_SYSTEM_PROMPTS: Record<string, string> = {
   tone: "You are a tone analyst. Assess the consistency and appropriateness of the resume's language.",
 };
 
-const COVER_LETTER_SYSTEM_PROMPT = "You are a professional cover letter writer. Generate a tailored, compelling cover letter based on the candidate's resume and the target job description.";
+const COVER_LETTER_SYSTEM_PROMPT = `You are a professional cover letter writer. Generate a tailored, compelling cover letter based on the candidate's curated profile and the target job description.
+
+Rules:
+- Never list all of the candidate's technologies. Mention only 3-5 most relevant skills.
+- Do not repeat the same skills in multiple paragraphs.
+- Do not use dates as job titles.
+- Keep it 3-4 short paragraphs.
+- Use first-person voice throughout.
+- Be specific: reference actual achievements, not generic duties.`;
 
 const JOB_MATCH_SYSTEM_PROMPT = "You are a job match analyst. Compare a candidate's resume against a job description and provide a detailed match analysis.";
 
@@ -242,13 +251,80 @@ Respond with JSON: { "overallScore": 0-100, "tone": "...", "consistency": 0-100,
 }
 
 function buildCoverLetterPrompt(resume: CoverLetterInput["resume"], jobDescription?: string): string {
-  const jdSection = jobDescription ? `\n\nTarget Job Description:\n${jobDescription}` : "";
-  return `Generate a professional cover letter for this candidate.
+  const ctx: CoverLetterContext = buildCoverLetterContext(resume, jobDescription);
 
-Resume:
-${JSON.stringify(resume, null, 2)}${jdSection}
+  const parts: string[] = [
+    `Generate a cover letter for a ${ctx.targetRole} position.`,
+    "",
+    "## Curated Candidate Profile",
+    `Name: ${resume.contact.fullName || "The Candidate"}`,
+    `Target Role: ${ctx.targetRole}`,
+  ];
 
-Respond with JSON: { "salutation": "Dear Hiring Manager,", "body": "Full cover letter body with multiple paragraphs...", "closing": "Sincerely," }`;
+  if (ctx.currentTitle) {
+    parts.push(`Current/Last Title: ${ctx.currentTitle}`);
+  }
+  if (ctx.currentEmployer) {
+    parts.push(`Current/Last Employer: ${ctx.currentEmployer}`);
+  }
+  if (ctx.yearsExperience !== undefined) {
+    parts.push(`Estimated Experience: ${ctx.yearsExperience}+ years`);
+  }
+
+  // Skills — only top 5, JD-relevant
+  if (ctx.topRelevantSkills.length > 0) {
+    parts.push("");
+    parts.push(`Top Relevant Skills: ${ctx.topRelevantSkills.join(", ")}`);
+  }
+
+  // Best achievements — max 3
+  if (ctx.bestAchievements.length > 0) {
+    parts.push("");
+    parts.push("Key Achievements:");
+    for (const a of ctx.bestAchievements) {
+      parts.push(`- ${a}`);
+    }
+  }
+
+  // Projects — max 2
+  if (ctx.relevantProjects.length > 0) {
+    parts.push("");
+    parts.push("Relevant Projects:");
+    for (const p of ctx.relevantProjects) {
+      parts.push(`- ${p.name}: ${p.description}`);
+      for (const b of p.bullets) {
+        parts.push(`  - ${b}`);
+      }
+    }
+  }
+
+  // Education
+  if (ctx.education) {
+    parts.push("");
+    parts.push(`Education: ${ctx.education.degree} — ${ctx.education.school} (${ctx.education.graduation})`);
+  }
+
+  // Certifications
+  if (ctx.certifications.length > 0) {
+    parts.push(`Certifications: ${ctx.certifications.join(", ")}`);
+  }
+
+  // Summary (optional hint)
+  if (resume.summary) {
+    parts.push("");
+    parts.push(`Professional Summary: ${resume.summary}`);
+  }
+
+  // Job description
+  if (jobDescription) {
+    parts.push("");
+    parts.push(`Target Job Description:\n${jobDescription}`);
+  }
+
+  parts.push("");
+  parts.push(`Respond with JSON: { "salutation": "Dear Hiring Manager,", "body": "Full cover letter body with 3-4 paragraphs...", "closing": "Sincerely," }`);
+
+  return parts.join("\n");
 }
 
 function buildJobMatchPrompt(resume: NormalizedResume, jobDescription: string): string {

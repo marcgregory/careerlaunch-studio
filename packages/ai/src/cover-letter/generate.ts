@@ -1,5 +1,5 @@
-import type { CoverLetterInput, GeneratedCoverLetter } from "./types";
-import type { ResumeDocument } from "@careerlaunch/domain";
+import type { CoverLetterInput, GeneratedCoverLetter, CoverLetterContext } from "./types";
+import { buildCoverLetterContext } from "./context";
 import { getProvider } from "../providers/index";
 
 /**
@@ -40,48 +40,77 @@ export async function generateCoverLetter(
  *
  * Produces a realistic placeholder that the user can then edit manually.
  * Zero AI calls — used as a fallback when no AI provider is configured.
+ *
+ * Uses the curated CoverLetterContext so it follows the same quality rules
+ * as the AI-powered path (no raw skill dumps, no date-as-role, no repetition).
  */
 export function deterministicGenerateCoverLetter(input: CoverLetterInput): GeneratedCoverLetter {
   const { resume, jobDescription } = input;
-  const name = resume.contact.fullName || "the candidate";
-  const role = resume.targetRole || "the position";
-  const firstName = name.split(" ")[0] || name;
+  const ctx: CoverLetterContext = buildCoverLetterContext(resume, jobDescription);
 
-  // Select up to 3 relevant skills
-  const skills = resume.skills.length > 0
-    ? pickSkills(resume.skills, 3)
-    : ["relevant skills"];
-
-  // Select an experience highlight if available
-  const experienceHighlight = pickExperienceHighlight(resume);
-
-  // Build the opening paragraph
-  let opening = `I am writing to express my strong interest in the ${role} opportunity`;
+  // ── Build the opening paragraph ────────────────────────────────────
+  // Opening mentions role/background but NOT specific skills (avoids repetition)
+  let opening = `I am writing to express my strong interest in the ${ctx.targetRole} opportunity`;
   if (jobDescription) {
     opening += ` as described in your recent posting`;
   }
-  opening += `. With my background in ${resume.experience.length > 0 ? resume.experience[0].role.toLowerCase() : "professional work"} and expertise in ${skills.join(", ")}, I am confident I can contribute meaningfully to your team.`;
 
-  // Build the body paragraph
+  const titleToUse = ctx.currentTitle
+    ? ctx.currentTitle.toLowerCase()
+    : ctx.targetRole.toLowerCase();
+
+  opening += `. With my background as a ${titleToUse}, I am confident I can contribute meaningfully to your team.`;
+
+  // ── Build the body paragraph(s) ────────────────────────────────────
   const bodyParts: string[] = [];
 
-  if (experienceHighlight) {
+  // Achievement + skills combined paragraph (skills mentioned once here)
+  const skillPhrase = ctx.topRelevantSkills.length > 0
+    ? ctx.topRelevantSkills.join(", ")
+    : null;
+
+  if (ctx.bestAchievements.length > 0 && ctx.currentEmployer) {
+    const achievementText = ctx.bestAchievements
+      .slice(0, 2)
+      .map((a) => a.charAt(0).toLowerCase() + a.slice(1))
+      .join(", and ");
+    if (skillPhrase) {
+      bodyParts.push(
+        `In my most recent role as ${ctx.currentTitle} at ${ctx.currentEmployer}, I ${achievementText}. Drawing on expertise in ${skillPhrase}, I am well-prepared to deliver strong results in this position.`,
+      );
+    } else {
+      bodyParts.push(
+        `In my most recent role as ${ctx.currentTitle} at ${ctx.currentEmployer}, I ${achievementText}. These experiences have prepared me to deliver strong results in this position.`,
+      );
+    }
+  } else if (ctx.bestAchievements.length > 0) {
+    const achievementText = ctx.bestAchievements
+      .slice(0, 2)
+      .map((a) => a.charAt(0).toLowerCase() + a.slice(1))
+      .join(", and ");
+    if (skillPhrase) {
+      bodyParts.push(
+        `In my professional experience, I ${achievementText}. My proficiency in ${skillPhrase} has been central to this work, and I thrive in environments where I can apply these capabilities.`,
+      );
+    } else {
+      bodyParts.push(
+        `In my professional experience, I ${achievementText}. These achievements reflect my ability to deliver strong results.`,
+      );
+    }
+  } else if (skillPhrase) {
     bodyParts.push(
-      `In my most recent role as ${experienceHighlight.role} at ${experienceHighlight.company}, ${experienceHighlight.highlight}`
+      `My proficiency in ${skillPhrase} has been central to my professional growth and impact. I thrive in environments where I can apply these capabilities to solve meaningful problems and drive measurable results.`,
     );
   }
 
-  bodyParts.push(
-    `My proficiency in ${skills.join(", ")} has been central to my professional growth and impact. I thrive in environments where I can apply these capabilities to solve meaningful problems and drive measurable results.`
-  );
-
+  // JD alignment paragraph
   if (jobDescription) {
     bodyParts.push(
-      `After reviewing your requirements, I am particularly drawn to how my experience aligns with the needs of this role. I am eager to bring my background to your organization and contribute to your continued success.`
+      `After reviewing your requirements, I am particularly drawn to how my experience aligns with the needs of this role. I am eager to bring my background to your organization and contribute to your continued success.`,
     );
   }
 
-  // Build closing
+  // ── Build closing ──────────────────────────────────────────────────
   const closingParagraph = `Thank you for considering my application. I would welcome the opportunity to discuss how my experience, skills, and enthusiasm can benefit your team. I look forward to hearing from you regarding next steps.`;
 
   const body = [opening, ...bodyParts, closingParagraph].join("\n\n");
@@ -90,33 +119,5 @@ export function deterministicGenerateCoverLetter(input: CoverLetterInput): Gener
     body,
     salutation: "Dear Hiring Manager,",
     closing: "Sincerely,",
-  };
-}
-
-function pickSkills(skills: string[], count: number): string[] {
-  // Pick deterministic skills (first ones tend to be most relevant)
-  return skills.slice(0, Math.min(count, skills.length));
-}
-
-function pickExperienceHighlight(
-  resume: CoverLetterInput["resume"]
-): { role: string; company: string; highlight: string } | null {
-  if (resume.experience.length === 0) return null;
-
-  const exp = resume.experience[0];
-  const bullet = exp.bullets.filter((b) => b.trim().length > 0)[0];
-
-  if (bullet) {
-    return {
-      role: exp.role,
-      company: exp.company || "your organization",
-      highlight: `I ${bullet.charAt(0).toLowerCase() + bullet.slice(1)}`,
-    };
-  }
-
-  return {
-    role: exp.role,
-    company: exp.company || "your organization",
-    highlight: `I developed skills in team collaboration, project management, and delivering results.`,
   };
 }

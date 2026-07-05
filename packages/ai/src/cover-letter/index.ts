@@ -1,2 +1,3 @@
 export { generateCoverLetter, deterministicGenerateCoverLetter } from "./generate";
-export type { CoverLetterInput, GeneratedCoverLetter } from "./types";
+export { buildCoverLetterContext } from "./context";
+export type { CoverLetterInput, GeneratedCoverLetter, CoverLetterContext } from "./types";
