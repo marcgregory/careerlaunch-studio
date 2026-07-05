@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Eye, Wand2 } from "lucide-react";
 import { primaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
@@ -24,13 +24,31 @@ export default function ImportPage() {
     return quality === "poor" || quality === "failed";
   }
 
-  function getQualityBanner(quality: ImportQuality): {
+  /** Whether the parser or AI was able to extract meaningful content */
+  function hasAnyContent(): boolean {
+    if (!result?.parsed) return false;
+    const p = result.parsed;
+    return !!(p.summary || (p.experience && p.experience.length > 0) || (p.education && p.education.length > 0));
+  }
+
+  function getQualityBanner(quality: ImportQuality, aiRecovered?: boolean, recoveredSections?: string[]): {
     icon: typeof AlertTriangle | typeof CheckCircle2;
     border: string;
     bg: string;
     title: string;
     description: string;
   } {
+    // If AI recovery reconstructed sections, show success with info badge
+    if (aiRecovered && recoveredSections && recoveredSections.length > 0) {
+      return {
+        icon: CheckCircle2,
+        border: "border-green-200",
+        bg: "bg-green-50",
+        title: "Resume reconstructed with AI",
+        description: `We detected that some ${recoveredSections.join(", ")} sections were difficult to parse and reconstructed them using AI. Please review the highlighted fields before continuing.`,
+      };
+    }
+
     switch (quality) {
       case "excellent":
       case "good":
@@ -49,7 +67,7 @@ export default function ImportPage() {
           border: "border-amber-200",
           bg: "bg-amber-50",
           title: "Import quality needs review",
-          description: "Some critical sections have low coverage. Review and fix the data in the builder.",
+          description: "Some sections have limited data. You can still create a draft and fill in the missing details in the builder.",
         };
       case "poor":
         return {
@@ -57,7 +75,7 @@ export default function ImportPage() {
           border: "border-orange-200",
           bg: "bg-orange-50",
           title: "Import quality is low",
-          description: "Critical information was lost during parsing. We recommend fixing the import before creating a draft.",
+          description: "Critical information was lost during parsing. You can still create a draft, but some sections will need manual editing.",
         };
       case "failed":
         return {
@@ -65,7 +83,7 @@ export default function ImportPage() {
           border: "border-red-200",
           bg: "bg-red-50",
           title: "Import failed — critical sections could not be parsed",
-          description: "The parser could not reliably preserve your resume. Please review the raw text and fix content below.",
+          description: "The parser could not reliably preserve your resume. You can still create a draft and fill in the details manually.",
         };
     }
   }
@@ -118,8 +136,8 @@ export default function ImportPage() {
   async function handleCreateDraft() {
     if (!result?.parsed) return;
 
-    // Block saving if overall import quality is poor or failed
-    if (result.importQuality && isQualityBlocked(result.importQuality)) {
+    // Block saving only if quality is poor AND AI recovery was not applied
+    if (result.importQuality && isQualityBlocked(result.importQuality) && !result.aiRecovered) {
       setError(
         "Import quality is too low to create a reliable draft. " +
         "Review the coverage table below, paste the missing content, and try again.",
@@ -253,7 +271,7 @@ export default function ImportPage() {
           <div className="mt-8 space-y-6">
             {/* Import quality banner — derived from section coverage, not heuristic */}
             {(() => {
-              const banner = getQualityBanner(result.importQuality);
+              const banner = getQualityBanner(result.importQuality, result.aiRecovered, result.aiRecoveredSections);
               const Icon = banner.icon;
               return (
                 <div className={`flex items-start gap-3 rounded-2xl border ${banner.border} ${banner.bg} p-4`} role="alert">
@@ -261,7 +279,7 @@ export default function ImportPage() {
                   <div>
                     <p className="text-sm font-bold">{banner.title}</p>
                     <p className="mt-1 text-sm">{banner.description}</p>
-                    {result.warnings.length > 0 && (
+                    {result.warnings.length > 0 && !result.aiRecovered && (
                       <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">
                         {result.warnings.map((w, i) => (
                           <li key={i}>{w}</li>
@@ -284,14 +302,23 @@ export default function ImportPage() {
                   {result.coverage
                     .filter((c) => c.sectionId !== "references")
                     .map((c) => {
-                      const colorClass = getCoverageColorClass(c.status);
+                      const isRecovered = result.aiRecoveredSections?.includes(c.sectionId);
+                      const colorClass = isRecovered ? "text-green-600 bg-green-50 border-green-200" : getCoverageColorClass(c.status);
                       const hasUnparsed = showUnparsed === c.sectionId && result.unparsedContent?.[c.sectionId];
                       return (
                         <div key={c.sectionId}>
                           <div
                             className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold ${colorClass}`}
                           >
-                            <span className="capitalize">{c.sectionId}</span>
+                            <span className="flex items-center gap-1.5 capitalize">
+                              {c.sectionId}
+                              {isRecovered && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700" title="Reconstructed by AI">
+                                  <Wand2 size={9} />
+                                  Recovered
+                                </span>
+                              )}
+                            </span>
                             <span>{getCoverageLabel(c.status)}</span>
                           </div>
                           <div className="mt-1 px-1 text-[10px] font-medium text-[#999]">
@@ -338,15 +365,29 @@ export default function ImportPage() {
 
               {result.parsed.summary && (
                 <div className="mt-5">
-                  <h3 className="text-xs font-black uppercase tracking-[0.12em] text-[#999]">Summary</h3>
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    Summary
+                    {result.aiRecoveredSections?.includes("summary") && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
+                        <Wand2 size={9} />
+                        AI recovered
+                      </span>
+                    )}
+                  </h3>
                   <p className="mt-2 text-sm font-medium leading-6 text-[#33343b]">{result.parsed.summary}</p>
                 </div>
               )}
 
               {result.parsed.experience && result.parsed.experience.length > 0 && (
                 <div className="mt-5">
-                  <h3 className="text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Experience ({result.parsed.experience.length})
+                    {result.aiRecoveredSections?.includes("experience") && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
+                        <Wand2 size={9} />
+                        AI recovered
+                      </span>
+                    )}
                   </h3>
                   <div className="mt-2 space-y-3">
                     {result.parsed.experience.map((exp) => (
@@ -373,8 +414,14 @@ export default function ImportPage() {
 
               {result.parsed.education && result.parsed.education.length > 0 && (
                 <div className="mt-5">
-                  <h3 className="text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Education ({result.parsed.education.length})
+                    {result.aiRecoveredSections?.includes("education") && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
+                        <Wand2 size={9} />
+                        AI recovered
+                      </span>
+                    )}
                   </h3>
                   <div className="mt-2 space-y-2">
                     {result.parsed.education.map((edu) => (
@@ -389,8 +436,14 @@ export default function ImportPage() {
 
               {result.parsed.skills && result.parsed.skills.length > 0 && (
                 <div className="mt-5">
-                  <h3 className="text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
                     Skills ({result.parsed.skills.length})
+                    {result.aiRecoveredSections?.includes("skills") && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700">
+                        <Wand2 size={9} />
+                        AI recovered
+                      </span>
+                    )}
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {result.parsed.skills.map((skill) => (
@@ -408,7 +461,7 @@ export default function ImportPage() {
 
             {/* Actions */}
             <div className="flex items-center justify-between gap-4">
-              {result.importQuality === "poor" || result.importQuality === "failed" ? (
+              {(result.importQuality === "poor" || result.importQuality === "failed") && !result.aiRecovered ? (
                 <>
                   <button
                     type="button"

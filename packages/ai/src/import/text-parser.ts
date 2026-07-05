@@ -38,6 +38,10 @@ export type ParseResult = {
   unparsedContent: Record<string, string>;
   /** Per-section coverage analysis comparing input vs parsed content */
   coverage: SectionCoverageItem[];
+  /** Whether the AI recovery pass was applied (only present after recovery) */
+  aiRecovered?: boolean;
+  /** Which sections were reconstructed by the AI recovery pass */
+  aiRecoveredSections?: string[];
 };
 
 /* ------------------------------------------------------------------ */

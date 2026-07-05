@@ -1,4 +1,4 @@
-import { parseResumeText } from "@careerlaunch/ai/import";
+import { parseResumeText, deriveImportQuality, recoverSections, mergeRecovery, needsAICoverageRecovery } from "@careerlaunch/ai/import";
 import { requireApiUser } from "../../../../lib/auth";
 import { reportError } from "../../../../lib/error-reporting";
 import { getRequestId } from "../../../../lib/request-id";
@@ -65,6 +65,47 @@ export async function POST(request: Request) {
   let result;
   try {
     result = parseResumeText(body.text);
+
+    // ── AI Recovery Pass ─────────────────────────────────────────────
+    // If critical sections have low coverage, attempt AI reconstruction
+    // using the original resume text. This runs automatically so users
+    // rarely need to manually fix low-quality imports.
+    if (needsAICoverageRecovery(result.coverage)) {
+      const providerName = pickImportRecoveryProvider();
+      if (providerName) {
+        const apiKey = providerName === "groq"
+          ? process.env.GROQ_API_KEY
+          : process.env.GEMINI_API_KEY;
+
+        if (apiKey) {
+          const recovery = await recoverSections({
+            originalText: body.text,
+            parserOutput: result,
+            lowCoverageSections: result.coverage.filter((c) => c.ratio < 0.8),
+            provider: { name: providerName, apiKey },
+          });
+
+          const merged = mergeRecovery(result, recovery);
+
+          // Update coverage for recovered sections — mark them as 100%
+          // (the AI has reconstructed the content from the original text).
+          const updatedCoverage = result.coverage.map((c) =>
+            merged.recoveredSections.includes(c.sectionId)
+              ? { ...c, ratio: 1, status: "good" as const, parsedWordCount: c.originalWordCount }
+              : c,
+          );
+
+          result = {
+            ...result,
+            parsed: merged.parsed,
+            coverage: updatedCoverage,
+            importQuality: deriveImportQuality(updatedCoverage),
+            aiRecovered: merged.aiRecovered,
+            aiRecoveredSections: merged.recoveredSections,
+          };
+        }
+      }
+    }
   } catch (error) {
     reportError(error, getRequestId(request), { route: "import-text" });
     return Response.json(
@@ -74,4 +115,14 @@ export async function POST(request: Request) {
   }
 
   return Response.json(result, { status: 200 });
+}
+
+/**
+ * Determine which AI provider to use for the recovery pass.
+ * Returns the provider name, or null if no provider is configured.
+ */
+function pickImportRecoveryProvider(): "gemini" | "groq" | null {
+  if (process.env.GEMINI_API_KEY) return "gemini";
+  if (process.env.GROQ_API_KEY) return "groq";
+  return null;
 }
