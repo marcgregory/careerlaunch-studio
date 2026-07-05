@@ -78,6 +78,14 @@ export async function POST(request: Request) {
           : process.env.GEMINI_API_KEY;
 
         if (apiKey) {
+          // Snapshot pre-recovery data so the UI can offer a comparison view
+          const preRecoveryData = {
+            summary: result.parsed.summary ?? "",
+            experience: result.parsed.experience ?? [],
+            education: result.parsed.education ?? [],
+            skills: result.parsed.skills ?? [],
+          };
+
           const recovery = await recoverSections({
             originalText: body.text,
             parserOutput: result,
@@ -102,6 +110,9 @@ export async function POST(request: Request) {
             importQuality: deriveImportQuality(updatedCoverage),
             aiRecovered: merged.aiRecovered,
             aiRecoveredSections: merged.recoveredSections,
+            /** Pre-recovery snapshot for the comparison UI toggle.
+             *  Only populated when AI recovery was applied. */
+            preRecoveryData,
           };
         }
       }

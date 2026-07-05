@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Eye, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Eye, Wand2, GitCompare } from "lucide-react";
 import { primaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
-import type { ParseResult, CoverageStatus, SectionCoverageItem, ImportQuality } from "@careerlaunch/ai/import";
+import type { ParseResult, CoverageStatus, SectionCoverageItem, ImportQuality, ExperienceItem, EducationItem } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 
@@ -18,6 +18,10 @@ export default function ImportPage() {
   const [result, setResult] = useState<ParseResult | null>(null);
   const [error, setError] = useState("");
   const [showUnparsed, setShowUnparsed] = useState<string | null>(null);
+  /** Comparison view: which section is showing "original" instead of "recovered".
+   *  Set to a sectionId ("experience", "education", etc.) to show pre-recovery data.
+   *  When null, the recovered view is shown. */
+  const [compareSection, setCompareSection] = useState<string | null>(null);
 
   /** Whether the overall import quality is low enough to block draft creation */
   function isQualityBlocked(quality: ImportQuality): boolean {
@@ -44,8 +48,8 @@ export default function ImportPage() {
         icon: CheckCircle2,
         border: "border-green-200",
         bg: "bg-green-50",
-        title: "Resume reconstructed with AI",
-        description: `We detected that some ${recoveredSections.join(", ")} sections were difficult to parse and reconstructed them using AI. Please review the highlighted fields before continuing.`,
+        title: "We repaired issues found while importing your resume.",
+        description: `Your ${recoveredSections.join(", ")} sections were automatically reconstructed from the original resume text. Please quickly review the highlighted sections before continuing.`,
       };
     }
 
@@ -388,9 +392,22 @@ export default function ImportPage() {
                         AI recovered
                       </span>
                     )}
+                    {result.aiRecoveredSections?.includes("experience") && result.preRecoveryData && (
+                      <button
+                        type="button"
+                        onClick={() => setCompareSection(compareSection === "experience" ? null : "experience")}
+                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                      >
+                        <GitCompare size={12} />
+                        {compareSection === "experience" ? "View recovered" : "View original"}
+                      </button>
+                    )}
                   </h3>
                   <div className="mt-2 space-y-3">
-                    {result.parsed.experience.map((exp) => (
+                    {(compareSection === "experience" && result.preRecoveryData
+                      ? result.preRecoveryData.experience
+                      : result.parsed.experience
+                    ).map((exp) => (
                       <div key={exp.id} className="border-l-2 border-[#b9ff66] pl-3">
                         <p className="text-sm font-bold">{exp.role}</p>
                         {exp.company && (
@@ -422,9 +439,22 @@ export default function ImportPage() {
                         AI recovered
                       </span>
                     )}
+                    {result.aiRecoveredSections?.includes("education") && result.preRecoveryData && (
+                      <button
+                        type="button"
+                        onClick={() => setCompareSection(compareSection === "education" ? null : "education")}
+                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                      >
+                        <GitCompare size={12} />
+                        {compareSection === "education" ? "View recovered" : "View original"}
+                      </button>
+                    )}
                   </h3>
                   <div className="mt-2 space-y-2">
-                    {result.parsed.education.map((edu) => (
+                    {(compareSection === "education" && result.preRecoveryData
+                      ? result.preRecoveryData.education
+                      : result.parsed.education
+                    ).map((edu) => (
                       <div key={edu.id} className="text-sm">
                         <p className="font-bold">{edu.degree}</p>
                         <p className="text-xs font-medium text-[#4b4b4b]">{edu.school}</p>
@@ -444,9 +474,22 @@ export default function ImportPage() {
                         AI recovered
                       </span>
                     )}
+                    {result.aiRecoveredSections?.includes("skills") && result.preRecoveryData && (
+                      <button
+                        type="button"
+                        onClick={() => setCompareSection(compareSection === "skills" ? null : "skills")}
+                        className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#123c3a] underline hover:no-underline"
+                      >
+                        <GitCompare size={12} />
+                        {compareSection === "skills" ? "View recovered" : "View original"}
+                      </button>
+                    )}
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {result.parsed.skills.map((skill) => (
+                    {(compareSection === "skills" && result.preRecoveryData
+                      ? result.preRecoveryData.skills
+                      : result.parsed.skills
+                    ).map((skill) => (
                       <span
                         key={skill}
                         className="rounded-full bg-[#b9ff66] px-3 py-1 text-xs font-black text-[#123c3a]"

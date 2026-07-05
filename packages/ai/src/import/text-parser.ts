@@ -1,4 +1,4 @@
-import type { ResumeDocument, ResumeSectionId } from "@careerlaunch/domain";
+import type { ResumeDocument, ResumeSectionId, ExperienceItem, EducationItem } from "@careerlaunch/domain";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -42,6 +42,15 @@ export type ParseResult = {
   aiRecovered?: boolean;
   /** Which sections were reconstructed by the AI recovery pass */
   aiRecoveredSections?: string[];
+  /** Pre-recovery data snapshot for the comparison UI toggle.
+   *  Only populated when AI recovery was applied. Maps sectionId to the
+   *  pre-recovery content so users can see what changed. */
+  preRecoveryData?: {
+    summary: string;
+    experience: ExperienceItem[];
+    education: EducationItem[];
+    skills: string[];
+  };
 };
 
 /* ------------------------------------------------------------------ */

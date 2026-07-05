@@ -449,4 +449,118 @@ describe("mergeRecovery", () => {
     expect(merged.parsed.summary).toBe("Original summary.");
     expect(merged.parsed.skills).toContain("JavaScript");
   });
+
+  it("should filter out fragment parser entries before merging", () => {
+    // Fragment entry: no company, no bullets, no dates (parser artifact)
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [
+          { id: "exp-fragment", role: "timelines were met.", company: "", location: "", start: "", end: "", bullets: [] },
+          { id: "exp-real", role: "Software Engineer", company: "RealCo", location: "", start: "2020", end: "2023", bullets: ["Built stuff."] },
+        ],
+        education: [],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 0.3, 5, 50),
+      ],
+    });
+
+    const aiRecovery: RecoveryResult = {
+      experience: [
+        // AI found a different entry not captured by parser
+        { role: "Junior Developer", company: "PreviousCo", start: "2018", end: "2020", bullets: ["Learned things."] },
+      ],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // Fragment should be removed. Real entry + AI entry = 2
+    expect(merged.parsed.experience).toHaveLength(2);
+    // Fragment entries (no company, no bullets, no dates) are filtered
+    expect(merged.parsed.experience!.every((e) => e.company.length > 0)).toBe(true);
+  });
+
+  it("should soft-dedup education entries with reformatted text", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [],
+        education: [
+          { id: "edu-1", school: "Cagayan de Oro College - PHINMA", degree: "BS in Computer Engineering", location: "", graduation: "2015" },
+        ],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 1.0, 10, 10),
+        makeCoverageItem("education", 0.3, 5, 30),
+      ],
+    });
+
+    const aiRecovery: RecoveryResult = {
+      education: [
+        { school: "Cagayan de Oro College - PHINMA", degree: "BS in Computer Engineering", graduation: "2015" },
+        { school: "Some Other University", degree: "MBA", graduation: "2020" },
+      ],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // First edu should be deduplicated (same school/degree with reformatted text)
+    // Second edu is new and should be added
+    expect(merged.parsed.education).toHaveLength(2);
+    // The AI version should be used for the first entry
+    expect(merged.parsed.education![0].degree).toBe("BS in Computer Engineering");
+    expect(merged.parsed.education![0].school).toBe("Cagayan de Oro College - PHINMA");
+  });
+
+  it("should merge AI categorized skills when parser coverage is low", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [
+          { id: "exp-1", role: "Dev", company: "Acme", location: "", start: "2020", end: "Present", bullets: ["Work"] },
+        ],
+        education: [],
+        skills: ["Node", "React"],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 0.95, 10, 10),
+        makeCoverageItem("skills", 0.3, 3, 20),
+      ],
+    });
+
+    const aiRecovery: RecoveryResult = {
+      skills: [
+        { category: "Frontend", items: ["React", "TypeScript"] },
+        { category: "Backend", items: ["Node.js", "PostgreSQL"] },
+        { category: "Cloud & Tools", items: ["Docker", "AWS"] },
+      ],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    expect(merged.recoveredSections).toContain("skills");
+    expect(merged.aiRecovered).toBe(true);
+    // Skills should include categorized entries prefixed with category name
+    expect(merged.parsed.skills).toContain("Frontend: React");
+    expect(merged.parsed.skills).toContain("Frontend: TypeScript");
+    expect(merged.parsed.skills).toContain("Backend: Node.js");
+    expect(merged.parsed.skills).toContain("Backend: PostgreSQL");
+    expect(merged.parsed.skills).toContain("Cloud & Tools: Docker");
+    expect(merged.parsed.skills).toContain("Cloud & Tools: AWS");
+  });
 });

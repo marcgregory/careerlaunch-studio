@@ -52,6 +52,12 @@ export type RecoveryResult = {
     bullets: string[];
   }>;
   summary?: string;
+  /** Categorized skills: each category has a label and list of skill items.
+   *  Example: { category: "Frontend", items: ["React", "TypeScript", "Next.js"] } */
+  skills?: Array<{
+    category: string;
+    items: string[];
+  }>;
 };
 
 /**
@@ -119,6 +125,8 @@ const RECOVERY_SYSTEM_PROMPT = [
   `- For experience: every entry must have role, company, start date, end date, and bullet points`,
   `- For education: every entry must have school, degree, and graduation year`,
   `- For projects: every entry must have at least a project name (bullets are optional)`,
+  `- For skills: organize by category (Frontend, Backend, Cloud & Tools, etc.)`,
+  `  with each category having a list of individual skill items.`,
   ``,
   `Return ONLY valid JSON in the following format — no markdown, no code fences, no additional text:`,
   `{`,
@@ -127,6 +135,10 @@ const RECOVERY_SYSTEM_PROMPT = [
   `  ],`,
   `  "education": [`,
   `    { "school": "University Name", "degree": "Full Degree Name", "graduation": "Year" }`,
+  `  ],`,
+  `  "skills": [`,
+  `    { "category": "Frontend", "items": ["React", "TypeScript"] },`,
+  `    { "category": "Backend", "items": ["Node.js", "PostgreSQL"] }`,
   `  ],`,
   `  "projects": [`,
   `    { "name": "Project Name", "bullets": ["Detail about the project"] }`,
@@ -338,6 +350,30 @@ function parseRecoveryResponse(raw: unknown): RecoveryResult {
     result.summary = data.summary.trim();
   }
 
+  // Validate skills (array of { category, items })
+  if (Array.isArray(data.skills)) {
+    const valid = data.skills.filter(
+      (s: unknown) =>
+        s &&
+        typeof s === "object" &&
+        typeof (s as Record<string, unknown>).category === "string" &&
+        ((s as Record<string, unknown>).category as string).trim().length > 0 &&
+        Array.isArray((s as Record<string, unknown>).items) &&
+        ((s as Record<string, unknown>).items as unknown[]).length > 0,
+    );
+    if (valid.length > 0) {
+      result.skills = valid.map((s: unknown) => {
+        const entry = s as Record<string, unknown>;
+        return {
+          category: String(entry.category ?? "").trim(),
+          items: Array.isArray(entry.items)
+            ? entry.items.map((i: unknown) => String(i).trim()).filter(Boolean)
+            : [],
+        };
+      });
+    }
+  }
+
   return result;
 }
 
@@ -399,10 +435,11 @@ function needsRecovery(
  *
  * Rules:
  * - Contact info: always keep parser (email extraction is reliable)
- * - Experience: use AI version if parser coverage < 80%, otherwise keep parser
- * - Education: use AI version if parser coverage < 80%, otherwise keep parser
- * - Projects: use AI version if parser coverage < 80%, otherwise keep parser
- * - Skills: use AI version if parser coverage < 80%; merge (union) otherwise
+ * - Experience: filter parser fragments, then merge AI entries with dedup
+ * - Education: soft-dedup by substring overlap to catch reformatted entries
+ * - Projects: deduplicate by name
+ * - Skills: use AI categorized skills when parser coverage is low; flatten
+ *           with category labels for the string[] domain type
  * - Summary: use AI version if parser coverage < 80%, otherwise keep parser
  * - Certifications: always keep parser (simple list items)
  */
@@ -431,9 +468,12 @@ export function mergeRecovery(
 
   // ── Experience ──
   if (recovered.experience && needsRecovery("experience", parsed.coverage)) {
-    // Deduplicate: avoid adding AI entries that overlap with parser entries
+    // Step 1: Filter parser entries that are clearly fragments or garbage
+    const cleanParserExp = base.experience.filter(isValidExperienceEntry);
+
+    // Step 2: Deduplicate and merge
     const merged = deduplicateExperience(
-      base.experience,
+      cleanParserExp,
       recovered.experience,
     );
     if (merged.length > 0) {
@@ -444,7 +484,7 @@ export function mergeRecovery(
 
   // ── Education ──
   if (recovered.education && needsRecovery("education", parsed.coverage)) {
-    // If parser found nothing or very little, use AI version entirely
+    // Use AI version entirely if parser found nothing
     if (base.education.length === 0) {
       base.education = recovered.education.map((e, i) => ({
         id: `import-edu-recovered-${i + 1}`,
@@ -454,15 +494,14 @@ export function mergeRecovery(
         graduation: e.graduation ?? "",
       }));
     } else {
-      // Merge: add AI entries that don't duplicate parser entries
-      const existingKeys = new Set(
-        base.education.map(
-          (e) => `${e.school.toLowerCase()}|${e.degree.toLowerCase()}`,
-        ),
-      );
+      // Merge with soft-dedup: compare substring overlap to catch
+      // reformatted duplicates like "BS in Computer Engineering" vs
+      // "BS in Computer Engineering | Cagayan de Oro College - PHINMA"
       for (const edu of recovered.education) {
-        const key = `${edu.school.toLowerCase()}|${edu.degree.toLowerCase()}`;
-        if (!existingKeys.has(key)) {
+        const isDuplicate = base.education.some((existing) =>
+          eduEntriesOverlap(existing, edu),
+        );
+        if (!isDuplicate) {
           base.education.push({
             id: `import-edu-recovered-${base.education.length + 1}`,
             school: edu.school,
@@ -470,7 +509,6 @@ export function mergeRecovery(
             location: "",
             graduation: edu.graduation ?? "",
           });
-          existingKeys.add(key);
         }
       }
     }
@@ -510,8 +548,28 @@ export function mergeRecovery(
 
   // ── Skills ──
   if (needsRecovery("skills", parsed.coverage)) {
-    // If parser got nothing, try to keep what we have
-    // Skills are typically handled well by the parser, so this is rare
+    if (recovered.skills && recovered.skills.length > 0) {
+      // Flatten categorized skills into the string[] domain format.
+      // Category labels become prefixes: "Frontend: React", "Backend: Node.js"
+      const flatSkills: string[] = [];
+      for (const cat of recovered.skills) {
+        const prefix = cat.category.trim();
+        for (const item of cat.items) {
+          const labeled = item.includes(":") || item.startsWith(prefix)
+            ? item
+            : `${prefix}: ${item}`;
+          flatSkills.push(labeled);
+        }
+      }
+      // Merge with existing skills (union), preferring AI's reconstruction
+      const existing = new Set(base.skills.map((s) => s.toLowerCase()));
+      const newSkills = flatSkills.filter(
+        (s) => !existing.has(s.toLowerCase()),
+      );
+      if (newSkills.length > 0) {
+        base.skills = [...flatSkills, ...newSkills];
+      }
+    }
     recoveredSections.push("skills");
   }
 
@@ -520,6 +578,88 @@ export function mergeRecovery(
     recoveredSections,
     aiRecovered: recoveredSections.length > 0,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Entry quality helpers                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Check whether a parser experience entry looks like a real entry rather
+ * than a text fragment. A fragment is an entry that has:
+ * - No company AND no bullets AND both start/end are empty
+ * - OR the role is very short (≤3 words) with no date context and no company
+ *
+ * This eliminates fragments like `{ role: "timelines were met.", ... }`
+ * that the parser accidentally captured.
+ */
+function isValidExperienceEntry(entry: ExperienceItem): boolean {
+  const hasCompany = entry.company.trim().length > 0;
+  const hasBullets = entry.bullets.length > 0;
+  const hasDates = entry.start.trim().length > 0 || entry.end.trim().length > 0;
+  const roleWords = entry.role.trim().split(/\s+/).filter(Boolean).length;
+
+  // Must have at least two signals of being a real entry
+  let signals = 0;
+  if (hasCompany) signals++;
+  if (hasBullets) signals++;
+  if (hasDates) signals++;
+  if (signals >= 2) return true;
+
+  // Single signal: company alone is enough if role is reasonable
+  if (hasCompany && roleWords >= 2) return true;
+
+  // Single signal: bullets with a proper role name
+  if (hasBullets && roleWords >= 2) return true;
+
+  return false;
+}
+
+/**
+ * Check if two education entries refer to the same degree using substring
+ * overlap on school and degree fields. This catches reformatted duplicates
+ * where the same entry was parsed in two different ways.
+ *
+ * Returns true if both school and degree have ≥60% character overlap.
+ */
+function eduEntriesOverlap(
+  a: { school: string; degree: string },
+  b: { school: string; degree: string },
+): boolean {
+  const aSchool = a.school.toLowerCase().trim();
+  const bSchool = b.school.toLowerCase().trim();
+  const aDegree = a.degree.toLowerCase().trim();
+  const bDegree = b.degree.toLowerCase().trim();
+
+  // Character overlap ratio
+  function overlapRatio(x: string, y: string): number {
+    if (x.length === 0 || y.length === 0) return 0;
+    const shorter = x.length <= y.length ? x : y;
+    const longer = x.length > y.length ? x : y;
+
+    // Check if shorter is a substring of longer
+    if (longer.includes(shorter)) {
+      return shorter.length / Math.max(x.length, y.length);
+    }
+
+    // Count shared characters in order (approximate overlap)
+    let matches = 0;
+    let j = 0;
+    for (let i = 0; i < shorter.length && j < longer.length; i++) {
+      const idx = longer.indexOf(shorter[i], j);
+      if (idx >= 0) {
+        matches++;
+        j = idx + 1;
+      }
+    }
+    return matches / Math.max(x.length, y.length);
+  }
+
+  const schoolOverlap = overlapRatio(aSchool, bSchool);
+  const degreeOverlap = overlapRatio(aDegree, bDegree);
+
+  // Both school and degree must have substantial overlap
+  return schoolOverlap >= 0.6 && degreeOverlap >= 0.6;
 }
 
 /* ------------------------------------------------------------------ */
@@ -545,7 +685,7 @@ function deduplicateExperience(
     parsedEntries.map((e) => makeExpKey(e.role, e.company, e.start, e.end)),
   );
 
-  // Start with all parser entries
+  // Start with all (filtered) parser entries
   const merged = [...parsedEntries];
 
   // Add recovered entries that don't duplicate parser entries
