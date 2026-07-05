@@ -73,5 +73,35 @@
     "id": "jd-15",
     "label": "Senior Content Marketing Manager",
     "text": "ContentFactory Agency is looking for a Senior Content Marketing Manager to lead our content strategy practice. You will create content calendars, manage freelance writers, and optimize content for SEO. The ideal candidate has 4+ years of content marketing experience, excellent writing and editing skills, and expertise in SEO tools like SEMrush. Experience with WordPress, editorial planning, and measuring content ROI is required. B2B SaaS content experience is highly preferred."
+  },
+  {
+    "id": "jd-16",
+    "label": "React Developer — Junior",
+    "text": "StartupForge is looking for a React Developer to join our product engineering team. You will build and maintain user-facing features using React, TypeScript, and Tailwind CSS. The ideal candidate has 1+ years of experience with React, a solid understanding of responsive design, and familiarity with Git workflows. Experience with Jest or React Testing Library is preferred. We value developers who write clean code and participate in team code reviews."
+  },
+  {
+    "id": "jd-17",
+    "label": "Senior Backend Engineer — Go/AWS",
+    "text": "DataPlatform Inc is hiring a Senior Backend Engineer to design and build our next-generation microservices platform. You will work extensively with Go, gRPC, PostgreSQL, and AWS to build systems handling millions of requests per day. The ideal candidate has 5+ years of backend engineering experience, deep knowledge of distributed systems, and expertise in Go and Node.js. Experience with Kafka, Docker, and Kubernetes is required. AWS certification is highly preferred. You will mentor junior engineers and contribute to architecture decisions."
+  },
+  {
+    "id": "jd-18",
+    "label": "WordPress Developer — Agency",
+    "text": "DigitalAgency Co is seeking a WordPress Developer to build and maintain client websites. You will create custom themes using PHP and Elementor, develop WooCommerce stores, and optimize site performance. The ideal candidate has 3+ years of WordPress development experience, strong PHP skills, and experience with WooCommerce. Knowledge of SEO best practices, caching optimization, and CDN configuration is required. Experience with REST APIs and headless WordPress is a plus."
+  },
+  {
+    "id": "jd-19",
+    "label": "Digital Marketing Specialist",
+    "text": "GrowthLab Agency is hiring a Digital Marketing Specialist to manage paid advertising campaigns for our clients. You will plan, execute, and optimize Google Ads and Meta Ads campaigns to drive lead generation and ROI. The ideal candidate has 2+ years of digital marketing experience with proven expertise in Google Ads and Meta Ads. Strong analytical skills, experience with A/B testing, and proficiency in Google Analytics are required. Google Ads or Meta certification is preferred."
+  },
+  {
+    "id": "jd-20",
+    "label": "Visual Designer — Brand & UI",
+    "text": "Creative Studio LA is looking for a Visual Designer to join our creative team. You will design brand identities, create UI mockups and prototypes, and produce marketing materials for a diverse range of clients. The ideal candidate has 2+ years of graphic design experience, expert knowledge of Figma and Adobe Creative Suite, and a strong portfolio showcasing brand identity and UI work. Experience with prototyping, typography, and print production is required."
+  },
+  {
+    "id": "jd-21",
+    "label": "Customer Support Specialist — SaaS",
+    "text": "SaaSCare Inc is hiring a Customer Support Specialist to join our growing support team. You will resolve customer inquiries via email, chat, and phone while maintaining high satisfaction ratings. The ideal candidate has 2+ years of customer support experience, proficiency with Zendesk or similar ticketing systems, and excellent written and verbal communication skills. Experience with CRM platforms and knowledge base management is preferred. SaaS support experience is a plus."
   }
 ]

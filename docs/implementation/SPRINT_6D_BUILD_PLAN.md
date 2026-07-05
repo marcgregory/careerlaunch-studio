@@ -10,46 +10,88 @@
 
 ---
 
-## Phase 1 — Dogfooding
+## Phase 1 — Dogfooding Test Matrix
 
 Run the full workflow for each persona. Identify UX friction, crashes, layout issues, and AI quality problems before real users see them.
 
-### Personas
+**Important:** This is a repeatable QA process. Every release candidate passes through the exact same personas and workflow.
 
-| Persona | Target Role Example | Key Sections to Test |
+### Personas (Fixed)
+
+All six personas are fixed. Every release candidate tests the same profiles.
+
+| # | Persona | Skills | Experience | Target Jobs | Key Sections to Test |
+|---|---|---|---|---|---|
+| 1 | **Junior Frontend Developer** | React, TypeScript, Tailwind | 1–2 years | React Developer, Frontend Engineer | Summary, Skills, Education, Projects |
+| 2 | **Senior Backend Engineer** | Go, Node.js, PostgreSQL, AWS | 5+ years | Senior Backend Engineer | Summary, Experience, Skills, Certifications |
+| 3 | **WordPress Developer** | PHP, Elementor, WooCommerce | 3+ years | WordPress Developer | Summary, Experience, Skills, Portfolio links |
+| 4 | **Marketing Specialist** | SEO, Google Ads, Meta Ads | 3+ years | Marketing Manager | Summary, Experience, Skills, Metrics |
+| 5 | **Graphic Designer** | Figma, Adobe Creative Suite | 2+ years | Visual Designer | Summary, Experience, Skills, Portfolio |
+| 6 | **Customer Support** | Zendesk, CRM, Phone support | 2+ years | Support Specialist | Summary, Experience, Skills, Education |
+
+### Workflow (Rigid — No Shortcuts)
+
+Every persona follows this exact sequence:
+
+```
+Import Resume
+        ↓
+Analyze Resume
+        ↓
+Paste Job Description
+        ↓
+AI Tailor
+        ↓
+Review Suggestions
+        ↓
+Apply Changes
+        ↓
+Generate Cover Letter
+        ↓
+Export PDF
+        ↓
+Verify Billing
+```
+
+### Logging Requirements
+
+During every step, log the following:
+
+| Category | What to Log |
+|---|---|
+| **AI latency** | Time from request submission to response received |
+| **Visual bugs** | Layout shifts, overlapping elements, misaligned text, broken colors |
+| **Validation failures** | Forms rejecting valid input, fields losing data, incorrect error messages |
+| **Prompt failures** | AI returning empty response, refusal, irrelevant content, or broken JSON |
+| **Wrong suggestions** | AI suggesting facts not in the original resume |
+| **UI glitches** | Buttons not responding, panels not closing, scroll issues, flickering |
+| **Export issues** | PDF rendering broken, missing content, formatting errors, watermark issues |
+
+### Severity Labels
+
+Every bug gets exactly one severity label. No "maybe."
+
+| Label | Definition | Must Fix Before Release? |
 |---|---|---|
-| Junior Frontend Developer | Junior Frontend Developer at a SaaS startup | Summary, Skills (React/JS/CSS), Education, Projects |
-| Senior React Engineer | Senior Frontend Engineer at a tech company | Summary, Experience (5+ yrs), Skills, Certifications |
-| WordPress Developer | WordPress Developer at a digital agency | Summary, Experience, Skills (PHP/WP), Portfolio links |
-| Marketing Specialist | Marketing Manager at a B2B company | Summary, Experience, Skills (SEO/Content), Metrics |
-| Graphic Designer | Visual Designer at a design studio | Summary, Experience, Skills (Figma/Adobe), Portfolio |
-| Customer Support Representative | Support Specialist at a SaaS company | Summary, Experience, Skills (Zendesk/CRM), Education |
+| **Critical** | App crashes, data loss, core flow broken, AI hallucinates credentials | Yes |
+| **High** | Feature unusable, wrong output, wrong PDF content | Yes |
+| **Medium** | Feature works but has clear UX problems, misleading UI, incorrect formatting | ≤5 allowed |
+| **Low** | Cosmetic issues, edge cases, minor copy, minor layout quirks | Unlimited |
 
-### Workflow
+### Release Gate
 
-For each persona:
+A release may not be tagged unless:
 
-1. Create a new resume or import
-2. Fill in all sections relevant to the persona
-3. Run AI analysis (full review)
-4. Tailor to a real job description (paste a live job posting)
-5. Review AI suggestions — accept some, dismiss some, flag some
-6. Apply changes via the diff panel
-7. Generate a cover letter
-8. Export PDF
-9. Verify billing gates (ensure watermarked PDF on Free plan, clean on paid)
-
-### Acceptance Criteria
-
-- [ ] Zero crashes across all 6 personas
-- [ ] Zero broken layouts in preview or PDF
-- [ ] Zero AI hallucinations introducing false experience, dates, or credentials
-- [ ] Each persona's end-to-end workflow completes successfully
-- [ ] Dogfooding findings are logged as GitHub issues or a known-issues list
+```
+Critical bugs:  0
+High bugs:     0
+Medium bugs:   ≤5
+Low bugs:      unlimited
+```
 
 ### Deliverable
 
-- `docs/release/DOGFOODING_REPORT.md` — one section per persona, noting all issues found
+- `docs/release/DOGFOODING_REPORT.md` — one section per persona, noting all issues found with severity labels
 
 ---
 
@@ -305,6 +347,36 @@ Before tagging `v0.9.5-alpha`, verify every operational requirement.
 | Known Issues List | `docs/release/KNOWN_ISSUES.md` | Markdown |
 | Git Tag | `v0.9.5-alpha` | Git |
 | Go/No-Go Recommendation | Sprint close | Verbal or written |
+
+---
+
+---
+
+## Release Report Format
+
+After all phases complete, generate a single-page summary. This becomes a repeatable artifact for every future release (`v0.9.5`, `v1.0.0-beta`, `v1.0.0`, etc.).
+
+```text
+CareerLaunch Studio v0.9.5-alpha
+
+AI benchmark:    PASS / FAIL / NOT RUN
+Dogfooding:      6/6 personas (or X/6)
+Accessibility:   PASS / FAIL / NOT RUN
+Performance:     PASS / FAIL / NOT RUN
+Regression:      X/Y tests passing
+Known issues:    X Critical, Y High, Z Medium, W Low
+
+Recommendation:
+
+✅ Ready for Closed Beta
+or
+❌ Not ready — see blocking issues below
+```
+
+### Acceptance Criteria
+
+- [ ] Release report generated and added to `docs/release/RELEASE_REPORT.md`
+- [ ] Go/No-Go decision documented with rationale
 
 ---
 

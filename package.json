@@ -11,7 +11,9 @@
         "lint": "npm run lint --workspaces --if-present",
         "test": "npm run test --workspaces --if-present",
         "typecheck": "npm run typecheck --workspaces --if-present",
-        "eval": "tsx scripts/eval/run.ts"
+        "eval": "tsx scripts/eval/run.ts",
+        "eval:dogfooding": "tsx scripts/eval/dogfooding/dogfood-runner.ts",
+        "eval:benchmark": "tsx scripts/eval/dogfooding/dogfood-runner.ts --json"
     },
     "workspaces": [
         "apps/*",

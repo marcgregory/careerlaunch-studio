@@ -178,5 +178,86 @@
     ],
     "skills": ["SEO", "Content Strategy", "Copywriting", "Blogging", "WordPress", "SEMrush", "Google Analytics", "Editorial Planning"],
     "certifications": [], "projects": []
+  },
+  {
+    "id": "resume-16",
+    "label": "Junior Frontend Developer",
+    "contact": { "fullName": "Jenna Martinez", "email": "jenna.martinez@example.com", "phone": "555-0201", "location": "Portland, OR", "website": "jennamartinez.dev" },
+    "summary": "Frontend developer with 1.5 years of experience building responsive web applications using React, TypeScript, and Tailwind CSS. Passionate about creating intuitive user interfaces and writing clean, maintainable code.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Junior Frontend Developer", "company": "StartupForge", "bullets": ["Developed React components for the customer-facing dashboard using TypeScript", "Styled responsive layouts with Tailwind CSS matching design mockups", "Fixed 40+ UI bugs across the application improving cross-browser compatibility", "Participated in code reviews and contributed to the component library"], "dateRange": { "start": "2024-06", "end": "2026-02" } },
+      { "id": "exp-2", "type": "experience", "role": "Frontend Intern", "company": "WebCraft Agency", "bullets": ["Built landing pages using HTML, CSS, and JavaScript", "Assisted senior developers with React component maintenance", "Wrote unit tests using Jest for existing components"], "dateRange": { "start": "2023-06", "end": "2024-05" } }
+    ],
+    "skills": ["React", "TypeScript", "Tailwind CSS", "JavaScript", "HTML", "CSS", "Jest", "Git", "GitHub", "Figma"],
+    "certifications": [], "projects": [
+      { "name": "Weather Dashboard", "description": "React app displaying real-time weather data with geolocation support", "url": "github.com/jennamartinez/weather-app" },
+      { "name": "Portfolio Site", "description": "Personal portfolio built with Next.js and Tailwind CSS", "url": "jennamartinez.dev" }
+    ]
+  },
+  {
+    "id": "resume-17",
+    "label": "Senior Backend Engineer",
+    "contact": { "fullName": "Marcus Williams", "email": "marcus.williams@example.com", "phone": "555-0202", "location": "Seattle, WA", "website": "" },
+    "summary": "Senior backend engineer with 6 years of experience designing and building scalable distributed systems using Go, Node.js, and PostgreSQL. AWS Certified Solutions Architect with a track record of reducing infrastructure costs and improving system reliability.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Backend Engineer", "company": "DataPlatform Inc", "bullets": ["Designed and implemented microservices handling 10K+ requests per second using Go and gRPC", "Migrated legacy Node.js monolith to microservices architecture, reducing deployment time by 80%", "Built real-time data processing pipeline using Kafka and PostgreSQL", "Mentored 3 junior engineers on Go best practices and system design"], "dateRange": { "start": "2022-03", "end": "present" } },
+      { "id": "exp-2", "type": "experience", "role": "Software Engineer", "company": "CloudScale Solutions", "bullets": ["Built RESTful APIs using Node.js and Express serving 500K+ daily requests", "Optimized PostgreSQL queries reducing average response time from 200ms to 30ms", "Implemented CI/CD pipelines using GitHub Actions and Docker", "Managed AWS infrastructure including EC2, RDS, and Lambda"], "dateRange": { "start": "2020-01", "end": "2022-02" } },
+      { "id": "exp-3", "type": "experience", "role": "Junior Developer", "company": "TechStart Inc", "bullets": ["Developed backend features for B2B SaaS platform using Node.js", "Wrote unit and integration tests achieving 90% code coverage", "Participated in on-call rotation for production systems"], "dateRange": { "start": "2019-04", "end": "2019-12" } }
+    ],
+    "skills": ["Go", "Node.js", "PostgreSQL", "AWS", "gRPC", "Kafka", "Docker", "Kubernetes", "Terraform", "CI/CD", "Microservices", "REST APIs", "Redis", "Linux"],
+    "certifications": ["AWS Solutions Architect Associate", "AWS Developer Associate"], "projects": []
+  },
+  {
+    "id": "resume-18",
+    "label": "WordPress Developer",
+    "contact": { "fullName": "Sophia Rivera", "email": "sophia.rivera@example.com", "phone": "555-0203", "location": "Austin, TX", "website": "sophiarivera.dev" },
+    "summary": "WordPress developer with 4 years of experience building custom themes, plugins, and e-commerce solutions using PHP, Elementor, and WooCommerce. Skilled in performance optimization and converting Figma designs to pixel-perfect WordPress sites.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "WordPress Developer", "company": "DigitalAgency Co", "bullets": ["Built 30+ custom WordPress themes from Figma designs using PHP and Elementor", "Developed 8 custom WooCommerce plugins for subscription, booking, and payment integrations", "Reduced average site load time by 45% through caching optimization and CDN implementation", "Managed hosting migrations and SSL configuration for 50+ client sites"], "dateRange": { "start": "2022-06", "end": "present" } },
+      { "id": "exp-2", "type": "experience", "role": "Web Developer", "company": "SmallBiz Solutions", "bullets": ["Developed and maintained WordPress sites for 20+ small business clients", "Customized WooCommerce stores with product variations and shipping rules", "Created email templates and landing pages for marketing campaigns"], "dateRange": { "start": "2021-01", "end": "2022-05" } }
+    ],
+    "skills": ["PHP", "WordPress", "Elementor", "WooCommerce", "JavaScript", "HTML", "CSS", "MySQL", "REST APIs", "Liquid", "Git", "cPanel", "SEO"],
+    "certifications": [], "projects": [
+      { "name": "E-Commerce Store", "description": "Full WooCommerce store for a boutique clothing brand with custom product filters", "url": "example-store.com" }
+    ]
+  },
+  {
+    "id": "resume-19",
+    "label": "Marketing Specialist",
+    "contact": { "fullName": "Olivia Chen", "email": "olivia.chen@example.com", "phone": "555-0204", "location": "Chicago, IL", "website": "" },
+    "summary": "Marketing specialist with 3 years of experience driving lead generation through SEO, Google Ads, and Meta Ads campaigns. Data-driven marketer skilled in campaign optimization, A/B testing, and analytics reporting.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Marketing Specialist", "company": "GrowthLab Agency", "bullets": ["Managed $50K monthly Google Ads budget across 20+ campaigns achieving 3.5x ROAS", "Created and optimized Meta Ads campaigns generating 200+ qualified leads per month", "Improved organic search rankings for 15 client websites through on-page SEO and link building", "Produced weekly analytics reports using Google Analytics and Data Studio"], "dateRange": { "start": "2023-04", "end": "present" } },
+      { "id": "exp-2", "type": "experience", "role": "Marketing Coordinator", "company": "LocalBusiness Co", "bullets": ["Coordinated email marketing campaigns reaching 50K subscribers with 25% open rate", "Managed social media content calendar across Instagram, LinkedIn, and Facebook", "Assisted with SEO keyword research and competitor analysis"], "dateRange": { "start": "2021-08", "end": "2023-03" } }
+    ],
+    "skills": ["SEO", "Google Ads", "Meta Ads", "Google Analytics", "Google Data Studio", "Keyword Research", "A/B Testing", "Email Marketing", "HubSpot", "Excel", "Content Strategy", "Social Media Management"],
+    "certifications": ["Google Ads Certified", "Meta Certified Digital Marketing Associate"], "projects": []
+  },
+  {
+    "id": "resume-20",
+    "label": "Graphic Designer",
+    "contact": { "fullName": "Aiden Park", "email": "aiden.park@example.com", "phone": "555-0205", "location": "Los Angeles, CA", "website": "aidenpark.design" },
+    "summary": "Creative graphic designer with 2.5 years of experience in brand identity, UI design, and visual storytelling. Proficient in Figma and the Adobe Creative Suite with a strong portfolio of print and digital work.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Graphic Designer", "company": "Creative Studio LA", "bullets": ["Designed brand identities including logos, color systems, and typography for 12 clients", "Created UI mockups and interactive prototypes in Figma for 8 web applications", "Produced marketing collateral including brochures, business cards, and social media templates", "Prepared print-ready files and coordinated with commercial printers"], "dateRange": { "start": "2023-09", "end": "present" } },
+      { "id": "exp-2", "type": "experience", "role": "Junior Designer", "company": "PrintHouse Media", "bullets": ["Assisted senior designers with layout design for magazines and catalogs", "Retouched product photos using Photoshop", "Maintained organized digital asset library"], "dateRange": { "start": "2022-03", "end": "2023-08" } }
+    ],
+    "skills": ["Figma", "Adobe Photoshop", "Adobe Illustrator", "Adobe InDesign", "UI Design", "Prototyping", "Brand Identity", "Typography", "Color Theory", "Print Design", "Layout Design"],
+    "certifications": [], "projects": [
+      { "name": "Coffee Brand Identity", "description": "Complete brand identity including logo, packaging, and style guide", "url": "aidenpark.design/coffee-brand" },
+      { "name": "Wellness App UI", "description": "High-fidelity Figma prototype for a meditation and wellness mobile app", "url": "aidenpark.design/wellness-app" }
+    ]
+  },
+  {
+    "id": "resume-21",
+    "label": "Customer Support Specialist",
+    "contact": { "fullName": "Emma Thompson", "email": "emma.thompson@example.com", "phone": "555-0206", "location": "Denver, CO", "website": "" },
+    "summary": "Customer support specialist with 3 years of experience providing exceptional phone, email, and chat support. Proficient in Zendesk and CRM platforms with a track record of maintaining 95%+ customer satisfaction ratings.",
+    "sections": [
+      { "id": "exp-1", "type": "experience", "role": "Senior Support Specialist", "company": "SaaSCare Inc", "bullets": ["Resolved 800+ support tickets per month via email, chat, and phone with 97% satisfaction rating", "Created 25+ knowledge base articles in Zendesk reducing repeat inquiries by 30%", "Trained 5 new support team members on Zendesk workflows and CRM processes", "Escalated complex technical issues to engineering team with detailed reproduction steps"], "dateRange": { "start": "2024-02", "end": "present" } },
+      { "id": "exp-2", "type": "experience", "role": "Customer Support Representative", "company": "TechHelp Corp", "bullets": ["Handled 50+ inbound calls daily providing product support and troubleshooting", "Managed CRM records for 2000+ customer accounts ensuring data accuracy", "Processed returns, exchanges, and refunds in accordance with company policy"], "dateRange": { "start": "2022-06", "end": "2024-01" } }
+    ],
+    "skills": ["Zendesk", "CRM", "Phone Support", "Email Support", "Live Chat", "Knowledge Base Management", "Salesforce", "Ticketing Systems", "Conflict Resolution", "Customer Satisfaction"],
+    "certifications": [], "projects": []
   }
 ]
