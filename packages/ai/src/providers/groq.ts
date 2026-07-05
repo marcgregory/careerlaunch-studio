@@ -25,25 +25,38 @@ import { callOpenAICompatible } from "../lib/llm";
 import { suggestionId } from "../suggestion/types";
 
 const BASE_URL = "https://api.groq.com/openai/v1";
-const DEFAULT_MODEL = "llama-4-scout-17b-16e-instruct";
+
+/** Currently available Groq model IDs (July 2026). First is the primary default. */
+const DEFAULT_MODELS = [
+  process.env.GROQ_MODEL,
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+].filter(Boolean) as string[];
 
 // ─── Provider class ────────────────────────────────────────────────────
 
 export interface GroqProviderConfig {
   /** Groq API key (default: process.env.GROQ_API_KEY) */
   apiKey?: string;
-  /** Model name (default: "llama-4-scout-17b-16e-instruct") */
-  model?: string;
+  /**
+   * Model name or array of model names to try in order.
+   * Default tries: GROQ_MODEL env → llama-3.1-8b-instant → llama-3.3-70b-versatile.
+   */
+  model?: string | string[];
 }
 
 export class GroqProvider implements AIProvider {
-  readonly name = "Groq (Llama 4)";
+  readonly name = "Groq";
   private apiKey: string;
-  private model: string;
+  private models: string[];
 
   constructor(config?: GroqProviderConfig) {
     this.apiKey = config?.apiKey || process.env.GROQ_API_KEY || "";
-    this.model = config?.model || DEFAULT_MODEL;
+    this.models = Array.isArray(config?.model)
+      ? config.model.filter(Boolean)
+      : config?.model
+        ? [config.model]
+        : [...DEFAULT_MODELS];
   }
 
   // ── analyze ──────────────────────────────────────────────────────────
@@ -62,7 +75,7 @@ export class GroqProvider implements AIProvider {
       const raw = await callOpenAICompatible({
         baseUrl: BASE_URL,
         apiKey: this.apiKey,
-        model: this.model,
+        model: this.models,
         system: DIMENSION_SYSTEM_PROMPTS[dimension] ?? "You are a professional resume expert.",
         prompt,
         signal: options?.signal,
@@ -86,7 +99,7 @@ export class GroqProvider implements AIProvider {
     const raw = await callOpenAICompatible({
       baseUrl: BASE_URL,
       apiKey: this.apiKey,
-      model: this.model,
+      model: this.models,
       system: COVER_LETTER_SYSTEM_PROMPT,
       prompt,
       temperature: 0.5,
@@ -108,7 +121,7 @@ export class GroqProvider implements AIProvider {
     const raw = await callOpenAICompatible({
       baseUrl: BASE_URL,
       apiKey: this.apiKey,
-      model: this.model,
+      model: this.models,
       system: JOB_MATCH_SYSTEM_PROMPT,
       prompt,
     });
@@ -120,35 +133,42 @@ export class GroqProvider implements AIProvider {
 
   async healthCheck(): Promise<ProviderHealth> {
     if (!this.apiKey) {
-      return { available: false, model: this.model, latency: 0 };
+      return { available: false, model: this.models[0] ?? "unknown", latency: 0 };
     }
 
-    const startedAt = Date.now();
-    try {
-      const response = await fetch(`${BASE_URL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            { role: "system", content: "Respond with: ok" },
-            { role: "user", content: "Health check" },
-          ],
-          max_tokens: 10,
-        }),
-      });
+    // Try each model until one works
+    for (const model of this.models) {
+      const startedAt = Date.now();
+      try {
+        const response = await fetch(`${BASE_URL}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: "Respond with: ok" },
+              { role: "user", content: "Health check" },
+            ],
+            max_tokens: 10,
+          }),
+        });
 
-      return {
-        available: response.ok,
-        model: this.model,
-        latency: Date.now() - startedAt,
-      };
-    } catch {
-      return { available: false, model: this.model, latency: Date.now() - startedAt };
+        return {
+          available: response.ok,
+          model,
+          latency: Date.now() - startedAt,
+        };
+      } catch {
+        // Try next model
+        continue;
+      }
     }
+
+    // All models failed
+    return { available: false, model: this.models[0] ?? "unknown", latency: 0 };
   }
 }
 

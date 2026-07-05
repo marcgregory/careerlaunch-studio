@@ -94,7 +94,14 @@ const CRITICAL_SECTIONS = new Set(["experience", "education", "projects"]);
 const COVERAGE_THRESHOLD = 0.8; // 80% — sections below this trigger recovery
 
 const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
-const GROQ_DEFAULT_MODEL = "llama-4-scout-17b-16e-instruct";
+
+/** Groq fallback model list (first available is tried first). */
+const GROQ_DEFAULT_MODELS = [
+  process.env.GROQ_MODEL,
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+].filter(Boolean) as string[];
+
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 /* ------------------------------------------------------------------ */
@@ -245,7 +252,7 @@ async function callRecoveryLLM(
     return callOpenAICompatible({
       baseUrl: GROQ_BASE_URL,
       apiKey: provider.apiKey,
-      model: provider.model ?? GROQ_DEFAULT_MODEL,
+      model: provider.model ?? GROQ_DEFAULT_MODELS,
       system,
       prompt: user,
       maxTokens: 4096,

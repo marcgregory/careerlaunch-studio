@@ -108,8 +108,12 @@ export interface CallOpenAICompatibleConfig {
   baseUrl: string;
   /** API key */
   apiKey: string;
-  /** Model name (e.g. "llama-4-scout-17b-16e-instruct") */
-  model: string;
+  /**
+   * Model name or array of model names to try in order.
+   * On a 404 with "model_not_found" / "does not exist", the next model is
+   * tried automatically. All other errors (auth, 429, 5xx) bail immediately.
+   */
+  model: string | string[];
   /** System prompt / instruction text */
   system: string;
   /** User message / prompt text */
@@ -133,7 +137,6 @@ export async function callOpenAICompatible(config: CallOpenAICompatibleConfig): 
   const {
     baseUrl,
     apiKey,
-    model,
     system,
     prompt,
     maxTokens = 2048,
@@ -145,72 +148,116 @@ export async function callOpenAICompatible(config: CallOpenAICompatibleConfig): 
     throw new LLMError(`${baseUrl} API key is not configured`, "auth");
   }
 
+  // Normalise model to an ordered list we iterate over
+  const models: string[] = Array.isArray(config.model)
+    ? config.model.filter(Boolean)
+    : [config.model];
+
+  if (models.length === 0) {
+    throw new LLMError("No model specified for OpenAI-compatible call", "provider");
+  }
+
   let lastError: Error | undefined;
-  const maxAttempts = 2;
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: prompt },
-          ],
-          max_tokens: maxTokens,
-          temperature,
-          response_format: { type: "json_object" },
-        }),
-        signal,
-      });
+  for (const model of models) {
+    const maxAttempts = 2;
 
-      if (!response.ok) {
-        const body = await response.text().catch(() => "unknown");
-        if (response.status === 401 || response.status === 403) {
-          throw new LLMError(`Auth error (${response.status}): ${body}`, "auth");
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch(`${baseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: system },
+              { role: "user", content: prompt },
+            ],
+            max_tokens: maxTokens,
+            temperature,
+            response_format: { type: "json_object" },
+          }),
+          signal,
+        });
+
+        if (!response.ok) {
+          const body = await response.text().catch(() => "unknown");
+
+          // 401/403 — auth failure, never retry
+          if (response.status === 401 || response.status === 403) {
+            throw new LLMError(`Auth error (${response.status}): ${body}`, "auth");
+          }
+
+          // 429 — rate limited, retry after suggested delay
+          if (response.status === 429) {
+            const retryAfter = parseInt(response.headers.get("Retry-After") || "5", 10);
+            await sleep(retryAfter * 1000);
+            continue;
+          }
+
+          // 404 with model_not_found — try next model in the fallback list
+          if (
+            response.status === 404 &&
+            (body.includes("model_not_found") || body.includes("does not exist") || body.includes("not found"))
+          ) {
+            lastError = new LLMError(
+              `Model "${model}" not found (404): ${body}`,
+              "provider",
+            );
+            break; // break out of retry loop, move to next model
+          }
+
+          throw new LLMError(`API error (${response.status}): ${body}`, "provider");
         }
-        if (response.status === 429) {
-          // Rate limited — retry after suggested delay
-          const retryAfter = parseInt(response.headers.get("Retry-After") || "5", 10);
-          await sleep(retryAfter * 1000);
-          continue;
+
+        const data = (await response.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) {
+          throw new LLMError("API returned empty response", "empty");
         }
-        throw new LLMError(`API error (${response.status}): ${body}`, "provider");
+
+        return JSON.parse(content);
+      } catch (error) {
+        // LLMErrors with code "provider" that come from a 404 model-not-found
+        // are already handled above (break); for safety, also catch non-LLMError
+        // re-throws that shouldn't be retried.
+        if (error instanceof LLMError) {
+          if (error.code === "auth" || error.code === "empty") {
+            throw error;
+          }
+          // provider errors from a 404 fallback — continue to next model
+          if (error.code === "provider" && lastError?.message.includes("not found")) {
+            throw error; // already handled above via break; this is a safety net
+          }
+          throw error;
+        }
+
+        if (error instanceof DOMException && error.name === "AbortError") {
+          throw error;
+        }
+
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (attempt === maxAttempts - 1) {
+          // Exhausted retries for this model — try next model if available
+          break;
+        }
+
+        await sleep(500 * Math.pow(2, attempt));
       }
-
-      const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-
-      const content = data?.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new LLMError("API returned empty response", "empty");
-      }
-
-      return JSON.parse(content);
-    } catch (error) {
-      if (error instanceof LLMError) throw error;
-      if (error instanceof DOMException && error.name === "AbortError") {
-        throw error;
-      }
-
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (attempt === maxAttempts - 1) {
-        throw new LLMError(
-          `API call failed after ${maxAttempts} attempts: ${lastError.message}`,
-          "provider",
-        );
-      }
-
-      await sleep(500 * Math.pow(2, attempt));
     }
   }
 
-  throw new LLMError("API call failed unexpectedly", "provider");
+  throw new LLMError(
+    `API call failed after trying all models: ${lastError?.message ?? "unknown error"}`,
+    "provider",
+  );
 }
 
 // ─── Error type ────────────────────────────────────────────────────────
