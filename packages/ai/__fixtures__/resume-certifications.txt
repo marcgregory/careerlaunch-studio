@@ -1,0 +1,36 @@
+Alex Chen
+alex.chen@example.com
++1 (408) 555-0192
+San Jose, CA
+
+Professional Summary
+Senior cloud architect with 10+ years designing scalable infrastructure for SaaS platforms.
+
+Experience
+Principal Cloud Architect | DataStream Inc. | 2019 - Present
+• Architected multi-region Kubernetes cluster serving 5M+ daily requests with 99.99% uptime.
+• Migrated 200+ microservices from monolithic deployment to CI/CD pipeline, reducing deploy time by 80%.
+• Reduced cloud spend by 35% through reserved instance optimization and auto-scaling policies.
+
+Senior DevOps Engineer | CloudBase Solutions | 2016 - 2019
+• Built Terraform modules adopted across 12 engineering teams.
+• Implemented monitoring stack reducing incident response time from 30min to 4min.
+
+DevOps Engineer | StartupHub | 2014 - 2016
+• Containerized legacy Java applications for AWS ECS deployment.
+• Wrote Ansible playbooks automating server provisioning across 60 nodes.
+
+Education
+M.S. Computer Science - Stanford University, 2014
+B.S. Computer Engineering - UC Berkeley, 2012
+
+Certifications
+AWS Solutions Architect Professional
+Google Cloud Professional Data Engineer
+Certified Kubernetes Administrator (CKA)
+HashiCorp Certified Terraform Associate
+AWS DevOps Engineer Professional
+CISSP
+
+Skills
+Kubernetes, Docker, Terraform, AWS, GCP, CI/CD, Python, Go, Prometheus, Grafana, Ansible, Linux

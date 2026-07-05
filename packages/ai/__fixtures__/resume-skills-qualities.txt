@@ -1,0 +1,22 @@
+Jamie Rivera
+jamie.rivera@email.com
+Seattle, WA
+
+Skills
+JavaScript, TypeScript, React, Node.js, Python, PostgreSQL, AWS, Docker, GraphQL, REST APIs, Git, Agile/Scrum
+
+Professional Qualities
+Results-driven
+Strong analytical skills
+Excellent written and verbal communication
+Self-motivated
+Collaborative team player
+Growth mindset
+
+Experience
+Full Stack Developer | TechStart Solutions | 2022 - Present
+• Built real-time dashboard serving 10K+ concurrent users.
+• Designed RESTful API layer reducing response times by 60%.
+
+Education
+B.S. Computer Science - University of Washington, 2022

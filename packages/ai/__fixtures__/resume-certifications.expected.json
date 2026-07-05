@@ -1,0 +1,93 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Alex Chen",
+      "email": "alex.chen@example.com",
+      "phone": "+1 (408) 555-0192",
+      "location": "San Jose, CA",
+      "website": "alex.chen"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Principal Cloud Architect",
+        "company": "DataStream Inc.",
+        "location": "",
+        "start": "2019",
+        "end": "Present",
+        "bullets": [
+          "Architected multi-region Kubernetes cluster serving 5M+ daily requests with 99.99% uptime.",
+          "Migrated 200+ microservices from monolithic deployment to CI/CD pipeline, reducing deploy time by 80%.",
+          "Reduced cloud spend by 35% through reserved instance optimization and auto-scaling policies."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Senior DevOps Engineer",
+        "company": "CloudBase Solutions",
+        "location": "",
+        "start": "2016",
+        "end": "2019",
+        "bullets": [
+          "Built Terraform modules adopted across 12 engineering teams.",
+          "Implemented monitoring stack reducing incident response time from 30min to 4min."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "DevOps Engineer",
+        "company": "StartupHub",
+        "location": "",
+        "start": "2014",
+        "end": "2016",
+        "bullets": [
+          "Containerized legacy Java applications for AWS ECS deployment.",
+          "Wrote Ansible playbooks automating server provisioning across 60 nodes."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University, 2014",
+        "degree": "M.S. Computer Science - Stanford University,",
+        "location": "",
+        "graduation": "2014"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "B.S. Computer Engineering - UC Berkeley, 2012",
+        "degree": "B.S. Computer Engineering - UC Berkeley,",
+        "location": "",
+        "graduation": "2012"
+      }
+    ],
+    "skills": [
+      "Kubernetes",
+      "Docker",
+      "Terraform",
+      "AWS",
+      "GCP",
+      "CI/CD",
+      "Python",
+      "Go",
+      "Prometheus",
+      "Grafana",
+      "Ansible",
+      "Linux"
+    ],
+    "certifications": [
+      "AWS Solutions Architect Professional",
+      "Google Cloud Professional Data Engineer",
+      "Certified Kubernetes Administrator (CKA)",
+      "HashiCorp Certified Terraform Associate",
+      "AWS DevOps Engineer Professional",
+      "CISSP"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "summary": "Senior cloud architect with 10+ years designing scalable infrastructure for SaaS platforms."
+  },
+  "confidence": 90,
+  "warnings": []
+}

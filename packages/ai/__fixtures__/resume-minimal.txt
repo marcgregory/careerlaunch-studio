@@ -1,0 +1,10 @@
+Sam Patel
+sam.patel@email.com
+
+Experience
+Frontend Developer | DesignStudio | 2021 - Present
+• Built React component library used across 5 products.
+• Improved Lighthouse performance score from 62 to 94.
+
+Education
+B.A. Graphic Design - Rhode Island School of Design, 2021

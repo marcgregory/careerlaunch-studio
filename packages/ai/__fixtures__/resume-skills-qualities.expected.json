@@ -1,0 +1,61 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Jamie Rivera",
+      "email": "jamie.rivera@email.com",
+      "phone": "",
+      "location": "Seattle, WA",
+      "website": "jamie.rivera"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Full Stack Developer",
+        "company": "TechStart Solutions",
+        "location": "",
+        "start": "2022",
+        "end": "Present",
+        "bullets": [
+          "Built real-time dashboard serving 10K+ concurrent users.",
+          "Designed RESTful API layer reducing response times by 60%."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Washington, 2022",
+        "degree": "B.S. Computer Science - University of Washington,",
+        "location": "",
+        "graduation": "2022"
+      }
+    ],
+    "skills": [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Node.js",
+      "Python",
+      "PostgreSQL",
+      "AWS",
+      "Docker",
+      "GraphQL",
+      "REST APIs",
+      "Git",
+      "Agile/Scrum"
+    ],
+    "certifications": [],
+    "professionalQualities": [
+      "Results-driven",
+      "Strong analytical skills",
+      "Excellent written and verbal communication",
+      "Self-motivated",
+      "Collaborative team player",
+      "Growth mindset"
+    ],
+    "projects": [],
+    "summary": ""
+  },
+  "confidence": 90,
+  "warnings": []
+}

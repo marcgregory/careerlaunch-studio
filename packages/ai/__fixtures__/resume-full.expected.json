@@ -1,0 +1,76 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Jordan Lee",
+      "email": "jordan.lee@email.com",
+      "phone": "(555) 014-7291",
+      "location": "Austin, TX",
+      "website": "jordan.lee"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Operations Lead",
+        "company": "Northstar Market",
+        "location": "",
+        "start": "2021",
+        "end": "Present",
+        "bullets": [
+          "Improved weekly customer issue resolution time by 28% by redesigning escalation playbooks.",
+          "Trained 18 team members on service recovery, CRM notes, and customer follow-up standards.",
+          "Partnered with managers to analyze feedback trends and reduce repeat complaints by 19%."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Retail Supervisor",
+        "company": "Harbor Outfitters",
+        "location": "",
+        "start": "2018",
+        "end": "2021",
+        "bullets": [
+          "Managed daily service operations for a team of 12 across high-volume weekend shifts.",
+          "Created onboarding checklists that reduced new-hire ramp time by two weeks."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University, 2018",
+        "degree": "B.A. Communication Studies - Texas State University,",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Customer onboarding",
+      "CRM documentation",
+      "Process improvement",
+      "Team training",
+      "Retention analysis",
+      "Conflict resolution"
+    ],
+    "certifications": [
+      "HubSpot Customer Success Certificate",
+      "Project Management Professional (PMP)"
+    ],
+    "professionalQualities": [
+      "Detail-oriented",
+      "Team player",
+      "Strong communicator",
+      "Problem solver"
+    ],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Service Recovery Playbook",
+        "description": "",
+        "bullets": []
+      }
+    ],
+    "summary": "Customer-focused operations specialist with 6 years of experience improving service workflows, training frontline teams, and translating customer feedback into measurable retention gains."
+  },
+  "confidence": 90,
+  "warnings": []
+}

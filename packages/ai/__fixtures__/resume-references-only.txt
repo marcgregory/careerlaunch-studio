@@ -1,0 +1,21 @@
+Taylor Robinson
+taylor.r@example.com
+(212) 555-0147
+New York, NY
+
+Experience
+Software Engineer | FinCorp Systems | 2020 - Present
+• Developed real-time payment processing pipeline handling $2M daily transaction volume.
+• Reduced API latency by 45% through query optimization and caching strategy.
+• Led migration from REST to GraphQL, reducing frontend data fetching by 60%.
+
+Junior Developer | WebAgency Co. | 2018 - 2020
+• Built responsive landing pages for 20+ client campaigns.
+• Implemented A/B testing framework increasing conversion rates by 15%.
+
+Education
+B.S. Computer Science - NYU, 2018
+
+References
+Available upon request.
+References furnished upon request.

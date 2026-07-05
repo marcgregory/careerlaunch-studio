@@ -1,0 +1,54 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Taylor Robinson",
+      "email": "taylor.r@example.com",
+      "phone": "(212) 555-0147",
+      "location": "New York, NY",
+      "website": "example.com"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Software Engineer",
+        "company": "FinCorp Systems",
+        "location": "",
+        "start": "2020",
+        "end": "Present",
+        "bullets": [
+          "Developed real-time payment processing pipeline handling $2M daily transaction volume.",
+          "Reduced API latency by 45% through query optimization and caching strategy.",
+          "Led migration from REST to GraphQL, reducing frontend data fetching by 60%."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Junior Developer",
+        "company": "WebAgency Co.",
+        "location": "",
+        "start": "2018",
+        "end": "2020",
+        "bullets": [
+          "Built responsive landing pages for 20+ client campaigns.",
+          "Implemented A/B testing framework increasing conversion rates by 15%."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "B.S. Computer Science - NYU, 2018",
+        "degree": "B.S. Computer Science - NYU,",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [],
+    "certifications": [],
+    "professionalQualities": [],
+    "projects": [],
+    "summary": ""
+  },
+  "confidence": 90,
+  "warnings": []
+}
