@@ -232,7 +232,7 @@ describe("runStaticAnalysis", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("no measurable results suggestion includes example text", () => {
+  it("no measurable results suggestion includes coaching in reason instead of suggestedText", () => {
     const resume = makeMinimalResume({
       sections: [
         {
@@ -248,7 +248,8 @@ describe("runStaticAnalysis", () => {
     const suggestions = runStatic(resume);
     const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
     expect(noMetrics).toBeDefined();
-    expect(noMetrics!.suggestedText).toContain("15+ React components");
-    expect(noMetrics!.suggestedText).toContain("Reduced page load");
+    expect(noMetrics!.suggestedText).toBeNull();
+    expect(noMetrics!.reason).toContain("15+ React components");
+    expect(noMetrics!.reason).toContain("Reduced page load");
   });
 });

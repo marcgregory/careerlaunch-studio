@@ -293,13 +293,14 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         severity: "major",
         title: `"${entry.role ?? "Role"}" has no measurable results`,
         reason:
-          "Bullets with numbers (percentages, revenue, time saved, team size) are 40% more likely to get interviews.",
-        targetText: null,
-        suggestedText:
-          "Add numbers, percentages, or other measurable outcomes. Examples:\n" +
+          "Bullets with numbers (percentages, revenue, time saved, team size) are 40% more likely to get interviews. " +
+          "Add numbers, percentages, or other measurable outcomes.\n\n" +
+          "Examples:\n" +
           "• \"Developed 15+ React components used across 4 internal applications\"\n" +
           "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
           "• \"Supported 200+ end users across 3 departments\"",
+        targetText: null,
+        suggestedText: null,
         location: { sectionId: "experience", entryId: entry.id },
         confidence: 1,
         source: "static",
