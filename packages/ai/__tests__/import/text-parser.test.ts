@@ -289,3 +289,62 @@ References available upon request.`;
     expect(allText).not.toContain("references available");
   });
 });
+
+
+describe("parseResumeText date-only line format", () => {
+  it("should handle date-only line format (role + company on separate lines)", () => {
+    const text = `Maria Santos
+maria@example.com
+
+Experience
+Software Developer
+Volenday Philippines Inc.
+Feb 2023 -- May 2025
+  - Built and maintained React components for 4 client-facing applications.
+  - Reduced API response time by 35% through query optimization.
+  - Mentored 3 junior developers on React and TypeScript best practices.
+
+IT Staff
+Tech Solutions Co.
+Jan 2020 -- Dec 2022
+  - Supported 200+ end users across 3 departments.
+  - Configured and maintained 80+ workstations.
+  - Achieved 99% network uptime over 24-month period.`;
+
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+
+    expect(experience.length).toBe(2);
+
+    const dev = experience[0];
+    expect(dev.role).toBe("Software Developer");
+    expect(dev.company).toBe("Volenday Philippines Inc.");
+    expect(dev.start).toMatch(/Feb/i);
+    expect(dev.end).toMatch(/May 2025/i);
+    expect(dev.bullets.length).toBe(3);
+
+    const itStaff = experience[1];
+    expect(itStaff.role).toBe("IT Staff");
+    expect(itStaff.company).toBe("Tech Solutions Co.");
+    expect(itStaff.start).toMatch(/Jan/i);
+    expect(itStaff.end).toMatch(/Dec 2022/i);
+    expect(itStaff.bullets.length).toBe(3);
+  });
+
+  it("should handle mixed formats (inline dates + date-only lines)", () => {
+    const text = `Test User\ntest@email.com\n\nExperience\nDeveloper | Acme Inc | 2020 - 2023\n  - Worked on features.\n\nIT Staff\nTech Co.\nJan 2022 - Present\n  - Supported users.`;
+
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+
+    expect(experience.length).toBe(2);
+
+    const inlineEntry = experience[0];
+    expect(inlineEntry.role).toBe("Developer");
+    expect(inlineEntry.company).toBe("Acme Inc");
+
+    const dateOnlyEntry = experience[1];
+    expect(dateOnlyEntry.role).toBe("IT Staff");
+    expect(dateOnlyEntry.company).toBe("Tech Co.");
+  });
+});

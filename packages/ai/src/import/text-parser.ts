@@ -200,7 +200,7 @@ function extractContact(
 /* ------------------------------------------------------------------ */
 
 const DATE_RANGE_RE =
-  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*[-–to]+\s*(\w+|\d{4}|present|current|now)/i;
+  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*[-–to]+\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
 const YEAR_RANGE_RE =
   /(\d{4})\s*[-–]\s*(\d{4}|present|current|now)/i;
 const BULLET_RE = /^[•\-*\d.]+(?:\s+|$)/;
@@ -224,8 +224,86 @@ function parseExperience(lines: string[]): {
     const dateMatch = line.match(DATE_RANGE_RE) || line.match(YEAR_RANGE_RE);
 
     if (dateMatch) {
-      // The role/company line
       const fullText = line;
+      const withoutDate = fullText.replace(dateMatch[0], "").trim();
+
+      // BUG FIX: When a line contains ONLY a date range ("Feb 2023 – May 2025")
+      // with no role/company text on the same line, look backward at preceding
+      // non-empty lines to find the role and company.
+      // Common resume format:
+      //   Software Developer            ← role
+      //   Volenday Philippines Inc.     ← company
+      //   Feb 2023 – May 2025           ← date-only line (was being used as role!)
+      const isDateOnly = withoutDate.length === 0;
+
+      if (isDateOnly) {
+        // Scan backward from i-1 to find up to 2 non-empty, non-date lines
+        // that are NOT section headers
+        const lookbehind: string[] = [];
+        let j = i - 1;
+        while (j >= 0 && lookbehind.length < 2) {
+          const prev = lines[j].trim();
+          if (prev && !isLikelyHeader(prev) && !prev.match(DATE_RANGE_RE) && !prev.match(YEAR_RANGE_RE)) {
+            lookbehind.unshift(prev);
+          }
+          j--;
+        }
+
+        let role = lookbehind[0] ?? "Unknown Role";
+        let company = lookbehind[1] ?? "";
+
+        // If the role line contains "at" or "|", split for company
+        const atSplit = role.split(/\s+at\s+/);
+        if (atSplit.length >= 2) {
+          role = atSplit[0].trim();
+          company = atSplit.slice(1).join(" at ").trim() || company;
+        } else {
+          const pipeSplit = role.split(/\s*\|\s*/);
+          if (pipeSplit.length >= 2) {
+            role = pipeSplit[0].trim();
+            company = pipeSplit.slice(1).join(" | ").trim() || company;
+          }
+        }
+
+        // Role may still carry date text from a prior bad parse — clean it
+        role = role.replace(DATE_RANGE_RE, "").replace(YEAR_RANGE_RE, "").trim() || "Unknown Role";
+
+        const [start, end] = dateMatch[1] && dateMatch[2]
+          ? [dateMatch[1].trim(), dateMatch[2].trim()]
+          : ["", ""];
+
+        // Collect bullets
+        i++;
+        const bullets: string[] = [];
+        while (i < lines.length) {
+          const bline = lines[i].trim();
+          if (!bline) { i++; continue; }
+          if (lines[i].match(DATE_RANGE_RE) || lines[i].match(YEAR_RANGE_RE)) break;
+          if (isLikelyHeader(lines[i])) break;
+          // In date-only format, the next entry starts as a non-bullet short line.
+          // Only accept lines that start with a bullet marker.
+          if (BULLET_RE.test(bline)) {
+            const cleaned = bline.replace(BULLET_RE, "").trim();
+            if (cleaned) bullets.push(cleaned);
+          } else {
+            break;
+          }
+          i++;
+        }
+
+        experience.push({
+          id: `import-exp-${experience.length + 1}`,
+          role,
+          company,
+          location: "",
+          start: normalizeDate(start),
+          end: normalizeDate(end),
+          bullets,
+        });
+        continue;
+      }
+
+      // Normal case: date is on the same line as role/company
       let role = fullText;
       let company = "";
 
