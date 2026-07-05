@@ -1,0 +1,193 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "MARC GREGORY B. TURNO",
+      "email": "marc.gregory@email.com",
+      "phone": "+63 912 345 6789",
+      "location": "",
+      "website": "marc.gregory"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Software Developer",
+        "company": "Volenday Philippines Inc.",
+        "location": "",
+        "start": "Feb 2023",
+        "end": "May 2025",
+        "bullets": [
+          "Developed and maintained full-stack web applications using React, TypeScript, and Node.js.",
+          "Built and debugged RESTful APIs and third-party integrations for client-facing platforms.",
+          "Collaborated with cross-functional teams to define requirements and deliver features on schedule.",
+          "Produced clean, maintainable code following industry best practices.",
+          "Participated in code reviews and mentored junior developers."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "IT Staff",
+        "company": "Tech Solutions Co.",
+        "location": "",
+        "start": "Jan 2020",
+        "end": "Dec 2022",
+        "bullets": [
+          "Supported 200+ end users across 3 departments with hardware, software, and network issues.",
+          "Configured and maintained 80+ workstations, servers, and networking equipment.",
+          "Achieved 99% network uptime over 24-month period through proactive monitoring.",
+          "Automated routine system administration tasks using PowerShell and Bash scripts."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Santo Tomas, 2019",
+        "degree": "Bachelor of Science in Information Technology",
+        "location": "",
+        "graduation": ""
+      }
+    ],
+    "skills": [
+      "HTML",
+      "CSS",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Node.js",
+      "Express",
+      "Python",
+      "Go",
+      "PostgreSQL",
+      "Prisma ORM",
+      "AWS (EC2",
+      "S3",
+      "Lambda)",
+      "Docker",
+      "CI/CD Pipelines",
+      "System administration",
+      "Network configuration",
+      "Technical support",
+      "Prompt engineering",
+      "RAG pipelines",
+      "LangChain",
+      "Gemini API",
+      "GitHub Copilot",
+      "Claude Code",
+      "Cursor",
+      "Windsurf"
+    ],
+    "certifications": [
+      "Safety Officer (SO2) - Department of Labor and Employment",
+      "Arduino Programming Certificate - University of the Philippines",
+      "Webpage Database Integration - STI College",
+      "Dataworld Training Program - Dataworld Corp.",
+      "Internship Completion - Tech Solutions Co."
+    ],
+    "professionalQualities": [],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "CareerLaunch Studio",
+        "description": "",
+        "bullets": [
+          "Full-stack SaaS platform for resume creation and AI-powered improvement.",
+          "Built with Next.js, TypeScript, PostgreSQL, and Prisma ORM.",
+          "Integrated AI analysis using Gemini and Groq APIs."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Sentience IoT",
+        "description": "",
+        "bullets": [
+          "IoT-based environmental monitoring system using ESP32 and multiple sensors.",
+          "Real-time data visualization dashboard with alerting capabilities.",
+          "Deployed on AWS with Docker containerization."
+        ]
+      },
+      {
+        "id": "import-proj-3",
+        "name": "Exclusive E-Commerce",
+        "description": "",
+        "bullets": [
+          "Full-featured e-commerce platform with product management and payment processing.",
+          "Implemented Stripe integration and order management workflow.",
+          "Responsive design with Tailwind CSS and server-side rendering."
+        ]
+      }
+    ],
+    "summary": "Versatile developer with expertise spanning frontend, backend, cloud infrastructure, and LLM application development. Experienced in building full-stack web applications, IoT systems, and AI-powered tools. Proven ability to design scalable architectures, optimize performance, and integrate modern AI capabilities into production systems."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "high",
+    "references": "high"
+  },
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 40,
+      "parsedWordCount": 40,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 121,
+      "parsedWordCount": 102,
+      "ratio": 0.8429752066115702,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 52,
+      "parsedWordCount": 40,
+      "ratio": 0.7692307692307693,
+      "status": "partial"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 35,
+      "parsedWordCount": 35,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 86,
+      "parsedWordCount": 77,
+      "ratio": 0.8953488372093024,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    }
+  ]
+}

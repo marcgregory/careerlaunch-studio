@@ -6,11 +6,26 @@ import type { ResumeDocument, ResumeSectionId } from "@careerlaunch/domain";
 
 export type SectionConfidence = "high" | "medium" | "low";
 
+export type CoverageStatus = "good" | "partial" | "poor" | "missing";
+
+export type SectionCoverageItem = {
+  sectionId: ResumeSectionId;
+  originalWordCount: number;
+  parsedWordCount: number;
+  ratio: number;
+  status: CoverageStatus;
+};
+
 export type ParseResult = {
   parsed: Partial<ResumeDocument>;
   confidence: number;
   confidenceBySection: Record<string, SectionConfidence>;
   warnings: string[];
+  /** Raw text from sections where the parser could not fully structure the content.
+   *  Keyed by section ID. This allows the UI to show what was lost. */
+  unparsedContent: Record<string, string>;
+  /** Per-section coverage analysis comparing input vs parsed content */
+  coverage: SectionCoverageItem[];
 };
 
 /* ------------------------------------------------------------------ */
@@ -65,8 +80,10 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
   {
     id: "projects",
     patterns: [
-      /^(?:personal\s+)?projects?$/im,
-      /\bpersonal\s+projects?\b/i,
+      /^(?:personal\s+)?projects?\s*$/im,
+      /^(?:personal\s+)?projects?:/im,
+      /\b(?:personal|key|technical|academic|side)\s+projects?\b/i,
+      /\bprojects?\s+undertaken\b/i,
     ],
   },
   {
@@ -272,23 +289,46 @@ function parseExperience(lines: string[]): {
           ? [dateMatch[1].trim(), dateMatch[2].trim()]
           : ["", ""];
 
-        // Collect bullets
+        // Collect bullets — accept lines with or without bullet markers,
+        // but stop when we detect the start of the next entry.
         i++;
         const bullets: string[] = [];
+        let bulletCount = 0;
         while (i < lines.length) {
           const bline = lines[i].trim();
           if (!bline) { i++; continue; }
           if (lines[i].match(DATE_RANGE_RE) || lines[i].match(YEAR_RANGE_RE)) break;
           if (isLikelyHeader(lines[i])) break;
-          // In date-only format, the next entry starts as a non-bullet short line.
-          // Only accept lines that start with a bullet marker.
-          if (BULLET_RE.test(bline)) {
-            const cleaned = bline.replace(BULLET_RE, "").trim();
-            if (cleaned) bullets.push(cleaned);
+
+          const hasMarker = BULLET_RE.test(bline);
+          const cleaned = bline.replace(BULLET_RE, "").trim();
+          if (!cleaned) { i++; continue; }
+
+          if (hasMarker) {
+            bullets.push(cleaned);
+            bulletCount++;
+            i++;
+          } else if (bulletCount > 0) {
+            // We have collected bullets — if this line is short and the
+            // next 1-3 lines contain a date range, this is the next entry.
+            let nextHasDate = false;
+            const peekLimit = Math.min(i + 3, lines.length - 1);
+            for (let look = 1; look <= peekLimit - i; look++) {
+              const peekLine = lines[i + look].trim();
+              if (peekLine.match(DATE_RANGE_RE) || peekLine.match(YEAR_RANGE_RE)) {
+                nextHasDate = true;
+                break;
+              }
+            }
+            if (nextHasDate) break;
+            // Otherwise treat it as a bullet (may be unmarked prose)
+            bullets.push(cleaned);
+            bulletCount++;
+            i++;
           } else {
+            // No bullets collected yet — this is likely the start of the next entry
             break;
           }
-          i++;
         }
 
         experience.push({
@@ -400,8 +440,8 @@ function parseEducation(lines: string[]): {
   const education: ResumeDocument["education"] = [];
   const warnings: string[] = [];
 
-  for (const line of lines) {
-    const trimmed = line.trim();
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
     if (!trimmed || BULLET_RE.test(trimmed)) continue;
 
     if (
@@ -410,12 +450,54 @@ function parseEducation(lines: string[]): {
       )
     ) {
       const gradMatch = trimmed.match(GRAD_RE);
+      // Look ahead for the school line (non-degree, non-empty line that follows)
+      let school = extractSchool(trimmed);
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (
+          nextLine &&
+          !BULLET_RE.test(nextLine) &&
+          !/\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(nextLine)
+        ) {
+          // The next line looks like a school/institution name
+          const lookaheadSchool = extractSchool(nextLine);
+          // If extractSchool finds a known institution keyword, prefer it
+          if (lookaheadSchool !== nextLine) {
+            school = lookaheadSchool;
+          } else if (school === trimmed) {
+            school = nextLine;
+          }
+          // Try to extract graduation year from next line too
+          const nextGrad = nextLine.match(GRAD_RE);
+          if (nextGrad) {
+            // Set graduation from the school line
+            const entry = education.find((e) => e.school === school && !e.graduation);
+            // Actually, we handle this inline below
+          }
+        }
+      }
+
+      const gradYear = gradMatch ? gradMatch[1].trim() : "";
+      // Build degree text — strip school only if it's embedded
+      let degree = gradMatch
+        ? trimmed.replace(gradMatch[0], "").trim()
+        : trimmed;
+
+      // For multi-line: ensure school isn't embedded in degree text
+      // e.g. "Bachelor of Science in Information Technology - University of Santo Tomas, 2019"
+      // becomes school="University of Santo Tomas", degree="Bachelor of Science in Information Technology"
+      if (school !== trimmed) {
+        degree = trimmed.replace(school, "").replace(/[-–,]\s*$/, "").trim() || degree;
+        // Clean the degree of grad year remnants
+        degree = degree.replace(gradYear, "").replace(/[-–,]\s*$/, "").trim() || degree;
+      }
+
       education.push({
         id: `import-edu-${education.length + 1}`,
-        school: extractSchool(trimmed),
-        degree: trimmed.replace(gradMatch?.[0] || "", "").trim(),
+        school,
+        degree: degree || trimmed,
         location: "",
-        graduation: gradMatch ? gradMatch[1].trim() : "",
+        graduation: gradYear,
       });
     }
   }
@@ -461,16 +543,23 @@ function parseSkills(lines: string[]): string[] {
     const trimmed = line.trim();
     if (!trimmed || BULLET_RE.test(trimmed)) continue;
 
+    // Detect table-format skills with category labels separated by 2+ spaces
+    // "Frontend                    HTML, CSS, TypeScript"
+    const cols = trimmed.split(/\s{2,}/).filter(Boolean);
+    // Take the last column (actual skills) — earlier columns are category labels
+    const target = cols.length > 1 ? cols[cols.length - 1] : trimmed;
+
     // Split on comma, pipe, bullet, or newline within the skills section
-    const candidates = trimmed
+    const candidates = target
       .split(/[,|•;]\s*/)
       .map((s) => s.trim())
       .filter((s) => s.length > 1 && s.length < 60);
 
-    if (trimmed.includes(",") || trimmed.includes("|")) {
+    if (target.includes(",") || target.includes("|")) {
       skills.push(...candidates);
     } else {
-      skills.push(trimmed);
+      // For single values, still prefer the last column from table format
+      skills.push(target);
     }
   }
 
@@ -537,6 +626,101 @@ function normalizeDate(value: string): string {
 /* ------------------------------------------------------------------ */
 /*  Main parser                                                        */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  Coverage analysis                                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Compute per-section coverage by comparing original text word count
+ * against parsed content word count.
+ */
+function computeSectionCoverage(
+  sectionId: ResumeSectionId,
+  sectionLines: string[],
+  parsed: Partial<ResumeDocument>,
+): SectionCoverageItem {
+  const originalWordCount = sectionLines
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .join(" ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+
+  function countWords(text: string): number {
+    return text.split(/\s+/).filter(Boolean).length;
+  }
+
+  let parsedWordCount = 0;
+
+  switch (sectionId) {
+    case "summary": {
+      parsedWordCount = countWords(parsed.summary || "");
+      break;
+    }
+    case "experience": {
+      for (const exp of parsed.experience || []) {
+        parsedWordCount += countWords(exp.role);
+        parsedWordCount += countWords(exp.company);
+        parsedWordCount += countWords(exp.location);
+        for (const b of exp.bullets) parsedWordCount += countWords(b);
+      }
+      break;
+    }
+    case "education": {
+      for (const edu of parsed.education || []) {
+        parsedWordCount += countWords(edu.degree);
+        parsedWordCount += countWords(edu.school);
+        parsedWordCount += countWords(edu.location);
+      }
+      break;
+    }
+    case "skills": {
+      for (const s of parsed.skills || []) parsedWordCount += countWords(s);
+      break;
+    }
+    case "certifications": {
+      for (const c of parsed.certifications || []) parsedWordCount += countWords(c);
+      break;
+    }
+    case "professionalQualities": {
+      for (const q of parsed.professionalQualities || []) parsedWordCount += countWords(q);
+      break;
+    }
+    case "projects": {
+      for (const p of parsed.projects || []) {
+        parsedWordCount += countWords(p.name);
+        parsedWordCount += countWords(p.description);
+        for (const b of p.bullets) parsedWordCount += countWords(b);
+      }
+      break;
+    }
+    case "references": {
+      // References are intentionally excluded from the resume document,
+      // so coverage is always full for the parsed model.
+      parsedWordCount = originalWordCount;
+      break;
+    }
+  }
+
+  const ratio = originalWordCount > 0
+    ? Math.min(1, parsedWordCount / originalWordCount)
+    : 1;
+
+  let status: CoverageStatus;
+  if (ratio >= 0.8) status = "good";
+  else if (ratio >= 0.4) status = "partial";
+  else if (ratio >= 0.1) status = "poor";
+  else status = "missing";
+
+  return {
+    sectionId,
+    originalWordCount,
+    parsedWordCount,
+    ratio,
+    status,
+  };
+}
 
 /* ------------------------------------------------------------------ */
 /*  Section confidence scoring                                        */
@@ -631,6 +815,8 @@ export function parseResumeText(text: string): ParseResult {
       confidence: 0,
       confidenceBySection: emptyConfidence,
       warnings: ["No text provided"],
+      unparsedContent: {},
+      coverage: [],
     };
   }
 
@@ -685,11 +871,14 @@ export function parseResumeText(text: string): ParseResult {
 
   let totalFields = 0;
 
-  // Collect raw section lines for confidence evaluation (before mutation)
+  // Collect raw section lines for confidence evaluation and coverage (before mutation)
   const sectionLinesMap = new Map<string, string[]>();
   for (const [sectionId, bounds] of sections) {
     sectionLinesMap.set(sectionId, lines.slice(bounds.start, bounds.end));
   }
+
+  // Track unparsed content per section — raw text that the structured parser could not fit.
+  const unparsedContent: Record<string, string> = {};
 
   for (const [sectionId, bounds] of sections) {
     const sectionLines = lines.slice(bounds.start, bounds.end);
@@ -709,6 +898,17 @@ export function parseResumeText(text: string): ParseResult {
         );
         if (experience.length > 0) {
           parsed.experience = experience;
+        }
+        // Track unparsed content: if experience was detected but parsed word
+        // count is suspiciously low, store the raw lines.
+        const rawText = sectionLines.join("\n").trim();
+        const parsedWords = experience.reduce(
+          (sum, e) => sum + e.bullets.join(" ").split(/\s+/).filter(Boolean).length,
+          0,
+        );
+        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+        if (rawText && rawWords > 0 && (parsedWords < 3 || parsedWords < rawWords * 0.3)) {
+          unparsedContent.experience = rawText;
         }
         warnings.push(...expWarnings);
         totalFields++;
@@ -730,6 +930,12 @@ export function parseResumeText(text: string): ParseResult {
         if (skills.length > 0) {
           parsed.skills = skills;
         }
+        // Track unparsed content: if raw section has lots of text but few skills parsed
+        const rawText = sectionLines.join("\n").trim();
+        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+        if (rawText && rawWords > 10 && skills.length < 3) {
+          unparsedContent.skills = rawText;
+        }
         totalFields++;
         break;
       }
@@ -739,6 +945,12 @@ export function parseResumeText(text: string): ParseResult {
           .filter((l) => l.length > 0 && !BULLET_RE.test(l));
         if (certs.length > 0) {
           parsed.certifications = certs;
+        }
+        // Track unparsed content
+        const rawText = sectionLines.join("\n").trim();
+        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+        if (rawText && rawWords > 5 && certs.length === 0) {
+          unparsedContent.certifications = rawText;
         }
         totalFields++;
         break;
@@ -760,22 +972,41 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "projects": {
-        const names = sectionLines
-          .map((l) => l.trim())
-          .filter(
-            (l) =>
-              l.length > 0 &&
-              !BULLET_RE.test(l) &&
-              !isLikelyHeader(l) &&
-              !/^[•\-*\d.]+/.test(l),
-          );
-        if (names.length > 0) {
-          parsed.projects = names.map((name, i) => ({
-            id: `import-proj-${i + 1}`,
-            name,
-            description: "",
-            bullets: [],
-          }));
+        // Parse project entries: name lines followed by bullet lines
+        const projects: ResumeDocument["projects"] = [];
+        let currentProject: ResumeDocument["projects"][number] | null = null;
+        for (const rawLine of sectionLines) {
+          const l = rawLine.trim();
+          if (!l) { currentProject = null; continue; }
+          if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/)) continue;
+
+          // Check if this is a bullet line
+          if (/^[•\-*\d.]+\s/.test(l)) {
+            const cleaned = l.replace(/^[•\-*\d.]+\s+/, "").trim();
+            if (currentProject && cleaned) {
+              currentProject.bullets.push(cleaned);
+            }
+          } else {
+            // Non-bullet line — start a new project
+            projects.push({
+              id: `import-proj-${projects.length + 1}`,
+              name: l,
+              description: "",
+              bullets: [],
+            });
+            currentProject = projects[projects.length - 1];
+          }
+        }
+        parsed.projects = projects;
+        // Track unparsed content when projects exist but parsed coverage is low
+        const rawText = sectionLines.join("\n").trim();
+        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+        const parsedWords = projects.reduce(
+          (sum, p) => sum + p.bullets.join(" ").split(/\s+/).filter(Boolean).length,
+          0,
+        );
+        if (rawText && rawWords > 10 && parsedWords < 3) {
+          unparsedContent.projects = rawText;
         }
         totalFields++;
         break;
@@ -798,6 +1029,13 @@ export function parseResumeText(text: string): ParseResult {
       parsed,
       headerDetected.has(sectionId),
     );
+  }
+
+  // Compute per-section coverage
+  const coverage: SectionCoverageItem[] = [];
+  for (const sectionId of allSectionIds) {
+    const rawLines = sectionLinesMap.get(sectionId) ?? [];
+    coverage.push(computeSectionCoverage(sectionId, rawLines, parsed));
   }
 
   // Calculate overall confidence
@@ -829,5 +1067,16 @@ export function parseResumeText(text: string): ParseResult {
     );
   }
 
-  return { parsed, confidence, confidenceBySection, warnings };
+  // Add coverage-based warnings
+  for (const c of coverage) {
+    if (c.sectionId === "references") continue; // Intentionally excluded
+    if (c.originalWordCount === 0) continue; // Not detected
+    if (c.status === "poor" || c.status === "missing") {
+      warnings.push(
+        `Low import quality for "${c.sectionId}": ${Math.round(c.ratio * 100)}% coverage (${c.parsedWordCount}/${c.originalWordCount} words preserved).`,
+      );
+    }
+  }
+
+  return { parsed, confidence, confidenceBySection, warnings, unparsedContent, coverage };
 }

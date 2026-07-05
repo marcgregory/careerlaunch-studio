@@ -25,7 +25,7 @@
       {
         "id": "import-edu-1",
         "school": "School of Design, 2021",
-        "degree": "B.A. Graphic Design - Rhode Island School of Design,",
+        "degree": "B.A. Graphic Design - Rhode Island",
         "location": "",
         "graduation": "2021"
       }
@@ -47,5 +47,64 @@
     "projects": "low",
     "references": "low"
   },
-  "warnings": []
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 26,
+      "parsedWordCount": 19,
+      "ratio": 0.7307692307692307,
+      "status": "partial"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 10,
+      "parsedWordCount": 10,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ]
 }

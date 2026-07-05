@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Eye } from "lucide-react";
+import { primaryButtonClass } from "@careerlaunch/ui";
 import { useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
-import type { ParseResult } from "@careerlaunch/ai/import";
+import type { ParseResult, CoverageStatus, SectionCoverageItem } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 
@@ -17,6 +17,33 @@ export default function ImportPage() {
   const [text, setText] = useState("");
   const [result, setResult] = useState<ParseResult | null>(null);
   const [error, setError] = useState("");
+  const [showUnparsed, setShowUnparsed] = useState<string | null>(null);
+
+  function hasCriticalLowCoverage(coverage: SectionCoverageItem[]): boolean {
+    // Critical sections where low coverage is a hard blocker
+    const critical = new Set(["experience", "education", "skills"]);
+    return coverage.some(
+      (c) => critical.has(c.sectionId) && (c.status === "missing" || c.status === "poor"),
+    );
+  }
+
+  function getCoverageColorClass(status: CoverageStatus): string {
+    switch (status) {
+      case "good": return "text-green-600 bg-green-50 border-green-200";
+      case "partial": return "text-amber-600 bg-amber-50 border-amber-200";
+      case "poor": return "text-orange-600 bg-orange-50 border-orange-200";
+      case "missing": return "text-red-600 bg-red-50 border-red-200";
+    }
+  }
+
+  function getCoverageLabel(status: CoverageStatus): string {
+    switch (status) {
+      case "good": return "Good";
+      case "partial": return "Partial";
+      case "poor": return "Poor";
+      case "missing": return "Missing";
+    }
+  }
 
   async function handleParse() {
     if (!text.trim()) return;
@@ -47,6 +74,15 @@ export default function ImportPage() {
 
   async function handleCreateDraft() {
     if (!result?.parsed) return;
+
+    // Block saving if critical sections have poor/missing coverage
+    if (result.coverage && hasCriticalLowCoverage(result.coverage)) {
+      setError(
+        "Import quality is too low for critical sections (experience, education, or skills). " +
+        "Review the coverage table below and paste the missing content before continuing.",
+      );
+      return;
+    }
 
     setState("saving");
 
@@ -194,6 +230,58 @@ export default function ImportPage() {
                       ))}
                     </ul>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Coverage table */}
+            {result.coverage && result.coverage.length > 0 && (
+              <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
+                <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#4b4b4b]">
+                  <FileText size={14} />
+                  Import coverage
+                </h3>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {result.coverage
+                    .filter((c) => c.sectionId !== "references")
+                    .map((c) => {
+                      const colorClass = getCoverageColorClass(c.status);
+                      const hasUnparsed = showUnparsed === c.sectionId && result.unparsedContent?.[c.sectionId];
+                      return (
+                        <div key={c.sectionId}>
+                          <div
+                            className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold ${colorClass}`}
+                          >
+                            <span className="capitalize">{c.sectionId}</span>
+                            <span>{getCoverageLabel(c.status)}</span>
+                          </div>
+                          <div className="mt-1 px-1 text-[10px] font-medium text-[#999]">
+                            {Math.round(c.ratio * 100)}% · {c.parsedWordCount}/{c.originalWordCount} words
+                            {c.status === "poor" || c.status === "missing" ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowUnparsed(
+                                    showUnparsed === c.sectionId ? null : c.sectionId,
+                                  )
+                                }
+                                className="ml-1.5 inline-flex items-center gap-0.5 text-[#123c3a] underline hover:no-underline"
+                              >
+                                <Eye size={10} />
+                                {hasUnparsed ? "hide raw" : "show raw"}
+                              </button>
+                            ) : null}
+                          </div>
+                          {hasUnparsed && (
+                            <div className="mt-1 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-5 text-amber-900">
+                              <pre className="whitespace-pre-wrap font-sans">
+                                {result.unparsedContent[c.sectionId]}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}

@@ -52,7 +52,7 @@
       {
         "id": "import-edu-1",
         "school": "University of the Philippines, 2015",
-        "degree": "Bachelor of Science in Business Administration - University of the Philippines,",
+        "degree": "Bachelor of Science in Business Administration",
         "location": "",
         "graduation": "2015"
       }
@@ -93,5 +93,64 @@
     "projects": "low",
     "references": "low"
   },
-  "warnings": []
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 19,
+      "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 124,
+      "parsedWordCount": 95,
+      "ratio": 0.7661290322580645,
+      "status": "partial"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 12,
+      "parsedWordCount": 11,
+      "ratio": 0.9166666666666666,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 6,
+      "parsedWordCount": 6,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ]
 }

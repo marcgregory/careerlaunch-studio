@@ -25,7 +25,7 @@
       {
         "id": "import-edu-1",
         "school": "University of Washington, 2022",
-        "degree": "B.S. Computer Science - University of Washington,",
+        "degree": "B.S. Computer Science",
         "location": "",
         "graduation": "2022"
       }
@@ -67,5 +67,64 @@
     "projects": "low",
     "references": "low"
   },
-  "warnings": []
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 28,
+      "parsedWordCount": 21,
+      "ratio": 0.75,
+      "status": "partial"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 8,
+      "parsedWordCount": 7,
+      "ratio": 0.875,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 15,
+      "parsedWordCount": 15,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ]
 }

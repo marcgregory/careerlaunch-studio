@@ -50,7 +50,7 @@
       {
         "id": "import-edu-1",
         "school": "University, 2014",
-        "degree": "M.S. Computer Science - Stanford University,",
+        "degree": "M.S. Computer Science - Stanford",
         "location": "",
         "graduation": "2014"
       },
@@ -99,5 +99,64 @@
     "projects": "low",
     "references": "low"
   },
-  "warnings": []
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 108,
+      "parsedWordCount": 86,
+      "ratio": 0.7962962962962963,
+      "status": "partial"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 14,
+      "parsedWordCount": 20,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 22,
+      "parsedWordCount": 22,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ]
 }
