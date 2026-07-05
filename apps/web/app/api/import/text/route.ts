@@ -6,6 +6,11 @@ import { checkRateLimit } from "../../../../lib/rate-limit";
 
 const MAX_IMPORT_SIZE = 50 * 1024; // 50 KB
 
+type ProviderEntry = {
+  name: "gemini" | "groq";
+  apiKey: string;
+};
+
 /**
  * POST /api/import/text
  *
@@ -70,44 +75,102 @@ export async function POST(request: Request) {
     // If critical sections have low coverage, attempt AI reconstruction
     // using the original resume text. This runs automatically so users
     // rarely need to manually fix low-quality imports.
+    //
+    // Multi-provider fallback: providers are tried in order (Gemini → Groq).
+    // If the first provider fails (rate limit, outage, etc.), we fall
+    // through to the next. This ensures AI recovery stays available even
+    // when a single provider hits its limit.
     const needsRecovery = needsAICoverageRecovery(result.coverage);
     console.log("[import] needsAICoverageRecovery:", needsRecovery, "coverage:", JSON.stringify(result.coverage.map(c => ({ id: c.sectionId, ratio: c.ratio }))));
+
+    let aiRecovery: {
+      status: "skipped" | "attempted" | "succeeded" | "fallback" | "failed";
+      primaryProvider: string | null;
+      usedProvider: string | null;
+      failedProviders: string[];
+      reason?: string;
+    } = {
+      status: "skipped",
+      primaryProvider: null,
+      usedProvider: null,
+      failedProviders: [],
+    };
+
     if (needsRecovery) {
-      const providerName = pickImportRecoveryProvider();
-      console.log("[import] pickImportRecoveryProvider:", providerName);
+      const providers = listAvailableProviders();
+      console.log("[import] available providers:", providers.map(p => p.name));
       console.log("[import] GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY, "GROQ_API_KEY present:", !!process.env.GROQ_API_KEY);
 
-      if (providerName) {
-        const apiKey = providerName === "groq"
-          ? process.env.GROQ_API_KEY
-          : process.env.GEMINI_API_KEY;
+      aiRecovery.primaryProvider = providers[0]?.name ?? null;
 
-        console.log("[import] apiKey resolved:", !!apiKey, "provider:", providerName);
+      if (providers.length === 0) {
+        console.warn("[import] No AI provider available — AI recovery skipped. Set GEMINI_API_KEY or GROQ_API_KEY in .env");
+        aiRecovery.status = "skipped";
+        aiRecovery.reason = "No AI provider configured";
+      } else {
+        // Snapshot pre-recovery data so the UI can offer a comparison view
+        const preRecoveryData = {
+          summary: result.parsed.summary ?? "",
+          experience: result.parsed.experience ?? [],
+          education: result.parsed.education ?? [],
+          skills: result.parsed.skills ?? [],
+        };
 
-        if (apiKey) {
-          // Snapshot pre-recovery data so the UI can offer a comparison view
-          const preRecoveryData = {
-            summary: result.parsed.summary ?? "",
-            experience: result.parsed.experience ?? [],
-            education: result.parsed.education ?? [],
-            skills: result.parsed.skills ?? [],
-          };
+        // Try each provider sequentially until one succeeds
+        let recovery = null;
+        let usedProvider: string | null = null;
+        const failedProviders: string[] = [];
 
-          const recovery = await recoverSections({
-            originalText: body.text,
-            parserOutput: result,
-            lowCoverageSections: result.coverage.filter((c) => c.ratio < 0.8),
-            provider: { name: providerName, apiKey },
-          });
+        for (const provider of providers) {
+          console.log("[import] attempting recovery with provider:", provider.name);
 
-          console.log("[import] recovery result keys:", Object.keys(recovery));
-          console.log("[import] recovery experience:", recovery.experience?.length ?? 0, "entries, education:", recovery.education?.length ?? 0, "entries");
+          try {
+            recovery = await recoverSections({
+              originalText: body.text,
+              parserOutput: result,
+              lowCoverageSections: result.coverage.filter((c) => c.ratio < 0.8),
+              provider: { name: provider.name, apiKey: provider.apiKey },
+            });
 
-          // If recovery came back empty despite being called, it likely hit
-          // an API quota/rate limit. The LLM logs the real reason via console.warn.
-          if (recovery.experience?.length === 0 && recovery.education?.length === 0 && recovery.skills?.length === 0) {
-            console.warn("[import] AI recovery returned empty — likely quota/rate limit on provider:", providerName);
+            console.log("[import] recovery result keys:", Object.keys(recovery));
+            console.log("[import] recovery experience:", recovery.experience?.length ?? 0, "entries, education:", recovery.education?.length ?? 0, "entries");
+
+            // Check if the provider actually returned anything useful
+            const hasContent = (recovery.experience?.length ?? 0) > 0
+              || (recovery.education?.length ?? 0) > 0
+              || (recovery.skills?.length ?? 0) > 0
+              || (recovery.summary?.length ?? 0) > 0;
+
+            if (hasContent) {
+              usedProvider = provider.name;
+              console.log("[import] recovery succeeded with provider:", provider.name);
+              break; // Success — stop trying more providers
+            } else {
+              console.warn("[import] provider", provider.name, "returned empty recovery — trying next provider if available");
+              failedProviders.push(provider.name);
+              recovery = null;
+            }
+          } catch (err) {
+            // recoverSections catches most errors internally and returns {},
+            // but a hard crash (abort, unexpected) would reach here
+            const failReason = err instanceof Error ? err.message : String(err);
+            console.warn("[import] provider", provider.name, "failed:", failReason);
+            failedProviders.push(provider.name);
+            recovery = null;
           }
+        }
+
+        aiRecovery.failedProviders = failedProviders;
+
+        if (recovery && usedProvider) {
+          // ── Recovery succeeded ──
+          aiRecovery.status = usedProvider === aiRecovery.primaryProvider ? "succeeded" : "fallback";
+          aiRecovery.usedProvider = usedProvider;
+          if (aiRecovery.status === "fallback") {
+            aiRecovery.reason = `Primary provider (${aiRecovery.primaryProvider}) failed, used ${usedProvider} instead`;
+          }
+
+          console.log("[import] recovery succeeded with provider:", usedProvider);
 
           const merged = mergeRecovery(result, recovery);
 
@@ -132,24 +195,31 @@ export async function POST(request: Request) {
             importQuality: finalImportQuality,
             aiRecovered: merged.aiRecovered,
             aiRecoveredSections: merged.recoveredSections,
-            aiRecoveryStatus: merged.aiRecovered ? "succeeded" : "attempted_no_recovery",
+            aiRecovery,
             /** Pre-recovery snapshot for the comparison UI toggle.
              *  Only populated when AI recovery was applied. */
             preRecoveryData,
           };
         } else {
-          // apiKey was empty string or falsy despite provider being selected
-          console.warn("[import] apiKey was falsy for provider:", providerName);
-          result = { ...result, aiRecoveryStatus: "failed_no_api_key" };
+          // ── All providers failed ──
+          aiRecovery.status = "failed";
+          aiRecovery.usedProvider = null;
+          aiRecovery.reason = `All AI providers failed: ${failedProviders.join(", ")}`;
+
+          console.warn("[import] all providers failed:", failedProviders);
+
+          result = {
+            ...result,
+            aiRecovery,
+            preRecoveryData,
+          };
         }
-      } else {
-        // No AI provider configured — not an error, just no recovery possible
-        console.warn("[import] No AI provider available — AI recovery skipped. Set GEMINI_API_KEY or GROQ_API_KEY in .env");
-        result = { ...result, aiRecoveryStatus: "skipped_no_provider" };
       }
     } else {
       // Coverage was already sufficient — no recovery needed
-      result = { ...result, aiRecoveryStatus: "skipped_coverage_sufficient" };
+      aiRecovery.status = "skipped";
+      aiRecovery.reason = "Coverage sufficient in all critical sections";
+      result = { ...result, aiRecovery };
     }
   } catch (error) {
     reportError(error, getRequestId(request), { route: "import-text" });
@@ -163,11 +233,21 @@ export async function POST(request: Request) {
 }
 
 /**
- * Determine which AI provider to use for the recovery pass.
- * Returns the provider name, or null if no provider is configured.
+ * List available AI providers in priority order (Gemini first, then Groq).
+ * Returns an empty array if no provider is configured.
+ *
+ * This is the single source of truth for recovery provider selection.
+ * Provider priority:
+ *   1. Gemini (primary — fast, capable)
+ *   2. Groq (fallback — different infra, lower chance of correlated outage)
  */
-function pickImportRecoveryProvider(): "gemini" | "groq" | null {
-  if (process.env.GEMINI_API_KEY) return "gemini";
-  if (process.env.GROQ_API_KEY) return "groq";
-  return null;
+function listAvailableProviders(): ProviderEntry[] {
+  const providers: ProviderEntry[] = [];
+  if (process.env.GEMINI_API_KEY) {
+    providers.push({ name: "gemini", apiKey: process.env.GEMINI_API_KEY });
+  }
+  if (process.env.GROQ_API_KEY) {
+    providers.push({ name: "groq", apiKey: process.env.GROQ_API_KEY });
+  }
+  return providers;
 }
