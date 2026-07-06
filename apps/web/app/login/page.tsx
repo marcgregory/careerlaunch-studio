@@ -37,11 +37,11 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           <form action="/api/auth/login" method="post" className="mt-7 space-y-5">
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
-              <input name="email" type="email" required className="signal-input mt-2" />
+              <input name="email" type="email" required className="signal-input mt-2" id="login-email" />
             </label>
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Password</span>
-              <input name="password" type="password" required className="signal-input mt-2" />
+              <input name="password" type="password" required className="signal-input mt-2" id="login-password" />
             </label>
             <button className="signal-button-dark w-full justify-center" type="submit">
               Sign in <ArrowRight size={18} />

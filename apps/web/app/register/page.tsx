@@ -45,15 +45,15 @@ export default async function RegisterPage({ searchParams }: { searchParams?: Pr
           <form action="/api/auth/register" method="post" className="mt-7 space-y-5">
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Name</span>
-              <input name="name" className="signal-input mt-2" />
+              <input name="name" className="signal-input mt-2" id="register-name" />
             </label>
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
-              <input name="email" type="email" required className="signal-input mt-2" />
+              <input name="email" type="email" required className="signal-input mt-2" id="register-email" />
             </label>
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Password</span>
-              <input name="password" type="password" minLength={8} required className="signal-input mt-2" />
+              <input name="password" type="password" minLength={8} required className="signal-input mt-2" id="register-password" />
             </label>
             <button className="signal-button-dark w-full justify-center" type="submit">
               Create account <ArrowRight size={18} />

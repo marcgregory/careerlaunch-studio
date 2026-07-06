@@ -26,6 +26,14 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] }
+    },
+    {
+      name: "mobile",
+      use: {
+        ...devices["iPhone X"],
+        // Override viewport to test consistently at 375px for mobile QA
+        viewport: { width: 375, height: 812 }
+      }
     }
   ]
 });

@@ -62,12 +62,12 @@ button {
 .signal-button-light,
 .signal-button-lime {
   display: inline-flex;
-  min-height: 3rem;
+  min-height: 2.75rem;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   border-radius: 0.85rem;
-  padding: 0.78rem 1.25rem;
+  padding: 0.5rem 1.25rem;
   font-size: 0.9rem;
   font-weight: 900;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
