@@ -594,12 +594,12 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-3 shadow-sm transition hover:border-[#b9ff66] sm:p-5">
+    <section className="sm:rounded-2xl sm:border sm:border-[#123c3a]/10 sm:bg-white sm:p-5 sm:shadow-sm sm:transition sm:hover:border-[#b9ff66]">
       <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
-        <h2 className="font-signal text-base font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
+        <h2 className="font-signal text-sm font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
         {action}
       </div>
-      <div className="mt-3 sm:mt-4">{children}</div>
+      <div className="mt-2 sm:mt-4">{children}</div>
     </section>
   );
 }
@@ -767,7 +767,7 @@ function ItemCard({
   disableDown: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-2 sm:p-3">
+    <div className="sm:rounded-2xl sm:border sm:border-[#123c3a]/10 sm:bg-[#f8f8f5] sm:p-3">
       <div className="mb-2 flex items-center gap-1.5 sm:mb-3 sm:gap-2">
         <GripVertical size={17} className="text-[#4b4b4b]/55" />
         <h3 className="min-w-0 flex-1 truncate text-sm font-black">{title}</h3>
@@ -798,9 +798,9 @@ function IconButton({ label, disabled, onClick, children }: { label: string; dis
 function StackEmpty({ when, label, action }: { when: boolean; label: string; action: string }) {
   if (!when) return null;
   return (
-    <div className="rounded-2xl border border-dashed border-[#123c3a]/20 bg-[#f8f8f5] p-4 text-sm">
+    <div className="rounded-2xl border border-dashed border-[#123c3a]/20 bg-[#f8f8f5] p-3 text-sm sm:p-4">
       <p className="font-black text-[#123c3a]">{label}</p>
-      <p className="mt-1 font-medium leading-5 text-[#4b4b4b]">{action}</p>
+      <p className="mt-0.5 font-medium leading-5 text-[#4b4b4b] sm:mt-1">{action}</p>
     </div>
   );
 }
