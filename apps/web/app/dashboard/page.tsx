@@ -28,35 +28,35 @@ export default async function DashboardPage() {
   return (
     <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
       <div className="mx-auto max-w-7xl">
-        <header className="flex flex-col gap-8 border-b border-[#123c3a]/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <header className="flex flex-col gap-6 border-b border-[#123c3a]/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <Link href="/" className="font-signal inline-flex items-center gap-3 text-2xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22]">
+            <Link href="/" className="font-signal inline-flex items-center gap-3 text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
               CareerLaunch
               <span className="rounded-full bg-[#b9ff66] px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#123c3a]">Studio</span>
             </Link>
-            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[#123c3a]/10 bg-white px-3 py-2 shadow-sm">
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#123c3a]/10 bg-white px-3 py-2 shadow-sm sm:mt-7">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#b9ff66] opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#6bbf22]" />
               </span>
               <span className="text-xs font-black uppercase tracking-[0.18em] text-[#4b4b4b]">Workspace active</span>
             </div>
-            <h1 className="font-signal mt-5 max-w-4xl text-5xl font-black uppercase leading-[0.86] tracking-[-0.08em] md:text-7xl">
+            <h1 className="font-signal mt-4 max-w-4xl text-4xl font-black uppercase leading-[0.86] tracking-[-0.08em] md:text-7xl sm:mt-5">
               Application control room.
             </h1>
-            <p className="mt-5 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b]">Signed in as {user.email}</p>
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b] sm:mt-5">Signed in as {user.email}</p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <form action="/api/auth/logout" method="post">
               <button className={secondaryButtonClass} type="submit">
-                <LogOut size={18} /> Sign out
+                <LogOut size={16} /> <span className="hidden sm:inline">Sign out</span>
               </button>
             </form>
             <Link href="/import" className={secondaryButtonClass}>
-              <FileText size={18} /> Import
+              <FileText size={16} /> <span className="hidden sm:inline">Import</span>
             </Link>
             <Link href="/builder" className={primaryButtonClass}>
-              <Plus size={18} /> New resume
+              <Plus size={16} /> <span className="hidden sm:inline">New resume</span>
             </Link>
           </div>
         </header>

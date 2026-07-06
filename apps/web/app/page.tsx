@@ -29,16 +29,16 @@ const platformLayers = [
 export default function HomePage() {
   return (
     <main className="signal-site min-h-screen bg-[#f3f3f3] text-[#123c3a]">
-      <header className="no-print sticky top-0 z-40 border-b border-[#123c3a]/5 bg-[#f3f3f3]/86 px-5 py-4 backdrop-blur-xl">
+      <header className="no-print sticky top-0 z-40 border-b border-[#123c3a]/5 bg-[#f3f3f3]/86 px-5 py-3 backdrop-blur-xl sm:py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <Link href="/" className="font-signal text-2xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22]">
+          <Link href="/" className="font-signal text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
             CareerLaunch
           </Link>
           <nav className="flex items-center gap-2">
-            <Link href="/dashboard" className="hidden rounded-full px-5 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:inline-flex">
+            <Link href="/dashboard" className="rounded-full px-4 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:px-5">
               Dashboard
             </Link>
-            <Link href="/builder" className="signal-button-dark">
+            <Link href="/builder" className="signal-button-dark whitespace-nowrap text-xs sm:text-sm">
               Open builder
             </Link>
           </nav>

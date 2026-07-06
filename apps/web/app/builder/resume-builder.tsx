@@ -273,34 +273,34 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
   return (
     <main className="signal-site min-h-screen text-[#123c3a]">
-      <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-4 py-3 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-12 w-12 rounded-full px-0`} aria-label="Back to dashboard">
-              <ArrowLeft size={20} />
+      <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-10 w-10 rounded-full px-0 sm:min-h-12 sm:w-12`} aria-label="Back to dashboard">
+              <ArrowLeft size={18} />
             </Link>
             <div className="min-w-0">
-              <p className="font-mono text-xs font-black uppercase tracking-[0.2em] text-[#00796f]">Resume Builder</p>
-              <h1 className="font-signal truncate text-2xl font-black leading-none tracking-[-0.06em]">{resume.title || "Untitled resume"}</h1>
+              <p className="font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:text-xs">Resume Builder</p>
+              <h1 className="font-signal truncate text-base font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <span className={saveBadgeClass(saveState)} aria-live="polite">
-              <Save size={16} /> {saveState}
+              <Save size={14} /> <span className="hidden sm:inline">{saveState}</span>
             </span>
-            {hasValidationErrors && <span className="rounded-[14px] border border-red-200 bg-red-50 px-3 py-2 text-sm font-black text-red-700">Fix required fields</span>}
-            <button className={secondaryButtonClass} onClick={resetDraft} type="button">
-              <RotateCcw size={18} /> Reset
+            {hasValidationErrors && <span className="hidden truncate rounded-[14px] border border-red-200 bg-red-50 px-2 py-1.5 text-[0.65rem] font-black text-red-700 sm:inline-block sm:px-3 sm:py-2 sm:text-sm">Fix required fields</span>}
+            <button className={`${secondaryButtonClass} min-h-10 px-2 sm:min-h-12 sm:px-3`} onClick={resetDraft} type="button" aria-label="Reset draft">
+              <RotateCcw size={16} /> <span className="hidden sm:inline">Reset</span>
             </button>
-            <button className={primaryButtonClass} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors}>
-              <Download size={18} /> {exportState === "Exporting" ? "Exporting" : "Export PDF"}
+            <button className={`${primaryButtonClass} min-h-10 px-2 sm:min-h-12 sm:px-3`} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors} aria-label="Export PDF">
+              <Download size={16} /> <span className="hidden sm:inline">{exportState === "Exporting" ? "Exporting" : "Export PDF"}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── Mobile tab switcher ── */}
-      <div className="sticky top-[73px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-2 backdrop-blur-xl xl:hidden">
+      <div className="sticky top-[56px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-2 backdrop-blur-xl sm:top-[68px] xl:hidden">
         <nav className="flex gap-1" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
             <button
