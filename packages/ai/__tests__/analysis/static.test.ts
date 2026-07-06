@@ -164,6 +164,33 @@ describe("runStaticAnalysis", () => {
     expect(suggestions.some((s) => s.id === "impact:no-metrics:exp-1")).toBe(false);
   });
 
+  it("regression: strong action bullets without numbers are minor, not major", () => {
+    const resume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-1",
+          type: "experience",
+          role: "Ahamatic Junior Software Engineer",
+          company: "Co",
+          bullets: [
+            "Developed features in an Agile environment and managed code via Git.",
+            "Built and debugged React and Next.js applications.",
+            "Collaborated with design teams to implement high-fidelity UIs.",
+            "Produced clean, efficient, well-documented code.",
+            "Participated in code reviews and mentored junior developers.",
+          ],
+          dateRange: { start: "2021", end: "2024" },
+        },
+      ],
+    });
+    const suggestions = runStatic(resume);
+    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
+    expect(noMetrics).toBeDefined();
+    expect(noMetrics!.severity).toBe("minor");
+    expect(noMetrics!.title).toContain("Consider adding measurable impact");
+    expect(noMetrics!.reason).toContain("Do not invent numbers");
+  });
+
   it("flags missing skills", () => {
     const resume = makeMinimalResume({ skills: [] });
     const suggestions = runStatic(resume);

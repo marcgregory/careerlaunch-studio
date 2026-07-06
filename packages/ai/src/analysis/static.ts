@@ -287,29 +287,26 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       /\d|%|\$|million|thousand/i.test(b),
     );
     if (entry.bullets.length > 0 && bulletsWithMetrics.length === 0) {
-      // Check whether all bullets start with a strong action verb
-      const allStrongVerbs = entry.bullets.every((b) => {
+      // Count how many bullets start with a strong action verb
+      const strongCount = entry.bullets.filter((b) => {
         const first = b.trim().split(/\s+/)[0]?.toLowerCase();
         return first && actionVerbs.includes(first);
-      });
+      }).length;
+      // Consider "strong" if majority (> 50%) start with an action verb
+      const majorityStrong = strongCount / entry.bullets.length > 0.5;
 
-      if (allStrongVerbs) {
+      if (majorityStrong) {
         // Strong bullets but no metrics → minor enhancement
         s.push({
           id: suggestionId("impact", "no-metrics", entry.id),
           category: "impact",
           severity: "minor",
-          title:
-            `"${entry.role ?? "Role"}" could benefit from measurable impact`,
+          title: `Consider adding measurable impact for "${entry.role ?? "Role"}"`,
           reason:
-            "Your bullet points already use strong action verbs, which is great. " +
-            "Adding specific numbers or outcomes (users impacted, performance gains, team size, " +
-            "features shipped) can further strengthen these solid bullets.\n\n" +
-            "Examples:\n" +
-            "• \"Developed 15+ React components used across 4 internal applications\"\n" +
-            "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
-            "• " +
-            "\"Supported 200+ end users across 3 departments\"",
+            "Your bullet points are action-oriented and specific. If you have real metrics " +
+            "(users impacted, performance gains, features shipped, team size), adding them " +
+            "could strengthen this section even further. Do not invent numbers — use what " +
+            "you actually know.",
           targetText: null,
           suggestedText: null,
           location: { sectionId: "experience", entryId: entry.id },
@@ -317,7 +314,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
           source: "static",
         });
       } else {
-        // Weak verbs AND no metrics → major issue
+        // Majority weak/passive verbs AND no metrics → major issue
         s.push({
           id: suggestionId("impact", "no-metrics", entry.id),
           category: "impact",
@@ -325,7 +322,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
           title:
             `"${entry.role ?? "Role"}" needs stronger, more measurable bullets`,
           reason:
-            "Your bullet points are missing both strong action verbs and measurable outcomes. " +
+            "Most of your bullet points use weak or passive phrasing and lack measurable outcomes. " +
             "Start each bullet with a powerful action verb (e.g., \"Developed\", \"Reduced\", " +
             "\"Launched\") and include numbers to quantify your impact.\n\n" +
             "Examples:\n" +
