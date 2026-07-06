@@ -1,0 +1,318 @@
+{
+  "timestamp": "2026-07-06T11:35:36.010Z",
+  "summary": {
+    "personasTotal": 6,
+    "personasPassing": 0,
+    "critical": [
+      {
+        "id": "resume-16-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "Junior Frontend Developer",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Jenna Martinez",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-17-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "Senior Backend Engineer",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Marcus Williams",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-18-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "WordPress Developer",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Sophia Rivera",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-19-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "Marketing Specialist",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Olivia Chen",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-20-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "Graphic Designer",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Aiden Park",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-21-IMPORT",
+        "severity": "🔴 Critical",
+        "persona": "Customer Support Specialist",
+        "area": "Import",
+        "description": "Import failed for Emma Thompson",
+        "stepsToReproduce": "POST /api/import/text with Customer Support Specialist resume text",
+        "expected": "Import quality should not be 'failed'",
+        "actual": "[object Object]",
+        "status": "Open"
+      },
+      {
+        "id": "resume-21-CREATE",
+        "severity": "🔴 Critical",
+        "persona": "Customer Support Specialist",
+        "area": "Draft Creation",
+        "description": "Failed to create resume draft for Emma Thompson",
+        "stepsToReproduce": "POST /api/resumes after import",
+        "expected": "Resume draft created with ID",
+        "actual": "[object Object]",
+        "status": "Open"
+      }
+    ],
+    "major": [
+      {
+        "id": "resume-21-PREVIEW",
+        "severity": "🟠 Major",
+        "persona": "Customer Support Specialist",
+        "area": "Import Preview",
+        "description": "Expected 2 experience entries, got 0; Expected ~10 skills, got 0 — possible truncation",
+        "stepsToReproduce": "Import Emma Thompson resume and check parsed structure",
+        "expected": "Experience: 2, Skills: ~10",
+        "actual": "Experience: 0, Skills: 0",
+        "status": "Open"
+      }
+    ],
+    "minor": [],
+    "enhancement": [],
+    "gatePassed": false
+  },
+  "results": [
+    {
+      "name": "Junior Frontend Developer",
+      "steps": {
+        "Import Resume": {
+          "pass": true,
+          "detail": "Quality: fair, Coverage: [\"summary=100%\",\"experience=80%\",\"education=100%\",\"skills=100%\",\"certifications=100%\",\"professionalQualities=100%\",\"projects=0%\",\"references=100%\"]",
+          "durationMs": 588
+        },
+        "Preview vs Import": {
+          "pass": true,
+          "detail": "Experience: 2/2, Skills: 10/10"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 201: [object Object]",
+          "durationMs": 66
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-16-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "Junior Frontend Developer",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Jenna Martinez",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "name": "Senior Backend Engineer",
+      "steps": {
+        "Import Resume": {
+          "pass": true,
+          "detail": "Quality: good, Coverage: [\"summary=100%\",\"experience=82%\",\"education=100%\",\"skills=100%\",\"certifications=78%\",\"professionalQualities=100%\",\"projects=100%\",\"references=100%\"]",
+          "durationMs": 35
+        },
+        "Preview vs Import": {
+          "pass": true,
+          "detail": "Experience: 3/3, Skills: 14/14"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 201: [object Object]",
+          "durationMs": 35
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-17-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "Senior Backend Engineer",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Marcus Williams",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "name": "WordPress Developer",
+      "steps": {
+        "Import Resume": {
+          "pass": true,
+          "detail": "Quality: good, Coverage: [\"summary=100%\",\"experience=82%\",\"education=100%\",\"skills=100%\",\"certifications=100%\",\"professionalQualities=100%\",\"projects=0%\",\"references=100%\"]",
+          "durationMs": 24
+        },
+        "Preview vs Import": {
+          "pass": true,
+          "detail": "Experience: 2/2, Skills: 13/13"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 201: [object Object]",
+          "durationMs": 25
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-18-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "WordPress Developer",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Sophia Rivera",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "name": "Marketing Specialist",
+      "steps": {
+        "Import Resume": {
+          "pass": true,
+          "detail": "Quality: good, Coverage: [\"summary=100%\",\"experience=83%\",\"education=100%\",\"skills=100%\",\"certifications=80%\",\"professionalQualities=100%\",\"projects=100%\",\"references=100%\"]",
+          "durationMs": 14
+        },
+        "Preview vs Import": {
+          "pass": true,
+          "detail": "Experience: 2/2, Skills: 12/12"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 403: [object Object]",
+          "durationMs": 17
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-19-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "Marketing Specialist",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Olivia Chen",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "name": "Graphic Designer",
+      "steps": {
+        "Import Resume": {
+          "pass": true,
+          "detail": "Quality: fair, Coverage: [\"summary=100%\",\"experience=79%\",\"education=100%\",\"skills=100%\",\"certifications=100%\",\"professionalQualities=100%\",\"projects=0%\",\"references=100%\"]",
+          "durationMs": 23
+        },
+        "Preview vs Import": {
+          "pass": true,
+          "detail": "Experience: 2/2, Skills: 11/11"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 403: [object Object]",
+          "durationMs": 42
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-20-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "Graphic Designer",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Aiden Park",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "name": "Customer Support Specialist",
+      "steps": {
+        "Import Resume": {
+          "pass": false,
+          "detail": "HTTP 429: [object Object]",
+          "durationMs": 14
+        },
+        "Preview vs Import": {
+          "pass": false,
+          "detail": "Expected 2 experience entries, got 0; Expected ~10 skills, got 0 — possible truncation"
+        },
+        "Create Draft": {
+          "pass": false,
+          "detail": "HTTP 403: [object Object]",
+          "durationMs": 34
+        }
+      },
+      "issues": [
+        {
+          "id": "resume-21-IMPORT",
+          "severity": "🔴 Critical",
+          "persona": "Customer Support Specialist",
+          "area": "Import",
+          "description": "Import failed for Emma Thompson",
+          "stepsToReproduce": "POST /api/import/text with Customer Support Specialist resume text",
+          "expected": "Import quality should not be 'failed'",
+          "actual": "[object Object]",
+          "status": "Open"
+        },
+        {
+          "id": "resume-21-PREVIEW",
+          "severity": "🟠 Major",
+          "persona": "Customer Support Specialist",
+          "area": "Import Preview",
+          "description": "Expected 2 experience entries, got 0; Expected ~10 skills, got 0 — possible truncation",
+          "stepsToReproduce": "Import Emma Thompson resume and check parsed structure",
+          "expected": "Experience: 2, Skills: ~10",
+          "actual": "Experience: 0, Skills: 0",
+          "status": "Open"
+        },
+        {
+          "id": "resume-21-CREATE",
+          "severity": "🔴 Critical",
+          "persona": "Customer Support Specialist",
+          "area": "Draft Creation",
+          "description": "Failed to create resume draft for Emma Thompson",
+          "stepsToReproduce": "POST /api/resumes after import",
+          "expected": "Resume draft created with ID",
+          "actual": "[object Object]",
+          "status": "Open"
+        }
+      ]
+    }
+  ]
+}
