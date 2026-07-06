@@ -61,6 +61,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   // Track whether draft_edited has been fired this session to avoid event spam on each autosave
   const hasFiredEditEvent = useRef(false);
 
+  const [mobileTab, setMobileTab] = useState<"preview" | "edit" | "analyze">("preview");
   const validation = useMemo(() => validateResume(resume), [resume]);
   const hasValidationErrors = Object.keys(validation).length > 0;
 
@@ -298,12 +299,41 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[420px_1fr]">
-        <aside className="no-print space-y-5">
-          <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
-          <TailoringPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
-          <CoverLetterPanel resumeId={resume.id} onUpgradeRequired={setUpgradePrompt} />
+      {/* ── Mobile tab switcher ── */}
+      <div className="sticky top-[73px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-2 backdrop-blur-xl xl:hidden">
+        <nav className="flex gap-1" role="tablist" aria-label="Builder view">
+          {(["preview", "edit", "analyze"] as const).map((tab) => (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={mobileTab === tab}
+              onClick={() => setMobileTab(tab)}
+              className={`flex-1 rounded-t-xl px-4 py-2.5 text-sm font-black uppercase tracking-[0.08em] transition ${
+                mobileTab === tab
+                  ? "bg-white text-[#00796f] shadow-[0_-1px_3px_rgba(0,0,0,0.06)]"
+                  : "text-[#4b4b4b]/60 hover:bg-white/40 hover:text-[#123c3a]"
+              }`}
+            >
+              {tab === "preview" && "Preview"}
+              {tab === "edit" && "Edit"}
+              {tab === "analyze" && "Analyze"}
+            </button>
+          ))}
+        </nav>
+      </div>
 
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[420px_1fr]">
+        {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
+        <aside className={`no-print space-y-5 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
+          {/* Mobile: analysis panels - only visible on analyze tab */}
+          <div className={`${mobileTab !== "analyze" && mobileTab !== "edit" ? "hidden xl:block" : mobileTab === "edit" ? "hidden xl:block" : ""}`}>
+            <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
+            <TailoringPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
+            <CoverLetterPanel resumeId={resume.id} onUpgradeRequired={setUpgradePrompt} />
+          </div>
+
+          {/* Mobile: editor panels - only visible on edit tab */}
+          <div className={`${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : mobileTab === "analyze" ? "hidden xl:block" : ""}`}>
           <SectionDivider label="Editor" />
 
           <Panel title="Target">
@@ -477,9 +507,11 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
               ))}
             </div>
           </Panel>
+          </div> {/* end editor panel group */}
         </aside>
 
-        <aside className="sticky top-6 hidden self-start xl:block">
+        {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
+        <aside className={`sticky top-6 self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""}`}>
           <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-6">
             <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto">
               <ResumePreview resume={resume} />
