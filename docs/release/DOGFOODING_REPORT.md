@@ -6,7 +6,7 @@
 
 **Environment:** Local (localhost:3000, dev mode, MockProvider)
 
-**Release Gate Status:** ❌ NOT MET — regression failures on 5/7 edge-case formats
+**Release Gate Status:** 🟡 CONDITIONAL — requires AI provider configuration and parser risk acceptance before tag
 
 ---
 
@@ -152,7 +152,99 @@ Each persona follows this exact workflow. Check expected results at each step be
 **AI Benchmark:** ✅ PASS (100% JSON validity, 0% fabrication rate, 0% prompt failure)
 **Error Recovery:** ✅ PASS (8/8 scenarios)
 
-**Tailoring note:** All 6 personas hit HTTP 403 on `POST /resumes/:id/tailor` because `run_job_match` is `false` for free tier — **by design**, not a bug. With a Professional subscription paid tier test, all 6 personas pass every step.
+**Tailoring note:** All 6 personas hit HTTP 403 on `POST /resumes/:id/tailor` because `run_job_match` is `false` for free tier — **by design**. Additionally, **all AI operations used MockProvider** since both `GEMINI_API_KEY` and `GROQ_API_KEY` are blank. The core AI features of the product (Tailoring, Resume Health analysis, Cover Letter generation, AI Recovery on import) have not been validated with a real provider. This is the single biggest risk factor for the closed beta.
+
+---
+
+## 🔴 Pre-Release Blocker: No Real AI Provider Configured
+
+**Status:** UNMET
+**Severity:** 🔴 Critical
+
+Neither Gemini nor Groq has a configured API key. The entire dogfooding pipeline ran against MockProvider, which returns deterministic fake results.
+
+### What this means for the release
+
+| Feature | MockProvider Behavior | Real Provider Requirement |
+|---|---|---|
+| Resume Health / Analysis | Returns fake scores instantly | Must return meaningful dimension scores in <5s |
+| AI Tailoring | Not tested (403 on free tier) | Must validate JSON structure, hallucination rate, latency |
+| Cover Letter Generator | Returns mock response | Must reference real resume content, no fabrication |
+| AI Recovery on Import | Never triggered (coverage sufficient for test data) | Must reconstruct low-coverage sections from real resumes |
+
+**Acceptance criteria before tagging v0.9.5-alpha:**
+
+- [ ] Configure `GEMINI_API_KEY` or `GROQ_API_KEY` in `.env`
+- [ ] Re-run import for all 6 personas and verify AI recovery does not hallucinate
+- [ ] Re-run analysis for all 6 personas — verify all dimensions return scores
+- [ ] Re-run cover letter generation for all 6 personas — verify content references real credentials
+- [ ] Re-run error recovery with real provider (timeout, 429, malformed response)
+- [ ] Measure real AI latencies against P95 targets (<5s full review, <2s single dimension)
+
+---
+
+## 🟠 Parser Regression Reclassifications
+
+After reviewing real-world frequency of each format:
+
+### 🟠 R1 — 3-Line Pipe-Separated Experience (Upgraded from 🟡)
+
+**Why:** Pipe-separated date/role/company lines (e.g., `Jun 2021 - Present | Senior Developer | Acme Corp`) are a common format in text exports from LinkedIn and ATS systems. **All experience is lost** when this format is used.
+
+| Field | Result |
+|---|---|
+| Experiences parsed | 0 / 3 |
+| Skills captured | 12 (misclassified text content) |
+| User impact | Complete experience loss on import |
+
+### 🟠 R3 — Skills-Before-Experience Order (Upgraded from 🟡)
+
+**Why:** Many resumes place Skills before Experience (especially career-change, design, and PM resumes). The current parser fails to detect any experience entries when sections appear in this order. **Import quality was reported as "excellent" despite 0 experiences** — the quality metric itself is misleading.
+
+| Field | Result |
+|---|---|
+| Experiences parsed | 0 / 1 |
+| Import quality reported | "excellent" (incorrect) |
+| User impact | Complete experience loss, with misleading quality indicator |
+
+### 🟠 R7 — Table-Formatted Resumes (Upgraded from 🟡)
+
+**Why:** Category/skills tables with pipe-separated rows are extremely common in Word-exported and self-assessment resumes. The parser captures skills correctly but **discards all experience entries**.
+
+| Field | Result |
+|---|---|
+| Experiences parsed | 0 / 1 |
+| Skills captured | 25 (correct) |
+| User impact | Complete experience loss; resume rendered without work history |
+
+### 🟡 R2 — Bullet Certifications Under Education
+
+**Why:** Common but lower impact. Skills are still captured from the bullet content. Certs are not classified correctly, but no content is lost.
+
+| Field | Result |
+|---|---|
+| Certifications parsed | 0 / 2 |
+| Skills captured | 3 (bullet text content preserved) |
+| User impact | Certifications not recognized; skills overlap masks the issue |
+
+### 🟡 R6 — Minimal Resume (Quality: Failed)
+
+**Why:** Uncommon in practice. A 2-line resume has too little structure for the parser. Impact is correctly scoped because real users with more content would not hit this.
+
+| Field | Result |
+|---|---|
+| Import quality | "failed" |
+| User impact | Cannot import extremely short resumes |
+
+### Summary of Reclassifications
+
+| Test | Old Severity | New Severity | Rationale |
+|---|---|---|---|
+| R1 3-Line Experience | 🟡 Minor | 🟠 Major | Common format, all experience lost |
+| R3 Skills Before Experience | 🟡 Minor | 🟠 Major | Common format, all experience lost, quality metric misleading |
+| R7 Resume with Tables | 🟡 Minor | 🟠 Major | Word exports common, all experience lost |
+| R2 Bullet Certifications | 🟡 Minor | 🟡 Minor | Content preserved, classification only |
+| R6 Minimal Resume | 🟡 Minor | 🟡 Minor | Rare edge case, accurately reported |
 
 ---
 
@@ -553,13 +645,13 @@ Backend        | Node.js, Python, PostgreSQL
 
 | # | Test | Result | Issues | Severity |
 |---|---|---|---|---|
-| R1 | 3-Line Experience | ❌ FAIL | 0 experiences parsed — AI recovery required | 🟡 Minor |
+| R1 | 3-Line Experience | ❌ FAIL | 0 experiences parsed — **all experience lost** for a common format | 🟠 Major |
 | R2 | Bullet Certifications | ❌ FAIL | 0 certifications parsed | 🟡 Minor |
-| R3 | Skills Before Experience | ❌ FAIL | 0 experiences detected in skills-first order | 🟡 Minor |
+| R3 | Skills Before Experience | ❌ FAIL | 0 experiences detected, quality metric reports "excellent" — misleading | 🟠 Major |
 | R4 | References-Only | ✅ PASS | No issues | — |
 | R5 | LinkedIn Export | ✅ PASS | No issues | — |
 | R6 | Minimal Resume | ❌ FAIL | Import quality=failed for very short input | 🟡 Minor |
-| R7 | Resume with Tables | ❌ FAIL | Experiences missing; skills correct | 🟡 Minor |
+| R7 | Resume with Tables | ❌ FAIL | 0 experiences parsed — Word-exported tables lose all work history | 🟠 Major |
 
 **Regression note:** All 5 failing tests relate to the **text parser's ability to handle non-standard formats**. With real AI providers (Gemini/Groq), the AI recovery pass would reconstruct these sections. These are known edge-cases that are acceptable for a beta.
 
@@ -573,27 +665,26 @@ Backend        | Node.js, Python, PostgreSQL
 
 ## Issue Tracker
 
-### 🔴 Critical (0 issues)
+### 🔴 Critical (1 issue)
 
 | # | Description | Persona | Steps to Reproduce | Status |
 |---|---|---|---|---|
-| | | | | |
+| P0 | No real AI provider configured — all AI features untested with real models | All | Check .env: GEMINI_API_KEY and GROQ_API_KEY are both blank | Open |
 
-### 🟠 Major (0 issues)
-
-| # | Description | Persona | Steps to Reproduce | Status |
-|---|---|---|---|---|
-| | | | | |
-
-### 🟡 Minor (5 issues)
+### 🟠 Major (3 issues)
 
 | # | Description | Persona | Steps to Reproduce | Status |
 |---|---|---|---|---|
-| R1 | 3-line pipe-separated experience not parsed | Regression | Import pipe-format resume text | Open |
-| R2 | Bullet-styled certifications under Education not detected | Regression | Import certs-as-bullets format | Open |
-| R3 | Skills-before-experience order causes 0 experience entries | Regression | Import skills-first resume | Open |
+| R1 | 3-line pipe-separated experience not parsed — all experience lost | Regression | Import pipe-format resume text | Open |
+| R3 | Skills-before-experience order causes 0 experience entries with "excellent" quality label | Regression | Import skills-first resume | Open |
+| R7 | Table-formatted resumes lose all experience entries | Regression | Import pipe-table resume | Open |
+
+### 🟡 Minor (2 issues)
+
+| # | Description | Persona | Steps to Reproduce | Status |
+|---|---|---|---|---|
+| R2 | Bullet-styled certifications under Education not detected as certifications | Regression | Import certs-as-bullets format | Open |
 | R6 | Minimal 2-line resume fails to parse (quality=failed) | Regression | Import minimal resume text | Open |
-| R7 | Table-formatted resumes lose experience entries | Regression | Import pipe-table resume | Open |
 
 ### 🔵 Enhancement (6 issues)
 
@@ -612,24 +703,30 @@ Backend        | Node.js, Python, PostgreSQL
 
 | Severity | Current | Limit | Status |
 |---|---|---|---|
-| 🔴 Critical | 0 | 0 | ✅ |
-| 🟠 Major | 0 | 0 | ✅ |
-| 🟡 Minor | 5 | ≤5 | ✅ (at limit) |
+| 🔴 Critical | 1 | 0 | ❌ BLOCKER — No real AI provider |
+| 🟠 Major | 3 | 0 | ❌ BLOCKER — Parser regressions on common formats |
+| 🟡 Minor | 2 | ≤5 | ✅ |
 | 🔵 Enhancement | 6 | Unlimited | ✅ |
 
-**Gate verdict:** ⚠️ CONDITIONAL PASS
+**Gate verdict:** ❌ NOT READY — PREREQUISITES NOT MET
 
-**Conditions:**
-- 5 minor regression issues are all text-parser edge cases that AI recovery would reconstruct with real providers
-- 0 critical, 0 major blocking issues
-- All 6 persona workflows complete successfully (Persona checks: 6/6 ✅)
-- All automated test suites pass (Benchmark: ✅, Error Recovery: ✅, Unit Tests: 328 ✅)
-- Performance: PDF export averages ~1.8s (under 10s target), Analysis ~0.2s (under 5s target)
+The release gate fails on two counts:
+1. **🔴 Critical:** No real AI provider configured. The product's core value proposition (AI analysis, tailoring, recovery, cover letters) has not been validated with actual model output.
+2. **🟠 Major:** Three common resume formats (pipe-separated experience, skills-first ordering, table-formatted) lose all experience entries on import. These affect real user workflows.
 
-**Recommendation:** ✅ **Ready for Closed Beta** with the following caveats:
-1. Document the 5 parser edge cases in known-issues for beta testers
-2. Label these as "import with care" — users with these formats should paste structured resumes
-3. Consider a quick AI recovery pass on import quality=fair/poor for non-standard formats
-4. Real AI providers (Gemini/Groq) need API keys configured for production
+---
 
-**⚠️ Note:** Both `GEMINI_API_KEY` and `GROQ_API_KEY` are currently blank in `.env`. The system defaults to MockProvider for all AI operations. Configure at least one real AI provider before launching the closed beta.
+## Recommendation
+
+🟡 **Conditional Go — Not Ready to Tag**
+
+The engineering quality and testing discipline are strong. The recommendation is:
+
+> **Closed Beta is recommended after:**
+>
+> 1. **Configure and verify at least one real AI provider** (Gemini or Groq). Re-run the full dogfooding pipeline for all 6 personas with real AI.
+> 2. **Audit the parser regressions against real user resumes.** Collect 10–20 real resumes (PDF, Word, LinkedIn export, Canva) and measure import success rate.
+> 3. **Fix or document the three 🟠 Major parser issues.** If >5% of expected beta users use these formats, fix before launch. If rare, document as known import limitations.
+> 4. **Re-validate the release gate** with real AI data before tagging v0.9.5-alpha.
+
+**After these conditions are met**, re-run the gate check. If 🔴=0 and 🟠=0 with real AI, the release can proceed.
