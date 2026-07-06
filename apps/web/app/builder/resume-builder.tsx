@@ -392,7 +392,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
           <Panel title="Experience" action={<button className={tinyButtonClass} type="button" onClick={addExperience}><Plus size={15} /> Add role</button>}>
             <StackEmpty when={resume.experience.length === 0} label="No experience yet." action="Add a role to build the work history section." />
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-4">
               {resume.experience.map((item, index) => (
                 <ItemCard
                   key={item.id}
@@ -422,7 +422,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
           <Panel title="Education" action={<button className={tinyButtonClass} type="button" onClick={addEducation}><Plus size={15} /> Add school</button>}>
             <StackEmpty when={resume.education.length === 0} label="No education added." action="Add a school, degree, or training program." />
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-4">
               {resume.education.map((item, index) => (
                 <ItemCard
                   key={item.id}
@@ -482,7 +482,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
           <Panel title="Projects" action={<button className={tinyButtonClass} type="button" onClick={addProject}><Plus size={15} /> Add project</button>}>
             <StackEmpty when={resume.projects.length === 0} label="No projects added." action="Add portfolio, volunteer, academic, or internal work." />
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-4">
               {resume.projects.map((item, index) => (
                 <ItemCard
                   key={item.id}
@@ -509,9 +509,9 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </aside>
 
         {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
-        <aside className={`sticky top-6 self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""}`}>
-          <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-2 shadow-inner sm:p-4 xl:p-6">
-            <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto">
+        <aside className={`self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""} ${mobileTab === "preview" ? "sticky top-[52px] -mx-4 px-0" : "sticky top-6"}`}>
+          <div className="flex justify-center rounded-none border-0 bg-transparent p-0 shadow-none xl:rounded-[30px] xl:border xl:border-[#123c3a]/10 xl:bg-[#d8d4cb] xl:p-6 xl:shadow-inner">
+            <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto xl:rounded-xl">
               <ResumePreview resume={resume} />
             </div>
           </div>
@@ -594,19 +594,19 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-4 shadow-sm transition hover:border-[#b9ff66] sm:p-5">
+    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-3 shadow-sm transition hover:border-[#b9ff66] sm:p-5">
       <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
-        <h2 className="font-signal text-lg font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
+        <h2 className="font-signal text-base font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
         {action}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3 sm:mt-4">{children}</div>
     </section>
   );
 }
 
 function TemplateGallery({ selectedTemplateId, canUsePremiumTemplates, onSelect }: { selectedTemplateId: ResumeTemplateId; canUsePremiumTemplates: boolean; onSelect: (templateId: ResumeTemplateId) => void }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
       {resumeTemplates.map((template) => {
         const selected = template.id === selectedTemplateId;
         const locked = template.premium && !canUsePremiumTemplates;
@@ -623,7 +623,7 @@ function TemplateGallery({ selectedTemplateId, canUsePremiumTemplates, onSelect 
               }
               onSelect(template.id);
             }}
-            className={`min-h-[12rem] rounded-2xl border p-3 text-left transition ${
+            className={`min-h-[10rem] rounded-2xl border p-2 text-left transition sm:min-h-[12rem] sm:p-3 ${
               locked
                 ? "cursor-not-allowed opacity-60"
                 : "hover:-translate-y-0.5 hover:shadow-md"
@@ -687,7 +687,7 @@ function Field({ label, value, error, onChange }: { label: string; value: string
 
 function BulletEditor({ label, bullets, onChange }: { label: string; bullets: string[]; onChange: (bullets: string[]) => void }) {
   return (
-    <div className="mt-4 space-y-2">
+    <div className="mt-3 space-y-1.5 sm:mt-4 sm:space-y-2">
       <div className="flex items-center justify-between gap-3">
         <span className={labelClass}>{label}</span>
         <button className={tinyButtonClass} type="button" onClick={() => onChange([...bullets, ""])}>
@@ -767,8 +767,8 @@ function ItemCard({
   disableDown: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-3">
-      <div className="mb-3 flex items-center gap-2">
+    <div className="rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-2 sm:p-3">
+      <div className="mb-2 flex items-center gap-1.5 sm:mb-3 sm:gap-2">
         <GripVertical size={17} className="text-[#4b4b4b]/55" />
         <h3 className="min-w-0 flex-1 truncate text-sm font-black">{title}</h3>
         <IconButton label="Move item up" disabled={disableUp} onClick={onMoveUp}><ArrowUp size={15} /></IconButton>
@@ -877,7 +877,7 @@ function saveBadgeClass(saveState: SaveState) {
   return `inline-flex min-h-9 items-center gap-1.5 rounded-[14px] border px-2 text-xs font-black sm:min-h-10 sm:gap-2 sm:px-3 sm:text-sm ${color}`;
 }
 
-const tinyButtonClass = "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 py-1.5 text-xs font-black text-[#123c3a] transition hover:border-[#123c3a] hover:bg-[#b9ff66]";
+const tinyButtonClass = "inline-flex min-h-8 items-center justify-center gap-1 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-2 py-1 text-[0.65rem] font-black text-[#123c3a] transition hover:border-[#123c3a] hover:bg-[#b9ff66] sm:min-h-9 sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-xs";
 
 function SectionDivider({ label }: { label: string }) {
   return (

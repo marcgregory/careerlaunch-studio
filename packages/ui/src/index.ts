@@ -8,5 +8,5 @@ export const secondaryButtonClass = `${buttonClass} border-[#123c3a]/15 bg-white
 export const fieldClass =
   "w-full rounded-[14px] border border-[#123c3a]/15 bg-white px-3 py-2.5 text-sm text-[#123c3a] shadow-sm outline-none transition placeholder:text-[#4b4b4b]/50 focus:border-[#6bbf22] focus:ring-4 focus:ring-[#b9ff66]/40";
 
-export const labelClass = "text-xs font-black uppercase tracking-wide text-[#4b4b4b]";
+export const labelClass = "text-[0.65rem] font-black uppercase tracking-wide text-[#4b4b4b] sm:text-xs";
 
