@@ -38,6 +38,10 @@ export type ParseResult = {
   unparsedContent: Record<string, string>;
   /** Per-section coverage analysis comparing input vs parsed content */
   coverage: SectionCoverageItem[];
+  /** Layout classification for analytics. Identifies the resume format
+   *  (pipe-experience, table-format, linkedin-export, standard-bullets, etc.)
+   *  so the team can measure import success rates per layout type. */
+  layouts: string[];
   /** Whether the AI recovery pass was applied (only present after recovery) */
   aiRecovered?: boolean;
   /** Which sections were reconstructed by the AI recovery pass */
@@ -961,6 +965,7 @@ export function parseResumeText(text: string): ParseResult {
       warnings: ["No text provided"],
       unparsedContent: {},
       coverage: [],
+      layouts: ["empty"],
     };
   }
 
@@ -1230,5 +1235,164 @@ export function parseResumeText(text: string): ParseResult {
     }
   }
 
-  return { parsed, confidence, confidenceBySection, importQuality, warnings, unparsedContent, coverage };
+  // Classify the layout for analytics
+  const layouts = classifyLayout(text, sections);
+
+  return { parsed, confidence, confidenceBySection, importQuality, warnings, unparsedContent, coverage, layouts };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Layout classification for analytics                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Layout signatures that distinguish resume formats.
+ * Each signature is a function that scores 0–1 for how strongly the
+ * input text matches a known layout pattern.
+ *
+ * A resume may match multiple signatures (e.g. "standard-bullets" and
+ * "skills-before-experience"). The classifier returns ALL signatures
+ * that score ≥ 0.5 so analytics can slice by multiple dimensions.
+ */
+type LayoutSignature = {
+  id: string;
+  label: string;
+  score: (lines: string[], sections: Map<string, { start: number; end: number }>) => number;
+};
+
+const LAYOUT_SIGNATURES: LayoutSignature[] = [
+  {
+    // Pipe-separated 3-line entries: "Jun 2021 - Present | Role | Company"
+    id: "pipe-experience",
+    label: "Pipe-Separated Experience",
+    score: (lines) => {
+      const pipeLines = lines.filter((l) => l.trim().split("|").length >= 3);
+      if (pipeLines.length === 0) return 0;
+      // How many pipe-lines follow a date-range pattern?
+      const datePipeLines = pipeLines.filter((l) =>
+        /\b(19|20)\d{2}\b/.test(l),
+      );
+      if (datePipeLines.length === 0) return 0;
+      return Math.min(1, datePipeLines.length / 3);
+    },
+  },
+  {
+    // Table/category format: "Category,Skill1,Skill2" or "Category|Skill1|Skill2"
+    id: "table-format",
+    label: "Category Table Format",
+    score: (lines) => {
+      const delimLines = lines.filter(
+        (l) => {
+          const trimmed = l.trim();
+          const commaCount = (trimmed.match(/,/g) || []).length;
+          const pipeCount = (trimmed.match(/\|/g) || []).length;
+          return commaCount >= 2 || pipeCount >= 2;
+        },
+      );
+      if (delimLines.length < 3) return 0;
+      // Check that at least some lines start with a category-like word (not a date)
+      const categoryLines = delimLines.filter(
+        (l) => !/\b(19|20)\d{2}\b/.test(l) && !l.trim().match(/^-?\d+\.?\s*$/),
+      );
+      return Math.min(1, categoryLines.length / 4);
+    },
+  },
+  {
+    // Skills section before Experience section
+    id: "skills-before-experience",
+    label: "Skills Before Experience",
+    score: (_lines, sections) => {
+      const skillsStart = sections.get("skills")?.start;
+      const expStart = sections.get("experience")?.start;
+      if (skillsStart === undefined || expStart === undefined) return 0;
+      return skillsStart < expStart ? 1 : 0;
+    },
+  },
+  {
+    // LinkedIn export: colon-based headers like "Skills:", "Languages:"
+    id: "linkedin-export",
+    label: "LinkedIn Export",
+    score: (lines) => {
+      const colonHeaders = lines.filter(
+        (l) => /^(Skills|Languages|Certifications|Education|Experience|Summary|About)\s*:/i.test(l.trim()),
+      );
+      return colonHeaders.length >= 3 ? 1 : 0;
+    },
+  },
+  {
+    // Standard bullet-point experience (traditional resume)
+    id: "standard-bullets",
+    label: "Standard Bullet-Point Resume",
+    score: (lines) => {
+      const bulletLines = lines.filter((l) => /^[•\-*\d.]+\s/.test(l.trim()));
+      if (bulletLines.length === 0) return 0;
+      const roleLines = lines.filter((l) => /—/.test(l) || /\bat\b/i.test(l));
+      return bulletLines.length >= 3 && roleLines.length >= 1 ? 1 : 0;
+    },
+  },
+  {
+    // Minimal/short resume — fewer than 30 non-empty lines and no bullet content
+    id: "minimal",
+    label: "Minimal Resume",
+    score: (lines) => {
+      const nonEmpty = lines.filter((l) => l.trim().length > 0);
+      if (nonEmpty.length > 30) return 0;
+      const bulletLines = nonEmpty.filter((l) => /^[•\-*\d.]+\s/.test(l.trim()));
+      return bulletLines.length === 0 ? 1 : 0.3;
+    },
+  },
+  {
+    // References-heavy: a references section with named entries
+    id: "references-heavy",
+    label: "References-Heavy",
+    score: (_lines, sections) => {
+      return sections.has("references") ? 1 : 0;
+    },
+  },
+  {
+    // Certifications as bullet lines under Education (no separate cert section)
+    id: "certs-under-education",
+    label: "Certifications Under Education",
+    score: (lines, sections) => {
+      const eduBounds = sections.get("education");
+      if (!eduBounds) return 0;
+      if (sections.has("certifications")) return 0; // Has its own section — not this layout
+      const eduLines = lines.slice(eduBounds.start, eduBounds.end);
+      const certKeywords = eduLines.filter((l) =>
+        /\b(certified|certification|credential|license)\b/i.test(l),
+      );
+      return certKeywords.length >= 1 ? 1 : 0;
+    },
+  },
+];
+
+/**
+ * Classify the layout of an imported resume.
+ *
+ * Returns an array of layout identifiers that match the input text.
+ * A resume can match multiple signatures (e.g. "standard-bullets" and
+ * "linkedin-export").
+ *
+ * This is used for import analytics so the team can answer:
+ * "What formats do real users upload, and which ones fail most often?"
+ */
+export function classifyLayout(text: string, sections: Map<string, { start: number; end: number }>): string[] {
+  if (!text || text.trim().length === 0) return ["unknown"];
+  const lines = text.split("\n");
+
+  const matches: string[] = [];
+  for (const sig of LAYOUT_SIGNATURES) {
+    const s = sig.score(lines, sections);
+    if (s >= 0.5) {
+      matches.push(sig.id);
+    }
+  }
+
+  // If nothing matched and the resume has structure, default to standard
+  if (matches.length === 0) {
+    const nonEmpty = lines.filter((l) => l.trim().length > 0);
+    matches.push(nonEmpty.length > 5 ? "standard-bullets" : "minimal");
+  }
+
+  return matches;
 }

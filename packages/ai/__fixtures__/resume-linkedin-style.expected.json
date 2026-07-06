@@ -153,5 +153,9 @@
       "ratio": 1,
       "status": "good"
     }
+  ],
+  "layouts": [
+    "pipe-experience",
+    "table-format"
   ]
 }

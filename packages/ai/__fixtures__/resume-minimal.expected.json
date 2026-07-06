@@ -107,5 +107,8 @@
       "ratio": 1,
       "status": "good"
     }
+  ],
+  "layouts": [
+    "standard-bullets"
   ]
 }

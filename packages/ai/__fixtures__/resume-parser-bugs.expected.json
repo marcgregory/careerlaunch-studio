@@ -160,5 +160,9 @@
       "ratio": 1,
       "status": "good"
     }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "references-heavy"
   ]
 }

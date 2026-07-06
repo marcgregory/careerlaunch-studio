@@ -190,5 +190,10 @@
       "ratio": 1,
       "status": "good"
     }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
   ]
 }
