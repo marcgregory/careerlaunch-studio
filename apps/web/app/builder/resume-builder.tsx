@@ -272,7 +272,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   return (
-    <main className="signal-site min-h-screen text-[#123c3a]">
+    <main className="signal-site min-h-screen overflow-x-hidden text-[#123c3a]">
       <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
@@ -324,7 +324,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
       <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr]">
         {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
-        <aside className={`no-print space-y-3 sm:space-y-5 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
+        <aside className={`no-print min-w-0 space-y-3 sm:space-y-5 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
           {/* Mobile: analysis panels - only visible on analyze tab */}
           <div className={`${mobileTab !== "analyze" && mobileTab !== "edit" ? "hidden xl:block" : mobileTab === "edit" ? "hidden xl:block" : ""}`}>
             <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
@@ -594,7 +594,7 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-3 shadow-sm sm:p-5 sm:shadow-sm">
+    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
         <h2 className="font-signal text-sm font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
         {action}
