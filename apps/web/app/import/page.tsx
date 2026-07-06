@@ -302,28 +302,39 @@ export default function ImportPage() {
                   <FileText size={14} />
                   Import coverage
                 </h3>
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {result.coverage
                     .filter((c) => c.sectionId !== "references")
                     .map((c) => {
                       const isRecovered = result.aiRecoveredSections?.includes(c.sectionId);
                       const colorClass = isRecovered ? "text-[#555] bg-[#f0f0f0] border-[#ddd]" : getCoverageColorClass(c.status);
                       const hasUnparsed = showUnparsed === c.sectionId && result.unparsedContent?.[c.sectionId];
+                      /** Convert camelCase sectionId to Title Case for display */
+                      const sectionLabel = c.sectionId
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (s) => s.toUpperCase())
+                        .trim();
                       return (
                         <div key={c.sectionId}>
                           <div
-                            className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold ${colorClass}`}
+                            className={`flex flex-col gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold ${colorClass}`}
                           >
-                            <span className="flex items-center gap-1.5 capitalize">
-                              {c.sectionId}
+                            {/* Row 1: section title + recovered badge */}
+                            <div className="flex items-start justify-between gap-1">
+                              <span className="min-w-0 break-words leading-tight">
+                                {sectionLabel}
+                              </span>
                               {isRecovered && (
-                                <span className="inline-flex items-center gap-0.5 rounded-full bg-[#f0f0f0] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#555]" title="Reconstructed by AI">
+                                <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/60 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#555]" title="Reconstructed by AI">
                                   <Wand2 size={9} />
                                   Recovered
                                 </span>
                               )}
+                            </div>
+                            {/* Row 2: status badge */}
+                            <span className="self-start rounded-md border border-current/20 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.08em]">
+                              {getCoverageLabel(c.status)}
                             </span>
-                            <span>{getCoverageLabel(c.status)}</span>
                           </div>
                           <div className="mt-1 px-1 text-[10px] font-medium text-[#999]">
                             {Math.round(c.ratio * 100)}% · {c.parsedWordCount}/{c.originalWordCount} words
