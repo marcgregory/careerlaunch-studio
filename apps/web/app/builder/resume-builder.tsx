@@ -275,32 +275,32 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     <main className="signal-site min-h-screen text-[#123c3a]">
       <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-10 w-10 rounded-full px-0 sm:min-h-12 sm:w-12`} aria-label="Back to dashboard">
-              <ArrowLeft size={18} />
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
+            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-9 w-9 rounded-full px-0 sm:min-h-10 sm:w-10`} aria-label="Back to dashboard">
+              <ArrowLeft size={16} />
             </Link>
             <div className="min-w-0">
-              <p className="font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:text-xs">Resume Builder</p>
-              <h1 className="font-signal truncate text-base font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
+              <p className="hidden font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:block sm:text-xs">Resume Builder</p>
+              <h1 className="font-signal truncate text-sm font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <span className={saveBadgeClass(saveState)} aria-live="polite">
-              <Save size={14} /> <span className="hidden sm:inline">{saveState}</span>
+              <Save size={13} /> <span className="hidden sm:inline">{saveState}</span>
             </span>
             {hasValidationErrors && <span className="hidden truncate rounded-[14px] border border-red-200 bg-red-50 px-2 py-1.5 text-[0.65rem] font-black text-red-700 sm:inline-block sm:px-3 sm:py-2 sm:text-sm">Fix required fields</span>}
-            <button className={`${secondaryButtonClass} min-h-10 px-2 sm:min-h-12 sm:px-3`} onClick={resetDraft} type="button" aria-label="Reset draft">
-              <RotateCcw size={16} /> <span className="hidden sm:inline">Reset</span>
+            <button className={`${secondaryButtonClass} min-h-9 w-9 rounded-xl px-0 sm:min-h-10 sm:w-auto sm:px-3`} onClick={resetDraft} type="button" aria-label="Reset draft">
+              <RotateCcw size={15} /> <span className="hidden sm:inline">Reset</span>
             </button>
-            <button className={`${primaryButtonClass} min-h-10 px-2 sm:min-h-12 sm:px-3`} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors} aria-label="Export PDF">
-              <Download size={16} /> <span className="hidden sm:inline">{exportState === "Exporting" ? "Exporting" : "Export PDF"}</span>
+            <button className={`${primaryButtonClass} min-h-9 w-9 rounded-xl px-0 sm:min-h-10 sm:w-auto sm:px-3`} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors} aria-label="Export PDF">
+              <Download size={15} /> <span className="hidden sm:inline">{exportState === "Exporting" ? "Exporting" : "Export PDF"}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── Mobile tab switcher ── */}
-      <div className="sticky top-[56px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-2 backdrop-blur-xl sm:top-[68px] xl:hidden">
+      <div className="sticky top-[52px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-1 backdrop-blur-xl sm:top-[60px] xl:hidden">
         <nav className="flex gap-1" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
             <button
@@ -308,7 +308,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
               role="tab"
               aria-selected={mobileTab === tab}
               onClick={() => setMobileTab(tab)}
-              className={`flex-1 rounded-t-xl px-4 py-2.5 text-sm font-black uppercase tracking-[0.08em] transition ${
+              className={`flex-1 rounded-t-xl px-2 py-2 text-sm font-black uppercase tracking-[0.08em] transition ${
                 mobileTab === tab
                   ? "bg-white text-[#00796f] shadow-[0_-1px_3px_rgba(0,0,0,0.06)]"
                   : "text-[#4b4b4b]/60 hover:bg-white/40 hover:text-[#123c3a]"
@@ -322,9 +322,9 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </nav>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[420px_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr]">
         {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
-        <aside className={`no-print space-y-5 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
+        <aside className={`no-print space-y-3 sm:space-y-5 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
           {/* Mobile: analysis panels - only visible on analyze tab */}
           <div className={`${mobileTab !== "analyze" && mobileTab !== "edit" ? "hidden xl:block" : mobileTab === "edit" ? "hidden xl:block" : ""}`}>
             <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
@@ -334,8 +334,6 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
           {/* Mobile: editor panels - only visible on edit tab */}
           <div className={`${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : mobileTab === "analyze" ? "hidden xl:block" : ""}`}>
-          <SectionDivider label="Editor" />
-
           <Panel title="Target">
             <div className="space-y-3">
               <Field label="Resume title" value={resume.title} error={validation.title} onChange={(value) => patchResume({ title: value })} />
@@ -512,7 +510,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
         {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
         <aside className={`sticky top-6 self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""}`}>
-          <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-6">
+          <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-2 shadow-inner sm:p-4 xl:p-6">
             <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto">
               <ResumePreview resume={resume} />
             </div>
@@ -596,9 +594,9 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition hover:border-[#b9ff66]">
-      <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-3">
-        <h2 className="font-signal text-xl font-black tracking-[-0.05em]">{title}</h2>
+    <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-4 shadow-sm transition hover:border-[#b9ff66] sm:p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
+        <h2 className="font-signal text-lg font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
         {action}
       </div>
       <div className="mt-4">{children}</div>
@@ -876,7 +874,7 @@ function saveBadgeClass(saveState: SaveState) {
     : saveState === "Unsaved"
       ? "border-[#e0aa22]/30 bg-[#fff7df] text-[#7b5300]"
       : "border-[#123c3a]/10 bg-white text-[#123c3a]";
-  return `inline-flex min-h-10 items-center gap-2 rounded-[14px] border px-3 text-sm font-black ${color}`;
+  return `inline-flex min-h-9 items-center gap-1.5 rounded-[14px] border px-2 text-xs font-black sm:min-h-10 sm:gap-2 sm:px-3 sm:text-sm ${color}`;
 }
 
 const tinyButtonClass = "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 py-1.5 text-xs font-black text-[#123c3a] transition hover:border-[#123c3a] hover:bg-[#b9ff66]";

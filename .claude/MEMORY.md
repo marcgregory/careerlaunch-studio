@@ -1,3 +1,4 @@
 - [Architecture overview](architecture-overview.md)
 - [Sprint planning](sprint-planning.md)
 - [feedback-structuredClone](feedback-structuredClone.md) — Replace JSON roundtrip clone with structuredClone before v1.0
+- [mobile-builder-polish](mobile-builder-polish.md) — Mobile polish applied to resume builder in Sprint 6D

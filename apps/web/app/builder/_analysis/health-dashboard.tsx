@@ -192,7 +192,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   // ─── Idle state ───────────────────────────────────────────────
   if (analysis.status === "idle") {
     return (
-      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
+      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <div className="grid h-16 w-16 place-items-center rounded-full bg-[#b9ff66]">
             <Sparkles size={30} />
@@ -221,7 +221,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   // ─── Loading state ────────────────────────────────────────────
   if (analysis.status === "loading") {
     return (
-      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
+      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-12 text-center">
           <Loader2 size={32} className="animate-spin text-[#123c3a]" />
           <div>
@@ -253,7 +253,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   // ─── Error state ──────────────────────────────────────────────
   if (analysis.status === "error") {
     return (
-      <section className="rounded-[30px] border border-red-200 bg-red-50 p-6 shadow-sm">
+      <section className="rounded-[30px] border border-red-200 bg-red-50 p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-6 text-center">
           <AlertCircle size={28} className="text-red-600" />
           <div>
@@ -287,7 +287,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
 
   return (
     <>
-      <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)]">
+      <section className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-4 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] sm:p-6">
         {/* Apply error banner (for errors outside the modal) */}
         {applyError && (
           <div className="mb-4 flex items-start gap-2 rounded-2xl border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-200" role="alert">
@@ -385,7 +385,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         )}
 
         {pendingByCategory.size === 0 && (
-          <div className="mt-6 rounded-2xl border border-[#b9ff66]/20 bg-[#b9ff66]/5 p-6 text-center">
+          <div className="mt-6 rounded-2xl border border-[#b9ff66]/20 bg-[#b9ff66]/5 p-4 text-center sm:p-6">
             <p className="font-signal text-xl font-black tracking-[-0.04em] text-[#b9ff66]">
               No issues found
             </p>

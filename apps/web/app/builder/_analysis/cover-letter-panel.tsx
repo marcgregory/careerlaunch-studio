@@ -215,7 +215,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
   // Render: idle state
   if (panelState.status === "idle") {
     return (
-      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
+      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-6 text-center">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-[#e8f5e9]">
             <FileText size={26} className="text-[#00796f]" />
@@ -255,7 +255,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
   // Render: generating state
   if (panelState.status === "generating") {
     return (
-      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
+      <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <Loader2 size={28} className="animate-spin text-[#123c3a]" />
           <div>
@@ -274,7 +274,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
   // Render: error state
   if (panelState.status === "error") {
     return (
-      <section className="rounded-[30px] border border-red-200 bg-red-50 p-6 shadow-sm">
+      <section className="rounded-[30px] border border-red-200 bg-red-50 p-4 shadow-sm sm:p-6">
         <div className="flex flex-col items-center gap-4 py-4 text-center">
           <AlertCircle size={24} className="text-red-600" />
           <div>
@@ -311,7 +311,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
   const isExporting = panelState.status === "exporting";
 
   return (
-    <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-signal text-xl font-black tracking-[-0.05em]">
           Cover Letter
