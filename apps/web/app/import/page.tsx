@@ -412,9 +412,14 @@ export default function ImportPage() {
                       </span>
                     )}
                   </h3>
-                  <p className="mt-2 text-sm font-medium leading-6 text-[#33343b]">
-                    {result.parsed.professionalQualities.join("  ·  ")}
-                  </p>
+                  <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
+                    {result.parsed.professionalQualities.map((qual, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+                        {qual}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 

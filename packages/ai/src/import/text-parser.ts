@@ -205,10 +205,12 @@ const PHONE_RE =
 const LINKEDIN_RE =
   /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/[a-zA-Z0-9_-]+\/?/;
 /** Match domains that look like personal/professional websites or portfolio
- *  links. Explicitly excludes common email provider domains so "gmail.com"
- *  is not extracted as a website. */
+ *  links. Uses \b at the start to prevent partial matches of email domains
+ *  (e.g. prevents "ail.com" from matching inside "johndoe@gmail.com").
+ *  Explicitly excludes common email provider domains, LinkedIn, and standalone
+ *  email TLD-like fragments. */
 const WEBSITE_RE =
-  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex|mail)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
+  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)\b(?![\w.-]*@)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex|mail)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
 
 function extractContact(
   preambleLines: string[],
@@ -237,7 +239,10 @@ function extractContact(
     const linkedInMatch = line.match(LINKEDIN_RE);
     if (linkedInMatch && !contact.website) {
       contact.website = linkedInMatch[0];
-    } else if (!contact.website) {
+    } else if (!contact.website && !emailMatch) {
+      // Only attempt website extraction on lines that did NOT match an email.
+      // Otherwise a partial domain match (e.g. "ail.com" from inside "johndoe@gmail.com")
+      // would produce a spurious website artifact.
       const webMatch = line.match(WEBSITE_RE);
       if (webMatch) {
         contact.website = webMatch[0];

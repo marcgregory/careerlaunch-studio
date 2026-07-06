@@ -131,6 +131,15 @@ const RECOVERY_SYSTEM_PROMPT = [
   "- Return ONLY information that is explicitly present in the original text",
   "- Do NOT invent, infer, or rewrite content",
   "- Preserve the exact wording from the original text",
+  "",
+  "## Anti-Hallucination Rules — You MUST Follow These Strictly",
+  "- NEVER invent metrics, percentages, or numbers that are not in the original text",
+  "- NEVER invent job titles, companies, or employment periods not in the original text",
+  "- NEVER invent certification names or credential details not in the original text",
+  "- NEVER invent project names or descriptions not in the original text",
+  "- NEVER invent dates, years, or timeframes that are not explicitly present",
+  "- If you are uncertain about any detail, omit it rather than guessing",
+  "- It is BETTER to return an empty array for a section than to include fabricated content",
   "- If a section is truly absent from the resume (not just poorly parsed), return an empty result for that key",
   "- Maintain the original order of entries within each section",
   "- For experience: every entry must have role, company, start date, end date, and bullet points",
@@ -161,7 +170,7 @@ const RECOVERY_SYSTEM_PROMPT = [
   '  "professionalQualities": ["Quality 1", "Quality 2"]',
   "}",
   "",
-  "Omit any section key that you could not recover.",
+  "Omit any section key that you could not recover. For empty sections, omit the key entirely — do not include empty arrays.",
 ].join("\n");
 
 /**
@@ -505,7 +514,7 @@ export function mergeRecovery(
   }
 
   // ── Experience ──
-  if (recovered.experience && needsRecovery("experience", parsed.coverage)) {
+  if (recovered.experience && recovered.experience.length > 0 && needsRecovery("experience", parsed.coverage)) {
     base.experience = recovered.experience.map((e, i) => ({
       id: `import-exp-recovered-${i + 1}`,
       role: e.role,
@@ -519,7 +528,7 @@ export function mergeRecovery(
   }
 
   // ── Education ──
-  if (recovered.education && needsRecovery("education", parsed.coverage)) {
+  if (recovered.education && recovered.education.length > 0 && needsRecovery("education", parsed.coverage)) {
     base.education = recovered.education.map((e, i) => ({
       id: `import-edu-recovered-${i + 1}`,
       school: e.school,
@@ -533,7 +542,7 @@ export function mergeRecovery(
   }
 
   // ── Projects ──
-  if (recovered.projects && needsRecovery("projects", parsed.coverage)) {
+  if (recovered.projects && recovered.projects.length > 0 && needsRecovery("projects", parsed.coverage)) {
     if (base.projects.length === 0) {
       base.projects = recovered.projects.map((p, i) => ({
         id: `import-proj-recovered-${i + 1}`,
@@ -564,16 +573,16 @@ export function mergeRecovery(
   // ── Skills ──
   if (needsRecovery("skills", parsed.coverage)) {
     if (recovered.skills && recovered.skills.length > 0) {
-      // Flatten categorized skills into the string[] domain format.
-      // Category labels become prefixes: "Frontend: React", "Backend: Node.js"
+      // Flatten categorized skills into clean atomic items.
+      // Category metadata is preserved via `recoveredSkillCategories` on the
+      // ParseResult for the grouped pill display in the import preview.
+      // The flat array stores skill names ONLY — no "Category: Skill" prefixes.
       const flatSkills: string[] = [];
       for (const cat of recovered.skills) {
-        const prefix = cat.category.trim();
         for (const item of cat.items) {
-          const labeled = item.includes(":") || item.startsWith(prefix)
-            ? item
-            : `${prefix}: ${item}`;
-          flatSkills.push(labeled);
+          // Strip any residual prefix the LLM may have embedded
+          const cleaned = item.replace(/^[^:]+:\s*/, "").trim();
+          if (cleaned) flatSkills.push(cleaned);
         }
       }
       // Replace parser skills entirely with AI-recovered skills.

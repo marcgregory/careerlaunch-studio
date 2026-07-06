@@ -558,14 +558,150 @@ describe("mergeRecovery", () => {
 
     expect(merged.recoveredSections).toContain("skills");
     expect(merged.aiRecovered).toBe(true);
-    // Skills should include categorized entries prefixed with category name
-    expect(merged.parsed.skills).toContain("Frontend: React");
-    expect(merged.parsed.skills).toContain("Frontend: TypeScript");
-    expect(merged.parsed.skills).toContain("Backend: Node.js");
-    expect(merged.parsed.skills).toContain("Backend: PostgreSQL");
-    expect(merged.parsed.skills).toContain("Cloud & Tools: Docker");
-    expect(merged.parsed.skills).toContain("Cloud & Tools: AWS");
-    // No duplicates — each flat skill appears exactly once
+    // Skills should contain clean atomic items WITHOUT category prefixes
+    expect(merged.parsed.skills).toContain("React");
+    expect(merged.parsed.skills).toContain("TypeScript");
+    expect(merged.parsed.skills).toContain("Node.js");
+    expect(merged.parsed.skills).toContain("PostgreSQL");
+    expect(merged.parsed.skills).toContain("Docker");
+    expect(merged.parsed.skills).toContain("AWS");
+    // No prefix-formatted skill names
+    expect(merged.parsed.skills).not.toContain("Frontend: React");
+    expect(merged.parsed.skills).not.toContain("Backend: Node.js");
+    expect(merged.parsed.skills).not.toContain("Cloud & Tools: Docker");
+    // Each expected skill appears exactly once (no duplicates)
+    expect(merged.parsed.skills.filter((s) => s === "React")).toHaveLength(1);
     expect(merged.parsed.skills).toHaveLength(6);
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Guardrail Tests                                                  */
+  /* ---------------------------------------------------------------- */
+
+  it("should NOT apply AI certifications when the LLM returns empty array (guardrail: no empty sections)", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "Works hard.",
+        experience: [],
+        education: [],
+        skills: [],
+        certifications: ["Some cert"], // Parser found something (wouldn't trigger recovery check otherwise)
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 0.95, 10, 10),
+        makeCoverageItem("education", 0.95, 10, 10),
+        makeCoverageItem("certifications", 0.0, 0, 10),
+      ],
+    });
+
+    // LLM returns empty certifications (section absent from original)
+    const aiRecovery: RecoveryResult = {
+      certifications: [],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // Certifications should NOT have been added to recovered sections
+    // because the LLM returned an empty list
+    expect(merged.recoveredSections).not.toContain("certifications");
+  });
+
+  it("should NOT apply AI recovery for experience when LLM returns empty list (guardrail: no empty sections)", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [],
+        education: [],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 0.0, 0, 50),
+      ],
+    });
+
+    const aiRecovery: RecoveryResult = {
+      experience: [],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // Empty experience array from LLM should not trigger recovery
+    expect(merged.recoveredSections).not.toContain("experience");
+    expect(merged.aiRecovered).toBe(false);
+  });
+
+  it("should NOT apply AI recovery when LLM returns professionalQualities empty list (guardrail: no empty sections)", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [],
+        education: [],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("experience", 0.95, 10, 10),
+        makeCoverageItem("professionalQualities", 0.0, 0, 15),
+      ],
+    });
+
+    const aiRecovery: RecoveryResult = {
+      professionalQualities: [],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // Empty professionalQualities from LLM should not trigger recovery
+    expect(merged.recoveredSections).not.toContain("professionalQualities");
+  });
+
+  it("should strip residual category prefixes from LLM skill items (guardrail: no broken skills)", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [],
+        education: [],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [
+        makeCoverageItem("skills", 0.0, 0, 20),
+      ],
+    });
+
+    // LLM sometimes embeds category prefix in item names despite instructions
+    const aiRecovery: RecoveryResult = {
+      skills: [
+        { category: "Testing", items: ["Testing: libraries", "Testing: frameworks"] },
+        { category: "Frontend", items: ["Frontend: React", "TypeScript"] },
+      ],
+    };
+
+    const merged = mergeRecovery(parserResult, aiRecovery);
+
+    // Items should NOT contain category prefix — they must be clean atomic names
+    expect(merged.parsed.skills).toContain("libraries");
+    expect(merged.parsed.skills).toContain("frameworks");
+    expect(merged.parsed.skills).toContain("React");
+    expect(merged.parsed.skills).toContain("TypeScript");
+    // No residual prefix forms
+    expect(merged.parsed.skills).not.toContain("Testing: libraries");
+    expect(merged.parsed.skills).not.toContain("Testing: frameworks");
+    expect(merged.parsed.skills).not.toContain("Frontend: React");
+    // "TypeScript" has no colon prefix, stays as-is
+    expect(merged.parsed.skills).toHaveLength(4);
   });
 });
