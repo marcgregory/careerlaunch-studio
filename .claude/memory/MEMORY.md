@@ -2,3 +2,7 @@
 - [AI Architecture Rule](ai-architecture-rule.md) — AI must never mutate the resume directly; suggestion → accept pipeline
 - [Apply Engine Architecture](apply-engine-architecture.md) — Every accepted suggestion goes through a pure Apply Engine before touching the resume
 - [Resume Parser Confidence Scoring](resume-parser-confidence-scoring.md) — Section-level confidence scoring in text-parser.ts
+- [Import analytics funnel metrics](import-analytics-funnel-metrics.md) — Track full user funnel from import to PDF export
+- [Import coverage delta analytics](import-coverage-delta-analytics.md) — Track coverage before/after AI recovery
+- [Import recovered layouts tracking](import-recovered-layouts-tracking.md) — Track which layouts were fixed by AI
+- [Parser structural experience detection](parser-structural-experience-detection.md) — Post-beta: detect experience entries structurally
