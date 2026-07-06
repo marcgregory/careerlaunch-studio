@@ -413,13 +413,14 @@ function ProfessionalQualitiesSection({
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Professional Qualities</ResumeHeading>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {quals.map((q) => (
-          <span key={q} className={template.skillClass}>
+      <p className="mt-3 text-sm font-medium leading-7 text-[#33343b]">
+        {quals.map((q, i) => (
+          <span key={q}>
+            {i > 0 && <span className="mx-2 text-[#bbb]">—</span>}
             {q}
           </span>
         ))}
-      </div>
+      </p>
     </section>
   );
 }
@@ -453,23 +454,25 @@ function SkillsSection({
     );
   }
 
-  // Multiple categories → rendered as groups with headings
+  // Multiple categories — premium dot-separated inline layout
+  // Cleaner and more compact than stacked pills
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Skills</ResumeHeading>
-      <div className="mt-4 space-y-4">
+      <div className={`mt-4 ${groups.length <= 2 ? "grid grid-cols-2 gap-x-6 gap-y-4" : "space-y-4"}`}>
         {groups.map((g) => (
           <div key={g.category}>
-            <h3 className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
+            <h3 className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
               {g.category}
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {g.items.map((skill) => (
-                <span key={skill} className={template.skillClass}>
+            <p className="text-sm font-medium leading-7 text-[#33343b]">
+              {g.items.map((skill, i) => (
+                <span key={skill}>
+                  {i > 0 && <span className="mx-1.5 text-[#bbb]">•</span>}
                   {skill}
                 </span>
               ))}
-            </div>
+            </p>
           </div>
         ))}
       </div>
@@ -489,9 +492,14 @@ function CertificationsSection({
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Certifications</ResumeHeading>
-      <p className="mt-3 text-sm font-medium text-[#33343b]">
-        {certifications.join(", ")}
-      </p>
+      <ul className="mt-3 space-y-1 text-sm font-medium text-[#33343b]">
+        {certifications.map((cert) => (
+          <li key={cert} className="flex items-start gap-2">
+            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+            {cert}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

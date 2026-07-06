@@ -142,11 +142,25 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
 
   if (section === "skills" && resume.skills.filter(Boolean).length > 0) {
     const groups = groupSkills(resume.skills.filter(Boolean));
-    const rendered = groups.map((g) => `
-      <div class="pdf-skill-group">
-        <h3 class="pdf-skill-category">${escapeHtml(g.category)}</h3>
-        <div class="pdf-skills">${g.items.map((s) => `<span class="pdf-skill">${escapeHtml(s)}</span>`).join("")}</div>
-      </div>`).join("\n");
+    const totalGroups = groups.length;
+
+    // Premium two-column layout: each column is a flex column with skill groups.
+    // Within each group, skills are rendered as dot-separated inline text
+    // instead of bulky pills — cleaner and more compact.
+    const rendered = totalGroups <= 2
+      ? // 1-2 groups: side by side in a two-column grid
+        `<div class="pdf-skills-grid">${groups.map((g) => `
+          <div class="pdf-skill-group">
+            <h3 class="pdf-skill-category">${escapeHtml(g.category)}</h3>
+            <p class="pdf-skill-items">${g.items.map((s) => `<span>${escapeHtml(s)}</span>`).join("")}</p>
+          </div>`).join("\n")}</div>`
+      : // 3+ groups: stack vertically, still with dot-separated inline skills
+        `<div class="pdf-skills-stack">${groups.map((g) => `
+          <div class="pdf-skill-group">
+            <h3 class="pdf-skill-category">${escapeHtml(g.category)}</h3>
+            <p class="pdf-skill-items">${g.items.map((s) => `<span>${escapeHtml(s)}</span>`).join("")}</p>
+          </div>`).join("\n")}</div>`;
+
     return `<section>
       <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Skills</h2></div>
       ${rendered}
@@ -154,17 +168,18 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   }
 
   if (section === "certifications" && resume.certifications.filter(Boolean).length > 0) {
+    const items = resume.certifications.filter(Boolean).map((c) => `<li>${escapeHtml(c)}</li>`).join("");
     return `<section>
       <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Certifications</h2></div>
-      <p class="pdf-summary">${resume.certifications.filter(Boolean).map(escapeHtml).join(", ")}</p>
+      <ul class="pdf-cert-list">${items}</ul>
     </section>`;
   }
 
   if (section === "professionalQualities" && resume.professionalQualities.filter(Boolean).length > 0) {
-    const quals = resume.professionalQualities.filter(Boolean).map((q) => `<span class="pdf-skill">${escapeHtml(q)}</span>`).join("");
+    const quals = resume.professionalQualities.filter(Boolean).map((q) => `<li>${escapeHtml(q)}</li>`).join("");
     return `<section>
       <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Professional Qualities</h2></div>
-      <div class="pdf-skills">${quals}</div>
+      <ul class="pdf-qualities-list">${quals}</ul>
     </section>`;
   }
 
@@ -269,15 +284,87 @@ function pdfCss(t: TemplateDefinition): string {
     }
     .pdf-skill-group { margin-top: 12px; }
     .pdf-skill-category {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       color: #555;
       font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
-    .pdf-skills { display: flex; flex-wrap: wrap; gap: 7px; }
-    .pdf-skill { ${skillPdfCss(t)} }
+    /* Premium dot-separated inline skills — clean and compact */
+    .pdf-skill-items {
+      margin: 0;
+      color: #33343b;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.7;
+    }
+    .pdf-skill-items span + span::before {
+      content: " • ";
+      color: ${markerC};
+      font-weight: 700;
+    }
+    /* Two-column grid for 1-2 skill groups */
+    .pdf-skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+      margin-top: 8px;
+    }
+    .pdf-skills-grid .pdf-skill-group { margin-top: 0; }
+    /* Vertical stack for 3+ skill groups */
+    .pdf-skills-stack {
+      column-count: 2;
+      column-gap: 32px;
+      margin-top: 8px;
+    }
+    .pdf-skills-stack .pdf-skill-group {
+      break-inside: avoid;
+      margin-top: 0;
+    }
+    .pdf-skills-stack .pdf-skill-group + .pdf-skill-group {
+      margin-top: 12px;
+    }
+    /* Certification list — cleaner than comma-concatenated text */
+    .pdf-cert-list {
+      margin: 8px 0 0; padding: 0;
+      list-style: none;
+    }
+    .pdf-cert-list li {
+      padding: 3px 0 3px 14px;
+      position: relative;
+      color: #33343b;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+    .pdf-cert-list li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: ${markerC};
+      font-weight: 700;
+    }
+    /* Professional qualities — designed bullet list */
+    .pdf-qualities-list {
+      margin: 8px 0 0; padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+    }
+    .pdf-qualities-list li {
+      color: #33343b;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+    .pdf-qualities-list li + li::before {
+      content: "—";
+      margin-right: 18px;
+      color: ${markerC};
+      font-weight: 700;
+    }
   `;
 }
 
@@ -311,20 +398,6 @@ function sectionTitleBorderPdf(t: TemplateDefinition): string {
   return "";
 }
 
-function skillPdfCss(t: TemplateDefinition): string {
-  switch (t.id) {
-    case "modern":
-      return "border-radius: 999px; background: #b9ff66; color: #123c3a; padding: 6px 10px; font-size: 10px; font-weight: 900;";
-    case "executive":
-      return "border: 1px solid rgba(201,164,76,0.5); border-radius: 0; background: #ffffff; color: #162033; padding: 6px 10px; font-size: 10px; font-weight: 900; text-transform: uppercase;";
-    case "minimal":
-      return "border: 1px solid rgba(32,33,36,0.16); border-radius: 0; background: #f2f2ee; color: #202124; padding: 6px 10px; font-size: 10px; font-weight: 700;";
-    case "ats":
-      return "border: 1px solid #d9dde3; border-radius: 0; background: #ffffff; color: #111111; padding: 6px 10px; font-size: 10px; font-weight: 700;";
-    default:
-      return "border-radius: 999px; background: #b9ff66; color: #123c3a; padding: 6px 10px; font-size: 10px; font-weight: 900;";
-  }
-}
 
 /* ------------------------------------------------------------------ */
 /*  Skills grouping helpers                                           */

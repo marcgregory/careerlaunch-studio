@@ -208,7 +208,7 @@ const LINKEDIN_RE =
  *  links. Explicitly excludes common email provider domains so "gmail.com"
  *  is not extracted as a website. */
 const WEBSITE_RE =
-  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
+  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex|mail)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
 
 function extractContact(
   preambleLines: string[],
