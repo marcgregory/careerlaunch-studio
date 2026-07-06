@@ -120,7 +120,7 @@ describe("runStaticAnalysis", () => {
     expect(suggestions.some((s) => s.id === "experience:empty:exp-1")).toBe(true);
   });
 
-  it("flags experience with no metrics and weak verbs as major", () => {
+  it("flags weak verb bullets individually", () => {
     const resume = makeMinimalResume({
       sections: [
         {
@@ -134,16 +134,33 @@ describe("runStaticAnalysis", () => {
       ],
     });
     const suggestions = runStatic(resume);
-    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
-    expect(noMetrics).toBeDefined();
-    expect(noMetrics!.severity).toBe("major");
+    expect(suggestions.some((s) => s.id === "experience:weak-verb-0:exp-1")).toBe(true);
   });
 
-  it("flags experience with no metrics but strong verbs as minor", () => {
-    const resume = makeMinimalResume({
+  it("no metrics suggestion is always minor regardless of verb quality", () => {
+    // Weak verb + no metrics
+    const weakResume = makeMinimalResume({
       sections: [
         {
           id: "exp-1",
+          type: "experience",
+          role: "Developer",
+          company: "Co",
+          bullets: ["Worked on the frontend team developing new features."],
+          dateRange: { start: "2020", end: "2023" },
+        },
+      ],
+    });
+    const weakSuggestions = runStatic(weakResume);
+    const weakMetrics = weakSuggestions.find((s) => s.id === "impact:no-metrics:exp-1");
+    expect(weakMetrics).toBeDefined();
+    expect(weakMetrics!.severity).toBe("minor");
+
+    // Strong verb + no metrics
+    const strongResume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-2",
           type: "experience",
           role: "Developer",
           company: "Co",
@@ -152,10 +169,10 @@ describe("runStaticAnalysis", () => {
         },
       ],
     });
-    const suggestions = runStatic(resume);
-    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
-    expect(noMetrics).toBeDefined();
-    expect(noMetrics!.severity).toBe("minor");
+    const strongSuggestions = runStatic(strongResume);
+    const strongMetrics = strongSuggestions.find((s) => s.id === "impact:no-metrics:exp-2");
+    expect(strongMetrics).toBeDefined();
+    expect(strongMetrics!.severity).toBe("minor");
   });
 
   it("does not flag metrics when bullets contain numbers", () => {
@@ -164,8 +181,9 @@ describe("runStaticAnalysis", () => {
     expect(suggestions.some((s) => s.id === "impact:no-metrics:exp-1")).toBe(false);
   });
 
-  it("regression: strong action bullets without numbers are minor, not major", () => {
+  it("regression: strong action bullets without numbers have minor impact and no major suggestion", () => {
     const resume = makeMinimalResume({
+      summary: "Senior engineer with 8 years of experience building scalable web applications and leading cross-functional teams to deliver high-impact products. Proven track record of driving engineering excellence and mentoring junior developers. Skilled in React, TypeScript, and cloud infrastructure.",
       sections: [
         {
           id: "exp-1",
@@ -184,10 +202,85 @@ describe("runStaticAnalysis", () => {
       ],
     });
     const suggestions = runStatic(resume);
+    // No major suggestion should exist
+    const majors = suggestions.filter((s) => s.severity === "major");
+    expect(majors).toHaveLength(0);
+
+    // Impact suggestion is minor
     const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
     expect(noMetrics).toBeDefined();
     expect(noMetrics!.severity).toBe("minor");
     expect(noMetrics!.title).toContain("Consider adding measurable impact");
+    expect(noMetrics!.reason).toContain("Do not invent numbers");
+
+    // No aggregated writing-quality suggestion because qualityRatio >= 0.7
+    // Scores: Developed=2, Built=2, Collaborated=1, Produced=2, Participated=1 = 8/10 = 0.8
+    expect(suggestions.some((s) => s.id.startsWith("writing:quality-"))).toBe(false);
+  });
+
+  it("flags writing quality as major when most bullets use weak verbs", () => {
+    const resume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-1",
+          type: "experience",
+          role: "Developer",
+          company: "Co",
+          bullets: [
+            "Worked on various frontend features.",
+            "Was responsible for code reviews.",
+            "Helped with deployment pipelines.",
+          ],
+          dateRange: { start: "2020", end: "2023" },
+        },
+      ],
+    });
+    const suggestions = runStatic(resume);
+    const writing = suggestions.find((s) => s.id === "writing:quality-low:exp-1");
+    expect(writing).toBeDefined();
+    expect(writing!.severity).toBe("major");
+  });
+
+  it("flags writing quality as medium when mix of strong and collaborative verbs", () => {
+    const resume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-1",
+          type: "experience",
+          role: "Developer",
+          company: "Co",
+          bullets: [
+            "Developed new features for the frontend team.",
+            "Collaborated with designers on UI components.",
+            "Participated in sprint planning.",
+          ],
+          dateRange: { start: "2020", end: "2023" },
+        },
+      ],
+    });
+    const suggestions = runStatic(resume);
+    const writing = suggestions.find((s) => s.id === "writing:quality-mixed:exp-1");
+    expect(writing).toBeDefined();
+    expect(writing!.severity).toBe("medium");
+  });
+
+  it("impact suggestion includes coaching in reason instead of suggestedText", () => {
+    const resume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-1",
+          type: "experience",
+          role: "Developer",
+          company: "Co",
+          bullets: ["Worked on the frontend team developing new features."],
+          dateRange: { start: "2020", end: "2023" },
+        },
+      ],
+    });
+    const suggestions = runStatic(resume);
+    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
+    expect(noMetrics).toBeDefined();
+    expect(noMetrics!.suggestedText).toBeNull();
     expect(noMetrics!.reason).toContain("Do not invent numbers");
   });
 
@@ -278,26 +371,5 @@ describe("runStaticAnalysis", () => {
     const suggestions = runStatic(resume);
     const ids = suggestions.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it("no measurable results suggestion (weak verbs) includes coaching in reason instead of suggestedText", () => {
-    const resume = makeMinimalResume({
-      sections: [
-        {
-          id: "exp-1",
-          type: "experience",
-          role: "Developer",
-          company: "Co",
-          bullets: ["Worked on the frontend team developing new features."],
-          dateRange: { start: "2020", end: "2023" },
-        },
-      ],
-    });
-    const suggestions = runStatic(resume);
-    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
-    expect(noMetrics).toBeDefined();
-    expect(noMetrics!.suggestedText).toBeNull();
-    expect(noMetrics!.reason).toContain("15+ React components");
-    expect(noMetrics!.reason).toContain("Reduced page load");
   });
 });

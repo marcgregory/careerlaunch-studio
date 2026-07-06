@@ -220,47 +220,79 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     }
   }
 
-  // Bullets that do not start with an action verb
-  const actionVerbs = [
+  // ── Weighted verb scoring system ──────────────────────────
+  // +2: Strong action verbs — signal direct, measurable contribution
+  const strongVerbs = new Set([
     "achieved", "accelerated", "administered", "advised", "allocated", "analyzed",
-    "built", "chaired", "coached", "collaborated", "consolidated", "created",
+    "built", "chaired", "coached", "consolidated", "created",
     "cut", "decreased", "delivered", "designed", "developed", "devised",
     "directed", "documented", "drove", "edited", "eliminated", "enforced",
     "engineered", "established", "evaluated", "executed", "expanded", "expedited",
-    "facilitated", "formed", "founded", "generated", "grew", "guided",
+    "formed", "founded", "generated", "grew",
     "hired", "identified", "implemented", "improved", "increased", "initiated",
-    "instituted", "integrated", "introduced", "invented", "investigated", "launched",
-    "led", "managed", "mentored", "merged", "monitored", "negotiated",
+    "instituted", "integrated", "introduced", "invented", "investigated",
+    "launched", "led",
+    "managed", "merged", "monitored",
+    "negotiated",
     "operated", "optimized", "organized", "originated", "overhauled", "oversaw",
     "performed", "pioneered", "planned", "prepared", "presented", "produced",
     "programmed", "promoted", "proposed", "provided", "published", "purchased",
     "recommended", "reduced", "reengineered", "reorganized", "replaced", "resolved",
-    "restructured", "revamped", "revised", "saved", "scheduled", "selected",
-    "set up", "simplified", "solved", "spearheaded", "standardized", "started",
+    "restructured", "revamped", "revised",
+    "saved", "scheduled", "selected", "set up", "simplified", "solved",
+    "spearheaded", "standardized", "started",
     "streamlined", "strengthened", "structured", "succeeded", "supervised", "surpassed",
     "trained", "transformed", "trimmed", "unified", "upgraded", "wrote",
 
-    // Tech / IT verbs
+    // Tech / IT
     "installed", "troubleshot", "troubleshoot", "maintained", "configured",
-    "deployed", "tested", "monitored", "supported", "documented",
+    "deployed", "tested", "monitored",
     "responded", "resolved", "diagnosed", "authored", "refactored",
     "migrated", "coded", "scaffolded", "validated", "triaged",
     "patched", "provisioned",
 
-    // Common gerund forms (used as bullet starters)
+    // Gerund forms (strong)
     "troubleshooting", "maintaining", "configuring", "deploying",
-    "testing", "monitoring", "supporting", "documenting", "training",
+    "testing", "monitoring",
     "responding", "resolving", "diagnosing", "refactoring", "migrating",
     "coding", "validating", "triaging", "installing", "upgrading",
-  ];
+  ]);
 
+  // +1: Collaborative / supportive verbs — good, but softer signal
+  const collaborativeVerbs = new Set([
+    "collaborated", "facilitated",
+    "partnered", "liaised",
+    "mentored", "guided", "coached",
+    "presented", "communicated", "documented",
+    "participated",
+    "supported", "assisted", "contributed", "helped",
+    "coordinated",
+
+    // Gerund forms (collaborative)
+    "collaborating", "facilitating", "partnering", "liaising",
+    "mentoring", "guiding", "coaching",
+    "presenting", "communicating", "documenting",
+    "participating",
+    "supporting", "assisting", "contributing", "helping",
+    "coordinating",
+  ]);
+
+  function scoreVerb(bullet: string): number {
+    const first = bullet.trim().split(/\s+/)[0]?.toLowerCase();
+    if (!first) return 0;
+    if (strongVerbs.has(first)) return 2;
+    if (collaborativeVerbs.has(first)) return 1;
+    return 0;
+  }
+
+  // ── Dimension 1: Writing Quality (per-bullet weak-verb check) ──
   for (const entry of expSections) {
     for (let i = 0; i < entry.bullets.length; i++) {
       const bullet = entry.bullets[i].trim();
       if (!bullet) continue;
 
       const firstWord = bullet.split(/\s+/)[0]?.toLowerCase();
-      if (firstWord && !actionVerbs.includes(firstWord)) {
+      if (firstWord && !strongVerbs.has(firstWord) && !collaborativeVerbs.has(firstWord)) {
         s.push({
           id: suggestionId("experience", `weak-verb-${i}`, entry.id),
           category: "experience",
@@ -281,63 +313,80 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     }
   }
 
-  // Missing measurable results — severity depends on bullet quality
+  // ── Dimension 2: Writing Quality (entry-level aggregated score) ──
   for (const entry of expSections) {
-    const bulletsWithMetrics = entry.bullets.filter((b) =>
+    if (entry.bullets.length === 0) continue;
+
+    let totalScore = 0;
+    for (const b of entry.bullets) {
+      totalScore += scoreVerb(b);
+    }
+    const maxPossible = entry.bullets.length * 2;
+    const qualityRatio = totalScore / maxPossible;
+
+    if (qualityRatio < 0.4) {
+      s.push({
+        id: suggestionId("writing", "quality-low", entry.id),
+        category: "experience",
+        severity: "major",
+        title: `"${entry.role ?? "Role"}" needs stronger bullet points`,
+        reason:
+          "Most of your bullets use passive or weak phrasing. Start each bullet with a strong " +
+          "action verb like \"Developed\", \"Built\", \"Implemented\", or \"Optimized\" to " +
+          "clearly communicate your contributions.",
+        targetText: null,
+        suggestedText: null,
+        location: { sectionId: "experience", entryId: entry.id },
+        confidence: 1,
+        source: "static",
+      });
+    } else if (qualityRatio < 0.7) {
+      s.push({
+        id: suggestionId("writing", "quality-mixed", entry.id),
+        category: "experience",
+        severity: "medium",
+        title: `Some bullets in "${entry.role ?? "Role"}" could be stronger`,
+        reason:
+          `Your score: ${totalScore}/${maxPossible}. Most bullets start well, but consider ` +
+          "replacing collaborative verbs (\"Collaborated\", \"Participated\", \"Supported\") " +
+          "with stronger action verbs that signal direct ownership.",
+        targetText: null,
+        suggestedText: null,
+        location: { sectionId: "experience", entryId: entry.id },
+        confidence: 1,
+        source: "static",
+      });
+    }
+    // qualityRatio >= 0.7 → no aggregated writing suggestion
+  }
+
+  // ── Dimension 3: Impact Quality (metrics presence) ─────────────────
+  // Fully independent from writing quality. Numbers are optional.
+  for (const entry of expSections) {
+    if (entry.bullets.length === 0) continue;
+
+    const hasMetrics = entry.bullets.some((b) =>
       /\d|%|\$|million|thousand/i.test(b),
     );
-    if (entry.bullets.length > 0 && bulletsWithMetrics.length === 0) {
-      // Count how many bullets start with a strong action verb
-      const strongCount = entry.bullets.filter((b) => {
-        const first = b.trim().split(/\s+/)[0]?.toLowerCase();
-        return first && actionVerbs.includes(first);
-      }).length;
-      // Consider "strong" if majority (> 50%) start with an action verb
-      const majorityStrong = strongCount / entry.bullets.length > 0.5;
 
-      if (majorityStrong) {
-        // Strong bullets but no metrics → minor enhancement
-        s.push({
-          id: suggestionId("impact", "no-metrics", entry.id),
-          category: "impact",
-          severity: "minor",
-          title: `Consider adding measurable impact for "${entry.role ?? "Role"}"`,
-          reason:
-            "Your bullet points are action-oriented and specific. If you have real metrics " +
-            "(users impacted, performance gains, features shipped, team size), adding them " +
-            "could strengthen this section even further. Do not invent numbers — use what " +
-            "you actually know.",
-          targetText: null,
-          suggestedText: null,
-          location: { sectionId: "experience", entryId: entry.id },
-          confidence: 1,
-          source: "static",
-        });
-      } else {
-        // Majority weak/passive verbs AND no metrics → major issue
-        s.push({
-          id: suggestionId("impact", "no-metrics", entry.id),
-          category: "impact",
-          severity: "major",
-          title:
-            `"${entry.role ?? "Role"}" needs stronger, more measurable bullets`,
-          reason:
-            "Most of your bullet points use weak or passive phrasing and lack measurable outcomes. " +
-            "Start each bullet with a powerful action verb (e.g., \"Developed\", \"Reduced\", " +
-            "\"Launched\") and include numbers to quantify your impact.\n\n" +
-            "Examples:\n" +
-            "• \"Developed 15+ React components used across 4 internal applications\"\n" +
-            "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
-            "• " +
-            "\"Supported 200+ end users across 3 departments\"",
-          targetText: null,
-          suggestedText: null,
-          location: { sectionId: "experience", entryId: entry.id },
-          confidence: 1,
-          source: "static",
-        });
-      }
+    if (!hasMetrics) {
+      s.push({
+        id: suggestionId("impact", "no-metrics", entry.id),
+        category: "impact",
+        severity: "minor",
+        title: `Consider adding measurable impact for "${entry.role ?? "Role"}"`,
+        reason:
+          "Your bullets describe your work clearly. If you have real metrics — users " +
+          "impacted, performance gains, features shipped, team size — adding them can " +
+          "strengthen this section. Do not invent numbers; use what you actually know.",
+        targetText: null,
+        suggestedText: null,
+        location: { sectionId: "experience", entryId: entry.id },
+        confidence: 1,
+        source: "static",
+      });
     }
+    // Has metrics → no impact suggestion (good)
   }
 
   // Date gaps > 1 year in the last 3 entries
