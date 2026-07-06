@@ -2,6 +2,7 @@ import { prisma } from "../../../lib/prisma";
 import { requireApiUser } from "../../../lib/auth";
 import { fromStoredResume, parseResumePayload, toStoredResume } from "../../../lib/resume-store";
 import { can, FeatureKeys } from "../../../lib/entitlements";
+import { captureServerEvent } from "../../../lib/server-analytics";
 
 export async function GET() {
   const { user, response } = await requireApiUser();
@@ -49,6 +50,16 @@ export async function POST(request: Request) {
         }
       }
     }
+  });
+
+  // ── Funnel: draft_created (from builder) ──
+  captureServerEvent("draft_created", user.id, {
+    source: "builder",
+    resumeId: stored.id,
+    title: resume.title,
+    targetRole: resume.targetRole ?? "",
+    templateId: resume.templateId,
+    sectionCount: resume.sectionOrder?.length ?? 0,
   });
 
   return Response.json({ resume: fromStoredResume(stored) }, { status: 201 });

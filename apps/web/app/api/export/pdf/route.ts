@@ -6,6 +6,7 @@ import { getRequestId } from "../../../../lib/request-id";
 import { reportError } from "../../../../lib/error-reporting";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { canExportPdf, getPdfExportKind } from "../../../../lib/entitlements";
+import { captureServerEvent } from "../../../../lib/server-analytics";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
@@ -98,6 +99,19 @@ export async function POST(request: Request) {
         status: "READY",
         fileUrl: `download:${filename}`
       }
+    });
+
+    // ── Funnel: pdf_exported (server-side) ──
+    captureServerEvent("pdf_exported", user.id, {
+      resumeId,
+      templateId: resume.templateId,
+      exportKind,
+      fileSize: pdf.byteLength,
+      title: resume.title,
+      sectionCount: (resume.sectionOrder ?? []).length,
+      experienceCount: (resume.experience ?? []).length,
+      educationCount: (resume.education ?? []).length,
+      skillsCount: (resume.skills ?? []).length,
     });
 
     return new Response(pdf, {

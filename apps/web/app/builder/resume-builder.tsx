@@ -58,6 +58,8 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradePrompt | null>(null);
   const savedSnapshot = useRef(JSON.stringify(normalizeResume(initialResume)));
+  // Track whether draft_edited has been fired this session to avoid event spam on each autosave
+  const hasFiredEditEvent = useRef(false);
 
   const validation = useMemo(() => validateResume(resume), [resume]);
   const hasValidationErrors = Object.keys(validation).length > 0;
@@ -81,6 +83,17 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         if (!response.ok) throw new Error("Save failed");
         savedSnapshot.current = snapshot;
         setSaveState("Saved");
+
+        // ── Funnel: draft_edited (first save per session) ──
+        if (!hasFiredEditEvent.current) {
+          hasFiredEditEvent.current = true;
+          analytics.capture("draft_edited", {
+            resumeId: resume.id,
+            templateId: resume.templateId,
+            sectionCount: resume.sectionOrder.length,
+            isImported: resume.title.startsWith("Imported Resume"),
+          });
+        }
       } catch (error) {
         if (!controller.signal.aborted) setSaveState("Error");
       }
@@ -231,9 +244,15 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
       if (!response.ok) throw new Error("PDF export failed");
 
-      analytics.capture("resume_exported", {
+      // ── Funnel: pdf_exported (client-side) ──
+      analytics.capture("pdf_exported", {
+        resumeId: resume.id,
         templateId: resume.templateId,
         sectionCount: resume.sectionOrder.length,
+        hasSummary: resume.summary.length > 0,
+        experienceCount: resume.experience.length,
+        educationCount: resume.education.length,
+        skillsCount: resume.skills.length,
       });
 
       const blob = await response.blob();

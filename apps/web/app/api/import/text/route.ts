@@ -3,6 +3,7 @@ import { requireApiUser } from "../../../../lib/auth";
 import { reportError } from "../../../../lib/error-reporting";
 import { getRequestId } from "../../../../lib/request-id";
 import { checkRateLimit } from "../../../../lib/rate-limit";
+import { captureServerEvent } from "../../../../lib/server-analytics";
 
 const MAX_IMPORT_SIZE = 50 * 1024; // 50 KB
 
@@ -67,6 +68,12 @@ export async function POST(request: Request) {
     );
   }
 
+  // ── Funnel: import_started ──
+  captureServerEvent("import_started", user.id, {
+    textLength: body.text.length,
+    lineCount: body.text.split("\n").length,
+  });
+
   let result;
   try {
     result = parseResumeText(body.text);
@@ -82,6 +89,9 @@ export async function POST(request: Request) {
     // when a single provider hits its limit.
     const needsRecovery = needsAICoverageRecovery(result.coverage);
     console.log("[import] needsAICoverageRecovery:", needsRecovery, "coverage:", JSON.stringify(result.coverage.map(c => ({ id: c.sectionId, ratio: c.ratio }))));
+
+    // Snapshot pre-recovery coverage for analytics delta computation
+    const initialCoverage = result.coverage.map((c) => ({ ...c }));
 
     let aiRecovery: {
       status: "skipped" | "attempted" | "succeeded" | "fallback" | "failed";
@@ -223,8 +233,48 @@ export async function POST(request: Request) {
       aiRecovery.reason = "Coverage sufficient in all critical sections";
       result = { ...result, aiRecovery };
     }
+
+    // ── Funnel: import_completed with coverage deltas and layout info ──
+    const sectionCounts: Record<string, number> = {
+      experience: result.parsed.experience?.length ?? 0,
+      education: result.parsed.education?.length ?? 0,
+      skills: result.parsed.skills?.length ?? 0,
+      certifications: result.parsed.certifications?.length ?? 0,
+      projects: result.parsed.projects?.length ?? 0,
+      professionalQualities: result.parsed.professionalQualities?.length ?? 0,
+    };
+
+    // Compute before/after coverage delta per section
+    const coverageDeltas: Record<string, number> = {};
+    for (const c of result.coverage) {
+      const before = initialCoverage.find((ic) => ic.sectionId === c.sectionId);
+      coverageDeltas[c.sectionId] = c.ratio - (before?.ratio ?? c.ratio);
+    }
+
+    captureServerEvent("import_completed", user.id, {
+      importQuality: result.importQuality,
+      confidence: result.confidence,
+      layouts: result.layouts,
+      aiRecoveryStatus: result.aiRecovery?.status ?? "skipped",
+      aiRecoveryProvider: result.aiRecovery?.usedProvider ?? null,
+      aiRecoveryFailedProviders: result.aiRecovery?.failedProviders?.length ?? 0,
+      aiRecoveredSections: result.aiRecoveredSections?.length ?? 0,
+      coverageDeltas,
+      sectionCounts,
+      coverageSummary: Object.fromEntries(
+        result.coverage.map((c) => [c.sectionId, { ratio: c.ratio, status: c.status }]),
+      ),
+      textLength: body.text.length,
+    });
   } catch (error) {
     reportError(error, getRequestId(request), { route: "import-text" });
+
+    // ── Funnel: import_completed (error) ──
+    captureServerEvent("import_completed", user.id, {
+      error: error instanceof Error ? error.message : "Import failed",
+      importQuality: "failed" as const,
+    });
+
     return Response.json(
       { error: error instanceof Error ? error.message : "Import parsing failed" },
       { status: 500 },

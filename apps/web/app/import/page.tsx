@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Wand2 } from "lucide-react";
 import { primaryButtonClass } from "@careerlaunch/ui";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
 import type { ParseResult, ImportQuality, ExperienceItem, EducationItem, RecoveryResult } from "@careerlaunch/ai/import";
 
@@ -17,6 +17,42 @@ export default function ImportPage() {
   const [text, setText] = useState("");
   const [result, setResult] = useState<ParseResult | null>(null);
   const [error, setError] = useState("");
+  // Track whether the user reached preview/saving then navigated away without creating a draft
+  const reachedPreviewWithoutDraft = useRef(false);
+
+  // ── Funnel: detect import_abandoned ──
+  // Fires when a user reaches preview but navigates away without creating a draft.
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (!reachedPreviewWithoutDraft.current) return;
+      if (document.visibilityState === "hidden") {
+        analytics.capture("import_abandoned", {
+          importQuality: result?.importQuality ?? "unknown",
+          layouts: result?.layouts,
+          aiRecoveryStatus: result?.aiRecovery?.status ?? "skipped",
+        });
+      }
+    }
+
+    function handleBeforeUnload() {
+      if (!reachedPreviewWithoutDraft.current) return;
+      // Safari doesn't always fire visibilitychange on tab close,
+      // so we also fire on beforeunload. PostHog deduplicates server-side.
+      analytics.capture("import_abandoned", {
+        importQuality: result?.importQuality ?? "unknown",
+        layouts: result?.layouts,
+        aiRecoveryStatus: result?.aiRecovery?.status ?? "skipped",
+      });
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [result]);
 
   /** Whether the parser or AI was able to extract meaningful content */
   function hasAnyContent(): boolean {
@@ -86,6 +122,13 @@ export default function ImportPage() {
     setState("parsing");
     setError("");
 
+    // ── Funnel: import_started (client-side) ──
+    analytics.capture("import_started", {
+      textLength: text.length,
+      wordCount: text.trim().split(/\s+/).length,
+      lineCount: text.split("\n").length,
+    });
+
     try {
       const res = await fetch("/api/import/text", {
         method: "POST",
@@ -101,6 +144,8 @@ export default function ImportPage() {
       const data: ParseResult = await res.json();
       setResult(data);
       setState("preview");
+      // Mark that the user reached preview — used by the abandonment detector
+      reachedPreviewWithoutDraft.current = true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Import failed");
       setState("error");
@@ -139,10 +184,29 @@ export default function ImportPage() {
       }
 
       const created = await res.json();
-      analytics.capture("resume_imported", {
-        confidence: result.confidence,
+
+      // ── Funnel: draft_created (from import) ──
+      analytics.capture("draft_created", {
+        source: "import",
+        resumeId: created.resume.id,
         importQuality: result.importQuality,
+        confidence: result.confidence,
+        layouts: result.layouts,
+        aiRecoveryStatus: result.aiRecovery?.status ?? "skipped",
+        aiRecoveryProvider: result.aiRecovery?.usedProvider ?? null,
+        sectionCounts: {
+          experience: result.parsed.experience?.length ?? 0,
+          education: result.parsed.education?.length ?? 0,
+          skills: result.parsed.skills?.length ?? 0,
+          certifications: result.parsed.certifications?.length ?? 0,
+          projects: result.parsed.projects?.length ?? 0,
+          professionalQualities: result.parsed.professionalQualities?.length ?? 0,
+        },
       });
+
+      // Draft was created — clear abandonment tracking
+      reachedPreviewWithoutDraft.current = false;
+
       router.push(`/builder?resumeId=${created.resume.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create resume");
