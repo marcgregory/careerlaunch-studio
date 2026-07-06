@@ -481,7 +481,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
         <aside className="sticky top-6 hidden self-start xl:block">
           <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-6">
-            <div className="w-full max-w-[900px]">
+            <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto">
               <ResumePreview resume={resume} />
             </div>
           </div>
