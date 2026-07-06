@@ -594,7 +594,7 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="sm:rounded-2xl sm:border sm:border-[#123c3a]/10 sm:bg-white sm:p-5 sm:shadow-sm sm:transition sm:hover:border-[#b9ff66]">
+    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-3 shadow-sm sm:p-5 sm:shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
         <h2 className="font-signal text-sm font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
         {action}
@@ -767,7 +767,7 @@ function ItemCard({
   disableDown: boolean;
 }) {
   return (
-    <div className="sm:rounded-2xl sm:border sm:border-[#123c3a]/10 sm:bg-[#f8f8f5] sm:p-3">
+    <div className="rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-2 sm:p-3">
       <div className="mb-2 flex items-center gap-1.5 sm:mb-3 sm:gap-2">
         <GripVertical size={17} className="text-[#4b4b4b]/55" />
         <h3 className="min-w-0 flex-1 truncate text-sm font-black">{title}</h3>
