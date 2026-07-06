@@ -120,7 +120,7 @@ describe("runStaticAnalysis", () => {
     expect(suggestions.some((s) => s.id === "experience:empty:exp-1")).toBe(true);
   });
 
-  it("flags experience with no metrics", () => {
+  it("flags experience with no metrics and weak verbs as major", () => {
     const resume = makeMinimalResume({
       sections: [
         {
@@ -134,7 +134,28 @@ describe("runStaticAnalysis", () => {
       ],
     });
     const suggestions = runStatic(resume);
-    expect(suggestions.some((s) => s.id === "impact:no-metrics:exp-1")).toBe(true);
+    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
+    expect(noMetrics).toBeDefined();
+    expect(noMetrics!.severity).toBe("major");
+  });
+
+  it("flags experience with no metrics but strong verbs as minor", () => {
+    const resume = makeMinimalResume({
+      sections: [
+        {
+          id: "exp-1",
+          type: "experience",
+          role: "Developer",
+          company: "Co",
+          bullets: ["Developed new features for the frontend team."],
+          dateRange: { start: "2020", end: "2023" },
+        },
+      ],
+    });
+    const suggestions = runStatic(resume);
+    const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
+    expect(noMetrics).toBeDefined();
+    expect(noMetrics!.severity).toBe("minor");
   });
 
   it("does not flag metrics when bullets contain numbers", () => {
@@ -232,7 +253,7 @@ describe("runStaticAnalysis", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("no measurable results suggestion includes coaching in reason instead of suggestedText", () => {
+  it("no measurable results suggestion (weak verbs) includes coaching in reason instead of suggestedText", () => {
     const resume = makeMinimalResume({
       sections: [
         {

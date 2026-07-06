@@ -281,30 +281,65 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     }
   }
 
-  // Missing measurable results
+  // Missing measurable results — severity depends on bullet quality
   for (const entry of expSections) {
     const bulletsWithMetrics = entry.bullets.filter((b) =>
       /\d|%|\$|million|thousand/i.test(b),
     );
     if (entry.bullets.length > 0 && bulletsWithMetrics.length === 0) {
-      s.push({
-        id: suggestionId("impact", "no-metrics", entry.id),
-        category: "impact",
-        severity: "major",
-        title: `"${entry.role ?? "Role"}" has no measurable results`,
-        reason:
-          "Bullets with numbers (percentages, revenue, time saved, team size) are 40% more likely to get interviews. " +
-          "Add numbers, percentages, or other measurable outcomes.\n\n" +
-          "Examples:\n" +
-          "• \"Developed 15+ React components used across 4 internal applications\"\n" +
-          "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
-          "• \"Supported 200+ end users across 3 departments\"",
-        targetText: null,
-        suggestedText: null,
-        location: { sectionId: "experience", entryId: entry.id },
-        confidence: 1,
-        source: "static",
+      // Check whether all bullets start with a strong action verb
+      const allStrongVerbs = entry.bullets.every((b) => {
+        const first = b.trim().split(/\s+/)[0]?.toLowerCase();
+        return first && actionVerbs.includes(first);
       });
+
+      if (allStrongVerbs) {
+        // Strong bullets but no metrics → minor enhancement
+        s.push({
+          id: suggestionId("impact", "no-metrics", entry.id),
+          category: "impact",
+          severity: "minor",
+          title:
+            `"${entry.role ?? "Role"}" could benefit from measurable impact`,
+          reason:
+            "Your bullet points already use strong action verbs, which is great. " +
+            "Adding specific numbers or outcomes (users impacted, performance gains, team size, " +
+            "features shipped) can further strengthen these solid bullets.\n\n" +
+            "Examples:\n" +
+            "• \"Developed 15+ React components used across 4 internal applications\"\n" +
+            "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
+            "• " +
+            "\"Supported 200+ end users across 3 departments\"",
+          targetText: null,
+          suggestedText: null,
+          location: { sectionId: "experience", entryId: entry.id },
+          confidence: 1,
+          source: "static",
+        });
+      } else {
+        // Weak verbs AND no metrics → major issue
+        s.push({
+          id: suggestionId("impact", "no-metrics", entry.id),
+          category: "impact",
+          severity: "major",
+          title:
+            `"${entry.role ?? "Role"}" needs stronger, more measurable bullets`,
+          reason:
+            "Your bullet points are missing both strong action verbs and measurable outcomes. " +
+            "Start each bullet with a powerful action verb (e.g., \"Developed\", \"Reduced\", " +
+            "\"Launched\") and include numbers to quantify your impact.\n\n" +
+            "Examples:\n" +
+            "• \"Developed 15+ React components used across 4 internal applications\"\n" +
+            "• \"Reduced page load time by 40% through code-splitting and lazy loading\"\n" +
+            "• " +
+            "\"Supported 200+ end users across 3 departments\"",
+          targetText: null,
+          suggestedText: null,
+          location: { sectionId: "experience", entryId: entry.id },
+          confidence: 1,
+          source: "static",
+        });
+      }
     }
   }
 
