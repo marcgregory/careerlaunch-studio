@@ -212,7 +212,7 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
 
   return (
     <article
-      className={`mx-auto min-h-[980px] w-full max-w-[760px] print:bg-white print:shadow-none print:ring-0 ${template.containerClass}`}
+      className={`mx-auto min-h-[980px] w-full print:bg-white print:shadow-none print:ring-0 ${template.containerClass}`}
       data-template={template.id}
     >
       <header className={headerBorderClass(template.headerStyle)}>
@@ -319,7 +319,7 @@ function SummarySection({
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Profile</ResumeHeading>
-      <p className="mt-3 text-sm font-medium leading-7 text-[#33343b]">
+      <p className="mt-3 text-[15px] font-medium leading-7 text-[#33343b]">
         {resume.summary}
       </p>
     </section>
@@ -347,17 +347,17 @@ function ExperienceSection({
                 >
                   {item.role}
                 </h3>
-                <p className="text-sm font-black text-[#4b4b4b]">
+                <p className="text-[15px] font-black text-[#4b4b4b]">
                   {[item.company, item.location].filter(Boolean).join(" - ")}
                 </p>
               </div>
-              <p className="text-sm font-black text-[#777]">
+              <p className="text-[15px] font-black text-[#777]">
                 {[item.start, item.end].filter(Boolean).join(" - ")}
               </p>
             </div>
             {item.bullets.filter(Boolean).length > 0 && (
               <ul
-                className={`mt-3 list-disc space-y-1.5 pl-5 text-sm font-medium leading-7 text-[#33343b] ${template.markerClass}`}
+                className={`mt-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b] ${template.markerClass}`}
               >
                 {item.bullets.filter(Boolean).map((bullet) => (
                   <li key={bullet}>{bullet}</li>
@@ -384,7 +384,7 @@ function EducationSection({
       <ResumeHeading template={template}>Education</ResumeHeading>
       <div className="mt-4 space-y-3">
         {resume.education.map((item) => (
-          <div key={item.id} className="text-sm">
+          <div key={item.id} className="text-[15px]">
             <p
               className={`${educationDegreeClass(template.nameStyle)}`}
             >
@@ -413,7 +413,7 @@ function ProfessionalQualitiesSection({
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Professional Qualities</ResumeHeading>
-      <p className="mt-3 text-sm font-medium leading-7 text-[#33343b]">
+      <p className="mt-3 text-[15px] font-medium leading-7 text-[#33343b]">
         {quals.map((q, i) => (
           <span key={q}>
             {i > 0 && <span className="mx-2 text-[#bbb]">—</span>}
@@ -437,44 +437,66 @@ function SkillsSection({
 
   // Group "Category: Skill" prefixed skills for structured display
   const groups = groupSkills(skills);
+  const MAX_VISIBLE = 4;
 
-  // Single group or no categorized skills → flat pill layout
+  // Single group or no categorized skills → flat pill layout with +N more indicator
   if (groups.length <= 1) {
+    const items = groups[0]?.items ?? skills;
+    const visible = items.slice(0, MAX_VISIBLE);
+    const hidden = items.length - MAX_VISIBLE;
+
     return (
       <section className="mt-8">
         <ResumeHeading template={template}>Skills</ResumeHeading>
         <div className="mt-4 flex flex-wrap gap-2">
-          {(groups[0]?.items ?? skills).map((skill) => (
+          {visible.map((skill) => (
             <span key={skill} className={template.skillClass}>
               {skill}
             </span>
           ))}
+          {hidden > 0 && (
+            <span
+              className="inline-flex items-center rounded-full border border-[#123c3a]/20 bg-white/60 px-3 py-1.5 text-xs font-bold text-[#4b4b4b]"
+              title={`${items.length} total — ${hidden} more: ${items.slice(MAX_VISIBLE).join(", ")}`}
+            >
+              +{hidden} more
+            </span>
+          )}
         </div>
       </section>
     );
   }
 
-  // Multiple categories — premium dot-separated inline layout
-  // Cleaner and more compact than stacked pills
+  // Multiple categories — show first 4 per group with +N more indicator
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Skills</ResumeHeading>
-      <div className={`mt-4 ${groups.length <= 2 ? "grid grid-cols-2 gap-x-6 gap-y-4" : "space-y-4"}`}>
-        {groups.map((g) => (
-          <div key={g.category}>
-            <h3 className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
-              {g.category}
-            </h3>
-            <p className="text-sm font-medium leading-7 text-[#33343b]">
-              {g.items.map((skill, i) => (
-                <span key={skill}>
-                  {i > 0 && <span className="mx-1.5 text-[#bbb]">•</span>}
-                  {skill}
-                </span>
-              ))}
-            </p>
-          </div>
-        ))}
+      <div className="mt-4 space-y-4">
+        {groups.map((g) => {
+          const visible = g.items.slice(0, MAX_VISIBLE);
+          const hidden = g.items.length - MAX_VISIBLE;
+
+          return (
+            <div key={g.category}>
+              <h3 className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
+                {g.category} <span className="font-normal text-[#999]">({g.items.length})</span>
+              </h3>
+              <p className="text-[15px] font-medium leading-7 text-[#33343b]">
+                {visible.map((skill, i) => (
+                  <span key={skill}>
+                    {i > 0 && <span className="mx-1.5 text-[#bbb]">•</span>}
+                    {skill}
+                  </span>
+                ))}
+              </p>
+              {hidden > 0 && (
+                <p className="mt-0.5 text-xs font-bold text-[#00796f]">
+                  +{hidden} more
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -492,7 +514,7 @@ function CertificationsSection({
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Certifications</ResumeHeading>
-      <ul className="mt-3 space-y-1 text-sm font-medium text-[#33343b]">
+      <ul className="mt-3 space-y-1 text-[15px] font-medium text-[#33343b]">
         {certifications.map((cert) => (
           <li key={cert} className="flex items-start gap-2">
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
@@ -524,13 +546,13 @@ function ProjectsSection({
               {item.name}
             </h3>
             {item.description && (
-              <p className="mt-1 text-sm font-medium leading-6 text-[#4b4b4b]">
+              <p className="mt-1 text-[15px] font-medium leading-6 text-[#4b4b4b]">
                 {item.description}
               </p>
             )}
             {item.bullets.filter(Boolean).length > 0 && (
               <ul
-                className={`mt-2 list-disc space-y-1.5 pl-5 text-sm font-medium leading-7 text-[#33343b] ${template.markerClass}`}
+                className={`mt-2 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b] ${template.markerClass}`}
               >
                 {item.bullets.filter(Boolean).map((bullet) => (
                   <li key={bullet}>{bullet}</li>

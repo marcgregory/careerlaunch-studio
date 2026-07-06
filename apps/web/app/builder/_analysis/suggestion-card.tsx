@@ -31,13 +31,25 @@ export function SuggestionCard({
 
   const isResolved = suggestion.status === "accepted" || suggestion.status === "rejected";
 
+  // Compute a one-line summary for the collapsed state
+  const collapsedSummary = suggestion.reason
+    ? suggestion.reason.length > 100
+      ? suggestion.reason.slice(0, 100) + "…"
+      : suggestion.reason
+    : "";
+
   return (
     <div
-      className={`rounded-2xl border p-4 transition ${config.color} ${
+      className={`rounded-2xl border transition ${
+        expanded
+          ? config.color
+          : "border-[#123c3a]/10 bg-white"
+      } ${
         isResolved ? "opacity-50" : ""
       }`}
     >
-      <div className="flex items-start gap-3">
+      {/* ── Collapsed header (always visible) ────────────────────────── */}
+      <div className="flex items-start gap-3 p-4">
         <div className="mt-0.5 shrink-0">
           <Icon size={18} />
         </div>
@@ -56,47 +68,15 @@ export function SuggestionCard({
 
           <h3 className="mt-1 text-sm font-black">{suggestion.title}</h3>
 
-          {/* Expand/collapse reason */}
-          <button
-            type="button"
-            className="mt-1 inline-flex items-center gap-1 text-xs font-medium underline-offset-2 hover:underline"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            {expanded ? "Less detail" : "More detail"}
-          </button>
-
-          {expanded && (
-            <div className="mt-2 space-y-2 text-sm leading-relaxed">
-              <p className="text-xs font-black text-[#123c3a]">Why</p>
-              <p>{suggestion.reason}</p>
-              {typeof suggestion.confidence === "number" && (
-                <div className="max-w-[180px]">
-                  <ConfidenceBar confidence={suggestion.confidence} />
-                </div>
-              )}
-              {suggestion.targetText && (
-                <div className="rounded-xl border border-current/15 bg-white/40 p-3">
-                  <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] opacity-60">
-                    Current text
-                  </p>
-                  <p className="mt-1 text-sm italic">{suggestion.targetText}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {suggestion.suggestedText && (
-            <div className="mt-2 rounded-xl border border-[#b9ff66] bg-[#b9ff66]/20 p-3">
-              <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] text-[#00796f]">
-                Suggestion
-              </p>
-              <p className="mt-1 text-sm">{suggestion.suggestedText}</p>
-            </div>
+          {/* One-line summary in collapsed state */}
+          {!expanded && collapsedSummary && (
+            <p className="mt-1 text-xs font-medium leading-5 text-[#4b4b4b]">
+              {collapsedSummary}
+            </p>
           )}
         </div>
 
-        {/* Action buttons — only shown when pending */}
+        {/* Action buttons — always visible when pending */}
         {!isResolved && (
           <div className="flex shrink-0 gap-1.5">
             {suggestion.suggestedText ? (
@@ -139,9 +119,73 @@ export function SuggestionCard({
           </div>
         )}
       </div>
+
+      {/* ── Expand/collapse toggle ─────────────────────────────────── */}
+      {(suggestion.reason || suggestion.targetText || suggestion.suggestedText || typeof suggestion.confidence === "number") && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className={`flex w-full items-center justify-center gap-1 border-t px-4 py-2 text-xs font-medium transition ${
+            expanded
+              ? "border-[#123c3a]/8 text-[#00796f]"
+              : "border-[#123c3a]/5 text-[#4b4b4b]/60 hover:text-[#00796f]"
+          }`}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp size={14} />
+              Less detail
+            </>
+          ) : (
+            <>
+              <ChevronDown size={14} />
+              More detail
+            </>
+          )}
+        </button>
+      )}
+
+      {/* ── Expanded content ──────────────────────────────────────── */}
+      {expanded && (
+        <div className="space-y-3 px-4 pb-4">
+          {suggestion.reason && (
+            <div>
+              <p className="text-xs font-black text-[#123c3a]">Why</p>
+              <p className="mt-0.5 text-sm leading-relaxed text-[#4b4b4b]">
+                {suggestion.reason}
+              </p>
+            </div>
+          )}
+
+          {typeof suggestion.confidence === "number" && (
+            <div className="max-w-[180px]">
+              <ConfidenceBar confidence={suggestion.confidence} />
+            </div>
+          )}
+
+          {suggestion.targetText && (
+            <div className="rounded-xl border border-current/15 bg-white/40 p-3">
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] opacity-60">
+                Current text
+              </p>
+              <p className="mt-1 text-sm italic">{suggestion.targetText}</p>
+            </div>
+          )}
+
+          {suggestion.suggestedText && (
+            <div className="rounded-xl border border-[#b9ff66] bg-[#b9ff66]/20 p-3">
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] text-[#00796f]">
+                Suggestion
+              </p>
+              <p className="mt-1 text-sm">{suggestion.suggestedText}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Feedback widget after action taken */}
       {(suggestion.status === "accepted" || suggestion.status === "rejected") && resumeId && (
-        <div className="mt-2 border-t border-[#123c3a]/5 pt-2">
+        <div className="border-t border-[#123c3a]/5 px-4 pb-3 pt-2">
           <SuggestionFeedback
             resumeId={resumeId}
             suggestionId={suggestion.id}

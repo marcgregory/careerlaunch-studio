@@ -102,9 +102,9 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("summary", "missing", "summary"),
       category: "summary",
       severity: "critical",
-      title: "Professional summary is missing",
+      title: "Add a professional summary for a stronger first impression",
       reason:
-        "A strong 2–3 sentence summary tells recruiters who you are and what you bring before they read your experience.",
+        "A 2–3 sentence summary at the top of your resume gives recruiters a quick sense of who you are and what you bring before they dive into your experience.",
       targetText: null,
       suggestedText: null,
       location: { sectionId: "summary" },
@@ -121,8 +121,8 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("summary", "too-short", "summary"),
       category: "summary",
       severity: "major",
-      title: "Summary is too brief",
-      reason: `Your summary is ${wordCount} words. Expand to 40–80 words covering your experience level, key skills, and career target.`,
+      title: "Expand your summary for a stronger first impression",
+      reason: `Your summary is ${wordCount} words currently. Expanding to 40–80 words gives you room to mention your experience level, key skills, and career direction.`,
       targetText: resume.summary,
       suggestedText: null,
       location: { sectionId: "summary" },
@@ -137,7 +137,7 @@ function checkSummary(resume: NormalizedResume): Suggestion[] {
       category: "summary",
       severity: "medium",
       title: "Summary is longer than recommended",
-      reason: `Your summary is ${wordCount} words. Trim to 40–80 words so recruiters can quickly grasp your profile.`,
+      reason: `Your summary is ${wordCount} words. Trimming to 40–80 words makes it easier for recruiters to quickly grasp your profile.`,
       targetText: resume.summary,
       suggestedText: null,
       location: { sectionId: "summary" },
@@ -162,7 +162,7 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       severity: "critical",
       title: "No experience entries",
       reason:
-        "Work experience is the most important section for most recruiters. Add at least one relevant role.",
+        "Work experience is the section most recruiters look at first. Adding at least one relevant role builds credibility.",
       targetText: null,
       suggestedText: null,
       location: { sectionId: "experience" },
@@ -204,8 +204,8 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
           id: suggestionId("experience", `short-bullet-${i}`, entry.id),
           category: "experience",
           severity: "minor",
-          title: "Bullet point is too short",
-          reason: `This bullet is ${words} words. Expand to 10–20 words that describe what you did, how you did it, and the result.`,
+          title: "Bullet could say more",
+          reason: `This bullet is ${words} words. Bullets of 10–20 words tend to communicate impact most clearly — describing what you did, how, and the result.`,
           targetText: bullet,
           suggestedText: null,
           location: {
@@ -297,8 +297,8 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
           id: suggestionId("experience", `weak-verb-${i}`, entry.id),
           category: "experience",
           severity: "minor",
-          title: "Bullet does not start with a strong action verb",
-          reason: `"${firstWord}" is not a strong action verb. Lead with verbs like "Developed", "Implemented", or "Optimized".`,
+          title: "Start this bullet with a stronger action verb",
+          reason: `"${firstWord}" reads passively. Leading with a strong verb like "Developed", "Implemented", or "Optimized" makes your contribution clearer.`,
           targetText: bullet,
           suggestedText: null,
           location: {
@@ -331,9 +331,9 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         severity: "major",
         title: `"${entry.role ?? "Role"}" needs stronger bullet points`,
         reason:
-          "Most of your bullets use passive or weak phrasing. Start each bullet with a strong " +
-          "action verb like \"Developed\", \"Built\", \"Implemented\", or \"Optimized\" to " +
-          "clearly communicate your contributions.",
+          "Most of your bullets use passive or weaker phrasing. Starting each bullet with a strong " +
+          "action verb like \"Developed\", \"Built\", \"Implemented\", or \"Optimized\" helps " +
+          "communicate your contributions more clearly.",
         targetText: null,
         suggestedText: null,
         location: { sectionId: "experience", entryId: entry.id },
@@ -374,11 +374,11 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         id: suggestionId("impact", "no-metrics", entry.id),
         category: "impact",
         severity: "minor",
-        title: `Consider adding measurable impact for "${entry.role ?? "Role"}"`,
+        title: `Opportunity to strengthen this experience`,
         reason:
-          "Your bullets describe your work clearly. If you have real metrics — users " +
-          "impacted, performance gains, features shipped, team size — adding them can " +
-          "strengthen this section. Do not invent numbers; use what you actually know.",
+          "Adding measurable outcomes can make this experience more persuasive to recruiters. " +
+          "Examples: supported 200+ users, reduced page load by 40%, delivered 15 reusable components. " +
+          "Only add numbers that are true.",
         targetText: null,
         suggestedText: null,
         location: { sectionId: "experience", entryId: entry.id },
@@ -427,9 +427,9 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("skills", "missing", "skills"),
       category: "skills",
       severity: "major",
-      title: "No skills listed",
+      title: "Add relevant skills to pass ATS filters",
       reason:
-        "Skills help you get past ATS filters and show recruiters your capabilities at a glance. List at least 6 relevant skills.",
+        "Skills help ATS systems and recruiters understand your capabilities at a glance. Aim for at least 6 skills relevant to your target role.",
       targetText: null,
       suggestedText: null,
       location: { sectionId: "skills" },
@@ -441,9 +441,9 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("skills", "too-few", "skills"),
       category: "skills",
       severity: "medium",
-      title: "Only " + count + " skills listed",
+      title: `Only ${count} skills listed`,
       reason:
-        count + " skills is light for most roles. Aim for 6–12 relevant skills that match your target job description.",
+        `${count} skills is on the lighter side for most roles. 6–12 relevant skills tends to give the strongest signal to both ATS and recruiters.`,
       targetText: null,
       suggestedText: null,
       location: { sectionId: "skills" },
@@ -455,9 +455,9 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("skills", "too-many", "skills"),
       category: "skills",
       severity: "minor",
-      title: `${count} skills is more than typical`,
+      title: `${count} skills may dilute your focus`,
       reason:
-        "A long skills list can dilute your focus. Consider trimming to 10–15 of your strongest, most relevant skills.",
+        `${count} skills is a lot to scan. Trimming to 10–15 of your strongest, most relevant skills makes the section easier to digest.`,
       targetText: null,
       suggestedText: null,
       location: { sectionId: "skills" },
@@ -505,9 +505,9 @@ function checkCompleteness(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("completeness", "projects-missing", "projects"),
       category: "completeness",
       severity: "info",
-      title: "Consider adding a Projects section",
+      title: "Adding a Projects section could help",
       reason:
-        "Projects are a great way to demonstrate skills when you have limited professional experience or want to showcase specific work.",
+        "Projects let you demonstrate skills hands-on — especially useful if you have limited professional experience or want to highlight specific work.",
       targetText: null,
       suggestedText: null,
       location: { sectionId: "projects" },
@@ -522,9 +522,9 @@ function checkCompleteness(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("completeness", "minimal", "completeness"),
       category: "completeness",
       severity: "critical",
-      title: "Resume is mostly empty",
+      title: "Add experience, education, or projects",
       reason:
-        "Add experience, education, or projects so recruiters have content to evaluate.",
+        "Your resume currently has very little content. Adding experience, education, or projects gives recruiters something to evaluate.",
       targetText: null,
       suggestedText: null,
       location: { sectionId: "completeness" },

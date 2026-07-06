@@ -210,8 +210,8 @@ describe("runStaticAnalysis", () => {
     const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
     expect(noMetrics).toBeDefined();
     expect(noMetrics!.severity).toBe("minor");
-    expect(noMetrics!.title).toContain("Consider adding measurable impact");
-    expect(noMetrics!.reason).toContain("Do not invent numbers");
+    expect(noMetrics!.title).toContain("Opportunity to strengthen");
+    expect(noMetrics!.reason).toContain("Only add numbers");
 
     // No aggregated writing-quality suggestion because qualityRatio >= 0.7
     // Scores: Developed=2, Built=2, Collaborated=1, Produced=2, Participated=1 = 8/10 = 0.8
@@ -281,7 +281,7 @@ describe("runStaticAnalysis", () => {
     const noMetrics = suggestions.find((s) => s.id === "impact:no-metrics:exp-1");
     expect(noMetrics).toBeDefined();
     expect(noMetrics!.suggestedText).toBeNull();
-    expect(noMetrics!.reason).toContain("Do not invent numbers");
+    expect(noMetrics!.reason).toContain("Only add numbers");
   });
 
   it("flags missing skills", () => {

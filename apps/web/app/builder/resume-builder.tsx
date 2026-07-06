@@ -298,11 +298,13 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[460px_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-7 xl:grid-cols-[420px_1fr]">
         <aside className="no-print space-y-5">
           <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
           <TailoringPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
           <CoverLetterPanel resumeId={resume.id} onUpgradeRequired={setUpgradePrompt} />
+
+          <SectionDivider label="Editor" />
 
           <Panel title="Target">
             <div className="space-y-3">
@@ -478,8 +480,10 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </aside>
 
         <aside className="sticky top-6 hidden self-start xl:block">
-          <div className="print-area max-h-[calc(100vh-8rem)] overflow-auto rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-8">
-            <ResumePreview resume={resume} />
+          <div className="print-area flex justify-center rounded-[30px] border border-[#123c3a]/10 bg-[#d8d4cb] p-4 shadow-inner xl:p-6">
+            <div className="w-full max-w-[900px]">
+              <ResumePreview resume={resume} />
+            </div>
           </div>
         </aside>
       </div>
@@ -844,3 +848,14 @@ function saveBadgeClass(saveState: SaveState) {
 }
 
 const tinyButtonClass = "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 py-1.5 text-xs font-black text-[#123c3a] transition hover:border-[#123c3a] hover:bg-[#b9ff66]";
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-1">
+      <span className="font-mono text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#4b4b4b]/40">
+        {label}
+      </span>
+      <span className="flex-1 border-t border-[#123c3a]/8" />
+    </div>
+  );
+}
