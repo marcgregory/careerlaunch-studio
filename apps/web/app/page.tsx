@@ -57,7 +57,7 @@ export default function HomePage() {
               <span className="text-xs font-black uppercase tracking-[0.18em] text-[#4b4b4b]">The future of career architecture</span>
             </div>
 
-            <h1 className="font-signal mt-7 max-w-5xl text-[clamp(4rem,10vw,8.5rem)] font-black leading-[0.82] tracking-[-0.08em]">
+            <h1 className="font-signal mt-7 max-w-5xl text-[clamp(3.2rem,9vw,8.5rem)] font-black leading-[0.82] tracking-[-0.08em]">
               Unfair resume.
             </h1>
             <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-[#4b4b4b] lg:text-xl">
@@ -197,12 +197,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#b9ff66] px-5 py-12 text-[#123c3a]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <p className="font-signal max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.07em] md:text-6xl">
+      <section className="bg-[#b9ff66] px-5 py-10 text-[#123c3a] sm:py-12">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-signal text-3xl font-black leading-[0.95] tracking-[-0.07em] sm:text-4xl md:text-6xl">
             Stop applying. Start reading like the obvious choice.
           </p>
-          <Link href="/builder" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#123c3a] px-7 text-sm font-black text-white shadow-[0_4px_0_#072f2c] transition hover:-translate-y-0.5">
+          <Link href="/builder" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c3a] px-5 text-sm font-black text-white shadow-[0_4px_0_#072f2c] transition hover:-translate-y-0.5 sm:w-auto sm:min-h-14 sm:px-7">
             Build my resume <Check size={18} />
           </Link>
         </div>

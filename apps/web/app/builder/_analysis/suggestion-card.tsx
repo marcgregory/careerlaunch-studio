@@ -78,20 +78,20 @@ export function SuggestionCard({
 
         {/* Action buttons — always visible when pending */}
         {!isResolved && (
-          <div className="flex shrink-0 gap-1.5">
+          <div className="flex shrink-0 gap-1">
             {suggestion.suggestedText ? (
               <button
                 type="button"
                 aria-label="Review suggestion"
                 title="Review suggestion"
                 onClick={() => onReview(suggestion.id)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#b9ff66] bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
+                className="inline-flex h-8 items-center gap-1 rounded-xl border border-[#b9ff66] bg-white px-2 text-[0.65rem] font-black text-[#123c3a] transition hover:bg-[#b9ff66] sm:h-9 sm:gap-1.5 sm:px-3 sm:text-xs"
               >
-                <Eye size={15} />
+                <Eye size={14} />
                 Review
               </button>
             ) : (
-              <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-3 text-xs font-medium text-[#4b4b4b]">
+              <span className="inline-flex h-8 items-center gap-1 rounded-xl border border-[#123c3a]/10 bg-[#f8f8f5] px-2 text-[0.65rem] font-medium text-[#4b4b4b] sm:h-9 sm:px-3 sm:text-xs">
                 <InfoIcon size={14} />
                 Info
               </span>
@@ -101,9 +101,9 @@ export function SuggestionCard({
               aria-label="Dismiss suggestion"
               title="Dismiss"
               onClick={() => onReject(suggestion.id)}
-              className="inline-grid h-9 w-9 place-items-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+              className="inline-grid h-8 w-8 place-items-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 sm:h-9 sm:w-9"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
         )}
