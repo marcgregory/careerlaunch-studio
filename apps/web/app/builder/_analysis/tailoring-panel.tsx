@@ -246,9 +246,12 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
   // ── Apply all suggestions in a category ────────────────────────────
   async function handleApplyCategory(suggestions: TailorSuggestionState[]) {
     const pending = suggestions.filter((s) => s.status === "pending");
+    if (pending.length === 0) return;
+
+    // Collect ALL operations into a single array for one batch call
+    const allOps: ApplyOperation[] = [];
 
     for (const s of pending) {
-      // Convert each to operation and apply via the existing API
       const suggestionForOps: Suggestion = {
         id: s.id,
         category: s.category as any,
@@ -272,11 +275,29 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
       };
 
       const ops = createOperations(suggestionForOps, emptyResume);
-      if (ops) {
-        const result = await onApplySuggestion(ops);
-        if (!result.error) {
-          updateSuggestionStatus(s.id, "applied");
-        }
+
+      // Fallback for add_skill when createOperations returns null
+      // (identical to the single-apply handler behavior)
+      const finalOps: ApplyOperation[] = ops ?? (
+        s.category === "skills"
+          ? [{ type: "add_skill" as const, skill: s.after }]
+          : []
+      );
+
+      allOps.push(...finalOps);
+    }
+
+    if (allOps.length === 0) return;
+
+    // Single batch call — all operations applied together
+    const result = await onApplySuggestion(allOps);
+
+    if (!result.error) {
+      // Mark all pending suggestions as applied
+      for (const s of pending) {
+        updateSuggestionStatus(s.id, "applied");
+        fireEvent(s.id, "applied");
+        setFeedbackTriggered((prev) => new Set(prev).add(s.id));
       }
     }
   }
