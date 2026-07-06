@@ -204,8 +204,11 @@ const PHONE_RE =
   /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
 const LINKEDIN_RE =
   /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/[a-zA-Z0-9_-]+\/?/;
+/** Match domains that look like personal/professional websites or portfolio
+ *  links. Explicitly excludes common email provider domains so "gmail.com"
+ *  is not extracted as a website. */
 const WEBSITE_RE =
-  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
+  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/;
 
 function extractContact(
   preambleLines: string[],
@@ -621,13 +624,17 @@ function parseSkills(lines: string[]): string[] {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (!trimmed || BULLET_RE.test(trimmed)) continue;
+    if (!trimmed) continue;
+
+    // Strip bullet markers if present — skills are often listed as bullet items
+    const deBulleted = trimmed.replace(BULLET_RE, "").trim();
+    const useLine = deBulleted || trimmed;
 
     // Detect table-format skills with category labels separated by 2+ spaces
     // "Frontend                    HTML, CSS, TypeScript"
-    const cols = trimmed.split(/\s{2,}/).filter(Boolean);
+    const cols = useLine.split(/\s{2,}/).filter(Boolean);
     // Take the last column (actual skills) — earlier columns are category labels
-    const target = cols.length > 1 ? cols[cols.length - 1] : trimmed;
+    const target = cols.length > 1 ? cols[cols.length - 1] : useLine;
 
     // Split on comma, pipe, bullet, or newline within the skills section
     const candidates = target
@@ -653,8 +660,9 @@ function parseSkills(lines: string[]): string[] {
 function parseSummary(lines: string[]): string {
   return lines
     .map((l) => l.trim())
+    .map((l) => l.replace(BULLET_RE, "").trim())
     .filter((l) => {
-      if (l.length === 0 || BULLET_RE.test(l)) return false;
+      if (l.length === 0) return false;
       // Filter out table-format lines (2+ consecutive spaces indicating columns)
       // These belong to skills tables, not summary prose.
       if (/\s{3,}/.test(l)) return false;
@@ -1073,7 +1081,9 @@ export function parseResumeText(text: string): ParseResult {
       case "certifications": {
         const certs = sectionLines
           .map((l) => l.trim())
-          .filter((l) => l.length > 0 && !BULLET_RE.test(l));
+          .filter((l) => l.length > 0)
+          .map((l) => l.replace(BULLET_RE, "").trim())
+          .filter(Boolean);
         if (certs.length > 0) {
           parsed.certifications = certs;
         }
@@ -1089,7 +1099,9 @@ export function parseResumeText(text: string): ParseResult {
       case "professionalQualities": {
         const quals = sectionLines
           .map((l) => l.trim())
-          .filter((l) => l.length > 0 && !BULLET_RE.test(l));
+          .filter((l) => l.length > 0)
+          .map((l) => l.replace(BULLET_RE, "").trim())
+          .filter(Boolean);
         if (quals.length > 0) {
           parsed.professionalQualities = quals;
         }

@@ -433,14 +433,44 @@ function SkillsSection({
 }) {
   const skills = resume.skills.filter(Boolean);
   if (skills.length === 0) return null;
+
+  // Group "Category: Skill" prefixed skills for structured display
+  const groups = groupSkills(skills);
+
+  // Single group or no categorized skills → flat pill layout
+  if (groups.length <= 1) {
+    return (
+      <section className="mt-8">
+        <ResumeHeading template={template}>Skills</ResumeHeading>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(groups[0]?.items ?? skills).map((skill) => (
+            <span key={skill} className={template.skillClass}>
+              {skill}
+            </span>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // Multiple categories → rendered as groups with headings
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Skills</ResumeHeading>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {skills.map((skill) => (
-          <span key={skill} className={template.skillClass}>
-            {skill}
-          </span>
+      <div className="mt-4 space-y-4">
+        {groups.map((g) => (
+          <div key={g.category}>
+            <h3 className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#555]">
+              {g.category}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {g.items.map((skill) => (
+                <span key={skill} className={template.skillClass}>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -504,6 +534,47 @@ function ProjectsSection({
       </div>
     </section>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Skills grouping helpers                                           */
+/* ------------------------------------------------------------------ */
+
+type SkillGroup = { category: string; items: string[] };
+
+/**
+ * Reconstruct category groups from "Category: Skill" prefixed strings
+ * produced by the AI recovery pipeline's flattened skill format.
+ */
+function groupSkills(skills: string[]): SkillGroup[] {
+  const groups = new Map<string, string[]>();
+  const uncategorized: string[] = [];
+
+  for (const skill of skills) {
+    const colonIdx = skill.indexOf(": ");
+    if (colonIdx > 0) {
+      const cat = skill.slice(0, colonIdx).trim();
+      const item = skill.slice(colonIdx + 2).trim();
+      if (cat && item) {
+        if (!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat)!.push(item);
+        continue;
+      }
+    }
+    uncategorized.push(skill);
+  }
+
+  const result: SkillGroup[] = [];
+  for (const [category, items] of groups) {
+    result.push({ category, items });
+  }
+  result.sort((a, b) => a.category.localeCompare(b.category));
+
+  if (uncategorized.length > 0) {
+    result.push({ category: "Skills", items: uncategorized });
+  }
+
+  return result;
 }
 
 /* ------------------------------------------------------------------ */

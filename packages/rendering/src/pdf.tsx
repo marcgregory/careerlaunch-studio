@@ -141,10 +141,15 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   }
 
   if (section === "skills" && resume.skills.filter(Boolean).length > 0) {
-    const skills = resume.skills.filter(Boolean).map((s) => `<span class="pdf-skill">${escapeHtml(s)}</span>`).join("");
+    const groups = groupSkills(resume.skills.filter(Boolean));
+    const rendered = groups.map((g) => `
+      <div class="pdf-skill-group">
+        <h3 class="pdf-skill-category">${escapeHtml(g.category)}</h3>
+        <div class="pdf-skills">${g.items.map((s) => `<span class="pdf-skill">${escapeHtml(s)}</span>`).join("")}</div>
+      </div>`).join("\n");
     return `<section>
       <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Skills</h2></div>
-      <div class="pdf-skills">${skills}</div>
+      ${rendered}
     </section>`;
   }
 
@@ -262,7 +267,16 @@ function pdfCss(t: TemplateDefinition): string {
       display: block; color: ${nameColor};
       font-weight: ${t.nameStyle === "plain" ? "700" : "900"};
     }
-    .pdf-skills { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .pdf-skill-group { margin-top: 12px; }
+    .pdf-skill-category {
+      margin: 0 0 6px;
+      color: #555;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .pdf-skills { display: flex; flex-wrap: wrap; gap: 7px; }
     .pdf-skill { ${skillPdfCss(t)} }
   `;
 }
@@ -310,6 +324,50 @@ function skillPdfCss(t: TemplateDefinition): string {
     default:
       return "border-radius: 999px; background: #b9ff66; color: #123c3a; padding: 6px 10px; font-size: 10px; font-weight: 900;";
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Skills grouping helpers                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * When skills are stored with "Category: Skill" prefixes (from AI recovery
+ * flattening), group them back by category for a structured display.
+ *
+ * Skills without a colon separator are placed under a generic heading.
+ */
+type SkillGroup = { category: string; items: string[] };
+
+function groupSkills(skills: string[]): SkillGroup[] {
+  const groups = new Map<string, string[]>();
+  const uncategorized: string[] = [];
+
+  for (const skill of skills) {
+    const colonIdx = skill.indexOf(": ");
+    if (colonIdx > 0) {
+      const cat = skill.slice(0, colonIdx).trim();
+      const item = skill.slice(colonIdx + 2).trim();
+      if (cat && item) {
+        if (!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat)!.push(item);
+        continue;
+      }
+    }
+    uncategorized.push(skill);
+  }
+
+  const result: SkillGroup[] = [];
+  for (const [category, items] of groups) {
+    result.push({ category, items });
+  }
+  // Sort groups by category name for stable ordering
+  result.sort((a, b) => a.category.localeCompare(b.category));
+
+  if (uncategorized.length > 0) {
+    result.push({ category: "Skills", items: uncategorized });
+  }
+
+  return result;
 }
 
 /* ------------------------------------------------------------------ */

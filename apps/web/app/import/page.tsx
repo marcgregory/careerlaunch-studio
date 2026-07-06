@@ -302,7 +302,7 @@ export default function ImportPage() {
                   <FileText size={14} />
                   Import coverage
                 </h3>
-                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
                   {result.coverage
                     .filter((c) => c.sectionId !== "references")
                     .map((c) => {
@@ -317,11 +317,11 @@ export default function ImportPage() {
                       return (
                         <div key={c.sectionId}>
                           <div
-                            className={`flex flex-col gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold ${colorClass}`}
+                            className={`flex flex-col gap-2 rounded-lg border px-3 py-3 text-xs font-bold ${colorClass}`}
                           >
-                            {/* Row 1: section title + recovered badge */}
-                            <div className="flex items-start justify-between gap-1">
-                              <span className="min-w-0 break-words leading-tight">
+                            {/* Row 1: section title + optional recovered badge */}
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="min-w-0 break-words leading-tight text-sm">
                                 {sectionLabel}
                               </span>
                               {isRecovered && (
@@ -331,30 +331,31 @@ export default function ImportPage() {
                                 </span>
                               )}
                             </div>
-                            {/* Row 2: status badge */}
+                            {/* Row 2: status indicator on its own line */}
                             <span className="self-start rounded-md border border-current/20 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.08em]">
                               {getCoverageLabel(c.status)}
                             </span>
-                          </div>
-                          <div className="mt-1 px-1 text-[10px] font-medium text-[#999]">
-                            {Math.round(c.ratio * 100)}% · {c.parsedWordCount}/{c.originalWordCount} words
-                            {c.status === "poor" || c.status === "missing" ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setShowUnparsed(
-                                    showUnparsed === c.sectionId ? null : c.sectionId,
-                                  )
-                                }
-                                className="ml-1.5 inline-flex items-center gap-0.5 text-[#123c3a] underline hover:no-underline"
-                              >
-                                <Eye size={10} />
-                                {hasUnparsed ? "hide raw" : "show raw"}
-                              </button>
-                            ) : null}
+                            {/* Row 3: stats on separate row */}
+                            <div className="mt-0.5 text-[10px] font-medium text-[#999]">
+                              {Math.round(c.ratio * 100)}% · {c.parsedWordCount}/{c.originalWordCount} words
+                              {c.status === "poor" || c.status === "missing" ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setShowUnparsed(
+                                      showUnparsed === c.sectionId ? null : c.sectionId,
+                                    )
+                                  }
+                                  className="ml-1.5 inline-flex items-center gap-0.5 text-[#123c3a] underline hover:no-underline"
+                                >
+                                  <Eye size={10} />
+                                  {hasUnparsed ? "hide raw" : "show raw"}
+                                </button>
+                              ) : null}
+                            </div>
                           </div>
                           {hasUnparsed && (
-                            <div className="mt-1 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-5 text-amber-900">
+                            <div className="mt-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-5 text-amber-900">
                               <pre className="whitespace-pre-wrap font-sans">
                                 {result.unparsedContent[c.sectionId]}
                               </pre>
