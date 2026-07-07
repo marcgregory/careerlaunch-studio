@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CreditCard, FileText, Gauge, Layers3, LogOut, Plus, Sparkles } from "lucide-react";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { AppHeader, AppLogo } from "../../components/app-header";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { DuplicateButton } from "./duplicate-button";
@@ -26,45 +27,39 @@ export default async function DashboardPage() {
   const isFree = subscription.plan === "free";
 
   return (
-    <main className="signal-site min-h-screen pt-[140px] text-[#123c3a] lg:pt-[120px]">
-      <header className="fixed inset-x-0 top-0 z-40 w-full border-b border-[#123c3a]/10 bg-[#f3f3f3] px-5 py-4 backdrop-blur-xl sm:py-5">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-4xl">
-            <Link href="/" className="font-signal inline-flex items-center gap-3 text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
-              CareerLaunch
-              <span className="rounded-full bg-[#b9ff66] px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#123c3a]">Studio</span>
-            </Link>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#123c3a]/10 bg-white px-3 py-2 shadow-sm sm:mt-7">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#b9ff66] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#6bbf22]" />
-              </span>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-[#4b4b4b]">Workspace active</span>
-            </div>
-            <h1 className="font-signal mt-4 max-w-4xl text-4xl font-black uppercase leading-[0.86] tracking-[-0.08em] md:text-7xl sm:mt-5">
-              Application control room.
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b] sm:mt-5">Signed in as {user.email}</p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <form action="/api/auth/logout" method="post">
-              <button className={secondaryButtonClass} type="submit">
-                <LogOut size={16} /> <span className="hidden sm:inline">Sign out</span>
-              </button>
-            </form>
-            <Link href="/import" className={secondaryButtonClass}>
-              <FileText size={16} /> <span className="hidden sm:inline">Import</span>
-            </Link>
-            <Link href="/builder" className={primaryButtonClass}>
-              <Plus size={16} /> <span className="hidden sm:inline">New resume</span>
-            </Link>
-          </div> {/* end actions flex-wrap */}
-          </div> {/* end flex-col gap-4 lg:flex-row */}
-          </div> {/* end max-w-7xl */}
-        </header>
+    <main className="signal-site min-h-screen pt-[52px] text-[#123c3a] sm:pt-[60px]">
+      <AppHeader actions={
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <form action="/api/auth/logout" method="post">
+            <button className={secondaryButtonClass} type="submit">
+              <LogOut size={16} /> <span className="hidden sm:inline">Sign out</span>
+            </button>
+          </form>
+          <Link href="/import" className={secondaryButtonClass}>
+            <FileText size={16} /> <span className="hidden sm:inline">Import</span>
+          </Link>
+          <Link href="/builder" className={primaryButtonClass}>
+            <Plus size={16} /> <span className="hidden sm:inline">New resume</span>
+          </Link>
+        </div>
+      }>
+        <AppLogo />
+      </AppHeader>
 
-        <div className="mx-auto max-w-7xl px-5 py-6">
+      <div className="mx-auto max-w-7xl px-5 py-6">
+        <header className="max-w-4xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#123c3a]/10 bg-white px-3 py-2 shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#b9ff66] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#6bbf22]" />
+            </span>
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-[#4b4b4b]">Workspace active</span>
+          </div>
+          <h1 className="font-signal mt-4 max-w-4xl text-4xl font-black uppercase leading-[0.86] tracking-[-0.08em] md:text-7xl sm:mt-5">
+            Application control room.
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b] sm:mt-5">Signed in as {user.email}</p>
+        </header>
         {isFree && (
           <div className="mt-6 flex-col items-start gap-4 rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="flex items-start gap-3 sm:items-center sm:gap-4">

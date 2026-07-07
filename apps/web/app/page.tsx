@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Check, FileText, Gauge, Layers3, ScanLine, Sparkles, Target } from "lucide-react";
+import { AppHeader } from "../components/app-header";
 
 const signalStats = [
   ["Signal", "Top 8%"],
@@ -28,22 +29,21 @@ const platformLayers = [
 
 export default function HomePage() {
   return (
-    <main className="signal-site min-h-screen bg-[#f3f3f3] pt-14 text-[#123c3a] sm:pt-16">
-      <header className="no-print fixed inset-x-0 top-0 z-40 w-full border-b border-[#123c3a]/5 bg-[#f3f3f3]/86 px-5 py-3 backdrop-blur-xl sm:py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <Link href="/" className="font-signal text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
-            CareerLaunch
+    <main className="signal-site min-h-screen bg-[#f3f3f3] pt-[52px] text-[#123c3a] sm:pt-[60px]">
+      <AppHeader actions={
+        <nav className="flex items-center gap-2">
+          <Link href="/dashboard" className="rounded-full px-4 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:px-5">
+            Dashboard
           </Link>
-          <nav className="flex items-center gap-2">
-            <Link href="/dashboard" className="rounded-full px-4 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:px-5">
-              Dashboard
-            </Link>
-            <Link href="/builder" className="signal-button-dark whitespace-nowrap text-xs sm:text-sm">
-              Open builder
-            </Link>
-          </nav>
-        </div>
-      </header>
+          <Link href="/builder" className="signal-button-dark whitespace-nowrap text-xs sm:text-sm">
+            Open builder
+          </Link>
+        </nav>
+      }>
+        <Link href="/" className="font-signal text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
+          CareerLaunch
+        </Link>
+      </AppHeader>
 
       <section className="relative overflow-hidden px-5 pb-20 pt-14 lg:pb-28 lg:pt-24">
         <div className="absolute right-[-12%] top-20 h-[520px] w-[520px] rounded-full bg-[#b9ff66]/30 blur-[120px]" />
