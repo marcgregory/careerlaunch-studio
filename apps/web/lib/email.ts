@@ -5,14 +5,9 @@
  * of sent. This keeps the dev workflow unblocked.
  */
 
-type EmailResult = { sent: true } | { sent: false; reason: string };
+import { Resend } from "resend";
 
-function getResend() {
-  const { Resend } = require("resend");
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-  return new Resend(apiKey);
-}
+type EmailResult = { sent: true } | { sent: false; reason: string };
 
 function getFromAddress(): string {
   return process.env.RESEND_FROM_EMAIL ?? "noreply@careerlaunch.studio";
@@ -103,9 +98,9 @@ async function sendEmail({
   subject: string;
   html: string;
 }): Promise<EmailResult> {
-  const resend = getResend();
+  const apiKey = process.env.RESEND_API_KEY;
 
-  if (!resend) {
+  if (!apiKey) {
     console.log("[email] No RESEND_API_KEY — logging email instead of sending:");
     console.log(`  To: ${to}`);
     console.log(`  Subject: ${subject}`);
@@ -114,6 +109,7 @@ async function sendEmail({
   }
 
   try {
+    const resend = new Resend(apiKey);
     await resend.emails.send({
       from: getFromAddress(),
       to,
