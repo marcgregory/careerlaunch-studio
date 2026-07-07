@@ -272,7 +272,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   return (
-    <main className="signal-site min-h-screen text-[#123c3a]">
+    <main className="signal-site min-h-screen overflow-x-hidden text-[#123c3a]">
       <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
