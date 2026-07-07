@@ -12,22 +12,34 @@ function getClientIp(request: Request): string {
   return via || request.headers.get("x-real-ip") || "unknown";
 }
 
-export async function POST(request: Request) {
+function isJsonRequest(request: Request): boolean {
+  return (request.headers.get("content-type") ?? "").includes("application/json");
+}
+
+async function parseBody(request: Request): Promise<{ email: string; name: string; password: string }> {
+  const ct = request.headers.get("content-type") ?? "";
+  if (ct.includes("application/json")) {
+    const json = await request.json();
+    return { email: String(json.email ?? ""), name: String(json.name ?? ""), password: String(json.password ?? "") };
+  }
   const formData = await request.formData();
-  const email = String(formData.get("email") ?? "");
+  return { email: String(formData.get("email") ?? ""), name: String(formData.get("name") ?? ""), password: String(formData.get("password") ?? "") };
+}
+
+export async function POST(request: Request) {
+  const { email, name, password } = await parseBody(request);
   const ip = getClientIp(request);
 
   const rl = checkRateLimit(`register:ip:${ip}`, 3, 3600 * 1000);
   if (!rl.allowed) {
+    if (isJsonRequest(request)) {
+      return NextResponse.json({ error: "ratelimited", message: "Too many registration attempts. Please wait before trying again." }, { status: 429 });
+    }
     return NextResponse.redirect(new URL("/register?error=ratelimited", request.url), { status: 429 });
   }
 
   try {
-    const user = await registerUser({
-      email,
-      name: String(formData.get("name") ?? ""),
-      password: String(formData.get("password") ?? "")
-    });
+    const user = await registerUser({ email, name, password });
 
     const rawToken = await createToken(user.id, "email_verification", 24 * 60 * 60 * 1000);
     await sendVerificationEmail(user.email, user.name, rawToken);
@@ -38,6 +50,15 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = getRegisterErrorCode(error);
     if (code === "database") console.error("Registration failed because the database is unavailable", error);
+    if (isJsonRequest(request)) {
+      const messages: Record<string, string> = {
+        exists: "An account already exists for that email.",
+        invalid: "Use a valid email and a password with at least 8 characters.",
+        database: "Database is not configured yet.",
+        ratelimited: "Too many registration attempts. Please wait before trying again.",
+      };
+      return NextResponse.json({ error: code, message: messages[code] || "Registration failed." }, { status: 400 });
+    }
     return NextResponse.redirect(new URL(`/register?error=${code}`, request.url), { status: 303 });
   }
 }

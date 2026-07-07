@@ -1,14 +1,48 @@
-import Link from "next/link";
-import { ArrowLeft, KeyRound, Sparkles } from "lucide-react";
+"use client";
 
-export default async function ForgotPasswordPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ sent?: string; error?: string }>;
-}) {
-  const params = searchParams ? await searchParams : {};
-  const sent = params.sent === "true";
-  const error = params.error;
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { ArrowLeft, KeyRound, Sparkles, Loader2 } from "lucide-react";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "@careerlaunch/domain";
+
+function ForgotPasswordForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sent = searchParams?.get("sent") === "true";
+  const errorParam = searchParams?.get("error");
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  });
+
+  async function onSubmit(data: ForgotPasswordInput) {
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.redirected) {
+        router.push(new URL(response.url).pathname);
+        return;
+      }
+
+      const result = await response.json().catch(() => ({}));
+      setError("root", { message: result.message || "Something went wrong. Please try again." });
+    } catch {
+      setError("root", { message: "Network error. Please try again." });
+    }
+  }
 
   return (
     <main className="auth-signal min-h-screen px-5 py-6 text-[#123c3a]">
@@ -59,18 +93,25 @@ export default async function ForgotPasswordPage({
             <>
               <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#6bbf22]">Reset password</p>
               <h1 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">Forgot password</h1>
-              {error === "ratelimited" && (
+              {(errorParam === "ratelimited" || errors.root) && (
                 <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
-                  Too many requests. Please wait before trying again.
+                  {errors.root?.message || "Too many requests. Please wait before trying again."}
                 </p>
               )}
-              <form action="/api/auth/forgot-password" method="post" className="mt-7 space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-5" noValidate>
                 <label className="block">
                   <span className="text-sm font-black text-[#4b4b4b]">Email</span>
-                  <input name="email" type="email" required className="signal-input mt-2" id="forgot-email" />
+                  <input
+                    {...register("email")}
+                    type="email"
+                    className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+                    id="forgot-email"
+                  />
+                  {errors.email && <p className="mt-1 text-xs font-black text-red-700">{errors.email.message}</p>}
                 </label>
-                <button className="signal-button-dark w-full justify-center" type="submit">
-                  Send reset link <ArrowLeft size={18} className="rotate-180" />
+                <button className="signal-button-dark w-full justify-center" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowLeft size={18} className="rotate-180" />}
+                  {isSubmitting ? "Sending..." : "Send reset link"}
                 </button>
               </form>
               <Link href="/login" className="signal-button-light mt-3 w-full justify-center">
@@ -81,5 +122,17 @@ export default async function ForgotPasswordPage({
         </section>
       </section>
     </main>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={
+      <main className="auth-signal flex min-h-screen items-center justify-center px-5 py-6 text-[#123c3a]">
+        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
+      </main>
+    }>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }

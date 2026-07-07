@@ -9,18 +9,37 @@ function getClientIp(request: Request): string {
   return via || request.headers.get("x-real-ip") || "unknown";
 }
 
-export async function POST(request: Request) {
+function isJsonRequest(request: Request): boolean {
+  return (request.headers.get("content-type") ?? "").includes("application/json");
+}
+
+async function parseBody(request: Request): Promise<{ email: string }> {
+  const ct = request.headers.get("content-type") ?? "";
+  if (ct.includes("application/json")) {
+    const json = await request.json();
+    return { email: String(json.email ?? "").toLowerCase().trim() };
+  }
   const formData = await request.formData();
-  const email = String(formData.get("email") ?? "").toLowerCase().trim();
+  return { email: String(formData.get("email") ?? "").toLowerCase().trim() };
+}
+
+export async function POST(request: Request) {
+  const { email } = await parseBody(request);
   const ip = getClientIp(request);
 
   const perIp = checkRateLimit(`forgot:ip:${ip}`, 3, 3600 * 1000);
   if (!perIp.allowed) {
+    if (isJsonRequest(request)) {
+      return NextResponse.json({ error: "ratelimited", message: "Too many requests. Please wait before trying again." }, { status: 429 });
+    }
     return NextResponse.redirect(new URL("/forgot-password?error=ratelimited", request.url), { status: 429 });
   }
 
   const perEmail = checkRateLimit(`forgot:email:${email}`, 1, 300 * 1000);
   if (!perEmail.allowed) {
+    if (isJsonRequest(request)) {
+      return NextResponse.json({ error: "ratelimited", message: "Too many requests. Please wait before trying again." }, { status: 429 });
+    }
     return NextResponse.redirect(new URL("/forgot-password?error=ratelimited", request.url), { status: 429 });
   }
 

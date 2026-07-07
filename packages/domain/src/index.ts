@@ -91,6 +91,10 @@ export type ResumeCheckItem = {
 export * from "./entitlements/types";
 export * from "./entitlements/plans";
 
+export * from "./validation/auth";
+export * from "./validation/resume";
+export { validateResumeWithSchema } from "./validation/validate-resume";
+
 export const sampleResume: ResumeDocument = {
   id: "sample-resume",
   title: "Career Switch Resume",

@@ -1,10 +1,56 @@
-import Link from "next/link";
-import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
+"use client";
 
-export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ error?: string; reset?: string; session?: string }> }) {
-  const params = searchParams ? await searchParams : {};
-  const resetSuccess = params.reset === "success";
-  const sessionExpired = params.session === "expired";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { ArrowRight, LockKeyhole, Sparkles, Loader2 } from "lucide-react";
+import { loginSchema, type LoginInput } from "@careerlaunch/domain";
+
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetSuccess = searchParams?.get("reset") === "success";
+  const sessionExpired = searchParams?.get("session") === "expired";
+  const errorParam = searchParams?.get("error");
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  async function onSubmit(data: LoginInput) {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.redirected) {
+        router.push(new URL(response.url).pathname);
+        return;
+      }
+
+      const result = await response.json().catch(() => ({}));
+      if (result.error === "invalid") {
+        setError("root", { message: "Email or password did not match." });
+      } else if (result.error === "ratelimited") {
+        setError("root", { message: "Too many login attempts. Please wait before trying again." });
+      } else {
+        setError("root", { message: "Something went wrong. Please try again." });
+      }
+    } catch {
+      setError("root", { message: "Network error. Please try again." });
+    }
+  }
+
   return (
     <main className="auth-signal min-h-screen px-5 py-6 text-[#123c3a]">
       <nav className="mx-auto flex max-w-7xl items-center justify-between">
@@ -45,32 +91,45 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
               Your session has expired. Please sign in again.
             </p>
           )}
-          {params.error === "ratelimited" && (
+          {errorParam === "ratelimited" && !errors.root && (
             <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
               Too many login attempts. Please wait before trying again.
             </p>
           )}
-          {params.error === "invalid" && (
+          {errors.root && (
             <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
-              Email or password did not match.
+              {errors.root.message}
             </p>
           )}
-          <form action="/api/auth/login" method="post" className="mt-7 space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-5" noValidate>
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
-              <input name="email" type="email" required className="signal-input mt-2" id="login-email" />
+              <input
+                {...register("email")}
+                type="email"
+                className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+                id="login-email"
+              />
+              {errors.email && <p className="mt-1 text-xs font-black text-red-700">{errors.email.message}</p>}
             </label>
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Password</span>
-              <input name="password" type="password" required className="signal-input mt-2" id="login-password" />
+              <input
+                {...register("password")}
+                type="password"
+                className={`signal-input mt-2 ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+                id="login-password"
+              />
+              {errors.password && <p className="mt-1 text-xs font-black text-red-700">{errors.password.message}</p>}
             </label>
             <div className="flex items-center justify-end">
               <Link href="/forgot-password" className="text-xs font-black text-[#4b4b4b] underline underline-offset-2 transition hover:text-[#123c3a]">
                 Forgot password?
               </Link>
             </div>
-            <button className="signal-button-dark w-full justify-center" type="submit">
-              Sign in <ArrowRight size={18} />
+            <button className="signal-button-dark w-full justify-center" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
           <Link href="/register" className="signal-button-light mt-3 w-full justify-center">
@@ -82,3 +141,14 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="auth-signal flex min-h-screen items-center justify-center px-5 py-6 text-[#123c3a]">
+        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}

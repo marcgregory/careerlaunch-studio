@@ -18,6 +18,7 @@ import {
 import { ResumePreview, resumeTemplates } from "@careerlaunch/rendering";
 import {
   defaultSectionOrder,
+  validateResumeWithSchema,
   type EducationItem,
   type ExperienceItem,
   type ProjectItem,
@@ -34,7 +35,6 @@ import { useAnalytics } from "../../lib/analytics";
 import { AppHeader } from "../../components/app-header";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
-type ValidationErrors = Partial<Record<string, string>>;
 type UpgradePrompt = {
   title: string;
   message: string;
@@ -63,7 +63,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   const hasFiredEditEvent = useRef(false);
 
   const [mobileTab, setMobileTab] = useState<"preview" | "edit" | "analyze">("preview");
-  const validation = useMemo(() => validateResume(resume), [resume]);
+  const validation = useMemo(() => validateResumeWithSchema(resume), [resume]);
   const hasValidationErrors = Object.keys(validation).length > 0;
 
   useEffect(() => {
@@ -835,31 +835,6 @@ function moveItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
   return next;
 }
 
-function validateResume(resume: ResumeDocument): ValidationErrors {
-  const errors: ValidationErrors = {};
-  if (!resume.title.trim()) errors.title = "Resume title is required.";
-  if (!resume.contact.fullName.trim()) errors.fullName = "Full name is required.";
-  if (!resume.contact.email.trim()) errors.email = "Email is required.";
-  if (resume.contact.email.trim() && !/^\S+@\S+\.\S+$/.test(resume.contact.email)) errors.email = "Use a valid email address.";
-  if (!resume.contact.phone.trim()) errors.phone = "Phone is required.";
-  if (resume.summary.trim().length > 0 && resume.summary.trim().length < 60) errors.summary = "Use at least 60 characters or leave it empty.";
-
-  resume.experience.forEach((item) => {
-    if (!item.role.trim()) errors[`experience.${item.id}.role`] = "Role is required.";
-    if (!item.company.trim()) errors[`experience.${item.id}.company`] = "Company is required.";
-  });
-
-  resume.education.forEach((item) => {
-    if (!item.school.trim()) errors[`education.${item.id}.school`] = "School is required.";
-    if (!item.degree.trim()) errors[`education.${item.id}.degree`] = "Degree is required.";
-  });
-
-  resume.projects.forEach((item) => {
-    if (!item.name.trim()) errors[`project.${item.id}.name`] = "Project name is required.";
-  });
-
-  return errors;
-}
 
 function makeId(prefix: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
