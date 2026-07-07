@@ -207,6 +207,16 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      <footer className="border-t border-[#123c3a]/10 px-5 py-6 text-center text-xs font-medium text-[#4b4b4b]">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p>&copy; {new Date().getFullYear()} CareerLaunch Studio. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="underline underline-offset-2 transition hover:text-[#123c3a]">Privacy</Link>
+            <Link href="/terms" className="underline underline-offset-2 transition hover:text-[#123c3a]">Terms</Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

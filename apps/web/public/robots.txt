@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /builder
+Disallow: /dashboard
+Disallow: /account/
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://careerlaunch-studio.vercel.app/sitemap.xml
