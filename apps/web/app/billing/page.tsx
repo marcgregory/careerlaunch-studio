@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, Check, CreditCard, Sparkles, ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { AppHeader, AppLogo } from "../../components/app-header";
 import { FocusTrap } from "../../components/focus-trap";
 
 type PlanInfo = {
@@ -146,7 +147,7 @@ function formatDate(date: string | null) {
 export default function BillingPage() {
   return (
     <Suspense fallback={
-      <main className="signal-site flex min-h-screen items-center justify-center px-5">
+      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
         <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
       </main>
     }>
@@ -371,24 +372,19 @@ function BillingContent() {
   };
   if (loading) {
     return (
-      <main className="signal-site flex min-h-screen items-center justify-center px-5">
+      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
         <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
       </main>
     );
   }
 
   return (
-    <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] text-[#4b4b4b] hover:text-[#123c3a]"
-          >
-            <ArrowLeft size={16} /> Dashboard
-          </Link>
-        </div>
+    <main className="signal-site min-h-screen pt-[52px] text-[#123c3a] sm:pt-[60px]">
+      <AppHeader>
+        <AppLogo />
+      </AppHeader>
 
+      <div className="mx-auto max-w-5xl px-5 py-6">
         <header className="border-b border-[#123c3a]/10 pb-8">
           <div className="flex items-center gap-3">
             <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a] shadow-[0_4px_0_#123c3a]">
