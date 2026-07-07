@@ -273,7 +273,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   return (
-    <main className="signal-site builder-main min-h-dvh text-[#123c3a]">
+    <main className="signal-site min-h-screen overflow-x-visible pt-[52px] text-[#123c3a] sm:pt-[60px]">
       <AppHeader actions={
         <>
           <span className={saveBadgeClass(saveState)} aria-live="polite">
@@ -298,17 +298,17 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       </AppHeader>
 
       {/* ── Mobile tab switcher ── */}
-      <div className="sticky-tab-strip -mx-4 z-10 border-b border-[#123c3a]/10 bg-[#f3f3f3]/85 px-4 pb-0 backdrop-blur-xl xl:hidden">
-        <nav className="flex gap-1" role="tablist" aria-label="Builder view">
+      <div className="sticky-tab-strip -mx-4 z-10 border-b border-[#123c3a]/10 bg-[#f3f3f3]/85 px-4 backdrop-blur-xl xl:hidden">
+        <nav className="flex h-12 min-h-12 gap-1 overflow-visible" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
             <button
               key={tab}
               role="tab"
               aria-selected={mobileTab === tab}
               onClick={() => setMobileTab(tab)}
-              className={`flex-1 rounded-t-xl px-2 py-2 text-sm font-black uppercase tracking-[0.08em] transition ${
+              className={`box-border flex flex-1 items-center justify-center rounded-t-xl px-2 text-sm font-black uppercase tracking-[0.08em] transition ${
                 mobileTab === tab
-                  ? "bg-white text-[#00796f] shadow-[0_-1px_3px_rgba(0,0,0,0.06)]"
+                  ? "h-12 min-h-12 bg-white text-[#00796f] shadow-[0_-1px_3px_rgba(0,0,0,0.06)]"
                   : "text-[#4b4b4b]/60 hover:bg-white/40 hover:text-[#123c3a]"
               }`}
             >
@@ -320,7 +320,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </nav>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr] xl:h-[calc(100dvh-60px)] xl:overflow-hidden">
+      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr] xl:h-[calc(100vh-60px)] xl:overflow-hidden">
         {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
         <aside className={`no-print min-w-0 space-y-3 sm:space-y-5 xl:overflow-y-auto xl:pb-4 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
           {/* Mobile: analysis panels - only visible on analyze tab */}
@@ -507,10 +507,9 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </aside>
 
         {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
-        <aside className={`xl:sticky xl:top-6 xl:max-h-[calc(100dvh-4rem)] xl:self-start xl:block xl:overflow-y-auto ${mobileTab !== "preview" ? "hidden" : "sticky -mx-4 block px-0"}`}
-                style={mobileTab === "preview" ? { top: "calc(52px + env(safe-area-inset-top, 0px))" } : undefined}>
+        <aside className={`xl:sticky xl:top-6 xl:max-h-[calc(100vh-4rem)] xl:self-start xl:block xl:overflow-y-auto ${mobileTab !== "preview" ? "hidden" : "sticky top-[52px] -mx-4 block px-0"}`}>
           <div className="flex justify-center rounded-none border-0 bg-transparent p-0 shadow-none xl:rounded-[30px] xl:border xl:border-[#123c3a]/10 xl:bg-[#d8d4cb] xl:p-6 xl:shadow-inner">
-            <div className="w-full max-w-[900px] max-h-[calc(100dvh-8rem)] overflow-auto xl:rounded-xl">
+            <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto xl:rounded-xl">
               <ResumePreview resume={resume} />
             </div>
           </div>

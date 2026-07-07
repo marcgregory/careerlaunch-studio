@@ -35,16 +35,6 @@
   }
 }
 
-/* Builder main wrapper: header offset with safe area, no overflow clip */
-.builder-main {
-  padding-top: calc(52px + env(safe-area-inset-top, 0px));
-}
-@media (min-width: 640px) {
-  .builder-main {
-    padding-top: calc(60px + env(safe-area-inset-top, 0px));
-  }
-}
-
 * {
   box-sizing: border-box;
 }
@@ -57,7 +47,7 @@ html {
 
 body {
   margin: 0;
-  min-height: 100dvh;
+  min-height: 100vh;
   background: #f3f3f3;
   overflow-x: clip;
 }
