@@ -117,7 +117,7 @@ function AccountBillingContent() {
         <AppLogo />
       </AppHeader>
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl px-5 py-6">
         <div className="mb-8">
           <Link
             href="/dashboard"
