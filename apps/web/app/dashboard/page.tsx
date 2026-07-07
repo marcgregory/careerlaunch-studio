@@ -26,9 +26,10 @@ export default async function DashboardPage() {
   const isFree = subscription.plan === "free";
 
   return (
-    <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
-      <div className="mx-auto max-w-7xl">
-        <header className="flex flex-col gap-6 border-b border-[#123c3a]/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <main className="signal-site min-h-screen pt-[140px] text-[#123c3a] lg:pt-[120px]">
+      <header className="fixed inset-x-0 top-0 z-40 w-full border-b border-[#123c3a]/10 bg-[#f3f3f3] px-5 py-4 backdrop-blur-xl sm:py-5">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
             <Link href="/" className="font-signal inline-flex items-center gap-3 text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
               CareerLaunch
@@ -58,9 +59,12 @@ export default async function DashboardPage() {
             <Link href="/builder" className={primaryButtonClass}>
               <Plus size={16} /> <span className="hidden sm:inline">New resume</span>
             </Link>
-          </div>
+          </div> {/* end actions flex-wrap */}
+          </div> {/* end flex-col gap-4 lg:flex-row */}
+          </div> {/* end max-w-7xl */}
         </header>
 
+        <div className="mx-auto max-w-7xl px-5 py-6">
         {isFree && (
           <div className="mt-6 flex-col items-start gap-4 rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="flex items-start gap-3 sm:items-center sm:gap-4">
@@ -172,7 +176,7 @@ export default async function DashboardPage() {
             </div>
           </aside>
         </section>
-      </div>
+      </div> {/* end max-w-7xl content */}
     </main>
   );
 }

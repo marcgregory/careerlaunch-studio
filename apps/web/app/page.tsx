@@ -28,8 +28,8 @@ const platformLayers = [
 
 export default function HomePage() {
   return (
-    <main className="signal-site min-h-screen bg-[#f3f3f3] text-[#123c3a]">
-      <header className="no-print sticky top-0 z-40 border-b border-[#123c3a]/5 bg-[#f3f3f3]/86 px-5 py-3 backdrop-blur-xl sm:py-4">
+    <main className="signal-site min-h-screen bg-[#f3f3f3] pt-14 text-[#123c3a] sm:pt-16">
+      <header className="no-print fixed inset-x-0 top-0 z-40 w-full border-b border-[#123c3a]/5 bg-[#f3f3f3]/86 px-5 py-3 backdrop-blur-xl sm:py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link href="/" className="font-signal text-xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22] sm:text-2xl">
             CareerLaunch
