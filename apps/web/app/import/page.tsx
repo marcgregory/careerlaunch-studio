@@ -264,7 +264,7 @@ export default function ImportPage() {
           <div>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#4b4b4b] transition hover:text-[#123c3a]"
+              className="inline-flex items-center gap-1.5 text-sm font-black uppercase tracking-[0.16em] text-[#4b4b4b] transition hover:text-[#123c3a]"
             >
               <ArrowLeft size={14} /> Dashboard
             </Link>
