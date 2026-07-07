@@ -10,7 +10,7 @@ import { Resend } from "resend";
 type EmailResult = { sent: true } | { sent: false; reason: string };
 
 function getFromAddress(): string {
-  return process.env.RESEND_FROM_EMAIL ?? "noreply@careerlaunch.studio";
+  return process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
 }
 
 function getBaseUrl(): string {
