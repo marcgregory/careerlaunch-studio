@@ -298,7 +298,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       </AppHeader>
 
       {/* ── Mobile tab switcher ── */}
-      <div className="sticky-tab-strip -mx-4 z-10 border-b border-[#123c3a]/10 bg-[#f3f3f3]/85 px-4 backdrop-blur-xl xl:hidden">
+      <div className="sticky-tab-strip -mx-4 z-10 border-b border-[#123c3a]/10 bg-[#f3f3f3]/85 px-4 pt-1.5 backdrop-blur-xl xl:hidden">
         <nav className="flex h-12 min-h-12 gap-1 overflow-visible" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
             <button
