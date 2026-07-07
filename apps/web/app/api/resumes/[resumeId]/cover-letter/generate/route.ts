@@ -14,10 +14,11 @@ async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
 /**
  * POST /api/resumes/:resumeId/cover-letter/generate
  *
- * Generates a cover letter draft using the AI mock provider,
+ * Generates a cover letter draft using the AI provider,
  * upserts it, and returns the result.
  *
  * Body:
+ *   targetRole (required): string
  *   jobDescription (optional): string
  */
 export async function POST(request: Request, context: { params: Promise<{ resumeId: string }> }) {
@@ -34,12 +35,18 @@ export async function POST(request: Request, context: { params: Promise<{ resume
     return Response.json({ error: "Resume not found" }, { status: 404 });
   }
 
-  const body = await request.json().catch(() => ({})) as { jobDescription?: string };
+  const body = await request.json().catch(() => ({})) as { targetRole?: string; jobDescription?: string };
+
+  const targetRole = (body.targetRole || "").trim();
+  if (!targetRole) {
+    return Response.json({ error: "Target role is required." }, { status: 400 });
+  }
 
   try {
     const resume = fromStoredResume(record);
     const generated = await generateCoverLetter({
       resume,
+      targetRole,
       jobDescription: body.jobDescription || undefined,
     });
 

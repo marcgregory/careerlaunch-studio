@@ -78,9 +78,10 @@ export class GeminiProvider implements AIProvider {
 
   async generateCoverLetter(input: CoverLetterInput): Promise<GeneratedCoverLetter> {
     const resume = input.resume;
+    const targetRole = input.targetRole;
     const jd = input.jobDescription;
 
-    const prompt = buildCoverLetterPrompt(resume, jd);
+    const prompt = buildCoverLetterPrompt(resume, targetRole, jd);
 
     const raw = await callGemini({
       system: COVER_LETTER_SYSTEM_PROMPT,
@@ -234,8 +235,8 @@ Rules:
 - Use first-person voice throughout.
 - Be specific: reference actual achievements, not generic duties.`;
 
-function buildCoverLetterPrompt(resume: CoverLetterInput["resume"], jobDescription?: string): string {
-  const ctx: CoverLetterContext = buildCoverLetterContext(resume, jobDescription);
+function buildCoverLetterPrompt(resume: CoverLetterInput["resume"], targetRole: string, jobDescription?: string): string {
+  const ctx: CoverLetterContext = buildCoverLetterContext(resume, targetRole, jobDescription);
 
   const parts: string[] = [
     `Generate a cover letter for a ${ctx.targetRole} position.`,

@@ -159,12 +159,13 @@ function extractBestAchievements(
  */
 export function buildCoverLetterContext(
   resume: ResumeDocument,
+  targetRole?: string,
   jobDescription?: string,
 ): CoverLetterContext {
   const experience = resume.experience ?? [];
 
   // ── Role guard ──────────────────────────────────────────────────────
-  const currentTitle = resolveRole(experience, resume.targetRole);
+  const currentTitle = resolveRole(experience, targetRole || resume.targetRole);
 
   // ── Current employer ────────────────────────────────────────────────
   const currentEmployer =
@@ -190,7 +191,7 @@ export function buildCoverLetterContext(
   }
 
   // ── Target role ─────────────────────────────────────────────────────
-  const targetRole = resume.targetRole || currentTitle || "the position";
+  const resolvedTargetRole = targetRole || resume.targetRole || currentTitle || "the position";
 
   // ── Skills (prioritized against JD, max 5) ──────────────────────────
   const topRelevantSkills = prioritizeSkills(
@@ -224,7 +225,7 @@ export function buildCoverLetterContext(
   const certifications = (resume.certifications ?? []).slice(0, 2);
 
   return {
-    targetRole,
+    targetRole: resolvedTargetRole,
     yearsExperience,
     currentTitle,
     currentEmployer,

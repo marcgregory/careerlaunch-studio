@@ -92,9 +92,10 @@ export class GroqProvider implements AIProvider {
 
   async generateCoverLetter(input: CoverLetterInput): Promise<GeneratedCoverLetter> {
     const resume = input.resume;
+    const targetRole = input.targetRole;
     const jd = input.jobDescription;
 
-    const prompt = buildCoverLetterPrompt(resume, jd);
+    const prompt = buildCoverLetterPrompt(resume, targetRole, jd);
 
     const raw = await callOpenAICompatible({
       baseUrl: BASE_URL,
@@ -270,8 +271,8 @@ Respond with JSON: { "overallScore": 0-100, "tone": "...", "consistency": 0-100,
   }
 }
 
-function buildCoverLetterPrompt(resume: CoverLetterInput["resume"], jobDescription?: string): string {
-  const ctx: CoverLetterContext = buildCoverLetterContext(resume, jobDescription);
+function buildCoverLetterPrompt(resume: CoverLetterInput["resume"], targetRole: string, jobDescription?: string): string {
+  const ctx: CoverLetterContext = buildCoverLetterContext(resume, targetRole, jobDescription);
 
   const parts: string[] = [
     `Generate a cover letter for a ${ctx.targetRole} position.`,

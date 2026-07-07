@@ -45,8 +45,8 @@ export async function generateCoverLetter(
  * as the AI-powered path (no raw skill dumps, no date-as-role, no repetition).
  */
 export function deterministicGenerateCoverLetter(input: CoverLetterInput): GeneratedCoverLetter {
-  const { resume, jobDescription } = input;
-  const ctx: CoverLetterContext = buildCoverLetterContext(resume, jobDescription);
+  const { resume, targetRole, jobDescription } = input;
+  const ctx: CoverLetterContext = buildCoverLetterContext(resume, targetRole, jobDescription);
 
   // ── Build the opening paragraph ────────────────────────────────────
   // Opening mentions role/background but NOT specific skills (avoids repetition)

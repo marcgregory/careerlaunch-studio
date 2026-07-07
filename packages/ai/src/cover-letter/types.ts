@@ -2,6 +2,7 @@ import type { ResumeDocument } from "@careerlaunch/domain";
 
 export interface CoverLetterInput {
   resume: ResumeDocument;
+  targetRole: string;
   jobDescription?: string;
 }
 

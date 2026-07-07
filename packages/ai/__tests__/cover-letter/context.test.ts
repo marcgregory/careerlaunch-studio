@@ -139,6 +139,7 @@ describe("buildCoverLetterContext", () => {
 
       const ctx = buildCoverLetterContext(
         resume,
+        undefined,
         "Looking for a React developer with TypeScript and PostgreSQL experience.",
       );
 
@@ -178,7 +179,7 @@ describe("buildCoverLetterContext", () => {
         ],
       });
 
-      const ctx = buildCoverLetterContext(resume, "React, TypeScript, Node.js developer");
+      const ctx = buildCoverLetterContext(resume, undefined, "React, TypeScript, Node.js developer");
 
       // The grouped string itself should never appear
       for (const skill of ctx.topRelevantSkills) {
@@ -205,7 +206,7 @@ describe("buildCoverLetterContext", () => {
         ],
       });
 
-      const ctx = buildCoverLetterContext(resume, "React, TypeScript developer");
+      const ctx = buildCoverLetterContext(resume, undefined, "React, TypeScript developer");
       const seen = new Set<string>();
       for (const skill of ctx.topRelevantSkills) {
         expect(seen.has(skill)).toBe(false);

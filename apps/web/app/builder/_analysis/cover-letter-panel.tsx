@@ -30,11 +30,14 @@ type UpgradePrompt = {
 
 interface CoverLetterPanelProps {
   resumeId: string;
+  initialTargetRole?: string;
   onUpgradeRequired?: (prompt: UpgradePrompt) => void;
 }
 
-export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPanelProps) {
+export function CoverLetterPanel({ resumeId, initialTargetRole, onUpgradeRequired }: CoverLetterPanelProps) {
   const analytics = useAnalytics();
+  const [targetRole, setTargetRole] = useState(initialTargetRole ?? "");
+  const [targetRoleError, setTargetRoleError] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [panelState, setPanelState] = useState<PanelState>({ status: "idle" });
   const [coverLetter, setCoverLetter] = useState<CoverLetterDocument | null>(null);
@@ -72,13 +75,19 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
 
   // Generate draft
   const generateDraft = useCallback(async () => {
+    const trimmedRole = targetRole.trim();
+    if (!trimmedRole) {
+      setTargetRoleError("Target role is required.");
+      return;
+    }
+    setTargetRoleError("");
     setPanelState({ status: "generating" });
 
     try {
       const response = await fetch(`/api/resumes/${resumeId}/cover-letter/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobDescription: jobDescription.trim() || undefined }),
+        body: JSON.stringify({ targetRole: trimmedRole, jobDescription: jobDescription.trim() || undefined }),
       });
 
       if (!response.ok) {
@@ -98,6 +107,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
       setCompanyAddress(cl.companyAddress);
       analytics.capture("cover_letter_generated", {
         hasJobDescription: !!jobDescription,
+        hasTargetRole: true,
       });
       setPanelState({ status: "ready", coverLetter: cl });
     } catch (error) {
@@ -106,7 +116,7 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
         error: error instanceof Error ? error.message : "Generation failed",
       });
     }
-  }, [resumeId, jobDescription, analytics]);
+  }, [resumeId, targetRole, jobDescription, analytics]);
 
   // Save draft
   const saveDraft = useCallback(async () => {
@@ -225,21 +235,44 @@ export function CoverLetterPanel({ resumeId, onUpgradeRequired }: CoverLetterPan
               Cover Letter
             </h2>
             <p className="mt-1 max-w-sm text-sm font-medium leading-6 text-[#4b4b4b]">
-              Generate a cover letter draft from your resume. Optionally paste a job description for a tailored version.
+              Generate a cover letter draft from your resume.
             </p>
           </div>
         </div>
 
         <div className="space-y-3">
-          <label htmlFor="cl-jd" className="text-xs font-black uppercase tracking-wide text-[#4b4b4b]">Paste job description (optional)</label>
-          <textarea
-            id="cl-jd"
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            placeholder="Optional: Paste job description for a tailored cover letter..."
-            rows={4}
-            className="w-full resize-none rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-4 text-sm leading-relaxed placeholder:text-[#4b4b4b]/40 focus:border-[#00796f] focus:outline-none focus:ring-1 focus:ring-[#00796f]"
-          />
+          <div>
+            <label htmlFor="cl-target-role" className="block text-xs font-black uppercase tracking-wide text-[#4b4b4b]">
+              Target Role <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="cl-target-role"
+              type="text"
+              value={targetRole}
+              onChange={(e) => { setTargetRole(e.target.value); setTargetRoleError(""); }}
+              placeholder="e.g. Frontend Developer, Software Engineer, UI/UX Designer"
+              className={`mt-1 w-full rounded-xl border bg-[#f8f8f5] px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${
+                targetRoleError
+                  ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                  : "border-[#123c3a]/10 focus:border-[#00796f] focus:ring-[#00796f]"
+              }`}
+            />
+            <p className="mt-1 text-xs font-medium text-[#4b4b4b]">Enter the position you&apos;re applying for.</p>
+            {targetRoleError && (
+              <p className="mt-1 text-xs font-bold text-red-600">{targetRoleError}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="cl-jd" className="block text-xs font-black uppercase tracking-wide text-[#4b4b4b]">Paste job description (optional)</label>
+            <textarea
+              id="cl-jd"
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Optional: Paste job description for a tailored cover letter..."
+              rows={4}
+              className="mt-1 w-full resize-none rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-4 text-sm leading-relaxed placeholder:text-[#4b4b4b]/40 focus:border-[#00796f] focus:outline-none focus:ring-1 focus:ring-[#00796f]"
+            />
+          </div>
           <button
             type="button"
             onClick={generateDraft}
