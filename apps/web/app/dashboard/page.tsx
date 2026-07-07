@@ -61,23 +61,23 @@ export default async function DashboardPage() {
           <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b] sm:mt-5">Signed in as {user.email}</p>
         </header>
         {isFree && (
-          <div className="mt-6 flex-col items-start gap-4 rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-            <div className="flex items-start gap-3 sm:items-center sm:gap-4">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a] sm:h-12 sm:w-12">
+          <div className="mt-6 flex flex-col items-start gap-4 rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-4 md:flex-row md:items-center md:justify-between md:gap-5 md:p-4">
+            <div className="flex w-full items-center gap-4 md:w-auto md:min-w-0 md:flex-1">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
                 <Sparkles size={18} />
               </div>
               <div className="min-w-0">
-                <p className="font-signal text-sm font-black tracking-[-0.02em] sm:text-lg">
+                <p className="font-signal text-sm font-black tracking-[-0.02em] md:text-base">
                   You&apos;re on the Free plan
                 </p>
-                <p className="text-xs font-medium text-[#4b4b4b] sm:text-sm">
+                <p className="text-xs font-medium text-[#4b4b4b] md:text-sm">
                   Upgrade to Professional for unlimited resumes, all templates, job matching, and clean PDF exports.
                 </p>
               </div>
             </div>
             <Link
               href="/billing"
-              className="flex w-full shrink-0 items-center justify-center gap-2 rounded-full border-2 border-[#123c3a] bg-[#123c3a] px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_3px_0_#123c3a] transition hover:bg-[#1a5250] sm:w-auto"
+              className="flex w-full shrink-0 items-center justify-center gap-2 rounded-full border-2 border-[#123c3a] bg-[#123c3a] px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_3px_0_#123c3a] transition hover:bg-[#1a5250] md:w-auto md:min-w-[160px] md:px-8"
             >
               <CreditCard size={16} /> Upgrade
             </Link>
