@@ -272,8 +272,8 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   return (
-    <main className="signal-site min-h-screen overflow-x-hidden text-[#123c3a]">
-      <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
+    <main className="signal-site min-h-screen overflow-x-hidden pt-[52px] text-[#123c3a] sm:pt-[60px]">
+      <header className="no-print fixed inset-x-0 top-0 z-20 w-full border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3">
             <Link href="/dashboard" className={`${secondaryButtonClass} min-h-11 w-11 flex-shrink-0 rounded-full px-0 sm:min-h-10 sm:w-10`} aria-label="Back to dashboard">
@@ -322,7 +322,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </nav>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr] xl:h-[calc(100vh-3.5rem)] xl:overflow-hidden">
+      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr] xl:h-[calc(100vh-60px)] xl:overflow-hidden">
         {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
         <aside className={`no-print min-w-0 space-y-3 sm:space-y-5 xl:overflow-y-auto xl:pb-4 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
           {/* Mobile: analysis panels - only visible on analyze tab */}
