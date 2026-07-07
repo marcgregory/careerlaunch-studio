@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
 
-export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ error?: string; reset?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ error?: string; reset?: string; session?: string }> }) {
   const params = searchParams ? await searchParams : {};
   const resetSuccess = params.reset === "success";
+  const sessionExpired = params.session === "expired";
   return (
     <main className="auth-signal min-h-screen px-5 py-6 text-[#123c3a]">
       <nav className="mx-auto flex max-w-7xl items-center justify-between">
@@ -37,6 +38,11 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           {resetSuccess && (
             <p className="mt-5 rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-bold text-green-700" role="status">
               Password updated successfully. Sign in with your new password.
+            </p>
+          )}
+          {sessionExpired && (
+            <p className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm font-bold text-blue-700" role="status">
+              Your session has expired. Please sign in again.
             </p>
           )}
           {params.error === "ratelimited" && (
