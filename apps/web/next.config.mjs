@@ -6,6 +6,7 @@ const nextConfig = {
     "@careerlaunch/domain",
     "@careerlaunch/rendering",
     "@careerlaunch/ui",
+    "lucide-react",
   ],
 };
 
