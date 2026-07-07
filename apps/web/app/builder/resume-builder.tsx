@@ -275,32 +275,32 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     <main className="signal-site min-h-screen text-[#123c3a]">
       <header className="no-print sticky top-0 z-20 border-b border-[#123c3a]/10 bg-[#f3f3f3]/88 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
-            <Link href="/dashboard" className={`${secondaryButtonClass} min-h-9 w-9 rounded-full px-0 sm:min-h-10 sm:w-10`} aria-label="Back to dashboard">
-              <ArrowLeft size={16} />
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3">
+            <Link href="/dashboard" className={`${secondaryButtonClass} flex-shrink-0 min-w-11 w-11 h-11 rounded-full px-0 sm:min-w-10 sm:w-10 sm:h-10`} aria-label="Back to dashboard">
+              <ArrowLeft className="w-5 h-5 shrink-0 sm:w-4 sm:h-4" />
             </Link>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="hidden font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:block sm:text-xs">Resume Builder</p>
               <h1 className="font-signal truncate text-sm font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <span className={saveBadgeClass(saveState)} aria-live="polite">
-              <Save size={13} /> <span className="hidden sm:inline">{saveState}</span>
+              <Save className="w-5 h-5 shrink-0 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">{saveState}</span>
             </span>
             {hasValidationErrors && <span className="hidden truncate rounded-[14px] border border-red-200 bg-red-50 px-2 py-1.5 text-[0.65rem] font-black text-red-700 sm:inline-block sm:px-3 sm:py-2 sm:text-sm">Fix required fields</span>}
-            <button className={`${secondaryButtonClass} min-h-9 w-9 rounded-xl px-0 sm:min-h-10 sm:w-auto sm:px-3`} onClick={resetDraft} type="button" aria-label="Reset draft">
-              <RotateCcw size={15} /> <span className="hidden sm:inline">Reset</span>
+            <button className={`${secondaryButtonClass} flex-shrink-0 min-w-11 w-11 h-11 rounded-xl px-0 sm:min-w-0 sm:w-auto sm:h-10 sm:px-3`} onClick={resetDraft} type="button" aria-label="Reset draft">
+              <RotateCcw className="w-5 h-5 shrink-0 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Reset</span>
             </button>
-            <button className={`${primaryButtonClass} min-h-9 w-9 rounded-xl px-0 sm:min-h-10 sm:w-auto sm:px-3`} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors} aria-label="Export PDF">
-              <Download size={15} /> <span className="hidden sm:inline">{exportState === "Exporting" ? "Exporting" : "Export PDF"}</span>
+            <button className={`${primaryButtonClass} flex-shrink-0 min-w-11 w-11 h-11 rounded-xl px-0 sm:min-w-0 sm:w-auto sm:h-10 sm:px-3`} onClick={exportPdf} type="button" disabled={exportState === "Exporting" || hasValidationErrors} aria-label="Export PDF">
+              <Download className="w-5 h-5 shrink-0 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">{exportState === "Exporting" ? "Exporting" : "Export PDF"}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── Mobile tab switcher ── */}
-      <div className="sticky top-[52px] z-10 -mx-4 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-1 backdrop-blur-xl sm:top-[60px] xl:hidden">
+      <div className="sticky top-[60px] z-10 border-b border-[#123c3a]/10 bg-[#f3f3f3] px-4 pt-1 backdrop-blur-xl sm:top-[68px] xl:hidden">
         <nav className="flex gap-1" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
             <button
@@ -509,7 +509,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </aside>
 
         {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
-        <aside className={`self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""} ${mobileTab === "preview" ? "sticky top-[52px] -mx-4 px-0" : "sticky top-6"}`}>
+        <aside className={`self-start ${mobileTab !== "preview" ? "hidden xl:block" : ""} ${mobileTab === "preview" ? "sticky top-[112px] -mx-4 px-0 xl:top-6 xl:mx-0" : "sticky top-6"}`}>
           <div className="flex justify-center rounded-none border-0 bg-transparent p-0 shadow-none xl:rounded-[30px] xl:border xl:border-[#123c3a]/10 xl:bg-[#d8d4cb] xl:p-6 xl:shadow-inner">
             <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto xl:rounded-xl">
               <ResumePreview resume={resume} />
