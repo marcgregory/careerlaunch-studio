@@ -334,7 +334,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           <div className={`${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : mobileTab === "analyze" ? "hidden xl:block" : ""}`}>
           <Panel title="Target">
             <div className="space-y-3">
-              <Field label="Resume title" value={resume.title} error={validation.title} onChange={(value) => patchResume({ title: value })} />
+              <Field label="File name" value={resume.title} error={validation.title} onChange={(value) => patchResume({ title: value })} />
             </div>
           </Panel>
 
