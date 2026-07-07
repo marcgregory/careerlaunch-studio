@@ -327,7 +327,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           <div className={`${mobileTab !== "analyze" && mobileTab !== "edit" ? "hidden xl:block" : mobileTab === "edit" ? "hidden xl:block" : ""}`}>
             <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
             <TailoringPanel resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
-            <CoverLetterPanel resumeId={resume.id} initialTargetRole={resume.targetRole} onUpgradeRequired={setUpgradePrompt} />
+            <CoverLetterPanel resumeId={resume.id} initialTargetRole={resume.targetRole} onTargetRoleChange={(role) => patchResume({ targetRole: role })} onUpgradeRequired={setUpgradePrompt} />
           </div>
 
           {/* Mobile: editor panels - only visible on edit tab */}

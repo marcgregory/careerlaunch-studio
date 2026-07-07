@@ -31,10 +31,11 @@ type UpgradePrompt = {
 interface CoverLetterPanelProps {
   resumeId: string;
   initialTargetRole?: string;
+  onTargetRoleChange?: (role: string) => void;
   onUpgradeRequired?: (prompt: UpgradePrompt) => void;
 }
 
-export function CoverLetterPanel({ resumeId, initialTargetRole, onUpgradeRequired }: CoverLetterPanelProps) {
+export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChange, onUpgradeRequired }: CoverLetterPanelProps) {
   const analytics = useAnalytics();
   const [targetRole, setTargetRole] = useState(initialTargetRole ?? "");
   const [targetRoleError, setTargetRoleError] = useState("");
@@ -249,7 +250,7 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onUpgradeRequire
               id="cl-target-role"
               type="text"
               value={targetRole}
-              onChange={(e) => { setTargetRole(e.target.value); setTargetRoleError(""); }}
+              onChange={(e) => { setTargetRole(e.target.value); setTargetRoleError(""); onTargetRoleChange?.(e.target.value); }}
               placeholder="e.g. Frontend Developer, Software Engineer, UI/UX Designer"
               className={`mt-1 w-full rounded-xl border bg-[#f8f8f5] px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${
                 targetRoleError
