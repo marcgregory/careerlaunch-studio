@@ -6,6 +6,7 @@ import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { DuplicateButton } from "./duplicate-button";
 import { getSubscription } from "../../lib/entitlements";
+import { EmailVerificationBanner } from "../../components/email-verification-banner";
 
 type DashboardResume = {
   id: string;
@@ -60,6 +61,9 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-[#4b4b4b] sm:mt-5">Signed in as {user.email}</p>
         </header>
+        {!user.emailVerifiedAt && (
+          <EmailVerificationBanner email={user.email} />
+        )}
         {isFree && (
           <div className="mt-6 flex flex-col items-start gap-4 rounded-[30px] border border-[#b9ff66]/60 bg-[#b9ff66]/15 p-4 md:flex-row md:items-center md:justify-between md:gap-5 md:p-4">
             <div className="flex w-full items-center gap-4 md:w-auto md:min-w-0 md:flex-1">

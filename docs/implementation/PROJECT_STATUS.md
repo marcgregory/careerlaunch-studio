@@ -1,6 +1,6 @@
 # CareerLaunch Studio Project Status
 
-Last updated: 2026-07-05 (updated for Sprint 6D progress)
+Last updated: 2026-07-07 (updated for Sprint 6D auth hardening)
 
 ## Current Sprint
 
@@ -19,6 +19,18 @@ Sprint 6D — Beta Hardening & Release Candidate (v0.9.5).
 5. **Accessibility Audit** — ⬜ Template created. Requires keyboard-only + screen reader audit.
 6. **Performance** — ⬜ Template created. Requires browser-based P50/P95/P99 measurement. Build compiles in 44s, 27 pages.
 7. **Closed Beta Checklist** — ⬜ Not started. Requires production deployment and configuration.
+
+### Auth Hardening (Added Sprint 6D)
+
+See `docs/implementation/AUTH_HARDENING_PLAN.md`.
+
+| Feature | Status |
+|---|---|
+| Password reset | ✅ Implemented |
+| Rate limiting (login/register/forgot-password) | ✅ Implemented |
+| Email verification (soft enforcement) | ✅ Implemented |
+| Token security (SHA-256 hashed, single-use, expiring) | ✅ Implemented |
+| Resend email integration | ✅ Implemented |
 
 ### Sprint 6D Infrastructure Created
 

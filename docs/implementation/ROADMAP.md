@@ -37,7 +37,8 @@ Last updated: 2026-07-05
 
 ## In Progress
 
-- Sprint 6D — Beta Hardening & Release Candidate (v0.9.5). No new features. Dogfooding, AI benchmark, error recovery, mobile QA, accessibility, performance, closed beta checklist. See `docs/implementation/SPRINT_6D_BUILD_PLAN.md`.
+- Sprint 6D — Beta Hardening & Release Candidate (v0.9.5). No new features. Dogfooding, AI benchmark, error recovery, mobile QA, accessibility, performance, closed beta checklist.
+- Sprint 6D — Auth Hardening (password reset, rate limiting, soft email verification). See `docs/implementation/AUTH_HARDENING_PLAN.md`.
 
 ## Future
 

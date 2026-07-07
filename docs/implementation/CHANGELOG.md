@@ -2,6 +2,42 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.9.1-alpha - 2026-07-07
+
+### Added
+
+- **Authentication Hardening.** Tagged as part of Sprint 6D hardening.
+- **Password reset flow** — forgot-password page, reset-password page, rate-limited API routes. Tokens stored as SHA-256 hashes only, single-use, 1-hour expiry.
+- **Email verification (soft enforcement)** — automatic verification email on registration. Banner on dashboard asking users to verify. No login blocking. Verification tokens expire in 24 hours.
+- **Rate limiting on auth routes** — login (10/60s per IP, 5/15min per email), register (3/h per IP), forgot-password (1/5min per email, 3/h per IP), resend-verification (1/2min per email).
+- **Resend integration** — transactional email service for verification and password reset emails. Falls back to console.log when RESEND_API_KEY is not set.
+
+### Changed
+
+- `AuthUser` type now includes `emailVerifiedAt` field.
+- `POST /api/auth/register` — rate-limited per IP, now creates verification token and sends email on registration.
+- `POST /api/auth/login` — rate-limited per IP and per email.
+- `LoginPage` — added "Forgot password?" link, password reset success message, and rate-limit error message.
+- `DashboardPage` — shows `EmailVerificationBanner` when email is not verified.
+
+### Added (files)
+
+- `apps/web/lib/auth-tokens.ts` — `generateToken()`, `hashToken()`, `createToken()`, `consumeToken()`.
+- `apps/web/lib/email.ts` — Resend wrapper with `sendVerificationEmail()` and `sendPasswordResetEmail()`.
+- `apps/web/components/email-verification-banner.tsx` — dismissible banner with resend button.
+- `apps/web/app/forgot-password/page.tsx` — forgot password form with no-email-enumeration.
+- `apps/web/app/reset-password/page.tsx` — reset password form with token validation.
+- `apps/web/app/verify-email/page.tsx` — success/failure landing page for verification links.
+- `apps/web/app/api/auth/forgot-password/route.ts` — POST, rate-limited, creates reset token.
+- `apps/web/app/api/auth/reset-password/route.ts` — POST, consumes token, updates password.
+- `apps/web/app/api/auth/verify-email/route.ts` — GET, consumes token, sets emailVerifiedAt.
+- `apps/web/app/api/auth/resend-verification/route.ts` — POST, rate-limited, creates new verification token.
+
+### Architecture
+
+- `AuthToken` Prisma model — stores SHA-256 hashed tokens with type, expiry, and single-use flag.
+- `User.emailVerifiedAt` — nullable DateTime, set on verification.
+
 ## 0.9.0-alpha - 2026-07-05
 
 ### Added

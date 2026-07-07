@@ -20,6 +20,7 @@ export type AuthUser = {
   id: string;
   email: string;
   name: string | null;
+  emailVerifiedAt: Date | null;
 };
 
 export function normalizeEmail(email: string) {
@@ -59,7 +60,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { id: true, email: true, name: true }
+    select: { id: true, email: true, name: true, emailVerifiedAt: true }
   });
 
   return user;
@@ -91,7 +92,7 @@ export async function registerUser(input: { email: string; name?: string; passwo
       passwordHash: hash,
       passwordSalt: salt
     },
-    select: { id: true, email: true, name: true }
+    select: { id: true, email: true, name: true, emailVerifiedAt: true }
   });
 }
 
@@ -103,7 +104,7 @@ export async function authenticateUser(emailInput: string, password: string) {
     return null;
   }
 
-  return { id: user.id, email: user.email, name: user.name };
+  return { id: user.id, email: user.email, name: user.name, emailVerifiedAt: user.emailVerifiedAt };
 }
 
 function validateCredentials(email: string, password: string) {

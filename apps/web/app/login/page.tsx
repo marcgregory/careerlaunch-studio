@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
 
-export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ error?: string; reset?: string }> }) {
   const params = searchParams ? await searchParams : {};
+  const resetSuccess = params.reset === "success";
   return (
     <main className="auth-signal min-h-screen px-5 py-6 text-[#123c3a]">
       <nav className="mx-auto flex max-w-7xl items-center justify-between">
@@ -33,7 +34,21 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           </div>
           <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#6bbf22]">Secure workspace</p>
           <h1 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">Sign in</h1>
-          {params.error && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">Email or password did not match.</p>}
+          {resetSuccess && (
+            <p className="mt-5 rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-bold text-green-700" role="status">
+              Password updated successfully. Sign in with your new password.
+            </p>
+          )}
+          {params.error === "ratelimited" && (
+            <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
+              Too many login attempts. Please wait before trying again.
+            </p>
+          )}
+          {params.error === "invalid" && (
+            <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
+              Email or password did not match.
+            </p>
+          )}
           <form action="/api/auth/login" method="post" className="mt-7 space-y-5">
             <label className="block">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
@@ -43,6 +58,11 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
               <span className="text-sm font-black text-[#4b4b4b]">Password</span>
               <input name="password" type="password" required className="signal-input mt-2" id="login-password" />
             </label>
+            <div className="flex items-center justify-end">
+              <Link href="/forgot-password" className="text-xs font-black text-[#4b4b4b] underline underline-offset-2 transition hover:text-[#123c3a]">
+                Forgot password?
+              </Link>
+            </div>
             <button className="signal-button-dark w-full justify-center" type="submit">
               Sign in <ArrowRight size={18} />
             </button>

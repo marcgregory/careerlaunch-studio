@@ -4,7 +4,8 @@ import { ArrowRight, PenLine, Sparkles } from "lucide-react";
 const errorText: Record<string, string> = {
   exists: "An account already exists for that email.",
   invalid: "Use a valid email and a password with at least 8 characters.",
-  database: "Database is not configured yet. Set DATABASE_URL and run the Prisma migration before creating accounts."
+  database: "Database is not configured yet. Set DATABASE_URL and run the Prisma migration before creating accounts.",
+  ratelimited: "Too many registration attempts. Please wait before trying again."
 };
 
 export default async function RegisterPage({ searchParams }: { searchParams?: Promise<{ error?: string }> }) {
