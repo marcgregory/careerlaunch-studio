@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, FileText, Loader2, Sparkles, AlertTriangle, CheckCircle2, Wand2 } from "lucide-react";
 import { primaryButtonClass } from "@careerlaunch/ui";
+import { AppHeader, AppLogo } from "../../components/app-header";
 import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "../../lib/analytics";
 import type { ParseResult, ImportQuality, ExperienceItem, EducationItem, RecoveryResult } from "@careerlaunch/ai/import";
@@ -222,7 +223,11 @@ export default function ImportPage() {
   }
 
   return (
-    <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
+    <main className="signal-site min-h-screen px-5 py-6 pt-[52px] text-[#123c3a] sm:pt-[60px]">
+      <AppHeader>
+        <AppLogo />
+      </AppHeader>
+
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#123c3a]/10 pb-6">

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { ArrowLeft, CreditCard, FileText, Loader2, ExternalLink, CalendarDays, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { AppHeader, AppLogo } from "../../../components/app-header";
 
 type InvoiceSummary = {
   id: string;
@@ -58,7 +59,7 @@ function formatMoney(amount: number, currency = "USD") {
 export default function AccountBillingPage() {
   return (
     <Suspense fallback={
-      <main className="signal-site flex min-h-screen items-center justify-center px-5">
+      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
         <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
       </main>
     }>
@@ -100,7 +101,7 @@ function AccountBillingContent() {
 
   if (loading) {
     return (
-      <main className="signal-site flex min-h-screen items-center justify-center px-5">
+      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
         <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
       </main>
     );
@@ -111,7 +112,11 @@ function AccountBillingContent() {
   const invoices = data?.invoices ?? [];
 
   return (
-    <main className="signal-site min-h-screen px-5 py-6 text-[#123c3a]">
+    <main className="signal-site min-h-screen pt-[52px] px-5 py-6 text-[#123c3a] sm:pt-[60px]">
+      <AppHeader>
+        <AppLogo />
+      </AppHeader>
+
       <div className="mx-auto max-w-4xl">
         <div className="mb-8">
           <Link

@@ -130,7 +130,7 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          <aside className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] lg:sticky lg:top-7 lg:self-start">
+          <aside className="rounded-[30px] border border-[#123c3a] bg-[#123c3a] p-6 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] lg:sticky lg:top-[84px] lg:self-start">
             <div className="flex items-start justify-between gap-4">
               <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
                 <Layers3 size={26} />
