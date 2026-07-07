@@ -27,7 +27,7 @@ export async function sendVerificationEmail(
   name: string | null,
   rawToken: string,
 ): Promise<EmailResult> {
-  const url = `${getBaseUrl()}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const url = `${getBaseUrl()}/api/auth/verify-email?token=${encodeURIComponent(rawToken)}`;
   const subject = "Verify your email — CareerLaunch Studio";
 
   const html = `
