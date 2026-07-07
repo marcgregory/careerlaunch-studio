@@ -335,7 +335,6 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           <Panel title="Target">
             <div className="space-y-3">
               <Field label="Resume title" value={resume.title} error={validation.title} onChange={(value) => patchResume({ title: value })} />
-              <Field label="Target role" value={resume.targetRole} onChange={(value) => patchResume({ targetRole: value })} />
             </div>
           </Panel>
 
