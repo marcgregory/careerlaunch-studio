@@ -13,7 +13,6 @@ type ResumeActionsProps = {
   isMenuOpen: boolean;
   onMenuOpenChange: (open: boolean) => void;
   onDeleteClick: () => void;
-  disabled?: boolean;
 };
 
 export function ResumeActions({
@@ -22,7 +21,6 @@ export function ResumeActions({
   isMenuOpen,
   onMenuOpenChange,
   onDeleteClick,
-  disabled = false,
 }: ResumeActionsProps) {
   const router = useRouter();
 
@@ -31,9 +29,7 @@ export function ResumeActions({
 
   const handleRenameSelect = useCallback(() => {
     onMenuOpenChange(false);
-    setTimeout(() => {
-      setRenameOpen(true);
-    }, 0);
+    setTimeout(() => setRenameOpen(true), 0);
   }, [onMenuOpenChange]);
 
   const handleDeleteSelect = useCallback(() => {
@@ -45,9 +41,7 @@ export function ResumeActions({
     onMenuOpenChange(false);
     setActionLoading("duplicate");
     try {
-      const res = await fetch(`/api/resumes/${resumeId}/duplicate`, {
-        method: "POST",
-      });
+      const res = await fetch(`/api/resumes/${resumeId}/duplicate`, { method: "POST" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Failed to duplicate" }));
         toast.error(err.error);
@@ -79,9 +73,7 @@ export function ResumeActions({
           const jsonErr = await cloned.json().catch(() => null);
           if (jsonErr?.error) {
             errorMsg = jsonErr.error;
-            if (jsonErr.upgradeUrl) {
-              errorMsg += " — Upgrade to export more.";
-            }
+            if (jsonErr.upgradeUrl) errorMsg += " — Upgrade to export more.";
           }
         } catch {
           const textErr = await res.text().catch(() => null);
@@ -117,10 +109,7 @@ export function ResumeActions({
   }, [resumeId, resumeTitle, router, onMenuOpenChange]);
 
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
-
-  const handleRenamed = useCallback(() => {
-    router.refresh();
-  }, [router]);
+  const handleRenamed = useCallback(() => router.refresh(), [router]);
 
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
@@ -195,23 +184,50 @@ export function ResumeActions({
     handleDeleteSelect,
   ]);
 
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onMenuOpenChange(true);
+    },
+    [onMenuOpenChange],
+  );
+
+  /* ─────────────────────────────────────────────────
+   * CRITICAL: Only render DropdownMenu.Root when this
+   * card's menu is open.  For all other cards, render
+   * a plain button.  This ensures only ONE Radix
+   * DropdownMenu.Root exists in the DOM at any time.
+   * Multiple Roots compete for global click-outside
+   * listeners and cause the flicker / double-menu bug.
+   * ───────────────────────────────────────────────── */
   return (
     <>
-      <DropdownMenu.Root open={disabled ? false : isMenuOpen} onOpenChange={onMenuOpenChange}>
-        <DropdownMenu.Trigger asChild>
-          <button
-            type="button"
-            onClick={(e) => e.stopPropagation()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-            title="More actions"
-            aria-label="More actions"
-          >
-            <EllipsisVertical size={16} />
-          </button>
-        </DropdownMenu.Trigger>
-
-        {!disabled && menuContent}
-      </DropdownMenu.Root>
+      {isMenuOpen ? (
+        <DropdownMenu.Root open onOpenChange={onMenuOpenChange}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+              title="More actions"
+              aria-label="More actions"
+            >
+              <EllipsisVertical size={16} />
+            </button>
+          </DropdownMenu.Trigger>
+          {menuContent}
+        </DropdownMenu.Root>
+      ) : (
+        <button
+          type="button"
+          onClick={handleClick}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+          title="More actions"
+          aria-label="More actions"
+        >
+          <EllipsisVertical size={16} />
+        </button>
+      )}
 
       {renameOpen && (
         <RenameModal
