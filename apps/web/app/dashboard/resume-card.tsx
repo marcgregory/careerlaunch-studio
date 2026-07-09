@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FileText, ArrowRight } from "lucide-react";
 import { secondaryButtonClass } from "@careerlaunch/ui";
-import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/rendering";
+import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/rendering/templates";
 import { ResumeActions } from "./resume-actions";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
