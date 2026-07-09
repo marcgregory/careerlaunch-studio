@@ -503,6 +503,7 @@ export function mergeRecovery(
     certifications: parsed.parsed.certifications ?? [],
     professionalQualities: parsed.parsed.professionalQualities ?? [],
     projects: parsed.parsed.projects ?? [],
+    references: parsed.parsed.references ?? [],
   };
 
   const recoveredSections: string[] = [];
