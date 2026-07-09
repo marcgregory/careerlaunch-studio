@@ -184,50 +184,36 @@ export function ResumeActions({
     handleDeleteSelect,
   ]);
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onMenuOpenChange(true);
-    },
-    [onMenuOpenChange],
-  );
-
-  /* ─────────────────────────────────────────────────
-   * CRITICAL: Only render DropdownMenu.Root when this
-   * card's menu is open.  For all other cards, render
-   * a plain button.  This ensures only ONE Radix
-   * DropdownMenu.Root exists in the DOM at any time.
-   * Multiple Roots compete for global click-outside
-   * listeners and cause the flicker / double-menu bug.
-   * ───────────────────────────────────────────────── */
   return (
     <>
-      {isMenuOpen ? (
-        <DropdownMenu.Root open onOpenChange={onMenuOpenChange}>
-          <DropdownMenu.Trigger asChild>
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-              title="More actions"
-              aria-label="More actions"
-            >
-              <EllipsisVertical size={16} />
-            </button>
-          </DropdownMenu.Trigger>
-          {menuContent}
-        </DropdownMenu.Root>
-      ) : (
-        <button
-          type="button"
-          onClick={handleClick}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-          title="More actions"
-          aria-label="More actions"
-        >
-          <EllipsisVertical size={16} />
-        </button>
-      )}
+      {/*
+       * Always render DropdownMenu.Root for every card.
+       * Closed Roots (open={false}) are inert — no visible menu,
+       * no global listeners.
+       * Stop BOTH click and pointerdown propagation so that clicking
+       * one card's trigger does not trigger another card's Root
+       * click-outside handler.
+       */}
+      {/*
+       * Radix uses pointerdown on the document for outside-click detection.
+       * Stop pointerdown propagation here so that clicking this card's trigger
+       * does NOT trigger another (open) card's outside-click handler.
+       * Do NOT stop click propagation — Radix's own trigger handler uses click.
+       */}
+      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+            title="More actions"
+            aria-label="More actions"
+          >
+            <EllipsisVertical size={16} />
+          </button>
+        </DropdownMenu.Trigger>
+        {menuContent}
+      </DropdownMenu.Root>
 
       {renameOpen && (
         <RenameModal
