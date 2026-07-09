@@ -145,7 +145,7 @@ export default async function DashboardPage() {
         )}
 
         {/* Main grid */}
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
           {/* Resume list */}
           <div className="min-w-0">
             <ResumeList
@@ -154,7 +154,7 @@ export default async function DashboardPage() {
             />
           </div>
 
-          {/* Workspace sidebar */}
+          {/* Workspace sidebar — sticky on desktop */}
           <WorkspaceStats
             totalResumes={totalResumeCount}
             targetedCount={targetedCount}
