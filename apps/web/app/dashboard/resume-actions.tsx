@@ -1,0 +1,191 @@
+"use client";
+
+import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import { RenameModal } from "./rename-modal";
+
+type ResumeActionsProps = {
+  resumeId: string;
+  resumeTitle: string;
+};
+
+export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
+  const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  async function handleDuplicate() {
+    setActionLoading("duplicate");
+    try {
+      const res = await fetch(`/api/resumes/${resumeId}/duplicate`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to duplicate" }));
+        toast.error(err.error);
+        return;
+      }
+      toast.success("Resume duplicated successfully.");
+      router.refresh();
+    } catch {
+      toast.error("Failed to duplicate resume");
+    } finally {
+      setActionLoading(null);
+      setOpen(false);
+    }
+  }
+
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${resumeTitle}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setActionLoading("delete");
+    try {
+      const res = await fetch(`/api/resumes/${resumeId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to delete" }));
+        toast.error(err.error);
+        return;
+      }
+      toast.success("Resume deleted.");
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete resume");
+    } finally {
+      setActionLoading(null);
+      setOpen(false);
+    }
+  }
+
+  async function handleExport() {
+    setActionLoading("export");
+    try {
+      const res = await fetch(`/api/export/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to export" }));
+        toast.error(err.error);
+        return;
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        toast.success("PDF export started. Check your exports.");
+      }
+      router.refresh();
+    } catch {
+      toast.error("Failed to export resume");
+    } finally {
+      setActionLoading(null);
+      setOpen(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="relative" ref={menuRef}>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+          title="More actions"
+          aria-label="More actions"
+          aria-expanded={open}
+        >
+          <EllipsisVertical size={16} />
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]">
+            <button
+              type="button"
+              onClick={() => { setRenameOpen(true); setOpen(false); }}
+              disabled={actionLoading !== null}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            >
+              <Edit3 size={15} className="text-[#4b4b4b]" />
+              Rename
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDuplicate}
+              disabled={actionLoading !== null}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            >
+              {actionLoading === "duplicate" ? (
+                <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
+              ) : (
+                <Copy size={15} className="text-[#4b4b4b]" />
+              )}
+              Duplicate
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={actionLoading !== null}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            >
+              {actionLoading === "export" ? (
+                <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
+              ) : (
+                <Download size={15} className="text-[#4b4b4b]" />
+              )}
+              Export PDF
+            </button>
+
+            <hr className="my-1 border-[#123c3a]/8" />
+
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={actionLoading !== null}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-40"
+            >
+              {actionLoading === "delete" ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Trash2 size={15} />
+              )}
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+
+      {renameOpen && (
+        <RenameModal
+          resumeId={resumeId}
+          currentTitle={resumeTitle}
+          onClose={() => setRenameOpen(false)}
+          onRenamed={() => { router.refresh(); }}
+        />
+      )}
+    </>
+  );
+}

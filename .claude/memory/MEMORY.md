@@ -6,3 +6,4 @@
 - [Import coverage delta analytics](import-coverage-delta-analytics.md) — Track coverage before/after AI recovery
 - [Import recovered layouts tracking](import-recovered-layouts-tracking.md) — Track which layouts were fixed by AI
 - [Parser structural experience detection](parser-structural-experience-detection.md) — Post-beta: detect experience entries structurally
+- [Dashboard UX Overhaul](dashboard-ux-improvements.md) — Search, sort, filters, actions menu, recency grouping, enriched sidebar
