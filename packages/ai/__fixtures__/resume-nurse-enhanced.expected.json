@@ -1,0 +1,280 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "EMILY RODRIGUEZ, BSN, RN",
+      "email": "emily.rodriguez@email.com",
+      "phone": "+1 (555) 732-1194",
+      "location": "",
+      "website": "emilyrn.com",
+      "linkedin": "linkedin.com/in/emilyrodriguez",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Registered Nurse",
+        "company": "Dallas General Hospital",
+        "location": "",
+        "start": "March 2021",
+        "end": "Present",
+        "bullets": [
+          "Provide direct care for up to 18 patients per shift. Reduced medication administration errors by 24% through improved verification procedures. Trained and mentored 12 newly hired nurses. Collaborated with multidisciplinary teams to improve discharge planning. Maintained 98% patient satisfaction scores. Assisted physicians during emergency trauma cases."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Staff Nurse",
+        "company": "St. Mary's Medical Center",
+        "location": "",
+        "start": "June 2018",
+        "end": "February 2021",
+        "bullets": [
+          "Delivered medical-surgical nursing care for adult patients. Managed post-operative recovery and pain management. Educated more than 400 patients on discharge procedures. Achieved zero medication incidents for two consecutive years. Assisted in implementing new infection prevention protocols."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Graduate Nurse",
+        "company": "City Community Hospital",
+        "location": "",
+        "start": "January 2017",
+        "end": "May 2018",
+        "bullets": [
+          "Assisted senior nurses with patient care. Documented patient records using Epic EMR. Performed vital sign monitoring and patient assessments. Participated in quality improvement initiatives."
+        ]
+      },
+      {
+        "id": "import-exp-4",
+        "role": "Medical Volunteer",
+        "company": "American Red Cross",
+        "location": "",
+        "start": "2020",
+        "end": "Present",
+        "bullets": [
+          "Participate in disaster relief medical missions. Provide first aid during community outreach programs."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Texas Health Science Center",
+        "degree": "Bachelor of Science in Nursing",
+        "location": "",
+        "graduation": ""
+      }
+    ],
+    "skills": [
+      "Patient Assessment",
+      "Emergency Care",
+      "Critical Care Nursing",
+      "Medication Administration",
+      "+14 more"
+    ],
+    "certifications": [
+      "Registered Nurse (RN) – Texas Board of Nursing",
+      "License Number: RN12345678",
+      "CERTIFICATIONS",
+      "Basic Life Support (BLS)",
+      "Advanced Cardiovascular Life Support (ACLS)",
+      "Pediatric Advanced Life Support (PALS)",
+      "NIH Stroke Scale Certification"
+    ],
+    "professionalQualities": [
+      "Nurse of the Year (2023)",
+      "Patient Safety Excellence Award (2022)",
+      "Clinical Leadership Recognition (2021)"
+    ],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Hospital Fall Prevention Initiative",
+        "description": "Reduced inpatient falls by 18%.",
+        "bullets": []
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Electronic Medication Tracking",
+        "description": "Improved medication documentation accuracy by 21%.",
+        "bullets": []
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Dr. Sarah Thompson",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-2",
+        "name": "Chief Nursing Officer, Dallas General Hospital",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-3",
+        "name": "+1 (555) 201-7788 · sarah.thompson@dghospital.org",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-4",
+        "name": "Michael Lewis, RN",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-5",
+        "name": "+1 (555) 440-1987 · mlewis@stmarys.org",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-6",
+        "name": "Nurse Manager, St. Mary's Medical Center",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-7",
+        "name": "Professor Linda Carter",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-8",
+        "name": "University of Texas Health Science Center",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-9",
+        "name": "+1 (555) 811-4433 · lcarter@uthsc.edu",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Compassionate Registered Nurse with over 7 years of experience providing high-quality patient care in emergency, medical-surgical, and intensive care settings. Skilled in patient assessment, medication administration, interdisciplinary collaboration, and electronic medical records. Passionate about improving patient outcomes while maintaining exceptional standards of safety and care."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "medium",
+    "professionalQualities": "high",
+    "projects": "high",
+    "languages": "low",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {
+    "projects": "Hospital Fall Prevention Initiative\nReduced inpatient falls by 18%.\nElectronic Medication Tracking\nImproved medication documentation accuracy by 21%."
+  },
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 45,
+      "parsedWordCount": 45,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 157,
+      "parsedWordCount": 140,
+      "ratio": 0.89171974522293,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 30,
+      "parsedWordCount": 30,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 12,
+      "parsedWordCount": 14,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 42,
+      "parsedWordCount": 42,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "references-heavy"
+  ]
+}
