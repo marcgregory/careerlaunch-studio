@@ -93,6 +93,10 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
       /\bwork\s+history\b/i,
       /\bprofessional\s+experience\b/i,
       /\brelevant\s+experience\b/i,
+      /\bvolunteer\s+experience\b/i,
+      /\bvolunteering\b/i,
+      /\bvolunteer\s+work\b/i,
+      /\bcommunity\s+service\b/i,
     ],
   },
   {
@@ -132,6 +136,13 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
     ],
   },
   {
+    id: "languages",
+    patterns: [
+      /^languages?\s*$/im,
+      /^languages?\s*:\s*$/im,
+    ],
+  },
+  {
     id: "references",
     patterns: [
       /\breferences?\b/i,
@@ -145,24 +156,10 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
       /\bprofessional\s+qualifications\b/i,
       /\bcore\s+qualifications\b/i,
       /\bqualifications\b/i,
-    ],
-  },
-  {
-    id: "professionalQualities",
-    patterns: [
       /\bachievements?\b/i,
       /\bhono?u?rs?\b/i,
       /\bawards?\b/i,
       /\bhonors\s+and\s+awards\b/i,
-    ],
-  },
-  {
-    id: "experience",
-    patterns: [
-      /\bvolunteer\s+experience\b/i,
-      /\bvolunteering\b/i,
-      /\bvolunteer\s+work\b/i,
-      /\bcommunity\s+service\b/i,
     ],
   },
 ];
@@ -170,6 +167,12 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
 /**
  * Find section boundaries in plain text.
  * Returns a map of section id → { start, end } line indices.
+ *
+ * Handles cases where multiple headers map to the same section ID
+ * (e.g. "Experience" and "Volunteer Experience" both → experience,
+ *  "Professional Qualities" and "Achievements" both → professionalQualities).
+ * Same-ID headers at different positions extend the section boundary rather
+ * than creating duplicate entries.
  */
 function detectSections(
   lines: string[],
@@ -179,11 +182,8 @@ function detectSections(
     { start: number; end: number }
   >();
 
-  // Track which section IDs have been matched (not the same as the sections
-  // map, which we build AFTER collecting all candidates).
-  const seen = new Set<ResumeSectionId>();
-
-  // Build ordered list of all matched headers (first match wins per section)
+  // Build ordered list of ALL matched headers (no seen-set dedup — let same-ID
+  // headers through so "Volunteer Experience" is not blocked by "Experience").
   const headers: { index: number; id: ResumeSectionId; header: string }[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -191,10 +191,8 @@ function detectSections(
     if (!line || /^[•\-*]\s/.test(line)) continue;
 
     for (const { id, patterns } of SECTION_PATTERNS) {
-      if (seen.has(id)) continue; // first match wins per section
       for (const pattern of patterns) {
         if (pattern.test(line) && line.length < 60) {
-          seen.add(id);
           headers.push({ index: i, id, header: line });
           break;
         }
@@ -202,16 +200,41 @@ function detectSections(
     }
   }
 
-  // Sort by occurrence in text and set boundaries
+  // Sort by occurrence in text
   headers.sort((a, b) => a.index - b.index);
 
-  for (let i = 0; i < headers.length; i++) {
+  // Merge adjacent same-ID headers: keep the first, skip the rest.
+  // This handles "Professional Qualities" followed by "Achievements" (both
+  // → professionalQualities) — we keep "Professional Qualities" as the start
+  // and "Achievements" is absorbed into the same section.
+  const merged: typeof headers = [];
+  for (const h of headers) {
+    if (merged.length > 0 && merged[merged.length - 1].id === h.id) {
+      continue; // same-ID consecutive → skip
+    }
+    merged.push(h);
+  }
+
+  // Build sections map. If the same section ID appears again later (e.g.
+  // "Experience" then "Volunteer Experience" both → experience), EXTEND the
+  // existing section boundary to include the later content.
+  for (let i = 0; i < merged.length; i++) {
     const end =
-      i + 1 < headers.length ? headers[i + 1].index : lines.length;
-    sections.set(headers[i].id, {
-      start: headers[i].index + 1,
-      end,
-    });
+      i + 1 < merged.length ? merged[i + 1].index : lines.length;
+
+    if (sections.has(merged[i].id)) {
+      // Extend existing section boundary to include this later occurrence
+      const existing = sections.get(merged[i].id)!;
+      sections.set(merged[i].id, {
+        start: existing.start,
+        end: Math.max(existing.end, end),
+      });
+    } else {
+      sections.set(merged[i].id, {
+        start: merged[i].index + 1,
+        end,
+      });
+    }
   }
 
   return sections;
@@ -598,10 +621,23 @@ function parseEducation(lines: string[]): {
           }
 
           consumed.add(i + 1);
+
+          // --- Step 2b: check i+2 for standalone graduation year ---
+          // "University of Texas" then "2016" on its own line
+          if (i + 2 < lines.length) {
+            const thirdLine = lines[i + 2].trim();
+            if (thirdLine && !consumed.has(i + 2)) {
+              const thirdGrad = extractGraduationYear(thirdLine);
+              // Only consume i+2 if it's JUST a year (fewer than 5 words)
+              // to avoid swallowing the next section's content
+              if (thirdGrad && !gradYear && thirdLine.split(/\s+/).filter(Boolean).length <= 2) {
+                gradYear = thirdGrad;
+                consumed.add(i + 2);
+              }
+            }
+          }
         }
       }
-
-      // --- Step 3: final cleanup ---
       // Strip graduation year from school if it leaked in
       if (gradYear) {
         if (school.endsWith(`, ${gradYear}`)) {
@@ -1056,6 +1092,11 @@ function computeSectionCoverage(
       }
       break;
     }
+    case "languages": {
+      // Languages are absorbed into skills for coverage purposes
+      // (they are not a separate parsed field)
+      break;
+    }
     case "references": {
       for (const r of parsed.references || []) {
         parsedWordCount += countWords(r.name);
@@ -1157,6 +1198,14 @@ function evaluateSection(
       if (projs.length >= 1) return "medium";
       return "low";
     }
+    case "languages": {
+      // Languages are absorbed into skills — confidence is derived from
+      // the overall skills count
+      const skills = parsed.skills || [];
+      if (skills.length >= 5) return "high";
+      if (skills.length >= 1) return "medium";
+      return "low";
+    }
     case "references": {
       const refs = parsed.references || [];
       if (refs.length >= 1 && refs.every((r) => r.name)) return "high";
@@ -1210,7 +1259,7 @@ export function parseResumeText(text: string): ParseResult {
 
   if (!text || text.trim().length === 0) {
     const emptyConfidence: Record<string, SectionConfidence> = {};
-    for (const sid of ["summary","experience","education","skills","certifications","professionalQualities","projects","references"]) {
+    for (const sid of ["summary","experience","education","skills","certifications","professionalQualities","projects","languages","references"]) {
       emptyConfidence[sid] = "low";
     }
     return {
@@ -1377,6 +1426,20 @@ export function parseResumeText(text: string): ParseResult {
         totalFields++;
         break;
       }
+      case "languages": {
+        // Parse languages as comma-separated or bullet items, append to skills
+        const langItems = sectionLines
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0)
+          .flatMap((l) => l.replace(BULLET_RE, "").split(/[,;•|]\s*/))
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+        if (langItems.length > 0) {
+          parsed.skills = [...(parsed.skills || []), ...langItems];
+        }
+        totalFields++;
+        break;
+      }
       case "references": {
         const references = parseReferences(sectionLines);
         if (references.length > 0) {
@@ -1457,7 +1520,7 @@ export function parseResumeText(text: string): ParseResult {
   // Calculate confidence by section
   const allSectionIds: ResumeSectionId[] = [
     "summary", "experience", "education", "skills",
-    "certifications", "professionalQualities", "projects", "references",
+    "certifications", "professionalQualities", "projects", "languages", "references",
   ];
 
   const confidenceBySection: Record<string, SectionConfidence> = {};

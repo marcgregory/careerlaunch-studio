@@ -79,13 +79,7 @@
       "Cursor",
       "Windsurf"
     ],
-    "certifications": [
-      "Safety Officer (SO2) - Department of Labor and Employment",
-      "Arduino Programming Certificate - University of the Philippines",
-      "Webpage Database Integration - STI College",
-      "Dataworld Training Program - Dataworld Corp.",
-      "Internship Completion - Tech Solutions Co."
-    ],
+    "certifications": [],
     "professionalQualities": [],
     "projects": [
       {
@@ -138,9 +132,10 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "certifications": "high",
+    "certifications": "low",
     "professionalQualities": "low",
     "projects": "high",
+    "languages": "low",
     "references": "high"
   },
   "importQuality": "fair",
@@ -156,10 +151,10 @@
     },
     {
       "sectionId": "experience",
-      "originalWordCount": 121,
+      "originalWordCount": 169,
       "parsedWordCount": 102,
-      "ratio": 0.8429752066115702,
-      "status": "good"
+      "ratio": 0.6035502958579881,
+      "status": "partial"
     },
     {
       "sectionId": "education",
@@ -177,8 +172,8 @@
     },
     {
       "sectionId": "certifications",
-      "originalWordCount": 35,
-      "parsedWordCount": 35,
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -194,6 +189,13 @@
       "originalWordCount": 86,
       "parsedWordCount": 77,
       "ratio": 0.8953488372093024,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {

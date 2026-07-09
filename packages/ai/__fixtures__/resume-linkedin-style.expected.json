@@ -94,6 +94,7 @@
     "certifications": "high",
     "professionalQualities": "high",
     "projects": "low",
+    "languages": "low",
     "references": "low"
   },
   "importQuality": "fair",
@@ -144,6 +145,13 @@
     },
     {
       "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

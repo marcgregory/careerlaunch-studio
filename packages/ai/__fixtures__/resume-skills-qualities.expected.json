@@ -44,16 +44,18 @@
       "GraphQL",
       "REST APIs",
       "Git",
-      "Agile/Scrum"
-    ],
-    "certifications": [],
-    "professionalQualities": [
+      "Agile/Scrum",
+      "Professional Qualities",
       "Results-driven",
       "Strong analytical skills",
       "Excellent written and verbal communication",
       "Self-motivated",
       "Collaborative team player",
       "Growth mindset"
+    ],
+    "certifications": [],
+    "professionalQualities": [
+      "Results-driven"
     ],
     "projects": [],
     "references": [],
@@ -66,8 +68,9 @@
     "education": "high",
     "skills": "high",
     "certifications": "low",
-    "professionalQualities": "high",
+    "professionalQualities": "medium",
     "projects": "low",
+    "languages": "low",
     "references": "low"
   },
   "importQuality": "fair",
@@ -97,8 +100,8 @@
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 13,
-      "parsedWordCount": 13,
+      "originalWordCount": 30,
+      "parsedWordCount": 30,
       "ratio": 1,
       "status": "good"
     },
@@ -111,13 +114,20 @@
     },
     {
       "sectionId": "professionalQualities",
-      "originalWordCount": 15,
-      "parsedWordCount": 15,
+      "originalWordCount": 1,
+      "parsedWordCount": 1,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

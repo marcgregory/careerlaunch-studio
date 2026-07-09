@@ -50,7 +50,41 @@
     ],
     "skills": [
       "Advanced",
-      "Intermediate"
+      "Intermediate",
+      "Experience",
+      "Senior Software Engineer",
+      "TechCorp Solutions",
+      "Jan 2022 - Present",
+      "Designed and implemented microservices architecture serving 1M+ daily users.",
+      "Led migration from monolith to distributed system",
+      "reducing deploy time by 80%.",
+      "Established CI/CD pipelines and monitoring infrastructure.",
+      "Mentored 5 junior engineers through structured onboarding program",
+      "with documented learning paths and weekly check-ins. timelines were met.",
+      "Authored technical design documents adopted across 3 teams.",
+      "Software Engineer",
+      "StartupXYZ Inc.",
+      "Mar 2019 - Dec 2021",
+      "Built core REST APIs handling 50K requests per minute.",
+      "Optimized database queries reducing average response time from 400ms to 45ms.",
+      "Implemented real-time notification system using WebSockets and Redis.",
+      "Education",
+      "Bachelor of Science in Computer Science",
+      "University of Washington",
+      "2016",
+      "Skills",
+      "React",
+      "TypeScript",
+      "Node.js",
+      "PostgreSQL",
+      "Docker",
+      "AWS",
+      "GraphQL",
+      "Redis",
+      "Python",
+      "Go",
+      "Kubernetes",
+      "Terraform"
     ],
     "certifications": [
       "AWS Solutions Architect - Professional",
@@ -102,19 +136,16 @@
     "summary": "high",
     "experience": "high",
     "education": "high",
-    "skills": "medium",
+    "skills": "high",
     "certifications": "high",
     "professionalQualities": "high",
     "projects": "high",
+    "languages": "low",
     "references": "high"
   },
-  "importQuality": "poor",
-  "warnings": [
-    "Low import quality for \"skills\": 17% coverage (2/12 words preserved)."
-  ],
-  "unparsedContent": {
-    "skills": "Frontend                    Advanced\nBackend                     Advanced\nCloud / Infra               Intermediate\nDevOps                      Intermediate\nDatabase                    Advanced"
-  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
   "coverage": [
     {
       "sectionId": "summary",
@@ -132,17 +163,17 @@
     },
     {
       "sectionId": "education",
-      "originalWordCount": 23,
+      "originalWordCount": 10,
       "parsedWordCount": 10,
-      "ratio": 0.43478260869565216,
-      "status": "partial"
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 12,
-      "parsedWordCount": 2,
-      "ratio": 0.16666666666666666,
-      "status": "poor"
+      "originalWordCount": 144,
+      "parsedWordCount": 126,
+      "ratio": 0.875,
+      "status": "good"
     },
     {
       "sectionId": "certifications",
@@ -163,6 +194,13 @@
       "originalWordCount": 63,
       "parsedWordCount": 57,
       "ratio": 0.9047619047619048,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {

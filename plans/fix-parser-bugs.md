@@ -1,80 +1,59 @@
-# Fix Resume Parser Bugs
+# Fix Parser Bugs — Round 2
 
-## Issues Detected
+## Root Cause: Section Boundary Detection
 
-### 1. LinkedIn URL Truncated
-- `LINKEDIN_RE`: `linkedin\.com\/[a-zA-Z0-9_-]+\/?` captures only `linkedin.com/in/` — the `/` before `marcturno` is outside the char class, so the match stops.
-- **Fix**: `linkedin\.com\/in\/[a-zA-Z0-9_-]+` to capture the full `/in/username` path.
+The `detectSections()` function uses `seen.has(id)` to ensure each section ID only appears once. 
 
-### 2. Portfolio/GitHub Websites Missing
-- `ContactInfo` has only one `website` field. The parser overwrites: if LinkedIn matches first, LinkedIn fills `website`; if a personal site matches first, LinkedIn overwrites it.
-- **Fix**: Add `linkedin` and `github` fields to `ContactInfo`. Route each URL type to its own field.
+**The problem**: When different headings map to the same `ResumeSectionId` (e.g., "Professional Qualities" and "Achievements" both → `professionalQualities`, "Experience" and "Volunteer Experience" both → `experience`), the `seen` set blocks the **second heading from being detected entirely**.
 
-### 3. Location Missing for Non-US Formats
-- Location regex `/^[A-Z][a-z]+(?:,\s*[A-Z]{2})$/` requires a two-letter state/territory. Fails for `Manila, Philippines` (8 letters), `London, UK` (2 chars after comma but not necessarily a state code in the regex).
-- **Fix**: Widen regex to `/^[A-Za-z\s]+,\s*[A-Za-z\s.]{2,}$/` — city name + comma + region (2+ chars including periods, e.g. "Kyiv, Ukraine").
+### Cascading failures this causes:
 
-### 4. Education: School Truncated, Year Lost, Duplicates
-- `extractSchool()` starts scanning at the word "University"/"College" and captures only 0-3 comma/dash-delimited tokens *after* it. `"Texas State University"` → matches at "University" → captures `"University"` only (no preceding tokens). `"University of Santo Tomas, 2019"` → matches at "University" → captures `"University of Santo Tomas, 2019"` with the year embedded.
-- The graduation-year extraction on line 552-555 doesn't assign to the education entry's `graduation` field — dead code.
-- No line-skipping after consuming a school line, so the school line can be re-processed as a new education entry in the next loop iteration.
+1. **"Achievements" heading skipped** → content bleeds into the previous section (Professional Qualities), producing the garbage line `"Employee of the Year (2023)—Analytics Excellence Award (2022)—Speaker..."` in the qualities output.
 
-### 5. Achievements Heading, No Items Parsed
-- No `"achievements"` pattern in `SECTION_PATTERNS`.
-- **Fix**: Add `\bachievements?\b`, `\bhono?urs?\b`, `\bawards?\b` patterns mapped to `professionalQualities`.
+2. **"Languages" heading skipped** → content bleeds into whatever section was before it. Also, there's no Languages section defined at all, so even if detected, it has no handler.
 
-### 6. Volunteer Experience Missing Dates
-- No `"volunteer"` pattern in the experience `SECTION_PATTERNS`.
-- **Fix**: Add `\bvolunteer\b` and `\bvolunteer\s+experience\b` to experience patterns.
+3. **"Volunteer Experience" heading skipped** → content bleeds into previous section, volunteer date parsing doesn't trigger.
 
-### 7. Project Descriptions Empty
-- The project parser always sets `description: ""`. The line between a project name and its first bullet can be a one-line description (e.g. `"Full-stack SaaS platform for resume creation and AI-powered improvement."`).
-- **Fix**: After detecting a project name, if the next non-blank, non-bullet line exists and is short (< 40 words), capture it as `description`, then continue collecting bullets.
+4. **Education section boundaries wrong** → without proper end boundary, education may capture too much or too little content.
 
-### 8. Contact Parser: Site-specific URL Support
-- Current code routes ALL non-email URLs to `contact.website`. Need separate detection for:
-  - `linkedin.com/in/...` → `contact.linkedin`
-  - `github.com/...` → `contact.github`
-  - Everything else → `contact.website`
-- Fix `extractContact()` to detect and route each URL type.
+5. **Projects losing bullets** → if the next section after "Projects" (e.g. "Achievements", "Languages") is not detected as a section start, the projects section extends past the project bullets into the next section's content, potentially confusing the project parser.
 
-## Pre-existing Test Failure
-The test `should not include references content in any parsed field` fails because references ARE parsed into the `references` array. The test needs updating — the guardrail should assert that references content doesn't appear in *other* fields (summary, experience, skills), not that it's missing entirely.
+### Fix: Remove `seen.has(id)` guard
+
+Replace the `seen` set with a dedup **after** collection. Remove `seen` entirely:
+- Each line can match patterns independently, regardless of whether that section ID was already seen
+- After building the full `headers` array, adjacent same-ID headers are merged (keep first start, use later end)
+
+This lets "Experience" and "Volunteer Experience" both be detected (both → `experience`), and "Professional Qualities" and "Achievements" both be detected (both → `professionalQualities`).
+
+## Remaining Issues After Round 1
+
+### Issue A: Education degree duplicated, school/year lost
+- **Root cause**: `parseEducation()` only looks one line ahead (`i + 1`) for school info. When the school line is `"University of Texas"` and the graduation year is on the next line `"2016"` (line i+2), the year is missed.
+- **Fix**: After consuming `i + 1`, also check `i + 2` for a standalone 4-digit year → set as `graduation`.
+
+### Issue B: Volunteer start year missing
+- **Root cause**: Volunteer experience (e.g. "2021 – Present") is in the date-only line format. The `parseExperience` function's date-only handler looks BACKWARD for role/company, but volunteer sections may not match `DATE_RANGE_RE` if the year format is just "2021 – Present" (matches `YEAR_RANGE_RE`). Or the issue is that the volunteer lines aren't being routed to `parseExperience` at all because the section header isn't detected.
+- **Fix**: After section boundary fix, volunteer content will be routed to `parseExperience` correctly. The date format "2021 – Present" already matches `YEAR_RANGE_RE = /(\d{4})\s*[-–]\s*(\d{4}|present|current|now)/i`.
+
+### Issue C: Languages section not parsed
+- **Fix**: Add `languages` section pattern → map to `skills` array (best semantic fit without schema change). Add handler in the `parseResumeText` switch.
+
+### Issue D: Projects losing bullets
+- **Root cause**: After section boundary fix, the projects section boundary will end at the correct next detected section header, preserving all bullets.
+- **Fix**: The section fix alone should resolve this. Verify with tests.
 
 ## Files Changed
 
-### 1. `packages/domain/src/index.ts`
-- Add `linkedin: string` and `github: string` to `ContactInfo`
+### `packages/ai/src/import/text-parser.ts`
+1. `detectSections()` — Remove `seen` set. Add post-dedup for adjacent same-ID headers.
+2. `SECTION_PATTERNS` — Merge all `professionalQualities` patterns (incl. achievements/honors/awards) into one entry. Merge all `experience` patterns (incl. volunteer/community) into one entry. Add `languages` section.
+3. `parseEducation()` — After lookahead at i+1, also check i+2 for standalone 4-digit year.
+4. `parseResumeText()` switch — Add `languages` case (parse bullet/comma items → append to `parsed.skills`).
+5. `allSectionIds` — Add `"languages"` to the list.
 
-### 2. `packages/domain/src/validation/resume.ts`  
-- Add `linkedin` and `github` fields to `contactSchema` Zod validation
+### `packages/ai/__tests__/import/text-parser.test.ts`
+- Add regression tests: achievements heading, volunteer dates, languages section, project bullets, education with 3-line format (degree/school/year on separate lines).
 
-### 3. `packages/ai/src/import/text-parser.ts` (main parser fixes)
-- Fix `LINKEDIN_RE` to capture full profile
-- Add `GITHUB_RE`
-- Fix location regex
-- Fix `extractSchool()` to include text before the keyword
-- Fix education line-skipping to prevent duplicates
-- Add achievements section pattern → `professionalQualities`
-- Add volunteer section pattern → `experience`
-- Add project description capture
-- Fix `extractContact()` URL routing
-
-### 4. `packages/ai/__tests__/import/text-parser.test.ts`
-- Fix the references test assertion
-- Add regression tests for all fixed bugs
-
-### 5. `packages/ai/__fixtures__/resume-parser-bugs.expected.json`
-- Regenerate golden file
-
-### 6. All other golden fixture `.expected.json` files  
-- Regenerate to include new `linkedin` and `github` fields in contact
-
-### 7. `packages/rendering/src/index.tsx`, `packages/rendering/src/pdf.tsx`
-- Render `linkedin` and `github` contact fields
-
-### 8. `packages/ai/src/analysis/static.ts`
-- Check `linkedin` and `github` in contact completeness check
-
-### 9. `apps/web/app/builder/resume-builder.tsx`
-- Add `linkedin` and `github` input fields
+### Golden fixture files
+- Regenerate all `.expected.json` files.

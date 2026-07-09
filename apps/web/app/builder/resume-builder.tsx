@@ -51,6 +51,7 @@ const sectionLabels: Record<ResumeSectionId, string> = {
   certifications: "Certifications",
   professionalQualities: "Professional Qualities",
   projects: "Projects",
+  languages: "Languages",
   references: "References"
 };
 

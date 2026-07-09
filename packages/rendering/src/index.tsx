@@ -168,6 +168,8 @@ function renderSection(
     return (
       <ReferencesSection key={section} resume={resume} template={template} />
     );
+  if (section === "languages")
+    return null; // Languages are rendered as part of skills
   return (
     <ProjectsSection key={section} resume={resume} template={template} />
   );
