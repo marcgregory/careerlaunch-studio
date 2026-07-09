@@ -11,6 +11,8 @@ type ResumeCardProps = {
   updatedAt: Date;
   templateId?: string;
   analysisRunCount?: number;
+  menuOpen?: boolean;
+  onMenuOpenChange?: (open: boolean) => void;
 };
 
 function getTemplateInfo(id: string | undefined): TemplateDefinition {
@@ -69,6 +71,8 @@ export function ResumeCard({
   updatedAt,
   templateId,
   analysisRunCount = 0,
+  menuOpen,
+  onMenuOpenChange,
 }: ResumeCardProps) {
   const template = getTemplateInfo(templateId);
   const badge = getStatusBadge(analysisRunCount);
@@ -106,7 +110,7 @@ export function ResumeCard({
           </h2>
         ) : (
           <h2 className="font-signal mt-2 text-2xl font-black leading-none tracking-[-0.06em] text-[#4b4b4b]/60">
-            Untargeted resume
+            General Resume
           </h2>
         )}
 
@@ -123,7 +127,7 @@ export function ResumeCard({
 
       {/* Actions */}
       <div className="flex items-center gap-2 self-start md:self-center">
-        <ResumeActions resumeId={id} resumeTitle={title} />
+        <ResumeActions resumeId={id} resumeTitle={title} menuOpen={menuOpen} onMenuOpenChange={onMenuOpenChange} />
         <Link
           href={`/builder?resumeId=${id}`}
           className={`${secondaryButtonClass} whitespace-nowrap`}

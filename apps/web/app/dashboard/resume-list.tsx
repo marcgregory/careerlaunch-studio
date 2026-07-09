@@ -50,6 +50,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [sort, setSort] = useState<SortMode>("updated");
   const [filter, setFilter] = useState<FilterMode>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   // Parse dates once
   const parsed = useMemo(
@@ -232,6 +233,8 @@ export function ResumeList({ resumes }: ResumeListProps) {
                   targetRole={r.targetRole}
                   updatedAt={r.parsedDate}
                   analysisRunCount={r.analysisRunCount}
+                  menuOpen={activeMenuId === r.id}
+                  onMenuOpenChange={(open) => setActiveMenuId(open ? r.id : null)}
                 />
               ))}
             </div>

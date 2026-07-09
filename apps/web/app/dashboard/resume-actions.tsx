@@ -11,11 +11,15 @@ import { DeleteResumeModal } from "./delete-modal";
 type ResumeActionsProps = {
   resumeId: string;
   resumeTitle: string;
+  menuOpen?: boolean;
+  onMenuOpenChange?: (open: boolean) => void;
 };
 
-export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
+export function ResumeActions({ resumeId, resumeTitle, menuOpen, onMenuOpenChange }: ResumeActionsProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = menuOpen ?? internalOpen;
+  const setOpen = onMenuOpenChange ?? setInternalOpen;
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
