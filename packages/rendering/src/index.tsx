@@ -170,9 +170,11 @@ function renderSection(
     );
   if (section === "languages")
     return null; // Languages are rendered as part of skills
-  return (
-    <ProjectsSection key={section} resume={resume} template={template} />
-  );
+  if (section === "projects")
+    return (
+      <ProjectsSection key={section} resume={resume} template={template} />
+    );
+  return null;
 }
 
 function ResumeHeading({
