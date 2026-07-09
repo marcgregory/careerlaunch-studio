@@ -13,7 +13,6 @@ export type ResumeDocument = {
   professionalQualities: string[];
   projects: ProjectItem[];
   references: ReferenceItem[];
-  referencesNote: string;
 };
 
 export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
@@ -177,8 +176,7 @@ export const sampleResume: ResumeDocument = {
       bullets: ["Standardized response timing, ownership rules, and outcome tracking for managers."]
     }
   ],
-  references: [],
-  referencesNote: ""
+  references: []
 };
 
 export function scoreResume(resume: ResumeDocument): ResumeCheck {
@@ -246,7 +244,6 @@ export function estimateWordCount(resume: ResumeDocument): number {
     ...resume.professionalQualities,
     ...resume.projects.flatMap((item) => [item.name, item.description, ...item.bullets]),
     ...resume.references.flatMap((item) => [item.name, item.title, item.company, item.phone, item.email, item.relationship]),
-    resume.referencesNote,
   ].join(" ");
 
   return content.split(/\s+/).filter(Boolean).length;

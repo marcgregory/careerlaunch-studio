@@ -567,23 +567,6 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
                 </ItemCard>
               ))}
             </div>
-            {resume.references.length > 0 && (
-              <label className="mt-3 flex items-center gap-2 border-t border-[#123c3a]/10 pt-3 sm:mt-4 sm:pt-4">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-[#123c3a]/30 text-[#00796f] focus:ring-[#00796f]"
-                  checked={resume.referencesNote === "References available upon request"}
-                  onChange={(e) => {
-                    patchResume({
-                      referencesNote: e.target.checked ? "References available upon request" : ""
-                    });
-                  }}
-                />
-                <span className="text-sm font-medium text-[#4b4b4b]">
-                  Show &ldquo;References available upon request&rdquo; instead
-                </span>
-              </label>
-            )}
           </Panel>
           </div> {/* end editor panel group */}
         </aside>

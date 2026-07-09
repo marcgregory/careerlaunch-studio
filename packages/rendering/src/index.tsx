@@ -455,18 +455,6 @@ function ReferencesSection({
   resume: ResumeDocument;
   template: TemplateDefinition;
 }) {
-  // Show "References available upon request" when the note is set
-  if (resume.referencesNote && !resume.references.some((r) => r.name.trim())) {
-    return (
-      <section className="mt-8">
-        <ResumeHeading template={template}>References</ResumeHeading>
-        <p className="mt-3 text-[15px] italic font-medium leading-7 text-[#4b4b4b]">
-          {resume.referencesNote}
-        </p>
-      </section>
-    );
-  }
-
   const refs = resume.references.filter((r) => r.name.trim());
   if (refs.length === 0) return null;
   return (

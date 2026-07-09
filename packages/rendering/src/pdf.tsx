@@ -197,6 +197,24 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
     </section>`;
   }
 
+  if (section === "references") {
+    const refs = resume.references.filter((r) => r.name.trim());
+    if (refs.length === 0) return null;
+
+    const items = refs.map((item) => `
+      <div class="pdf-ref-item">
+        <strong>${escapeHtml(item.name)}</strong>
+        ${[item.title, item.company].filter(Boolean).length > 0 ? `<div class="pdf-muted">${[item.title, item.company].filter(Boolean).map(escapeHtml).join(", ")}</div>` : ""}
+        ${[item.phone, item.email].filter(Boolean).length > 0 ? `<div class="pdf-ref-contact">${[item.phone, item.email].filter(Boolean).map(escapeHtml).join(" · ")}</div>` : ""}
+        ${item.relationship ? `<div class="pdf-ref-rel">${escapeHtml(item.relationship)}</div>` : ""}
+      </div>`).join("\n");
+
+    return `<section>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">References</h2></div>
+      <div class="pdf-refs">${items}</div>
+    </section>`;
+  }
+
   return null;
 }
 
@@ -345,6 +363,11 @@ function pdfCss(t: TemplateDefinition): string {
       color: ${markerC};
       font-weight: 700;
     }
+    /* References section */
+    .pdf-ref-item { margin-top: 12px; color: #4b4b4b; font-size: 12px; font-weight: 500; line-height: 1.45; }
+    .pdf-ref-item strong { display: block; color: ${nameColor}; font-weight: ${t.nameStyle === "plain" ? "700" : "900"}; }
+    .pdf-ref-contact { color: #555555; font-size: 11px; margin-top: 1px; }
+    .pdf-ref-rel { color: #777777; font-size: 11px; font-style: italic; margin-top: 1px; }
     /* Professional qualities — designed bullet list */
     .pdf-qualities-list {
       margin: 8px 0 0; padding: 0;
