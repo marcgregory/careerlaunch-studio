@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,14 +23,12 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
   const resumeId = resume?.id ?? "";
   const currentTitle = resume?.title ?? "";
 
-  // Reset internal state when modal opens (keyed by resumeId)
-  const [lastResumeId, setLastResumeId] = useState<string>("");
-  if (open && resumeId !== lastResumeId) {
+  useEffect(() => {
+    if (!open || !resume) return;
     setTitle(currentTitle);
     setError(null);
     setSaving(false);
-    setLastResumeId(resumeId);
-  }
+  }, [currentTitle, open, resume, resumeId]);
 
   function updateCachedTitle(nextTitle: string) {
     queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {

@@ -186,7 +186,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const handleRenameClick = useCallback(
     (resume: SerializedResume) => {
       setActiveMenuId(null);
-      requestAnimationFrame(() => setResumeToRename(resume));
+      setResumeToRename(resume);
     },
     [],
   );
