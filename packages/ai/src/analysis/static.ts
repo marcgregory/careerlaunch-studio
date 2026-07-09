@@ -181,7 +181,8 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         severity: "major",
         title: `"${entry.role ?? "Role"}" has no bullet points`,
         reason:
-          "Bullet points are where you demonstrate impact. Add 3–5 bullets per role.",
+          `Your ${entry.role ?? "Role"} role is missing bullet points. ` +
+          "Add 3–5 bullets per role to demonstrate your impact and responsibilities.",
         targetText: null,
         suggestedText: null,
         location: {
@@ -331,9 +332,9 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         severity: "major",
         title: `"${entry.role ?? "Role"}" needs stronger bullet points`,
         reason:
-          "Most of your bullets use passive or weaker phrasing. Starting each bullet with a strong " +
-          "action verb like \"Developed\", \"Built\", \"Implemented\", or \"Optimized\" helps " +
-          "communicate your contributions more clearly.",
+          `Most bullets in your ${entry.role ?? "Role"} role use passive phrasing. Start each bullet ` +
+          "with a strong action verb like \"Developed\", \"Built\", \"Implemented\", or \"Optimized\" " +
+          "to communicate your contributions more clearly.",
         targetText: null,
         suggestedText: null,
         location: { sectionId: "experience", entryId: entry.id },
@@ -347,8 +348,8 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         severity: "medium",
         title: `Some bullets in "${entry.role ?? "Role"}" could be stronger`,
         reason:
-          `Your score: ${totalScore}/${maxPossible}. Most bullets start well, but consider ` +
-          "replacing collaborative verbs (\"Collaborated\", \"Participated\", \"Supported\") " +
+          `Your ${entry.role ?? "Role"} bullet points scored ${totalScore}/${maxPossible}. ` +
+          "Consider replacing collaborative verbs (\"Collaborated\", \"Participated\", \"Supported\") " +
           "with stronger action verbs that signal direct ownership.",
         targetText: null,
         suggestedText: null,
@@ -370,15 +371,43 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
     );
 
     if (!hasMetrics) {
+      const role = entry.role ?? "Role";
+      const reasons: Record<string, string> = {
+        default:
+          "Adding measurable outcomes can make this experience more persuasive to recruiters. " +
+          "Examples: supported 200+ users, reduced page load by 40%, delivered 15 reusable components. " +
+          "Only add numbers that are true.",
+      };
+
+      // Generate a contextual reason based on role title keywords
+      let contextualReason = reasons.default;
+      const lowerRole = role.toLowerCase();
+
+      if (/developer|engineer|programmer|coder|software/i.test(lowerRole)) {
+        contextualReason =
+          `Add measurable outcomes for your ${role} role. ` +
+          "Examples: number of features shipped, code coverage percentage, " +
+          "performance improvements (e.g. reduced load time by X%), or team size mentored.";
+      } else if (/staff|support|help desk|technician/i.test(lowerRole)) {
+        contextualReason =
+          `Mention the number of users supported, tickets resolved, systems maintained, ` +
+          `or downtime reduced in your ${role} role.`;
+      } else if (/manager|supervisor|lead|head|director/i.test(lowerRole)) {
+        contextualReason =
+          `Include metrics such as team size managed, budget overseen, ` +
+          `projects delivered on time, or revenue impact in your ${role} role.`;
+      } else if (/sales|marketing|account|business/i.test(lowerRole)) {
+        contextualReason =
+          `Quantify results for your ${role} role — revenue generated, ` +
+          `conversion rate improvements, leads generated, or market share growth.`;
+      }
+
       s.push({
         id: suggestionId("impact", "no-metrics", entry.id),
         category: "impact",
         severity: "minor",
-        title: `Opportunity to strengthen this experience`,
-        reason:
-          "Adding measurable outcomes can make this experience more persuasive to recruiters. " +
-          "Examples: supported 200+ users, reduced page load by 40%, delivered 15 reusable components. " +
-          "Only add numbers that are true.",
+        title: `Strengthen "${role}" with measurable outcomes`,
+        reason: contextualReason,
         targetText: null,
         suggestedText: null,
         location: { sectionId: "experience", entryId: entry.id },
