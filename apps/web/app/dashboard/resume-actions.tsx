@@ -76,7 +76,6 @@ export function ResumeActions({
         return;
       }
       const data = await res.json();
-      // optimistic insert
       const duped: SerializedResume = {
         id: data.resume.id,
         title: data.resume.title,
@@ -158,10 +157,6 @@ export function ResumeActions({
           collisionPadding={12}
           avoidCollisions
           onPointerDownOutside={(e) => {
-            // If the outside pointerdown is on another trigger button,
-            // prevent this menu from closing — the other button's click
-            // handler will open the new menu, so activeMenuId transitions
-            // atomically from this card's id to the next.
             const target = e.target as HTMLElement | null;
             if (target?.closest('[data-radix-dropdown-trigger]') || target?.closest('[data-menu-trigger]')) {
               e.preventDefault();
@@ -170,10 +165,7 @@ export function ResumeActions({
           className="z-[999] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
           <DropdownMenu.Item
-            onSelect={(e) => {
-              e.preventDefault();
-              handleRenameSelect();
-            }}
+            onSelect={(e) => { e.preventDefault(); handleRenameSelect(); }}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
@@ -182,10 +174,7 @@ export function ResumeActions({
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
-            onSelect={(e) => {
-              e.preventDefault();
-              handleDuplicate();
-            }}
+            onSelect={(e) => { e.preventDefault(); handleDuplicate(); }}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
@@ -198,10 +187,7 @@ export function ResumeActions({
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
-            onSelect={(e) => {
-              e.preventDefault();
-              handleExport();
-            }}
+            onSelect={(e) => { e.preventDefault(); handleExport(); }}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
@@ -221,10 +207,7 @@ export function ResumeActions({
           <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
 
           <DropdownMenu.Item
-            onSelect={(e) => {
-              e.preventDefault();
-              handleDeleteSelect();
-            }}
+            onSelect={(e) => { e.preventDefault(); handleDeleteSelect(); }}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
           >
@@ -244,43 +227,29 @@ export function ResumeActions({
 
   return (
     <>
-      {isMenuOpen ? (
-        <DropdownMenu.Root open onOpenChange={onMenuOpenChange}>
-          <DropdownMenu.Trigger asChild>
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-              title="More actions"
-              aria-label="More actions"
-            >
-              {actionLoading === "duplicate" || actionLoading === "export" ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <EllipsisVertical size={16} />
-              )}
-            </button>
-          </DropdownMenu.Trigger>
-          {menuContent}
-        </DropdownMenu.Root>
-      ) : (
-        <button
-          type="button"
-          data-menu-trigger
-          onClick={(e) => {
-            e.stopPropagation();
-            onMenuOpenChange(true);
-          }}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-          title="More actions"
-          aria-label="More actions"
-        >
-          {actionLoading === "duplicate" || actionLoading === "export" ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <EllipsisVertical size={16} />
-          )}
-        </button>
-      )}
+      {/*
+       * Always mount DropdownMenu.Root for every card.
+       * Only the active card has open=true.
+       * This avoids mounting/unmounting Roots on every interaction,
+       * which Radix handles poorly (extra cleanup renders).
+       */}
+      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+            title="More actions"
+            aria-label="More actions"
+          >
+            {actionLoading === "duplicate" || actionLoading === "export" ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <EllipsisVertical size={16} />
+            )}
+          </button>
+        </DropdownMenu.Trigger>
+        {menuContent}
+      </DropdownMenu.Root>
 
       {renameOpen && (
         <RenameModal
