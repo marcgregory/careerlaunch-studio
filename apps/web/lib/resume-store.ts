@@ -102,7 +102,8 @@ function normalizeSectionOrder(value: unknown): ResumeSectionId[] {
   if (!Array.isArray(value)) return [...defaultSectionOrder];
   const allowed = new Set<ResumeSectionId>(defaultSectionOrder);
   const ordered = value.filter((section): section is ResumeSectionId => allowed.has(section as ResumeSectionId));
-  return [...ordered, ...defaultSectionOrder.filter((section) => !ordered.includes(section))];
+  const unique = [...new Set(ordered)];
+  return [...unique, ...defaultSectionOrder.filter((section) => !unique.includes(section))];
 }
 
 function normalizeTemplateId(value: unknown): ResumeTemplateId {

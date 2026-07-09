@@ -892,7 +892,8 @@ function normalizeTemplateId(value: ResumeTemplateId | undefined): ResumeTemplat
 }
 function normalizeSectionOrder(value: ResumeSectionId[] | undefined): ResumeSectionId[] {
   const ordered = Array.isArray(value) ? value.filter((section): section is ResumeSectionId => defaultSectionOrder.includes(section)) : [];
-  return [...ordered, ...defaultSectionOrder.filter((section) => !ordered.includes(section))];
+  const unique = [...new Set(ordered)];
+  return [...unique, ...defaultSectionOrder.filter((section) => !unique.includes(section))];
 }
 
 function moveItem<T>(items: T[], index: number, direction: -1 | 1): T[] {

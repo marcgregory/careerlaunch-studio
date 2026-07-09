@@ -478,9 +478,10 @@ function normalizeSectionOrder(
         defaultSectionOrder.includes(s),
       )
     : [];
+  const unique = [...new Set(ordered)];
   return [
-    ...ordered,
-    ...defaultSectionOrder.filter((s) => !ordered.includes(s)),
+    ...unique,
+    ...defaultSectionOrder.filter((s) => !unique.includes(s)),
   ];
 }
 
