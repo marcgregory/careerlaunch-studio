@@ -254,6 +254,16 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error("[browser] warm-up failed:", err.message);
   }
+
+  // Keep-alive: self-ping every 30s to prevent Railway from idling the container
+  setInterval(async () => {
+    try {
+      const req = http.get(`http://127.0.0.1:${PORT}/health`);
+      // Consume the response to free memory
+      req.on("response", (res) => { res.resume(); });
+      req.on("error", () => {});
+    } catch { /* ignore */ }
+  }, 30_000);
 });
 
 async function shutdown() {
