@@ -223,17 +223,31 @@ function detectSections(
   // Build sections map. If the same section ID appears again later (e.g.
   // "Experience" then "Volunteer Experience" both → experience), EXTEND the
   // existing section boundary to include the later content.
+  // BUT: don't extend if doing so would overlap with another detected section
+  // (e.g. "Projects" at end-of-document after "References" — extending projects
+  //  would swallow the references content).
+  const allHeaderIndices = new Set(merged.map((h) => h.index));
+
   for (let i = 0; i < merged.length; i++) {
     const end =
       i + 1 < merged.length ? merged[i + 1].index : lines.length;
 
     if (sections.has(merged[i].id)) {
-      // Extend existing section boundary to include this later occurrence
       const existing = sections.get(merged[i].id)!;
-      sections.set(merged[i].id, {
-        start: existing.start,
-        end: Math.max(existing.end, end),
-      });
+      // Only extend if the new end does not cross another section header
+      let overlapsOtherHeader = false;
+      for (const hIdx of allHeaderIndices) {
+        if (hIdx > existing.end && hIdx < end) {
+          overlapsOtherHeader = true;
+          break;
+        }
+      }
+      if (!overlapsOtherHeader) {
+        sections.set(merged[i].id, {
+          start: existing.start,
+          end: Math.max(existing.end, end),
+        });
+      }
     } else {
       sections.set(merged[i].id, {
         start: merged[i].index + 1,
@@ -447,7 +461,25 @@ function parseExperience(lines: string[]): {
             i++;
           } else {
             // No bullets collected yet — this is likely the start of the next entry
-            break;
+            // BUT: if the line looks like bullet prose (long, no date peek-ahead),
+            // treat it as the first unmarked bullet instead of breaking.
+            let nextHasDate = false;
+            const peekLimit = Math.min(i + 3, lines.length - 1);
+            for (let look = 1; look <= peekLimit - i; look++) {
+              const peekLine = lines[i + look].trim();
+              if (peekLine.match(DATE_RANGE_RE) || peekLine.match(YEAR_RANGE_RE)) {
+                nextHasDate = true;
+                break;
+              }
+            }
+            if (!nextHasDate && cleaned.length >= 30) {
+              // Long unmarked prose line that doesn't precede a date → treat as bullet
+              bullets.push(cleaned);
+              bulletCount++;
+              i++;
+            } else {
+              break;
+            }
           }
         }
 
@@ -534,7 +566,21 @@ function parseExperience(lines: string[]): {
           if (nextHasDate && isNextEntry) break;
           bullets[bullets.length - 1] += " " + cleaned;
         } else {
-          break;
+          // No bullets collected yet — check if this looks like unmarked bullet prose
+          let nextHasDate = false;
+          const peekLimit = Math.min(i + 3, lines.length - 1);
+          for (let look = 1; look <= peekLimit - i; look++) {
+            const peekLine = lines[i + look].trim();
+            if (peekLine.match(DATE_RANGE_RE) || peekLine.match(YEAR_RANGE_RE)) {
+              nextHasDate = true;
+              break;
+            }
+          }
+          if (!nextHasDate && cleaned.length >= 30) {
+            bullets.push(cleaned);
+          } else {
+            break;
+          }
         }
         i++;
       }
@@ -600,7 +646,12 @@ function parseEducation(lines: string[]): {
 
       // --- Step 2: look at next line for school/graduation info ---
       if (i + 1 < lines.length) {
-        const nextLine = lines[i + 1].trim();
+        // Peek past blank lines to find the next meaningful non-empty line
+        let nextIdx = i + 1;
+        while (nextIdx < lines.length && lines[nextIdx].trim().length === 0) {
+          nextIdx++;
+        }
+        const nextLine = nextIdx < lines.length ? lines[nextIdx].trim() : "";
         // If the next line is ALSO a degree line (duplicate in source text),
         // skip this entry — the dup will be handled by the duplicate line itself.
         if (
@@ -609,6 +660,8 @@ function parseEducation(lines: string[]): {
           /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(nextLine)
         ) {
           consumed.add(i);
+          // Only consume blank lines between the duplicates, not the duplicate itself
+          for (let k = i + 1; k < nextIdx && k < lines.length; k++) consumed.add(k);
           continue;
         }
 
@@ -639,19 +692,23 @@ function parseEducation(lines: string[]): {
             school = nextSchool;
           }
 
-          consumed.add(i + 1);
+          // Consume the next meaningful line AND any blank lines between it and i
+          if (nextIdx > i) {
+            for (let k = i + 1; k <= nextIdx && k < lines.length; k++) {
+              consumed.add(k);
+            }
+          }
 
-          // --- Step 2b: check i+2 for standalone graduation year ---
+          // --- Step 2b: check the line after the school line for graduation year ---
           // "University of Texas" then "2016" on its own line
-          if (i + 2 < lines.length) {
-            const thirdLine = lines[i + 2].trim();
-            if (thirdLine && !consumed.has(i + 2)) {
+          const thirdIdx = nextIdx + 1;
+          if (thirdIdx < lines.length) {
+            const thirdLine = lines[thirdIdx].trim();
+            if (thirdLine && !consumed.has(thirdIdx)) {
               const thirdGrad = extractGraduationYear(thirdLine);
-              // Only consume i+2 if it's JUST a year (fewer than 5 words)
-              // to avoid swallowing the next section's content
               if (thirdGrad && !gradYear && thirdLine.split(/\s+/).filter(Boolean).length <= 2) {
                 gradYear = thirdGrad;
-                consumed.add(i + 2);
+                consumed.add(thirdIdx);
               }
             }
           }
@@ -1615,6 +1672,20 @@ export function parseResumeText(text: string): ParseResult {
       }
     }
     parsed.education = [...seen.values()];
+  }
+
+  // Deduplicate project entries with identical names (from duplicate section headers)
+  if (parsed.projects && parsed.projects.length > 1) {
+    const seen = new Set<string>();
+    const deduped: ResumeDocument["projects"] = [];
+    for (const proj of parsed.projects) {
+      const key = proj.name.toLowerCase().trim();
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(proj);
+      }
+    }
+    parsed.projects = deduped;
   }
 
   // Calculate confidence by section

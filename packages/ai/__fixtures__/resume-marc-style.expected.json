@@ -152,10 +152,10 @@
     },
     {
       "sectionId": "experience",
-      "originalWordCount": 169,
+      "originalWordCount": 121,
       "parsedWordCount": 102,
-      "ratio": 0.6035502958579881,
-      "status": "partial"
+      "ratio": 0.8429752066115702,
+      "status": "good"
     },
     {
       "sectionId": "education",

@@ -44,14 +44,7 @@
       "GraphQL",
       "REST APIs",
       "Git",
-      "Agile/Scrum",
-      "Professional Qualities",
-      "Results-driven",
-      "Strong analytical skills",
-      "Excellent written and verbal communication",
-      "Self-motivated",
-      "Collaborative team player",
-      "Growth mindset"
+      "Agile/Scrum"
     ],
     "certifications": [],
     "professionalQualities": [
@@ -101,8 +94,8 @@
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 30,
-      "parsedWordCount": 30,
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
       "ratio": 1,
       "status": "good"
     },
