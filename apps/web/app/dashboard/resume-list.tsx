@@ -62,6 +62,12 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Stable callback — identity never changes
+  const handleMenuOpenChange = useCallback(
+    (resumeId: string, open: boolean) => setActiveMenuId(open ? resumeId : null),
+    [],
+  );
+
   // Parse dates once
   const parsed = useMemo(
     () =>
@@ -132,7 +138,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
     return rows;
   }, [groups]);
 
-  const hasActiveFilters = search.trim() || filter !== "all";
+  const hasActiveFilters = search.trim().length > 0 || filter !== "all";
 
   // Callbacks
   const handleSearchChange = useCallback(
@@ -151,18 +157,14 @@ export function ResumeList({ resumes }: ResumeListProps) {
     setFilter("all");
     setSort("updated");
   }, []);
-  const handleMenuOpenChange = useCallback(
-    (resumeId: string) => (open: boolean) =>
-      setActiveMenuId(open ? resumeId : null),
-    [],
-  );
 
-  // Virtualizer
+  // Virtualizer — use dynamic sizing for group headers vs cards
   const shouldVirtualize = flatRows.length > VIRTUALIZATION_THRESHOLD;
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? flatRows.length : 0,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 130,
+    estimateSize: (index) =>
+      flatRows[index]?.kind === "group" ? 36 : 132,
     overscan: OVERSCAN,
     getItemKey: (index) => flatRows[index]?.id ?? index,
   });
@@ -249,7 +251,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                         updatedAt={row.resume.parsedDate}
                         analysisRunCount={row.resume.analysisRunCount}
                         menuOpen={activeMenuId === row.resume.id}
-                        onMenuOpenChange={handleMenuOpenChange(row.resume.id)}
+                        onMenuOpenChange={handleMenuOpenChange}
                       />
                     </div>
                   )}
@@ -272,7 +274,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                   updatedAt={r.parsedDate}
                   analysisRunCount={r.analysisRunCount}
                   menuOpen={activeMenuId === r.id}
-                  onMenuOpenChange={handleMenuOpenChange(r.id)}
+                  onMenuOpenChange={handleMenuOpenChange}
                 />
               ))}
             </div>

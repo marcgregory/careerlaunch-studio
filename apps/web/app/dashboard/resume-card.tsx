@@ -13,7 +13,8 @@ type ResumeCardProps = {
   templateId?: string;
   analysisRunCount?: number;
   menuOpen?: boolean;
-  onMenuOpenChange?: (open: boolean) => void;
+  /** Stable callback — receives the card's own id so no closure-per-card is needed. */
+  onMenuOpenChange?: (resumeId: string, open: boolean) => void;
 };
 
 function getTemplateInfo(id: string | undefined): TemplateDefinition {
@@ -80,9 +81,9 @@ function ResumeCardInner({
 
   const handleMenuOpenChange = useCallback(
     (open: boolean) => {
-      onMenuOpenChange?.(open);
+      onMenuOpenChange?.(id, open);
     },
-    [onMenuOpenChange],
+    [onMenuOpenChange, id],
   );
 
   return (
@@ -129,7 +130,7 @@ function ResumeCardInner({
 
         {/* Updated timestamp */}
         <p className="mt-1.5 text-xs font-medium text-[#4b4b4b]/50">
-          Updated {timeAgo(updatedAt)}
+          Updated {timeAgoLabel}
         </p>
       </div>
 
