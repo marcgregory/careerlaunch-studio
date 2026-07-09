@@ -234,7 +234,7 @@ export function ResumeActions({
             )}
           </button>
         </DropdownMenu.Trigger>
-        {menuContent}
+        {isMenuOpen ? menuContent : null}
       </DropdownMenu.Root>
     </>
   );

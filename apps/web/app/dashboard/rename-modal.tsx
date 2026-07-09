@@ -15,7 +15,7 @@ type RenameModalProps = {
 export function RenameModal({ open, resume, onClose }: RenameModalProps) {
   const queryClient = useQueryClient();
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(resume?.title ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

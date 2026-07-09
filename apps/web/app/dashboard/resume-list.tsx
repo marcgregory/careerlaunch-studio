@@ -96,10 +96,16 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
   const [resumeToRename, setResumeToRename] = useState<SerializedResume | null>(null);
-  const isDeleteModalOpen = !!resumeToDelete;
+  const isAnyModalOpen = !!resumeToDelete || !!resumeToRename;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      setActiveMenuId(null);
+    }
+  }, [isAnyModalOpen]);
 
   // ── Infinite query with cache ──
   const {
@@ -193,11 +199,9 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
 
   const handleDeleteClick = useCallback(
     (id: string, title: string) => {
-      setActiveMenuId(null);
       setResumeToRename(null);
-      setTimeout(() => {
-        setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
-      }, 0);
+      setActiveMenuId(null);
+      setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
     },
     [],
   );
@@ -338,7 +342,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
                 key={r.id}
                 resume={r}
                 parsedDate={r.parsedDate}
-                isMenuOpen={!isDeleteModalOpen && activeMenuId === r.id}
+                isMenuOpen={!isAnyModalOpen && activeMenuId === r.id}
                 onMenuOpenChange={handleMenuOpenChange}
                 onRenameClick={handleRenameClick}
                 onDeleteClick={handleDeleteClick}
@@ -404,13 +408,14 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
         open={!!resumeToDelete}
         onClose={handleDeleteClose}
       />
-
-      {/* Global rename modal — one instance, outside card map */}
-      <RenameModal
-        open={!!resumeToRename}
-        resume={resumeToRename}
-        onClose={() => setResumeToRename(null)}
-      />
+      {/* Global rename modal - one instance, outside card map */}
+      {resumeToRename ? (
+        <RenameModal
+          open
+          resume={resumeToRename}
+          onClose={handleRenameClose}
+        />
+      ) : null}
     </div>
   );
 }
