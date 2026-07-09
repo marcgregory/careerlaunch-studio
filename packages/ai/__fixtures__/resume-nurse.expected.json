@@ -1,0 +1,182 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Maria Santos",
+      "email": "maria.santos@email.com",
+      "phone": "(312) 555-0245",
+      "location": "Chicago, IL",
+      "website": "",
+      "linkedin": "linkedin.com/in/mariasantos",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Registered Nurse - Medical-Surgical Unit",
+        "company": "Northwestern Memorial Hospital",
+        "location": "",
+        "start": "Jan 2021",
+        "end": "Present",
+        "bullets": [
+          "Manage care for 5-7 patients per shift in a 30-bed med-surg unit.",
+          "Administer medications, monitor vital signs, and coordinate discharge planning.",
+          "Collaborated with physicians, social workers, and therapists to create comprehensive care plans.",
+          "Reduced patient readmission rates by 15% through improved discharge education.",
+          "Precepted 4 new graduate nurses during orientation period."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Staff Nurse - Progressive Care Unit",
+        "company": "St. Mary's Medical Center",
+        "location": "",
+        "start": "Mar 2019",
+        "end": "Dec 2020",
+        "bullets": [
+          "Monitored telemetry for post-surgical and cardiac patients.",
+          "Administered IV medications and blood products per physician orders.",
+          "Educated patients and families on post-discharge care and medication management.",
+          "Maintained 100% compliance with infection control protocols."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Loyola University Chicago",
+        "degree": "Bachelor of Science in Nursing",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Patient assessment",
+      "IV therapy",
+      "wound care",
+      "medication administration",
+      "care coordination",
+      "EHR systems (Epic",
+      "Cerner)",
+      "patient education",
+      "critical thinking",
+      "BLS",
+      "ACLS",
+      "English (Native)",
+      "Spanish (Conversational)"
+    ],
+    "certifications": [
+      "Registered Nurse (RN) - Illinois Board of Nursing",
+      "Basic Life Support (BLS) - American Heart Association",
+      "Advanced Cardiac Life Support (ACLS) - American Heart Association"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Certified registered nurse with 6 years of experience in medical-surgical nursing and progressive care. Skilled in patient assessment, care coordination, and interdisciplinary collaboration."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 23,
+      "parsedWordCount": 23,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 120,
+      "parsedWordCount": 102,
+      "ratio": 0.85,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 20,
+      "parsedWordCount": 24,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 4,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

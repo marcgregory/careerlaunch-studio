@@ -1,0 +1,190 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "David Okonkwo",
+      "email": "david.okonkwo@email.com",
+      "phone": "(404) 555-0815",
+      "location": "Atlanta, GA",
+      "website": "",
+      "linkedin": "linkedin.com/in/davidokonkwo",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "HR Business Partner",
+        "company": "TechGrowth Corp.",
+        "location": "",
+        "start": "Feb 2021",
+        "end": "Present",
+        "bullets": [
+          "Partner with engineering and product leadership to support 200+ employees across 3 divisions.",
+          "Reduced time-to-fill for technical roles from 65 to 38 days through improved sourcing strategies.",
+          "Implemented performance review process achieving 95% completion rate.",
+          "Led DEI initiatives increasing underrepresented talent pipeline by 40%.",
+          "Resolved 50+ employee relations cases with 90% satisfaction rating."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "HR Generalist",
+        "company": "PeopleFirst Solutions",
+        "location": "",
+        "start": "Aug 2019",
+        "end": "Jan 2021",
+        "bullets": [
+          "Managed full-cycle recruitment for 30+ positions annually across multiple departments.",
+          "Administered benefits programs including health insurance, 401K, and leave management.",
+          "Conducted new hire orientation and facilitated onboarding for 100+ employees.",
+          "Maintained HRIS data integrity and generated compliance reports for leadership."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Recruitment Coordinator",
+        "company": "Atlanta Staffing Group",
+        "location": "",
+        "start": "Jun 2018",
+        "end": "Jul 2019",
+        "bullets": [
+          "Screened resumes and coordinated interviews for 15+ open requisitions.",
+          "Prepared offer letters and managed pre-employment background checks.",
+          "Maintained applicant tracking system and provided weekly pipeline reports."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Georgia State University",
+        "degree": "Bachelor of Science in Human Resource Management",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Talent acquisition",
+      "employee relations",
+      "performance management",
+      "HRIS (Workday",
+      "BambooHR)",
+      "benefits administration",
+      "compliance",
+      "conflict resolution",
+      "DEI initiatives",
+      "onboarding",
+      "training and development"
+    ],
+    "certifications": [
+      "Professional in Human Resources (PHR) - HRCI",
+      "SHRM Certified Professional (SHRM-CP)"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Strategic HR professional with 6 years of experience in talent acquisition, employee relations, and organizational development. Passionate about building inclusive workplace cultures."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "low",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 22,
+      "parsedWordCount": 22,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 159,
+      "parsedWordCount": 133,
+      "ratio": 0.8364779874213837,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 20,
+      "parsedWordCount": 20,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

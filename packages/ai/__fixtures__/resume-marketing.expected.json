@@ -1,0 +1,194 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Sarah Kim",
+      "email": "sarah.kim@email.com",
+      "phone": "(310) 555-0712",
+      "location": "Los Angeles, CA",
+      "website": "sarahkimportfolio.com",
+      "linkedin": "linkedin.com/in/sarahkim",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Marketing Manager",
+        "company": "Brightside Media Agency",
+        "location": "",
+        "start": "Mar 2022",
+        "end": "Present",
+        "bullets": [
+          "Lead digital strategy for 8+ clients generating $4M+ in annual revenue.",
+          "Increased organic traffic by 150% through SEO optimization and content marketing initiatives.",
+          "Managed $500K+ annual advertising budget across Google Ads, LinkedIn, and Meta platforms.",
+          "Built analytics dashboard tracking 20+ KPIs reducing reporting time by 10 hours per week.",
+          "Supervised team of 3 marketing coordinators and 2 content creators."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Digital Marketing Specialist",
+        "company": "GrowthLab Inc.",
+        "location": "",
+        "start": "Jun 2020",
+        "end": "Feb 2022",
+        "bullets": [
+          "Executed email marketing campaigns reaching 200K+ subscribers with 28% open rate.",
+          "Optimized landing pages achieving 35% conversion rate improvement through A/B testing.",
+          "Managed social media presence across 5 platforms growing follower base by 80%.",
+          "Produced monthly analytics reports with actionable insights for stakeholders."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Marketing Coordinator",
+        "company": "StartupNest",
+        "location": "",
+        "start": "Jan 2019",
+        "end": "May 2020",
+        "bullets": [
+          "Coordinated product launches including press releases, email sequences, and social content.",
+          "Maintained content calendar and ensured timely delivery of marketing materials.",
+          "Assisted with market research and competitor analysis for quarterly planning."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Southern California",
+        "degree": "Bachelor of Arts in Marketing",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Digital marketing",
+      "content strategy",
+      "SEO/SEM",
+      "social media management",
+      "Google Analytics",
+      "HubSpot",
+      "Mailchimp",
+      "Adobe Creative Suite",
+      "campaign analytics",
+      "brand strategy",
+      "project management",
+      "English (Native)",
+      "Korean (Native)"
+    ],
+    "certifications": [
+      "Google Analytics Individual Qualification",
+      "HubSpot Inbound Marketing Certification"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Creative marketing manager with 5 years of experience driving brand growth through digital strategy, content marketing, and campaign analytics. Skilled in leading cross-functional teams and delivering measurable ROI."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 28,
+      "parsedWordCount": 28,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 172,
+      "parsedWordCount": 146,
+      "ratio": 0.8488372093023255,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 10,
+      "parsedWordCount": 10,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 21,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 8,
+      "parsedWordCount": 8,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 4,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

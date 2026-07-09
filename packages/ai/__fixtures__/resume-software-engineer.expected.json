@@ -1,0 +1,226 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Alex Chen",
+      "email": "alex.chen@email.com",
+      "phone": "(415) 555-0198",
+      "location": "San Francisco, CA",
+      "website": "",
+      "linkedin": "linkedin.com/in/alexchen",
+      "github": "github.com/alexchen"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Software Engineer",
+        "company": "TechVista Inc.",
+        "location": "",
+        "start": "Mar 2021",
+        "end": "Present",
+        "bullets": [
+          "Led migration of monolithic CMS to microservices architecture serving 5M+ monthly users.",
+          "Designed and implemented GraphQL API layer reducing frontend data fetching by 60%.",
+          "Mentored 6 junior engineers through structured code review and pair programming.",
+          "Established CI/CD pipelines cutting deployment time from 45 minutes to 8 minutes.",
+          "Drove adoption of TypeScript across 4 teams improving code quality metrics by 35%."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Software Engineer",
+        "company": "DataStream Solutions",
+        "location": "",
+        "start": "Jun 2018",
+        "end": "Feb 2021",
+        "bullets": [
+          "Built real-time data processing pipeline handling 100K events per second.",
+          "Developed RESTful APIs for customer-facing analytics dashboard with 99.9% uptime.",
+          "Reduced database query latency by 70% through indexing strategy and query optimization.",
+          "Collaborated with product team to ship 12 major features on schedule."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Junior Developer",
+        "company": "StartupLab Inc.",
+        "location": "",
+        "start": "Sep 2016",
+        "end": "May 2018",
+        "bullets": [
+          "Built responsive UI components using React and Redux for e-commerce platform.",
+          "Wrote unit and integration tests achieving 85% code coverage.",
+          "Participated in agile ceremonies including daily standups and sprint planning."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Bachelor of Science in Computer Science",
+        "degree": "Bachelor of Science in Computer Science",
+        "location": "",
+        "graduation": "2016"
+      }
+    ],
+    "skills": [
+      "Languages: JavaScript",
+      "TypeScript",
+      "Python",
+      "Go",
+      "SQL",
+      "Frontend: React",
+      "Next.js",
+      "Tailwind CSS",
+      "Redux",
+      "Backend: Node.js",
+      "Express",
+      "Django",
+      "PostgreSQL",
+      "MongoDB",
+      "DevOps: AWS",
+      "Docker",
+      "Kubernetes",
+      "Terraform",
+      "CI/CD",
+      "Tools: Git",
+      "Jest",
+      "Playwright",
+      "Datadog",
+      "Sentry",
+      "English (Native)",
+      "Mandarin Chinese (Professional Working)"
+    ],
+    "certifications": [
+      "AWS Solutions Architect - Associate",
+      "Google Cloud Associate Engineer"
+    ],
+    "professionalQualities": [],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Open Source: react-hook-form-contrib",
+        "description": "",
+        "bullets": [
+          "Published 5 npm packages adopted by 3K+ repositories.",
+          "Maintained documentation and triaged community issues."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Personal Portfolio Dashboard",
+        "description": "",
+        "bullets": [
+          "Built real-time analytics dashboard using Next.js and Chart.js.",
+          "Integrated GitHub and LinkedIn APIs for unified activity feed."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Senior full-stack engineer with 8 years of experience building scalable web applications and leading engineering teams. Passionate about clean architecture, developer experience, and mentoring."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/6 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 24,
+      "parsedWordCount": 24,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 172,
+      "parsedWordCount": 146,
+      "ratio": 0.8488372093023255,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 9,
+      "parsedWordCount": 13,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 30,
+      "parsedWordCount": 36,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 41,
+      "parsedWordCount": 37,
+      "ratio": 0.9024390243902439,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 6,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

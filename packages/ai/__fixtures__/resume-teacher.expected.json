@@ -1,0 +1,170 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "James Wilson",
+      "email": "james.wilson@email.com",
+      "phone": "(713) 555-0312",
+      "location": "Houston, TX",
+      "website": "",
+      "linkedin": "",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Mathematics Teacher",
+        "company": "Houston Independent School District",
+        "location": "",
+        "start": "Aug 2020",
+        "end": "Present",
+        "bullets": [
+          "Teach Algebra I, Geometry, and AP Statistics to 150+ students across 5 sections.",
+          "Improved End-of-Course exam pass rates from 68% to 84% over 3 academic years.",
+          "Developed intervention program for at-risk students resulting in 92% credit recovery rate.",
+          "Served on curriculum committee to align instructional materials with state standards.",
+          "Mentored 2 first-year teachers through district induction program."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Teaching Assistant",
+        "company": "University of Texas Math Department",
+        "location": "",
+        "start": "Sep 2018",
+        "end": "May 2020",
+        "bullets": [
+          "Led weekly recitation sessions for Calculus I and II courses with 30 students each.",
+          "Held office hours and provided individualized tutoring to struggling students.",
+          "Graded assignments and provided feedback to support student learning outcomes."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Texas at Austin",
+        "degree": "Master of Education in Curriculum and Instruction",
+        "location": "",
+        "graduation": "2020"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "University of Texas at Austin",
+        "degree": "Bachelor of Science in Mathematics",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Curriculum development",
+      "classroom management",
+      "differentiated instruction",
+      "lesson planning",
+      "data analysis",
+      "Google Classroom",
+      "parent communication",
+      "formative assessment",
+      "ESL strategies"
+    ],
+    "certifications": [
+      "Texas Teaching Certification - Mathematics 7-12",
+      "ESL Supplemental Certification"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [],
+    "summary": "Dedicated high school mathematics teacher with 5 years of experience in urban education. Committed to fostering student growth through data-driven instruction and inclusive classroom practices."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "low",
+    "references": "low",
+    "volunteer": "low"
+  },
+  "importQuality": "fair",
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 121,
+      "parsedWordCount": 104,
+      "ratio": 0.859504132231405,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 38,
+      "parsedWordCount": 24,
+      "ratio": 0.631578947368421,
+      "status": "partial"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "standard-bullets"
+  ]
+}

@@ -1,0 +1,64 @@
+Kevin Park
+kevin.park@email.com
+(510) 555-0987
+Berkeley, CA
+github.com/kevinpark
+linkedin.com/in/kevinpark
+
+Professional Summary
+Computer science student with strong foundation in algorithms, data structures, and full-stack development. Seeking summer internship in software engineering.
+
+Skills
+Java, Python, JavaScript, TypeScript, React, Node.js, SQL, Git, Data structures, Algorithms, Machine learning, Public speaking
+
+Education
+Bachelor of Science in Computer Science
+University of California, Berkeley
+Expected 2027
+
+Relevant Coursework
+Data Structures, Algorithms, Machine Learning, Database Systems, Web Development, Operating Systems
+
+Projects
+Course Scheduler App
+- Built web app for UC Berkeley students to plan class schedules with conflict detection.
+- Used React, Node.js, and PostgreSQL with 500+ active users.
+- Integrated university API for real-time course availability data.
+
+Chess AI Engine
+- Implemented minimax algorithm with alpha-beta pruning.
+- Achieved 1800+ Elo rating against online opponents.
+- Wrote in C++ with bitboard representation for performance.
+
+Experience
+Teaching Assistant - Introduction to Computer Science
+UC Berkeley Computer Science Department
+Jan 2025 - Present
+- Lead weekly lab sessions for 40+ students covering Python and problem-solving.
+- Grade assignments and provide detailed feedback to support learning.
+- Hold office hours for 1-on-1 tutoring and exam preparation.
+
+Software Engineering Intern
+StartupTech Labs
+Jun 2024 - Aug 2024
+- Developed REST API endpoints for mobile application using Node.js and Express.
+- Wrote unit tests achieving 90% code coverage for new features.
+- Participated in code reviews and agile sprint planning ceremonies.
+
+Leadership
+Vice President - ACM Student Chapter
+UC Berkeley
+2024 - Present
+- Organize weekly workshops and hackathons with 100+ attendees.
+- Coordinate with industry sponsors for career development events.
+
+Honors
+Dean's List - Fall 2023, Spring 2024
+ACM ICPC Regional Finalist
+
+Languages
+English (Native)
+Korean (Native)
+
+References
+Available upon request.

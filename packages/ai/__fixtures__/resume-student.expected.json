@@ -1,0 +1,212 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Kevin Park",
+      "email": "kevin.park@email.com",
+      "phone": "(510) 555-0987",
+      "location": "Berkeley, CA",
+      "website": "",
+      "linkedin": "linkedin.com/in/kevinpark",
+      "github": "github.com/kevinpark"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Teaching Assistant - Introduction to Computer Science",
+        "company": "UC Berkeley Computer Science Department",
+        "location": "",
+        "start": "Jan 2025",
+        "end": "Present",
+        "bullets": [
+          "Lead weekly lab sessions for 40+ students covering Python and problem-solving.",
+          "Grade assignments and provide detailed feedback to support learning.",
+          "Hold office hours for 1-on-1 tutoring and exam preparation."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Software Engineering Intern",
+        "company": "StartupTech Labs",
+        "location": "",
+        "start": "Jun 2024",
+        "end": "Aug 2024",
+        "bullets": [
+          "Developed REST API endpoints for mobile application using Node.js and Express.",
+          "Wrote unit tests achieving 90% code coverage for new features.",
+          "Participated in code reviews and agile sprint planning ceremonies."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Vice President - ACM Student Chapter",
+        "company": "UC Berkeley",
+        "location": "",
+        "start": "2024",
+        "end": "Present",
+        "bullets": [
+          "Organize weekly workshops and hackathons with 100+ attendees.",
+          "Coordinate with industry sponsors for career development events."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of California, Berkeley",
+        "degree": "Bachelor of Science in Computer Science",
+        "location": "",
+        "graduation": "2027"
+      }
+    ],
+    "skills": [
+      "Java",
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Node.js",
+      "SQL",
+      "Git",
+      "Data structures",
+      "Algorithms",
+      "Machine learning",
+      "Public speaking",
+      "English (Native)",
+      "Korean (Native)"
+    ],
+    "certifications": [],
+    "professionalQualities": [
+      "Dean's List - Fall 2023, Spring 2024",
+      "ACM ICPC Regional Finalist"
+    ],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Course Scheduler App",
+        "description": "",
+        "bullets": [
+          "Built web app for UC Berkeley students to plan class schedules with conflict detection.",
+          "Used React, Node.js, and PostgreSQL with 500+ active users.",
+          "Integrated university API for real-time course availability data."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Chess AI Engine",
+        "description": "",
+        "bullets": [
+          "Implemented minimax algorithm with alpha-beta pruning.",
+          "Achieved 1800+ Elo rating against online opponents.",
+          "Wrote in C++ with bitboard representation for performance."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Computer science student with strong foundation in algorithms, data structures, and full-stack development. Seeking summer internship in software engineering."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "low",
+    "professionalQualities": "medium",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "poor",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 19,
+      "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 121,
+      "parsedWordCount": 100,
+      "ratio": 0.8264462809917356,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 25,
+      "parsedWordCount": 11,
+      "ratio": 0.44,
+      "status": "partial"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 15,
+      "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 64,
+      "parsedWordCount": 58,
+      "ratio": 0.90625,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 4,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Carlos Mendez",
+      "email": "carlos.mendez@email.com",
+      "phone": "(305) 555-0456",
+      "location": "Miami, FL",
+      "website": "",
+      "linkedin": "linkedin.com/in/carlosmendez",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Civil Engineer",
+        "company": "Miami-Dade Public Works Department",
+        "location": "",
+        "start": "Mar 2020",
+        "end": "Present",
+        "bullets": [
+          "Lead design and construction oversight for $15M in transportation infrastructure projects.",
+          "Designed 8 miles of roadway improvements including drainage and traffic signal systems.",
+          "Reduced project delivery time by 20% through improved permitting coordination.",
+          "Supervised team of 5 junior engineers and reviewed all structural calculations.",
+          "Ensured compliance with FDOT standards and environmental regulations."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Civil Engineer",
+        "company": "Garcia & Associates Engineering",
+        "location": "",
+        "start": "Jun 2017",
+        "end": "Feb 2020",
+        "bullets": [
+          "Designed structural foundations for 12 commercial and residential buildings.",
+          "Prepared construction documents, specifications, and cost estimates.",
+          "Conducted site inspections and provided field engineering support.",
+          "Collaborated with architects and contractors to resolve design issues."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Junior Engineer",
+        "company": "South Florida Engineering Group",
+        "location": "",
+        "start": "Jan 2016",
+        "end": "May 2017",
+        "bullets": [
+          "Assisted senior engineers with structural analysis and design calculations.",
+          "Performed site surveys and collected field data for infrastructure projects.",
+          "Prepared technical reports and permit applications for local agencies."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Florida",
+        "degree": "Master of Science in Civil Engineering",
+        "location": "",
+        "graduation": "2015"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "University of Florida",
+        "degree": "Bachelor of Science in Civil Engineering",
+        "location": "",
+        "graduation": "2013"
+      }
+    ],
+    "skills": [
+      "AutoCAD",
+      "Civil 3D",
+      "STAAD.Pro",
+      "structural analysis",
+      "site planning",
+      "project management",
+      "cost estimation",
+      "construction oversight",
+      "building codes",
+      "environmental compliance",
+      "drainage design",
+      "English (Native)",
+      "Spanish (Native)"
+    ],
+    "certifications": [
+      "Professional Engineer (PE) - Florida Board",
+      "LEED Green Associate",
+      "OSHA 30-Hour Construction Safety"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Licensed civil engineer with 8 years of experience in infrastructure design and project management. Specialized in transportation and structural engineering with focus on sustainable urban development."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 26,
+      "parsedWordCount": 26,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 158,
+      "parsedWordCount": 132,
+      "ratio": 0.8354430379746836,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 20,
+      "parsedWordCount": 20,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 20,
+      "parsedWordCount": 24,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 4,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

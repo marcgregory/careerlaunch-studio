@@ -1,0 +1,184 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Priya Patel",
+      "email": "priya.patel@email.com",
+      "phone": "(212) 555-0498",
+      "location": "New York, NY",
+      "website": "",
+      "linkedin": "linkedin.com/in/priyapatel",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Accountant",
+        "company": "Deloitte & Touche LLP",
+        "location": "",
+        "start": "Jan 2020",
+        "end": "Present",
+        "bullets": [
+          "Lead audit engagements for 12+ corporate clients across technology and manufacturing sectors.",
+          "Prepared financial statements in compliance with GAAP and SEC reporting requirements.",
+          "Identified $2.3M in tax savings opportunities through strategic planning and credits analysis.",
+          "Supervised team of 4 staff accountants and reviewed work papers for accuracy.",
+          "Reduced audit close time by 25% by implementing standardized checklists and workflows."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Staff Accountant",
+        "company": "PwC",
+        "location": "",
+        "start": "Jun 2017",
+        "end": "Dec 2019",
+        "bullets": [
+          "Prepared corporate tax returns for C-corporations and partnerships.",
+          "Performed month-end close procedures including journal entries and reconciliations.",
+          "Assisted with SOX compliance testing for internal controls.",
+          "Supported senior managers with data analysis for client advisory engagements."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Baruch College, CUNY",
+        "degree": "Master of Science in Accounting",
+        "location": "",
+        "graduation": "2017"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "University of Texas at Dallas",
+        "degree": "Bachelor of Business Administration in Accounting",
+        "location": "",
+        "graduation": "2015"
+      }
+    ],
+    "skills": [
+      "Financial reporting",
+      "GAAP",
+      "tax preparation",
+      "audit procedures",
+      "QuickBooks",
+      "SAP",
+      "Microsoft Excel",
+      "data analysis",
+      "internal controls",
+      "reconciliation",
+      "budgeting"
+    ],
+    "certifications": [
+      "Certified Public Accountant (CPA) - New York State",
+      "Certified Internal Auditor (CIA)"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Certified Public Accountant with 7 years of experience in audit, tax preparation, and financial reporting. Proven track record of streamlining processes and ensuring regulatory compliance."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "low",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 121,
+      "parsedWordCount": 103,
+      "ratio": 0.8512396694214877,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 21,
+      "parsedWordCount": 21,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 17,
+      "parsedWordCount": 17,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "standard-bullets",
+    "references-heavy"
+  ]
+}

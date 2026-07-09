@@ -1,0 +1,189 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Robert Mitchell",
+      "email": "robert.mitchell@email.com",
+      "phone": "(617) 555-0100",
+      "location": "Boston, MA",
+      "website": "",
+      "linkedin": "linkedin.com/in/robertmitchell",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Chief Executive Officer",
+        "company": "NovaTech Solutions",
+        "location": "",
+        "start": "Jan 2020",
+        "end": "Present",
+        "bullets": [
+          "Led company through 3x revenue growth from $25M to $75M in 4 years.",
+          "Raised $40M in Series B and C funding from top-tier venture capital firms.",
+          "Expanded workforce from 120 to 350 employees across 3 countries.",
+          "Established partnerships with 5 Fortune 500 companies generating $15M in new revenue.",
+          "Drove acquisition of 2 competitors expanding market share from 12% to 22%."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Chief Operating Officer",
+        "company": "FinServ Group",
+        "location": "",
+        "start": "Mar 2016",
+        "end": "Dec 2019",
+        "bullets": [
+          "Oversaw operations across 12 departments with 500+ employees and $200M budget.",
+          "Reduced operating costs by 18% through process automation and vendor renegotiation.",
+          "Implemented enterprise-wide CRM system improving sales efficiency by 35%.",
+          "Led integration of 3 acquired companies with zero business disruption."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "VP of Operations",
+        "company": "DataCore Inc.",
+        "location": "",
+        "start": "Jun 2010",
+        "end": "Feb 2016",
+        "bullets": [
+          "Managed daily operations for $150M division with 200+ staff.",
+          "Developed KPIs and reporting systems adopted company-wide.",
+          "Spearheaded digital transformation initiative modernizing legacy systems.",
+          "Built customer success team reducing churn from 15% to 5% annually. Board Memberships TechBridge Foundation - Board Chair Boston Innovation Council - Advisory Board Member"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Harvard Business School",
+        "degree": "Master of Business Administration",
+        "location": "",
+        "graduation": "2008"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "Massachusetts Institute of Technology",
+        "degree": "Bachelor of Science in Computer Science",
+        "location": "",
+        "graduation": "2002"
+      }
+    ],
+    "skills": [
+      "English (Native)",
+      "French (Professional Working)"
+    ],
+    "certifications": [
+      "Certified Board Director - NACD",
+      "Six Sigma Black Belt"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Transformational C-level executive with 20+ years of experience driving revenue growth, operational excellence, and organizational change in technology and financial services. Board member and strategic advisor."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "low",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "medium",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 26,
+      "parsedWordCount": 26,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 191,
+      "parsedWordCount": 164,
+      "ratio": 0.8586387434554974,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 19,
+      "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 0,
+      "parsedWordCount": 5,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 5,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "references-heavy"
+  ]
+}

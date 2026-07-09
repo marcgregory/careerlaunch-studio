@@ -1,0 +1,212 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Maya Johnson",
+      "email": "maya.johnson@email.com",
+      "phone": "(503) 555-0234",
+      "location": "Portland, OR",
+      "website": "mayajohnson.design",
+      "linkedin": "linkedin.com/in/mayajohnson",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Graphic Designer",
+        "company": "PixelPerfect Creative Agency",
+        "location": "",
+        "start": "Apr 2021",
+        "end": "Present",
+        "bullets": [
+          "Lead brand identity projects for 20+ clients across tech, food, and retail sectors.",
+          "Designed comprehensive brand guidelines adopted company-wide by 3 client organizations.",
+          "Increased client retention rate by 30% through improved design quality and communication.",
+          "Mentored 3 junior designers on design principles, tools, and client management.",
+          "Managed design workflow from concept to final delivery for $1M+ annual project portfolio."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Graphic Designer",
+        "company": "StudioM Creative",
+        "location": "",
+        "start": "Jun 2020",
+        "end": "Mar 2021",
+        "bullets": [
+          "Created visual assets for social media campaigns reaching 500K+ impressions monthly.",
+          "Designed print materials including brochures, posters, and trade show displays.",
+          "Collaborated with copywriters and marketers to produce cohesive campaign visuals."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Junior Designer",
+        "company": "BrandLab Inc.",
+        "location": "",
+        "start": "Jan 2019",
+        "end": "May 2020",
+        "bullets": [
+          "Assisted senior designers with layout production and file preparation.",
+          "Maintained digital asset library and ensured organized file management.",
+          "Produced mockups and prototypes for client presentations."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Rhode Island School of Design",
+        "degree": "Bachelor of Fine Arts in Graphic Design",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Adobe Creative Suite",
+      "Figma",
+      "Sketch",
+      "typography",
+      "branding",
+      "logo design",
+      "UI/UX design",
+      "motion graphics",
+      "illustration",
+      "prototyping",
+      "print design",
+      "photo retouching",
+      "English (Native)"
+    ],
+    "certifications": [
+      "Google UX Design Certificate",
+      "Adobe Certified Professional - Visual Design"
+    ],
+    "professionalQualities": [],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Personal Brand Refresh",
+        "description": "",
+        "bullets": [
+          "Redesigned personal brand identity including logo, website, and social media assets.",
+          "Featured in 3 design publications and received AIGA Design Award."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Community Mural Project",
+        "description": "",
+        "bullets": [
+          "Led 10-person volunteer team creating 200ft community mural.",
+          "Coordinated with city officials for permitting and material procurement."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Creative graphic designer with 5 years of experience in brand identity, digital design, and user experience. Passionate about creating intuitive and visually compelling design solutions."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/2 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 154,
+      "parsedWordCount": 129,
+      "ratio": 0.8376623376623377,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 19,
+      "parsedWordCount": 21,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 10,
+      "parsedWordCount": 10,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 48,
+      "parsedWordCount": 44,
+      "ratio": 0.9166666666666666,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 2,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

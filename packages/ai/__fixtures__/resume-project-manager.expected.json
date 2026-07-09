@@ -1,0 +1,197 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Emily Torres",
+      "email": "emily.torres@email.com",
+      "phone": "(206) 555-0612",
+      "location": "Seattle, WA",
+      "website": "",
+      "linkedin": "linkedin.com/in/emilytorres",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Project Manager",
+        "company": "CloudBase Technologies",
+        "location": "",
+        "start": "Jan 2022",
+        "end": "Present",
+        "bullets": [
+          "Lead cross-functional teams of 15-20 members delivering cloud infrastructure projects.",
+          "Managed $5M+ annual project portfolio with 95% on-time delivery rate.",
+          "Implemented agile transformation across 3 teams reducing cycle time by 40%.",
+          "Facilitated quarterly planning sessions with executive stakeholders.",
+          "Mitigated $1.2M in potential risks through proactive issue identification and escalation."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Project Manager",
+        "company": "DigitalWave Consulting",
+        "location": "",
+        "start": "Mar 2019",
+        "end": "Dec 2021",
+        "bullets": [
+          "Managed 8+ concurrent client engagements from initiation to closure.",
+          "Developed and maintained project schedules, budgets, and resource plans.",
+          "Led weekly status meetings and produced executive-level progress reports.",
+          "Increased client satisfaction scores from 3.8 to 4.6 through improved communication."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Associate Project Manager",
+        "company": "InnovateTech",
+        "location": "",
+        "start": "Jun 2017",
+        "end": "Feb 2019",
+        "bullets": [
+          "Supported senior project managers with documentation, scheduling, and reporting.",
+          "Tracked project milestones and identified risks for escalation.",
+          "Coordinated cross-team communication for 3 simultaneous software releases."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Washington",
+        "degree": "Master of Business Administration",
+        "location": "",
+        "graduation": "2017"
+      },
+      {
+        "id": "import-edu-2",
+        "school": "University of Oregon",
+        "degree": "Bachelor of Arts in Business Administration",
+        "location": "",
+        "graduation": "2014"
+      }
+    ],
+    "skills": [
+      "Project management",
+      "agile/scrum",
+      "risk management",
+      "stakeholder communication",
+      "JIRA",
+      "Confluence",
+      "Microsoft Project",
+      "budget management",
+      "vendor management",
+      "team leadership",
+      "process improvement"
+    ],
+    "certifications": [
+      "Project Management Professional (PMP) - PMI",
+      "Certified ScrumMaster (CSM) - Scrum Alliance"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Certified Project Management Professional with 8 years of experience delivering complex technology projects. Expertise in agile methodologies, risk management, and stakeholder communication."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "low",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 22,
+      "parsedWordCount": 22,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 151,
+      "parsedWordCount": 125,
+      "ratio": 0.8278145695364238,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 19,
+      "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

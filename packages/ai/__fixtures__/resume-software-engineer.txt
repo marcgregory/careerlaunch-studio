@@ -1,0 +1,66 @@
+Alex Chen
+alex.chen@email.com
+(415) 555-0198
+San Francisco, CA
+github.com/alexchen
+linkedin.com/in/alexchen
+
+Professional Summary
+Senior full-stack engineer with 8 years of experience building scalable web applications and leading engineering teams. Passionate about clean architecture, developer experience, and mentoring.
+
+Skills
+Languages: JavaScript, TypeScript, Python, Go, SQL
+Frontend: React, Next.js, Tailwind CSS, Redux
+Backend: Node.js, Express, Django, PostgreSQL, MongoDB
+DevOps: AWS, Docker, Kubernetes, Terraform, CI/CD
+Tools: Git, Jest, Playwright, Datadog, Sentry
+
+Experience
+Senior Software Engineer
+TechVista Inc.
+Mar 2021 - Present
+- Led migration of monolithic CMS to microservices architecture serving 5M+ monthly users.
+- Designed and implemented GraphQL API layer reducing frontend data fetching by 60%.
+- Mentored 6 junior engineers through structured code review and pair programming.
+- Established CI/CD pipelines cutting deployment time from 45 minutes to 8 minutes.
+- Drove adoption of TypeScript across 4 teams improving code quality metrics by 35%.
+
+Software Engineer
+DataStream Solutions
+Jun 2018 - Feb 2021
+- Built real-time data processing pipeline handling 100K events per second.
+- Developed RESTful APIs for customer-facing analytics dashboard with 99.9% uptime.
+- Reduced database query latency by 70% through indexing strategy and query optimization.
+- Collaborated with product team to ship 12 major features on schedule.
+
+Junior Developer
+StartupLab Inc.
+Sep 2016 - May 2018
+- Built responsive UI components using React and Redux for e-commerce platform.
+- Wrote unit and integration tests achieving 85% code coverage.
+- Participated in agile ceremonies including daily standups and sprint planning.
+
+Education
+Bachelor of Science in Computer Science
+UC Berkeley
+2016
+
+Certifications
+AWS Solutions Architect - Associate
+Google Cloud Associate Engineer
+
+Projects
+Open Source: react-hook-form-contrib
+- Published 5 npm packages adopted by 3K+ repositories.
+- Maintained documentation and triaged community issues.
+
+Personal Portfolio Dashboard
+- Built real-time analytics dashboard using Next.js and Chart.js.
+- Integrated GitHub and LinkedIn APIs for unified activity feed.
+
+Languages
+English (Native)
+Mandarin Chinese (Professional Working)
+
+References
+Available upon request.
