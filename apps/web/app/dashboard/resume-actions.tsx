@@ -13,6 +13,7 @@ type ResumeActionsProps = {
   menuOpen?: boolean;
   onMenuOpenChange?: (open: boolean) => void;
   onDeleteClick?: () => void;
+  disabled?: boolean;
 };
 
 export function ResumeActions({
@@ -21,11 +22,12 @@ export function ResumeActions({
   menuOpen,
   onMenuOpenChange,
   onDeleteClick,
+  disabled = false,
 }: ResumeActionsProps) {
   const router = useRouter();
-  const [internalOpen, setInternalOpen] = useState(false);
-  const open = menuOpen ?? internalOpen;
-  const setOpen = onMenuOpenChange ?? setInternalOpen;
+  // No local useState for open — fully controlled via props
+  const open = menuOpen ?? false;
+  const setOpen = onMenuOpenChange ?? (() => {});
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -44,9 +46,9 @@ export function ResumeActions({
   const handleDeleteSelect = useCallback(() => {
     closeMenu();
     // let dropdown DOM fully tear down before opening modal
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       onDeleteClick?.();
-    });
+    }, 0);
   }, [closeMenu, onDeleteClick]);
 
   const handleDuplicate = useCallback(async () => {
@@ -134,14 +136,14 @@ export function ResumeActions({
   const menuItems = useMemo(() => {
     const isLoading = actionLoading !== null;
     return (
-      <DropdownMenu.Portal>
+      !disabled ? (
         <DropdownMenu.Content
           align="end"
           side="bottom"
           sideOffset={8}
           collisionPadding={12}
           avoidCollisions
-          className="z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
+          className="z-[60] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
           <DropdownMenu.Item
             onSelect={handleRenameSelect}
@@ -193,8 +195,8 @@ export function ResumeActions({
             <Trash2 size={15} />
             Delete
           </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
+          </DropdownMenu.Content>
+      ) : null
     );
   }, [
     actionLoading,
@@ -202,11 +204,12 @@ export function ResumeActions({
     handleDuplicate,
     handleExport,
     handleDeleteSelect,
+    disabled,
   ]);
 
   return (
     <>
-      <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Root open={disabled ? false : open} onOpenChange={setOpen}>
         <DropdownMenu.Trigger asChild>
           <button
             type="button"

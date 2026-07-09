@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { ResumeCard } from "./resume-card";
 import { EmptyState } from "./empty-state";
 import { DeleteResumeModal } from "./delete-modal";
@@ -47,13 +46,6 @@ function getRecencyGroup(updatedAt: Date): string {
   return "Earlier";
 }
 
-/** Flat rows: group headers use a synthetic id like "__group:Today", cards use the resume id. */
-type FlatRow =
-  | { kind: "group"; id: string; label: string; count: number }
-  | { kind: "card"; id: string; resume: SerializedResume & { parsedDate: Date } };
-
-const VIRTUALIZATION_THRESHOLD = 20;
-const OVERSCAN = 6;
 
 export function ResumeList({ resumes }: ResumeListProps) {
   const [search, setSearch] = useState("");
@@ -62,7 +54,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDeleteModalOpen = !!resumeToDelete;
 
   // Stable callbacks
   const handleMenuOpenChange = useCallback(
@@ -72,8 +64,11 @@ export function ResumeList({ resumes }: ResumeListProps) {
 
   const handleDeleteClick = useCallback(
     (id: string, title: string) => {
-      setActiveMenuId(null); // close dropdown first
-      setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
+      // Force close menu before modal opens
+      setActiveMenuId(null);
+      setTimeout(() => {
+        setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
+      }, 0);
     },
     [],
   );
@@ -141,18 +136,6 @@ export function ResumeList({ resumes }: ResumeListProps) {
     return result;
   }, [sorted]);
 
-  // Flatten groups into rows (group headers + cards) for virtualizer
-  const flatRows: FlatRow[] = useMemo(() => {
-    const rows: FlatRow[] = [];
-    for (const group of groups) {
-      rows.push({ kind: "group", id: `__group:${group.label}`, label: group.label, count: group.items.length });
-      for (const item of group.items) {
-        rows.push({ kind: "card", id: item.id, resume: item });
-      }
-    }
-    return rows;
-  }, [groups]);
-
   const hasActiveFilters = search.trim().length > 0 || filter !== "all";
 
   // Callbacks
@@ -172,17 +155,6 @@ export function ResumeList({ resumes }: ResumeListProps) {
     setFilter("all");
     setSort("updated");
   }, []);
-
-  // Virtualizer — use dynamic sizing for group headers vs cards
-  const shouldVirtualize = flatRows.length > VIRTUALIZATION_THRESHOLD;
-  const virtualizer = useVirtualizer({
-    count: shouldVirtualize ? flatRows.length : 0,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: (index) =>
-      flatRows[index]?.kind === "group" ? 36 : 132,
-    overscan: OVERSCAN,
-    getItemKey: (index) => flatRows[index]?.id ?? index,
-  });
 
   // Empty state
   if (sorted.length === 0 && hasActiveFilters) {
@@ -230,74 +202,28 @@ export function ResumeList({ resumes }: ResumeListProps) {
         />
       )}
 
-      {/* Resume cards — virtualized or plain */}
-      {shouldVirtualize ? (
-        <div ref={scrollRef} className="overflow-auto" style={{ maxHeight: "calc(100vh - 320px)" }}>
-          <div
-            style={{
-              height: `${virtualizer.getTotalSize()}px`,
-              width: "100%",
-              position: "relative",
-            }}
-          >
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const row = flatRows[virtualItem.index];
-              if (!row) return null;
-              return (
-                <div
-                  key={row.id}
-                  data-index={virtualItem.index}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                >
-                  {row.kind === "group" ? (
-                    <GroupHeader label={row.label} count={row.count} />
-                  ) : (
-                    <div style={{ paddingBottom: "12px" }}>
-                      <ResumeCard
-                        id={row.resume.id}
-                        title={row.resume.title}
-                        targetRole={row.resume.targetRole}
-                        updatedAt={row.resume.parsedDate}
-                        analysisRunCount={row.resume.analysisRunCount}
-                        menuOpen={activeMenuId === row.resume.id}
-                        onMenuOpenChange={handleMenuOpenChange}
-                        onDeleteClick={handleDeleteClick}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+      {/* Resume cards — no inner scroll, page is the only scroll container */}
+      {groups.map((group) => (
+        <section key={group.label}>
+          <GroupHeader label={group.label} count={group.items.length} />
+          <div className="space-y-3">
+            {group.items.map((r) => (
+              <ResumeCard
+                key={r.id}
+                id={r.id}
+                title={r.title}
+                targetRole={r.targetRole}
+                updatedAt={r.parsedDate}
+                analysisRunCount={r.analysisRunCount}
+                menuOpen={!isDeleteModalOpen && activeMenuId === r.id}
+                onMenuOpenChange={handleMenuOpenChange}
+                onDeleteClick={handleDeleteClick}
+                actionsDisabled={isDeleteModalOpen}
+              />
+            ))}
           </div>
-        </div>
-      ) : (
-        groups.map((group) => (
-          <section key={group.label}>
-            <GroupHeader label={group.label} count={group.items.length} />
-            <div className="space-y-3">
-              {group.items.map((r) => (
-                <ResumeCard
-                  key={r.id}
-                  id={r.id}
-                  title={r.title}
-                  targetRole={r.targetRole}
-                  updatedAt={r.parsedDate}
-                  analysisRunCount={r.analysisRunCount}
-                  menuOpen={activeMenuId === r.id}
-                  onMenuOpenChange={handleMenuOpenChange}
-                  onDeleteClick={handleDeleteClick}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
+        </section>
+      ))}
       {/* Global delete modal — rendered once, outside card map */}
       <DeleteResumeModal
         resumeId={resumeToDelete?.id ?? ""}

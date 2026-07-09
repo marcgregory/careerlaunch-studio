@@ -50,9 +50,9 @@ export function RenameModal({ resumeId, currentTitle, onClose, onRenamed }: Rena
   }
 
   return (
-    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div
-        className="relative z-90 w-[90vw] max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
+        className="relative z-[110] w-[90vw] max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-signal text-2xl font-black tracking-[-0.06em] text-[#123c3a]">

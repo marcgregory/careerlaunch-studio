@@ -16,6 +16,7 @@ type ResumeCardProps = {
   /** Stable callback — receives the card's own id so no closure-per-card is needed. */
   onMenuOpenChange?: (resumeId: string, open: boolean) => void;
   onDeleteClick?: (resumeId: string, resumeTitle: string) => void;
+  actionsDisabled?: boolean;
 };
 
 function getTemplateInfo(id: string | undefined): TemplateDefinition {
@@ -75,6 +76,7 @@ function ResumeCardInner({
   menuOpen,
   onMenuOpenChange,
   onDeleteClick,
+  actionsDisabled = false,
 }: ResumeCardProps) {
   const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
   const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
@@ -148,6 +150,7 @@ function ResumeCardInner({
           menuOpen={menuOpen}
           onMenuOpenChange={handleMenuOpenChange}
           onDeleteClick={handleDeleteClick}
+          disabled={actionsDisabled}
         />
         <Link
           href={editHref}
