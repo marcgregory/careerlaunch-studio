@@ -4,19 +4,33 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import type { ResumeCacheData } from "./resume-actions";
+import type { ResumeCacheData, SerializedResume } from "./resume-actions";
 
 type RenameModalProps = {
-  resumeId: string;
-  currentTitle: string;
+  open: boolean;
+  resume: SerializedResume | null;
   onClose: () => void;
 };
 
-export function RenameModal({ resumeId, currentTitle, onClose }: RenameModalProps) {
+export function RenameModal({ open, resume, onClose }: RenameModalProps) {
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState(currentTitle);
+
+  const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync title when resume changes (modal opens with fresh state)
+  const resumeId = resume?.id ?? "";
+  const currentTitle = resume?.title ?? "";
+
+  // Reset internal state when modal opens (keyed by resumeId)
+  const [lastResumeId, setLastResumeId] = useState<string>("");
+  if (open && resumeId !== lastResumeId) {
+    setTitle(currentTitle);
+    setError(null);
+    setSaving(false);
+    setLastResumeId(resumeId);
+  }
 
   function updateCachedTitle(nextTitle: string) {
     queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
@@ -66,14 +80,18 @@ export function RenameModal({ resumeId, currentTitle, onClose }: RenameModalProp
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save rename.");
-      toast.error("Failed to save rename.");
     } finally {
       setSaving(false);
     }
   }
 
+  if (!open || !resume) return null;
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm sm:p-6">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm sm:p-6"
+      onClick={onClose}
+    >
       <div
         className="relative z-[110] w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
         onClick={(e) => e.stopPropagation()}

@@ -407,9 +407,9 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
 
       {/* Global rename modal — one instance, outside card map */}
       <RenameModal
-        resumeId={resumeToRename?.id ?? ""}
-        currentTitle={resumeToRename?.title ?? ""}
-        onClose={handleRenameClose}
+        open={!!resumeToRename}
+        resume={resumeToRename}
+        onClose={() => setResumeToRename(null)}
       />
     </div>
   );
