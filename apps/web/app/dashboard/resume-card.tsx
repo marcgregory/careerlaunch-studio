@@ -3,6 +3,7 @@ import { FileText, ArrowRight } from "lucide-react";
 import { secondaryButtonClass } from "@careerlaunch/ui";
 import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/rendering";
 import { ResumeActions } from "./resume-actions";
+import { memo, useCallback, useMemo } from "react";
 
 type ResumeCardProps = {
   id: string;
@@ -50,7 +51,6 @@ function timeAgo(date: Date): string {
   if (minutes < 60) return `${minutes} min ago`;
   if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
 
-  // Check if it was yesterday
   const dateDay = new Date(date);
   dateDay.setHours(0, 0, 0, 0);
   const today = new Date();
@@ -60,11 +60,10 @@ function timeAgo(date: Date): string {
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
 
-  // Older: return formatted date
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function ResumeCard({
+function ResumeCardInner({
   id,
   title,
   targetRole,
@@ -74,11 +73,20 @@ export function ResumeCard({
   menuOpen,
   onMenuOpenChange,
 }: ResumeCardProps) {
-  const template = getTemplateInfo(templateId);
-  const badge = getStatusBadge(analysisRunCount);
+  const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
+  const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
+  const timeAgoLabel = useMemo(() => timeAgo(updatedAt), [updatedAt]);
+  const editHref = useMemo(() => `/builder?resumeId=${id}`, [id]);
+
+  const handleMenuOpenChange = useCallback(
+    (open: boolean) => {
+      onMenuOpenChange?.(open);
+    },
+    [onMenuOpenChange],
+  );
 
   return (
-    <article className="group grid gap-4 rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#b9ff66] hover:shadow-[0_20px_50px_rgba(18,60,58,0.10)] md:grid-cols-[72px_1fr_auto] md:items-start">
+    <article className="group grid gap-4 rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition-shadow duration-200 hover:-translate-y-0.5 hover:border-[#b9ff66] hover:shadow-[0_12px_30px_rgba(18,60,58,0.08)] md:grid-cols-[72px_1fr_auto] md:items-start">
       {/* Thumbnail placeholder */}
       <div className="hidden md:block">
         <div
@@ -127,9 +135,9 @@ export function ResumeCard({
 
       {/* Actions */}
       <div className="flex items-center gap-2 self-start md:self-center">
-        <ResumeActions resumeId={id} resumeTitle={title} menuOpen={menuOpen} onMenuOpenChange={onMenuOpenChange} />
+        <ResumeActions resumeId={id} resumeTitle={title} menuOpen={menuOpen} onMenuOpenChange={handleMenuOpenChange} />
         <Link
-          href={`/builder?resumeId=${id}`}
+          href={editHref}
           className={`${secondaryButtonClass} whitespace-nowrap`}
         >
           Edit Resume <ArrowRight size={16} />
@@ -138,3 +146,5 @@ export function ResumeCard({
     </article>
   );
 }
+
+export const ResumeCard = memo(ResumeCardInner);
