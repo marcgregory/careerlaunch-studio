@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Wand2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { primaryButtonClass } from "@careerlaunch/ui";
 import { AppHeader, AppLogo } from "../../components/app-header";
 import { useEffect, useRef, useState } from "react";
@@ -174,9 +175,11 @@ export default function ImportPage() {
       setState("preview");
       // Mark that the user reached preview — used by the abandonment detector
       reachedPreviewWithoutDraft.current = true;
+      toast.success("Resume imported successfully.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Import failed");
       setState("error");
+      toast.error("Import failed. Please try again with different text.");
     }
   }
 
@@ -238,10 +241,12 @@ export default function ImportPage() {
       // Draft was created — clear abandonment tracking
       reachedPreviewWithoutDraft.current = false;
 
+      toast.success("Draft created. Redirecting to builder...");
       router.push(`/builder?resumeId=${created.resume.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create resume");
       setState("preview");
+      toast.error("Failed to create resume draft.");
     }
   }
 

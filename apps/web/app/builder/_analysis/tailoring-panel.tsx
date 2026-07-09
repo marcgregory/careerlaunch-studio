@@ -16,6 +16,7 @@ import {
   ChevronUp,
   Info as InfoIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import { DiffView } from "../../../components/diff-view";
 import { SuggestionFeedback } from "../../../components/suggestion-feedback";
@@ -157,6 +158,7 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
         (s: any) => s.category === "skills",
       );
 
+      const totalSugCount = (summarySugs.length + bulletSugs.length + skillSugs.length);
       setTailor({
         status: "success",
         matchScore: gapData.gapAnalysis?.matchScore ?? null,
@@ -168,12 +170,14 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
         skillSuggestions: skillSugs.map((s: any) => ({ ...s, status: "pending" as const })),
         error: null,
       });
+      toast.success(`Tailoring complete. ${totalSugCount} suggestion${totalSugCount !== 1 ? "s" : ""} found.`);
     } catch (error) {
       setTailor((prev) => ({
         ...prev,
         status: "error",
         error: error instanceof Error ? error.message : "Something went wrong",
       }));
+      toast.error("Tailoring analysis failed. Please try again.");
     }
   }, [resumeId, jobDescription, analytics]);
 
@@ -240,6 +244,7 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
       updateSuggestionStatus(suggestion.id, "applied");
       fireEvent(suggestion.id, "applied");
       setFeedbackTriggered((prev) => new Set(prev).add(suggestion.id));
+      toast.success("Suggestion applied.");
     }
   }
 
@@ -299,6 +304,9 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
         fireEvent(s.id, "applied");
         setFeedbackTriggered((prev) => new Set(prev).add(s.id));
       }
+      toast.success(`${pending.length} suggestion${pending.length !== 1 ? "s" : ""} applied.`);
+    } else {
+      toast.error("Failed to apply suggestions.");
     }
   }
 

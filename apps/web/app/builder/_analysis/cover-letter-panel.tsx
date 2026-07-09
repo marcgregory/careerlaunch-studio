@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAnalytics } from "../../../lib/analytics";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
 
@@ -111,11 +112,13 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
         hasTargetRole: true,
       });
       setPanelState({ status: "ready", coverLetter: cl });
+      toast.success("Cover letter draft generated.");
     } catch (error) {
       setPanelState({
         status: "error",
         error: error instanceof Error ? error.message : "Generation failed",
       });
+      toast.error("Failed to generate cover letter.");
     }
   }, [resumeId, targetRole, jobDescription, analytics]);
 
@@ -151,11 +154,13 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
       const cl = data.coverLetter as CoverLetterDocument;
       setCoverLetter(cl);
       setPanelState({ status: "ready", coverLetter: cl });
+      toast.success("Cover letter saved.");
     } catch (error) {
       setPanelState({
         status: "error",
         error: error instanceof Error ? error.message : "Save failed",
       });
+      toast.error("Failed to save cover letter.");
     }
   }, [
     resumeId,
@@ -174,6 +179,7 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
   const exportPdf = useCallback(async () => {
     if (!coverLetter?.id) return;
     setPanelState({ status: "exporting" });
+    toast.loading("Exporting cover letter...", { id: "cl-export" });
 
     try {
       const response = await fetch("/api/export/cover-letter-pdf", {
@@ -208,11 +214,13 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
         hasJobDescription: !!coverLetter.jobDescription,
       });
       setPanelState({ status: "ready", coverLetter });
+      toast.success("PDF exported.", { id: "cl-export" });
     } catch (error) {
       setPanelState({
         status: "error",
         error: error instanceof Error ? error.message : "Export failed",
       });
+      toast.error("Export failed. Please try again.", { id: "cl-export" });
     }
   }, [coverLetter, onUpgradeRequired, analytics]);
 

@@ -15,6 +15,7 @@ import {
   Save,
   Trash2
 } from "lucide-react";
+import { toast } from "sonner";
 import { ResumePreview, resumeTemplates } from "@careerlaunch/rendering";
 import {
   defaultSectionOrder,
@@ -63,6 +64,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   const hasFiredEditEvent = useRef(false);
 
   const [mobileTab, setMobileTab] = useState<"preview" | "edit" | "analyze">("preview");
+  const [templateJustChanged, setTemplateJustChanged] = useState(false);
   const validation = useMemo(() => validateResumeWithSchema(resume), [resume]);
   const hasValidationErrors = Object.keys(validation).length > 0;
 
@@ -97,7 +99,10 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           });
         }
       } catch (error) {
-        if (!controller.signal.aborted) setSaveState("Error");
+        if (!controller.signal.aborted) {
+          setSaveState("Error");
+          toast.error("Failed to save changes.");
+        }
       }
     }, 450);
 
@@ -109,6 +114,13 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
   function patchResume(patch: Partial<ResumeDocument>) {
     setResume((current) => ({ ...current, ...patch }));
+  }
+
+  function handleTemplateSelect(templateId: ResumeTemplateId) {
+    patchResume({ templateId });
+    setTemplateJustChanged(true);
+    setTimeout(() => setTemplateJustChanged(false), 2000);
+    toast.success("Template updated.");
   }
 
   function updateContact(field: keyof ResumeDocument["contact"], value: string) {
@@ -126,6 +138,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         { id: makeId("exp"), role: "", company: "", location: "", start: "", end: "", bullets: [""] }
       ]
     }));
+    toast.success("Role added.");
   }
 
   function updateExperience(id: string, patch: Partial<ExperienceItem>) {
@@ -140,6 +153,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       ...current,
       education: [...current.education, { id: makeId("edu"), school: "", degree: "", location: "", graduation: "" }]
     }));
+    toast.success("School added.");
   }
 
   function updateEducation(id: string, patch: Partial<EducationItem>) {
@@ -154,6 +168,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       ...current,
       projects: [...current.projects, { id: makeId("proj"), name: "", description: "", bullets: [""] }]
     }));
+    toast.success("Project added.");
   }
 
   function updateProject(id: string, patch: Partial<ProjectItem>) {
@@ -172,10 +187,12 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
   function addListItem(section: "skills" | "certifications" | "professionalQualities") {
     setResume((current) => ({ ...current, [section]: [...current[section], ""] }));
+    toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item added.`);
   }
 
   function removeListItem(section: "skills" | "certifications" | "professionalQualities", index: number) {
     setResume((current) => ({ ...current, [section]: current[section].filter((_, itemIndex) => itemIndex !== index) }));
+    toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item removed.`);
   }
 
   function moveListItem(section: "skills" | "certifications" | "professionalQualities", index: number, direction: -1 | 1) {
@@ -192,6 +209,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   function resetDraft() {
     savedSnapshot.current = "";
     setResume(normalizeResume(initialResume));
+    toast.success("Draft reset to original state.");
   }
 
   async function handleApplySuggestion(operations: ApplyOperation[]) {
@@ -223,8 +241,12 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   async function exportPdf() {
-    if (hasValidationErrors) return;
+    if (hasValidationErrors) {
+      toast.error("Fix required fields before exporting.");
+      return;
+    }
     setExportState("Exporting");
+    toast.loading("Preparing your PDF...", { id: "pdf-export" });
 
     try {
       const response = await fetch("/api/export/pdf", {
@@ -267,8 +289,10 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       link.remove();
       window.URL.revokeObjectURL(url);
       setExportState("Idle");
+      toast.success("PDF exported successfully.", { id: "pdf-export" });
     } catch (error) {
       setExportState("Error");
+      toast.error("PDF export failed. Please try again.", { id: "pdf-export" });
     }
   }
 
@@ -346,7 +370,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
               </span>
             }
           >
-            <TemplateGallery selectedTemplateId={resume.templateId} canUsePremiumTemplates={canUsePremiumTemplates} onSelect={(templateId) => patchResume({ templateId })} />
+            <TemplateGallery selectedTemplateId={resume.templateId} canUsePremiumTemplates={canUsePremiumTemplates} onSelect={handleTemplateSelect} />
           </Panel>
           <Panel title="Contact">
             <div className="space-y-3">

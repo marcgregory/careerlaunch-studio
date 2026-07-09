@@ -11,6 +11,7 @@ import {
   Eye,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
 import { SuggestionFeedback } from "../../../components/suggestion-feedback";
 import { createOperations } from "@careerlaunch/ai";
@@ -113,12 +114,14 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
         initial[s.id] = "pending";
       }
       setSuggestionStatuses(initial);
+      toast.success("Job match analysis complete.");
     } catch (error) {
       setMatch((prev) => ({
         ...prev,
         status: "error",
         error: error instanceof Error ? error.message : "Something went wrong",
       }));
+      toast.error("Job match analysis failed.");
     }
   }, [resumeId, jobDescription]);
 

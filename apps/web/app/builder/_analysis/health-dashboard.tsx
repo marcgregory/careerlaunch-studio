@@ -2,6 +2,7 @@
 
 import { Sparkles, Gauge, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { ScoreGauge } from "./score-gauge";
 import { SuggestionCard } from "./suggestion-card";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
@@ -96,12 +97,14 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         analyzedAt: data.result.analyzedAt ?? null,
         error: null,
       });
+      toast.success(`Analysis complete — score: ${data.result.overallScore ?? 0}/100`);
     } catch (error) {
       setAnalysis((prev) => ({
         ...prev,
         status: "error",
         error: error instanceof Error ? error.message : "Something went wrong",
       }));
+      toast.error("Resume analysis failed. Please try again.");
     }
   }, [resumeId]);
 
