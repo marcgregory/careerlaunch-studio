@@ -88,7 +88,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         savedSnapshot.current = snapshot;
         setSaveState("Saved");
 
-        // ── Funnel: draft_edited (first save per session) ──
+        // Funnel: draft_edited (first save per session)
         if (!hasFiredEditEvent.current) {
           hasFiredEditEvent.current = true;
           analytics.capture("draft_edited", {
@@ -268,7 +268,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
       if (!response.ok) throw new Error("PDF export failed");
 
-      // ── Funnel: pdf_exported (client-side) ──
+      // Funnel: pdf_exported (client-side)
       analytics.capture("pdf_exported", {
         resumeId: resume.id,
         templateId: resume.templateId,
@@ -297,7 +297,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   }
 
   return (
-    <main className="signal-site min-h-screen overflow-x-visible pt-[52px] text-[#123c3a] sm:pt-[60px]">
+    <main className="signal-site min-h-screen overflow-x-hidden pt-[52px] text-[#123c3a] sm:pt-[60px]">
       <AppHeader actions={
         <>
           <span className={saveBadgeClass(saveState)} aria-live="polite">
@@ -321,7 +321,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </div>
       </AppHeader>
 
-      {/* ── Mobile tab switcher ── */}
+      {/* Mobile tab switcher */}
       <div className="sticky-tab-strip -mx-4 z-10 mt-8 border-b border-[#123c3a]/10 bg-[#f3f3f3]/85 px-4 backdrop-blur-xl xl:hidden">
         <nav className="flex h-12 min-h-12 gap-1 overflow-visible" role="tablist" aria-label="Builder view">
           {(["preview", "edit", "analyze"] as const).map((tab) => (
@@ -344,9 +344,9 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         </nav>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:grid-cols-[420px_1fr] xl:h-[calc(100vh-60px)] xl:overflow-hidden">
-        {/* ── Sidebar: shown on desktop; on mobile only when edit or analyze tab is active ── */}
-        <aside className={`no-print min-w-0 space-y-3 sm:space-y-5 xl:overflow-y-auto xl:pb-4 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
+      <div className="mx-auto grid max-w-7xl min-w-0 gap-3 px-4 py-4 sm:gap-6 sm:py-7 xl:h-[calc(100vh-60px)] xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)] xl:overflow-hidden">
+        {/* Sidebar: shown on desktop; on mobile only when edit or analyze tab is active */}
+        <aside className={`no-print min-w-0 max-w-full space-y-3 overflow-x-hidden sm:space-y-5 xl:overflow-y-auto xl:pb-4 ${mobileTab !== "edit" && mobileTab !== "analyze" ? "hidden xl:block" : ""}`}>
           {/* Mobile: analysis panels - only visible on analyze tab */}
           <div className={`${mobileTab !== "analyze" && mobileTab !== "edit" ? "hidden xl:block" : mobileTab === "edit" ? "hidden xl:block" : ""}`}>
             <HealthDashboard resumeId={resume.id} onApplySuggestion={handleApplySuggestion} />
@@ -529,10 +529,10 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           </div> {/* end editor panel group */}
         </aside>
 
-        {/* ── Preview: shown on desktop; on mobile only when preview tab is active ── */}
-        <aside className={`xl:sticky xl:top-6 xl:max-h-[calc(100vh-4rem)] xl:self-start xl:block xl:overflow-y-auto ${mobileTab !== "preview" ? "hidden" : "sticky top-[52px] -mx-4 block px-0"}`}>
+        {/* Preview: shown on desktop; on mobile only when preview tab is active */}
+        <aside className={`min-w-0 max-w-full xl:sticky xl:top-6 xl:block xl:max-h-[calc(100vh-4rem)] xl:self-start xl:overflow-y-auto ${mobileTab !== "preview" ? "hidden" : "sticky top-[52px] -mx-4 block px-0"}`}>
           <div className="flex justify-center rounded-none border-0 bg-transparent p-0 shadow-none xl:rounded-[30px] xl:border xl:border-[#123c3a]/10 xl:bg-[#d8d4cb] xl:p-6 xl:shadow-inner">
-            <div className="w-full max-w-[900px] max-h-[calc(100vh-8rem)] overflow-auto xl:rounded-xl">
+            <div className="max-h-[calc(100vh-8rem)] w-full max-w-[900px] min-w-0 overflow-auto xl:rounded-xl">
               <ResumePreview resume={resume} />
             </div>
           </div>
@@ -615,10 +615,10 @@ function UpgradeModal({ prompt, onClose }: { prompt: UpgradePrompt; onClose: () 
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
-        <h2 className="font-signal text-sm font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
-        {action}
+    <section className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-[#123c3a]/10 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex min-w-0 items-center justify-between gap-3 border-b border-[#123c3a]/10 pb-2 sm:pb-3">
+        <h2 className="min-w-0 flex-1 truncate font-signal text-sm font-black tracking-[-0.05em] sm:text-xl">{title}</h2>
+        {action ? <div className="flex shrink-0 items-center">{action}</div> : null}
       </div>
       <div className="mt-2 sm:mt-4">{children}</div>
     </section>
