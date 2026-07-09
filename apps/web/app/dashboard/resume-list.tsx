@@ -175,14 +175,14 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // Stable callbacks
-  const makeMenuToggle = useCallback(
-    (id: string) => (open: boolean) => setActiveMenuId(open ? id : null),
+  // Stable callbacks — called by ResumeCard with the card's own id/title
+  const handleMenuOpenChange = useCallback(
+    (resumeId: string, open: boolean) => setActiveMenuId(open ? resumeId : null),
     [],
   );
 
-  const makeDeleteHandler = useCallback(
-    (id: string, title: string) => () => {
+  const handleDeleteClick = useCallback(
+    (id: string, title: string) => {
       setActiveMenuId(null);
       setTimeout(() => {
         setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
@@ -334,8 +334,8 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
                 updatedAt={r.parsedDate}
                 analysisRunCount={r.analysisRunCount}
                 isMenuOpen={!isDeleteModalOpen && activeMenuId === r.id}
-                onMenuOpenChange={makeMenuToggle(r.id)}
-                onDeleteClick={makeDeleteHandler(r.id, r.title)}
+                onMenuOpenChange={handleMenuOpenChange}
+                onDeleteClick={handleDeleteClick}
               />
             ))}
           </div>
