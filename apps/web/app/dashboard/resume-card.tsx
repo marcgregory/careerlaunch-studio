@@ -3,7 +3,7 @@ import { FileText, ArrowRight } from "lucide-react";
 import { secondaryButtonClass } from "@careerlaunch/ui";
 import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/rendering";
 import { ResumeActions } from "./resume-actions";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 type ResumeCardProps = {
   id: string;
@@ -80,7 +80,14 @@ function ResumeCardInner({
 }: ResumeCardProps) {
   const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
   const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
-  const timeAgoLabel = useMemo(() => timeAgo(updatedAt), [updatedAt]);
+
+  // Client-only: suppress hydration mismatch from Date.now() in timeAgo
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(id);
+  }, []);
+  const timeAgoLabel = useMemo(() => mounted ? timeAgo(updatedAt) : "", [mounted, updatedAt]);
   const editHref = useMemo(() => `/builder?resumeId=${id}`, [id]);
 
   /** Relay menu state changes upward — no local menu state here */
@@ -138,8 +145,8 @@ function ResumeCardInner({
         </p>
 
         {/* Updated timestamp */}
-        <p className="mt-1.5 text-xs font-medium text-[#4b4b4b]/50">
-          Updated {timeAgoLabel}
+        <p className="mt-1.5 text-xs font-medium text-[#4b4b4b]/50" suppressHydrationWarning>
+          {timeAgoLabel ? `Updated ${timeAgoLabel}` : ""}
         </p>
       </div>
 
