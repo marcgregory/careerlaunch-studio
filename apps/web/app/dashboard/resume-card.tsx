@@ -3,7 +3,7 @@ import { FileText, ArrowRight } from "lucide-react";
 import { secondaryButtonClass } from "@careerlaunch/ui";
 import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/rendering";
 import { ResumeActions } from "./resume-actions";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 type ResumeCardProps = {
   id: string;
@@ -12,11 +12,9 @@ type ResumeCardProps = {
   updatedAt: Date;
   templateId?: string;
   analysisRunCount?: number;
-  menuOpen?: boolean;
-  /** Stable callback — receives the card's own id so no closure-per-card is needed. */
-  onMenuOpenChange?: (resumeId: string, open: boolean) => void;
-  onDeleteClick?: (resumeId: string, resumeTitle: string) => void;
-  actionsDisabled?: boolean;
+  isMenuOpen: boolean;
+  onMenuOpenChange: (open: boolean) => void;
+  onDeleteClick: () => void;
 };
 
 function getTemplateInfo(id: string | undefined): TemplateDefinition {
@@ -73,10 +71,9 @@ function ResumeCardInner({
   updatedAt,
   templateId,
   analysisRunCount = 0,
-  menuOpen,
+  isMenuOpen,
   onMenuOpenChange,
   onDeleteClick,
-  actionsDisabled = false,
 }: ResumeCardProps) {
   const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
   const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
@@ -89,18 +86,6 @@ function ResumeCardInner({
   }, []);
   const timeAgoLabel = useMemo(() => mounted ? timeAgo(updatedAt) : "", [mounted, updatedAt]);
   const editHref = useMemo(() => `/builder?resumeId=${id}`, [id]);
-
-  /** Relay menu state changes upward — no local menu state here */
-  const handleMenuOpenChange = useCallback(
-    (open: boolean) => {
-      onMenuOpenChange?.(id, open);
-    },
-    [onMenuOpenChange, id],
-  );
-
-  const handleDeleteClick = useCallback(() => {
-    onDeleteClick?.(id, title);
-  }, [onDeleteClick, id, title]);
 
   return (
     <article className="group grid gap-4 rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition-shadow duration-200 hover:-translate-y-0.5 hover:border-[#b9ff66] hover:shadow-[0_12px_30px_rgba(18,60,58,0.08)] md:grid-cols-[72px_1fr_auto] md:items-start">
@@ -155,10 +140,9 @@ function ResumeCardInner({
         <ResumeActions
           resumeId={id}
           resumeTitle={title}
-          menuOpen={menuOpen}
-          onMenuOpenChange={handleMenuOpenChange}
-          onDeleteClick={handleDeleteClick}
-          disabled={actionsDisabled}
+          isMenuOpen={isMenuOpen}
+          onMenuOpenChange={onMenuOpenChange}
+          onDeleteClick={onDeleteClick}
         />
         <Link
           href={editHref}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, X, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { ResumeCard } from "./resume-card";
 import { EmptyState } from "./empty-state";
@@ -15,14 +16,26 @@ type SerializedResume = {
   exportCount: number;
 };
 
+type PaginatedResponse = {
+  resumes: SerializedResume[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+};
+
 type SortMode = "updated" | "alpha" | "oldest";
 type FilterMode = "all" | "targeted" | "untargeted" | "analyzed";
 
 const PAGE_SIZE = 10;
+const SCROLL_STORAGE_KEY = "dashboard-scroll-pos";
 
 type ResumeListProps = {
   initialResumes: SerializedResume[];
   hasMoreInit: boolean;
+  /** Total resume count (for stats — passed separately so cache doesn't invalidate) */
 };
 
 const sortModes: { value: SortMode; label: string }[] = [
@@ -68,6 +81,12 @@ function ResumeCardSkeleton() {
   );
 }
 
+async function fetchResumesPage(page: number): Promise<PaginatedResponse> {
+  const res = await fetch(`/api/resumes?page=${page}&limit=${PAGE_SIZE}`);
+  if (!res.ok) throw new Error("Failed to load resumes");
+  return res.json();
+}
+
 export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("updated");
@@ -77,86 +96,93 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
   const isDeleteModalOpen = !!resumeToDelete;
 
-  // Infinite scroll state
-  const [resumes, setResumes] = useState<SerializedResume[]>(initialResumes);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(hasMoreInit);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const isMounted = useRef(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const isLoadingRef = useRef(false);
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync when initialResumes changes (e.g. page refresh after action)
-  // Uses setTimeout to avoid synchronous setState cascades inside effects
+  // ── Infinite query with cache ──
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    error,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["resumes"],
+    queryFn: ({ pageParam }) => fetchResumesPage(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    // Seed cache with SSR data so first render is instant
+    initialData: {
+      pages: [{ resumes: initialResumes, pagination: { page: 1, limit: PAGE_SIZE, total: 0, hasMore: hasMoreInit } }],
+      pageParams: [1],
+    },
+  });
+
+  // Flatten all pages into one array
+  const resumes = useMemo(
+    () => data?.pages.flatMap((p) => p.resumes) ?? [],
+    [data],
+  );
+
+  // ── Scroll position restoration ──
   useEffect(() => {
-    const id = setTimeout(() => {
-      setResumes(initialResumes);
-      setPage(1);
-      setHasMore(hasMoreInit);
-      setError(null);
-    }, 0);
-    return () => clearTimeout(id);
-  }, [initialResumes, hasMoreInit]);
-
-  // Fetch next page
-  const fetchNextPage = useCallback(async () => {
-    if (isLoadingRef.current || !hasMore) return;
-    isLoadingRef.current = true;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const nextPage = page + 1;
-      const res = await fetch(`/api/resumes?page=${nextPage}&limit=${PAGE_SIZE}`);
-      if (!res.ok) throw new Error("Failed to load");
-      const data = await res.json();
-      if (!isMounted.current) return;
-
-      setResumes((prev) => [...prev, ...data.resumes]);
-      setPage(nextPage);
-      setHasMore(data.pagination.hasMore);
-    } catch {
-      if (isMounted.current) {
-        setError("Couldn't load more resumes.");
+    const saved = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+    if (saved) {
+      const pos = parseInt(saved, 10);
+      if (!isNaN(pos)) {
+        requestAnimationFrame(() => window.scrollTo(0, pos));
       }
-    } finally {
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
-      isLoadingRef.current = false;
+      sessionStorage.removeItem(SCROLL_STORAGE_KEY);
     }
-  }, [page, hasMore]);
+  }, []);
 
-  // Intersection observer for infinite scroll
+  // Save scroll position before navigating away
   useEffect(() => {
-    isMounted.current = true;
+    function saveScroll() {
+      sessionStorage.setItem(SCROLL_STORAGE_KEY, String(window.scrollY));
+    }
+    // Use visibilitychange to catch SPA navigations
+    document.addEventListener("visibilitychange", saveScroll);
+    window.addEventListener("beforeunload", saveScroll);
+    return () => {
+      document.removeEventListener("visibilitychange", saveScroll);
+      window.removeEventListener("beforeunload", saveScroll);
+    };
+  }, []);
+
+  // ── Intersection observer for infinite scroll ──
+  useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
-      { rootMargin: "200px" },
+      { rootMargin: "300px" },
     );
     observer.observe(sentinel);
-    return () => {
-      isMounted.current = false;
-      observer.disconnect();
-    };
-  }, [fetchNextPage, hasMore]);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Stable callbacks
-  const handleMenuOpenChange = useCallback(
-    (resumeId: string, open: boolean) => setActiveMenuId(open ? resumeId : null),
+  const makeMenuToggle = useCallback(
+    (id: string) => (open: boolean) => setActiveMenuId(open ? id : null),
     [],
   );
 
-  const handleDeleteClick = useCallback(
-    (id: string, title: string) => {
+  const makeDeleteHandler = useCallback(
+    (id: string, title: string) => () => {
       setActiveMenuId(null);
       setTimeout(() => {
         setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
@@ -164,11 +190,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     },
     [],
   );
-
-  const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
-  const handleDeleted = useCallback(() => {
-    setResumeToDelete(null);
-  }, []);
 
   // Parse dates once
   const parsed = useMemo(
@@ -247,12 +268,13 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     setFilter("all");
     setSort("updated");
   }, []);
+  const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
+  const handleDeleted = useCallback(() => {
+    setResumeToDelete(null);
+    refetch();
+  }, [refetch]);
 
-  const handleRetry = useCallback(() => {
-    fetchNextPage();
-  }, [fetchNextPage]);
-
-  // Empty state
+  // Empty state (only when we have data loaded)
   if (sorted.length === 0 && hasActiveFilters) {
     return (
       <div className="space-y-5">
@@ -272,12 +294,12 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     );
   }
 
-  if (sorted.length === 0 && !hasActiveFilters) {
+  if (sorted.length === 0 && !hasActiveFilters && !isFetchingNextPage) {
     return <EmptyState variant="no-resumes" />;
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" ref={listContainerRef}>
       <SearchBar
         search={search}
         onSearchChange={handleSearchChange}
@@ -311,10 +333,9 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
                 targetRole={r.targetRole}
                 updatedAt={r.parsedDate}
                 analysisRunCount={r.analysisRunCount}
-                menuOpen={!isDeleteModalOpen && activeMenuId === r.id}
-                onMenuOpenChange={handleMenuOpenChange}
-                onDeleteClick={handleDeleteClick}
-                actionsDisabled={isDeleteModalOpen}
+                isMenuOpen={!isDeleteModalOpen && activeMenuId === r.id}
+                onMenuOpenChange={makeMenuToggle(r.id)}
+                onDeleteClick={makeDeleteHandler(r.id, r.title)}
               />
             ))}
           </div>
@@ -323,8 +344,8 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
 
       {/* ─── Infinite scroll sentinel & loading states ─── */}
 
-      {/* Loading indicator — shown immediately when fetching */}
-      {isLoading && (
+      {/* Loading indicator */}
+      {isFetchingNextPage && (
         <div className="space-y-3">
           <div className="flex items-center justify-center gap-2 py-4">
             <Loader2 size={18} className="animate-spin text-[#6bbf22]" />
@@ -332,7 +353,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
               Loading more resumes...
             </span>
           </div>
-          {/* Skeleton cards behind the spinner */}
           <ResumeCardSkeleton />
           <ResumeCardSkeleton />
           <ResumeCardSkeleton />
@@ -340,15 +360,17 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       )}
 
       {/* Error state */}
-      {!isLoading && error && (
+      {isError && !isFetchingNextPage && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-red-200 bg-red-50/40 p-6 text-center">
           <div className="grid h-10 w-10 place-items-center rounded-full bg-red-100 text-red-500">
             <AlertTriangle size={20} />
           </div>
-          <p className="text-sm font-semibold text-red-600">{error}</p>
+          <p className="text-sm font-semibold text-red-600">
+            {error instanceof Error ? error.message : "Couldn't load more resumes."}
+          </p>
           <button
             type="button"
-            onClick={handleRetry}
+            onClick={() => fetchNextPage()}
             className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-4 py-1.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
           >
             <RefreshCw size={14} />
@@ -358,7 +380,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       )}
 
       {/* End-of-list message */}
-      {!hasMore && !isLoading && !error && resumes.length > 0 && (
+      {!hasNextPage && !isFetchingNextPage && resumes.length > 0 && (
         <div className="flex items-center justify-center py-4">
           <p className="text-sm font-semibold text-[#4b4b4b]/50">
             You&apos;re all caught up.

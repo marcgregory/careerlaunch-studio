@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@hookform/resolvers": "^5.4.0",
+        "@tanstack/react-query": "^5.101.2",
         "react-hook-form": "^7.81.0",
         "sonner": "^2.0.7",
         "zod": "^4.4.3"

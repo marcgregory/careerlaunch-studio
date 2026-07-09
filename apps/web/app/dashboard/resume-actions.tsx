@@ -10,56 +10,39 @@ import { RenameModal } from "./rename-modal";
 type ResumeActionsProps = {
   resumeId: string;
   resumeTitle: string;
-  menuOpen?: boolean;
-  onMenuOpenChange?: (open: boolean) => void;
-  onDeleteClick?: () => void;
+  isMenuOpen: boolean;
+  onMenuOpenChange: (open: boolean) => void;
+  onDeleteClick: () => void;
   disabled?: boolean;
 };
 
 export function ResumeActions({
   resumeId,
   resumeTitle,
-  menuOpen,
+  isMenuOpen,
   onMenuOpenChange,
   onDeleteClick,
   disabled = false,
 }: ResumeActionsProps) {
   const router = useRouter();
-  // Fully controlled via props — no local open/close/hover/pointer state.
-  // Radix is the sole controller: trigger click → onOpenChange → parent sets activeMenuId.
-  const open = menuOpen ?? false;
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
 
-  /** Radix calls this on trigger click, outside click, and Escape.
-   *  This is the ONLY path that opens/closes the menu. */
-  const handleOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      onMenuOpenChange?.(nextOpen);
-    },
-    [onMenuOpenChange],
-  );
-
-  const closeMenu = useCallback(() => {
-    onMenuOpenChange?.(false);
-  }, [onMenuOpenChange]);
-
   const handleRenameSelect = useCallback(() => {
-    closeMenu();
+    onMenuOpenChange(false);
     setTimeout(() => {
       setRenameOpen(true);
     }, 0);
-  }, [closeMenu]);
+  }, [onMenuOpenChange]);
 
   const handleDeleteSelect = useCallback(() => {
-    closeMenu();
-    setTimeout(() => {
-      onDeleteClick?.();
-    }, 0);
-  }, [closeMenu, onDeleteClick]);
+    onMenuOpenChange(false);
+    requestAnimationFrame(() => onDeleteClick());
+  }, [onMenuOpenChange, onDeleteClick]);
 
   const handleDuplicate = useCallback(async () => {
+    onMenuOpenChange(false);
     setActionLoading("duplicate");
     try {
       const res = await fetch(`/api/resumes/${resumeId}/duplicate`, {
@@ -76,11 +59,11 @@ export function ResumeActions({
       toast.error("Failed to duplicate resume");
     } finally {
       setActionLoading(null);
-      closeMenu();
     }
-  }, [resumeId, router, closeMenu]);
+  }, [resumeId, router, onMenuOpenChange]);
 
   const handleExport = useCallback(async () => {
+    onMenuOpenChange(false);
     setActionLoading("export");
     try {
       const res = await fetch(`/api/export/pdf`, {
@@ -130,9 +113,8 @@ export function ResumeActions({
       toast.error("Failed to export resume");
     } finally {
       setActionLoading(null);
-      closeMenu();
     }
-  }, [resumeId, resumeTitle, router, closeMenu]);
+  }, [resumeId, resumeTitle, router, onMenuOpenChange]);
 
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
 
@@ -140,7 +122,6 @@ export function ResumeActions({
     router.refresh();
   }, [router]);
 
-  // Memoize menu items so they don't recreate on every render
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
     return (
@@ -151,58 +132,58 @@ export function ResumeActions({
           sideOffset={8}
           collisionPadding={12}
           avoidCollisions
-          className="z-[60] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
+          className="z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
-        <DropdownMenu.Item
-          onSelect={handleRenameSelect}
-          disabled={isLoading}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
-        >
-          <Edit3 size={15} className="text-[#4b4b4b]" />
-          Rename
-        </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={handleRenameSelect}
+            disabled={isLoading}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+          >
+            <Edit3 size={15} className="text-[#4b4b4b]" />
+            Rename
+          </DropdownMenu.Item>
 
-        <DropdownMenu.Item
-          onSelect={handleDuplicate}
-          disabled={isLoading}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
-        >
-          {actionLoading === "duplicate" ? (
-            <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
-          ) : (
-            <Copy size={15} className="text-[#4b4b4b]" />
-          )}
-          Duplicate
-        </DropdownMenu.Item>
-
-        <DropdownMenu.Item
-          onSelect={handleExport}
-          disabled={isLoading}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
-        >
-          {actionLoading === "export" ? (
-            <>
+          <DropdownMenu.Item
+            onSelect={handleDuplicate}
+            disabled={isLoading}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+          >
+            {actionLoading === "duplicate" ? (
               <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
-              Exporting...
-            </>
-          ) : (
-            <>
-              <Download size={15} className="text-[#4b4b4b]" />
-              Export PDF
-            </>
-          )}
-        </DropdownMenu.Item>
+            ) : (
+              <Copy size={15} className="text-[#4b4b4b]" />
+            )}
+            Duplicate
+          </DropdownMenu.Item>
 
-        <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
+          <DropdownMenu.Item
+            onSelect={handleExport}
+            disabled={isLoading}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+          >
+            {actionLoading === "export" ? (
+              <>
+                <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download size={15} className="text-[#4b4b4b]" />
+                Export PDF
+              </>
+            )}
+          </DropdownMenu.Item>
 
-        <DropdownMenu.Item
-          onSelect={handleDeleteSelect}
-          disabled={isLoading}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
-        >
-          <Trash2 size={15} />
-          Delete
-        </DropdownMenu.Item>
+          <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
+
+          <DropdownMenu.Item
+            onSelect={handleDeleteSelect}
+            disabled={isLoading}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
+          >
+            <Trash2 size={15} />
+            Delete
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     );
@@ -216,7 +197,7 @@ export function ResumeActions({
 
   return (
     <>
-      <DropdownMenu.Root open={disabled ? false : open} onOpenChange={handleOpenChange}>
+      <DropdownMenu.Root open={disabled ? false : isMenuOpen} onOpenChange={onMenuOpenChange}>
         <DropdownMenu.Trigger asChild>
           <button
             type="button"

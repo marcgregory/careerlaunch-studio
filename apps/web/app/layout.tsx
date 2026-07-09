@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AnalyticsProvider } from "../lib/analytics";
+import { QueryProvider } from "../lib/query-provider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -12,14 +13,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
-        <AnalyticsProvider>
-          {children}
-          <Toaster
-            position="bottom-center"
-            richColors
-            closeButton
-          />
-        </AnalyticsProvider>
+        <QueryProvider>
+          <AnalyticsProvider>
+            {children}
+            <Toaster
+              position="bottom-center"
+              richColors
+              closeButton
+            />
+          </AnalyticsProvider>
+        </QueryProvider>
       </body>
     </html>
   );
