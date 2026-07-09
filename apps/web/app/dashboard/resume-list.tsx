@@ -124,8 +124,8 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     // Seed cache with SSR data so first render is instant
     initialData: {
