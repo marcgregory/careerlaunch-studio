@@ -219,7 +219,7 @@ export function ResumeActions({
 
   return (
     <>
-      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
+      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange} modal={false}>
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
