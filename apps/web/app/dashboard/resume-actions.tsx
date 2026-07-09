@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RenameModal } from "./rename-modal";
-import { DeleteResumeModal } from "./delete-modal";
 
 type ResumeActionsProps = {
   resumeId: string;
   resumeTitle: string;
   menuOpen?: boolean;
   onMenuOpenChange?: (open: boolean) => void;
+  onDeleteClick?: () => void;
 };
 
 export function ResumeActions({
@@ -20,6 +20,7 @@ export function ResumeActions({
   resumeTitle,
   menuOpen,
   onMenuOpenChange,
+  onDeleteClick,
 }: ResumeActionsProps) {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -28,9 +29,6 @@ export function ResumeActions({
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
-  const isModalOpen = renameOpen || deleteOpen;
 
   const closeMenu = useCallback(() => {
     setOpen(false);
@@ -45,10 +43,11 @@ export function ResumeActions({
 
   const handleDeleteSelect = useCallback(() => {
     closeMenu();
+    // let dropdown DOM fully tear down before opening modal
     requestAnimationFrame(() => {
-      setDeleteOpen(true);
+      onDeleteClick?.();
     });
-  }, [closeMenu]);
+  }, [closeMenu, onDeleteClick]);
 
   const handleDuplicate = useCallback(async () => {
     setActionLoading("duplicate");
@@ -126,13 +125,8 @@ export function ResumeActions({
   }, [resumeId, resumeTitle, router, closeMenu]);
 
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
-  const handleDeleteClose = useCallback(() => setDeleteOpen(false), []);
 
   const handleRenamed = useCallback(() => {
-    router.refresh();
-  }, [router]);
-
-  const handleDeleted = useCallback(() => {
     router.refresh();
   }, [router]);
 
@@ -212,7 +206,7 @@ export function ResumeActions({
 
   return (
     <>
-      <DropdownMenu.Root open={open && !isModalOpen} onOpenChange={setOpen}>
+      <DropdownMenu.Root open={open} onOpenChange={setOpen}>
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
@@ -224,7 +218,7 @@ export function ResumeActions({
           </button>
         </DropdownMenu.Trigger>
 
-        {!isModalOpen && menuItems}
+        {menuItems}
       </DropdownMenu.Root>
 
       {renameOpen && (
@@ -233,15 +227,6 @@ export function ResumeActions({
           currentTitle={resumeTitle}
           onClose={handleRenameClose}
           onRenamed={handleRenamed}
-        />
-      )}
-
-      {deleteOpen && (
-        <DeleteResumeModal
-          resumeId={resumeId}
-          resumeTitle={resumeTitle}
-          onClose={handleDeleteClose}
-          onDeleted={handleDeleted}
         />
       )}
     </>

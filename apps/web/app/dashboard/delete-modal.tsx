@@ -7,6 +7,7 @@ import { toast } from "sonner";
 type DeleteResumeModalProps = {
   resumeId: string;
   resumeTitle: string;
+  open: boolean;
   onClose: () => void;
   onDeleted: () => void;
 };
@@ -14,11 +15,14 @@ type DeleteResumeModalProps = {
 export function DeleteResumeModal({
   resumeId,
   resumeTitle,
+  open,
   onClose,
   onDeleted,
 }: DeleteResumeModalProps) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (!open) return null;
 
   async function handleDelete() {
     setDeleting(true);

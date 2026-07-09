@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ResumeCard } from "./resume-card";
 import { EmptyState } from "./empty-state";
+import { DeleteResumeModal } from "./delete-modal";
 
 type SerializedResume = {
   id: string;
@@ -60,13 +61,27 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [filter, setFilter] = useState<FilterMode>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Stable callback — identity never changes
+  // Stable callbacks
   const handleMenuOpenChange = useCallback(
     (resumeId: string, open: boolean) => setActiveMenuId(open ? resumeId : null),
     [],
   );
+
+  const handleDeleteClick = useCallback(
+    (id: string, title: string) => {
+      setActiveMenuId(null); // close dropdown first
+      setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
+    },
+    [],
+  );
+
+  const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
+  const handleDeleted = useCallback(() => {
+    setResumeToDelete(null);
+  }, []);
 
   // Parse dates once
   const parsed = useMemo(
@@ -252,6 +267,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                         analysisRunCount={row.resume.analysisRunCount}
                         menuOpen={activeMenuId === row.resume.id}
                         onMenuOpenChange={handleMenuOpenChange}
+                        onDeleteClick={handleDeleteClick}
                       />
                     </div>
                   )}
@@ -275,12 +291,21 @@ export function ResumeList({ resumes }: ResumeListProps) {
                   analysisRunCount={r.analysisRunCount}
                   menuOpen={activeMenuId === r.id}
                   onMenuOpenChange={handleMenuOpenChange}
+                  onDeleteClick={handleDeleteClick}
                 />
               ))}
             </div>
           </section>
         ))
       )}
+      {/* Global delete modal — rendered once, outside card map */}
+      <DeleteResumeModal
+        resumeId={resumeToDelete?.id ?? ""}
+        resumeTitle={resumeToDelete?.title ?? ""}
+        open={!!resumeToDelete}
+        onClose={handleDeleteClose}
+        onDeleted={handleDeleted}
+      />
     </div>
   );
 }

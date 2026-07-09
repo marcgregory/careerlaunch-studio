@@ -15,6 +15,7 @@ type ResumeCardProps = {
   menuOpen?: boolean;
   /** Stable callback — receives the card's own id so no closure-per-card is needed. */
   onMenuOpenChange?: (resumeId: string, open: boolean) => void;
+  onDeleteClick?: (resumeId: string, resumeTitle: string) => void;
 };
 
 function getTemplateInfo(id: string | undefined): TemplateDefinition {
@@ -73,6 +74,7 @@ function ResumeCardInner({
   analysisRunCount = 0,
   menuOpen,
   onMenuOpenChange,
+  onDeleteClick,
 }: ResumeCardProps) {
   const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
   const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
@@ -85,6 +87,10 @@ function ResumeCardInner({
     },
     [onMenuOpenChange, id],
   );
+
+  const handleDeleteClick = useCallback(() => {
+    onDeleteClick?.(id, title);
+  }, [onDeleteClick, id, title]);
 
   return (
     <article className="group grid gap-4 rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm transition-shadow duration-200 hover:-translate-y-0.5 hover:border-[#b9ff66] hover:shadow-[0_12px_30px_rgba(18,60,58,0.08)] md:grid-cols-[72px_1fr_auto] md:items-start">
@@ -136,7 +142,13 @@ function ResumeCardInner({
 
       {/* Actions */}
       <div className="flex items-center gap-2 self-start md:self-center">
-        <ResumeActions resumeId={id} resumeTitle={title} menuOpen={menuOpen} onMenuOpenChange={handleMenuOpenChange} />
+        <ResumeActions
+          resumeId={id}
+          resumeTitle={title}
+          menuOpen={menuOpen}
+          onMenuOpenChange={handleMenuOpenChange}
+          onDeleteClick={handleDeleteClick}
+        />
         <Link
           href={editHref}
           className={`${secondaryButtonClass} whitespace-nowrap`}
