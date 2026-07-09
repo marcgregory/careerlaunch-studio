@@ -964,3 +964,133 @@ Developer | Acme | 2020 - Present
     expect(result.parsed.contact?.location).toBe("Seattle, WA");
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  Sprint 6D — Comprehensive parser fixes (4 issues)                 */
+/* ------------------------------------------------------------------ */
+
+describe("Sprint 6D parser fixes", () => {
+  /* Issue 1: Volunteer separated from Experience */
+  it("should detect Volunteer Experience as its own section, not merge into Experience", () => {
+    const text = `John Doe
+john@email.com
+
+Experience
+Junior Business Analyst
+Some Company
+Jan 2020 - Present
+- Analyzed data.
+- Created reports.
+
+Volunteer Experience
+Data Mentor
+Code for America
+2021 - Present
+- Mentored students in data analysis.
+- Reviewed project submissions.`;
+
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+
+    const volEntry = experience.find((e) => e.company === "Code for America");
+    expect(volEntry).toBeDefined();
+    expect(volEntry!.role).toBe("Data Mentor");
+    expect(experience.length).toBeGreaterThanOrEqual(2);
+
+    // The first entry should be from Experience, not Volunteer
+    expect(experience[0].company).toBe("Some Company");
+  });
+
+  /* Issue 2: Education deduplication */
+  it("should NOT duplicate the same education degree — merge duplicate degree lines", () => {
+    const text = `Jane Smith
+jane@example.com
+
+Education
+Bachelor of Science in Information Systems
+Bachelor of Science in Information Systems
+University of Texas
+2016
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const education = result.parsed.education || [];
+
+    // Should only have 1 entry (deduplicated)
+    expect(education.length).toBe(1);
+    expect(education[0].degree).toContain("Bachelor of Science");
+    // School and graduation year should be captured from subsequent lines
+    expect(education[0].school && education[0].school.length > 0).toBe(true);
+    expect(education[0].graduation).toBe("2016");
+  });
+
+  /* Issue 3: Em-dash separator should NOT merge separate achievements */
+  it("should preserve Achievements as individual items (not merged on em-dash)", () => {
+    const text = `John Q
+john@example.com
+
+Achievements
+Employee of the Year (2023)
+Analytics Excellence Award (2022)
+Speaker at Data Summit Texas 2024
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const quals = result.parsed.professionalQualities || [];
+
+    expect(quals).toContain("Employee of the Year (2023)");
+    expect(quals).toContain("Analytics Excellence Award (2022)");
+    expect(quals).toContain("Speaker at Data Summit Texas 2024");
+    expect(quals.length).toBeGreaterThanOrEqual(3);
+  });
+
+  /* Issue 4: Project descriptions and bullets preserved */
+  it("should preserve project bullets beyond just titles (no blank-line reset)", () => {
+    const text = `Test User
+test@email.com
+
+Skills
+React, TypeScript, Python
+
+Projects
+Sales Intelligence Dashboard
+- Combined CRM and ERP data for unified sales analytics.
+- Reduced executive reporting time by 95%.
+
+Customer Churn Prediction
+- Built machine learning model to predict customer churn.
+- Achieved 91% accuracy with ensemble methods.
+
+Cloud Data Warehouse Migration
+- Migrated on-premise data warehouse to cloud infrastructure.
+- Reduced query latency by 60%.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+
+    const result = parseResumeText(text);
+    const projects = result.parsed.projects || [];
+
+    const dashboard = projects.find((p) => p.name === "Sales Intelligence Dashboard");
+    expect(dashboard).toBeDefined();
+    expect(dashboard!.bullets.length).toBeGreaterThanOrEqual(2);
+
+    const churn = projects.find((p) => p.name === "Customer Churn Prediction");
+    expect(churn).toBeDefined();
+    expect(churn!.bullets.length).toBeGreaterThanOrEqual(1);
+
+    const migration = projects.find((p) => p.name === "Cloud Data Warehouse Migration");
+    expect(migration).toBeDefined();
+    expect(migration!.bullets.length).toBeGreaterThanOrEqual(1);
+
+    // Ensure total projects count
+    expect(projects.length).toBe(3);
+  });
+});

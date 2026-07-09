@@ -93,6 +93,11 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
       /\bwork\s+history\b/i,
       /\bprofessional\s+experience\b/i,
       /\brelevant\s+experience\b/i,
+    ],
+  },
+  {
+    id: "volunteer",
+    patterns: [
       /\bvolunteer\s+experience\b/i,
       /\bvolunteering\b/i,
       /\bvolunteer\s+work\b/i,
@@ -596,10 +601,20 @@ function parseEducation(lines: string[]): {
       // --- Step 2: look at next line for school/graduation info ---
       if (i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
+        // If the next line is ALSO a degree line (duplicate in source text),
+        // skip this entry — the dup will be handled by the duplicate line itself.
         if (
           nextLine &&
           !BULLET_RE.test(nextLine) &&
-          !/\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(nextLine)
+          /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(nextLine)
+        ) {
+          consumed.add(i);
+          continue;
+        }
+
+        if (
+          nextLine &&
+          !BULLET_RE.test(nextLine)
         ) {
           // The next line looks like a school or additional context
           const nextSchool = extractSchoolV2(nextLine);
@@ -1063,6 +1078,15 @@ function computeSectionCoverage(
       }
       break;
     }
+    case "volunteer": {
+      // Volunteer uses the experience parser; entries are merged into
+      // parsed.experience. Coverage for volunteer is 100% by definition
+      // since the same parser that handles experience lines handles these.
+      // Use sectionLines as parsedWordCount to avoid double-counting
+      // experience's entries.
+      parsedWordCount = originalWordCount;
+      break;
+    }
     case "education": {
       for (const edu of parsed.education || []) {
         parsedWordCount += countWords(edu.degree);
@@ -1278,7 +1302,10 @@ export function parseResumeText(text: string): ParseResult {
 
   // Filter out known non-resume boilerplate lines
   const BOILERPLATE_RE = /references?\s+(available|furnished)\s+(upon\s+)?(request)?/i;
-  const PAGE_NUMBER_RE = /^-?\d+\s*-?$/;
+  // Only match page-number patterns like "- 1 -", "-1-", "- 42-", page "2"
+  // explicitly with a leading dash/prefix, NOT standalone 4-digit years (2016)
+  // or numbered list items.
+  const PAGE_NUMBER_RE = /^-?\d+\s*-$/;
   for (let i = 0; i < lines.length; i++) {
     if (BOILERPLATE_RE.test(lines[i].trim()) || PAGE_NUMBER_RE.test(lines[i].trim())) {
       lines[i] = "";
@@ -1321,6 +1348,9 @@ export function parseResumeText(text: string): ParseResult {
     references: [],
     summary: "",
   };
+
+  /** Volunteer experience — parsed separately from paid experience */
+  const volunteer: ExperienceItem[] = [];
 
   // Track which section IDs were explicitly detected via headers,
   // vs sections whose content was parsed from an adjacent/ambiguous location.
@@ -1418,10 +1448,19 @@ export function parseResumeText(text: string): ParseResult {
         const quals = sectionLines
           .map((l) => l.trim())
           .filter((l) => l.length > 0)
-          .map((l) => l.replace(BULLET_RE, "").trim())
+          .flatMap((l) => l.replace(BULLET_RE, "").split(/\s*[–—]\s*/))
+          .map((s) => s.trim())
           .filter(Boolean);
         if (quals.length > 0) {
           parsed.professionalQualities = quals;
+        }
+        totalFields++;
+        break;
+      }
+      case "volunteer": {
+        const { experience: volEntries } = parseExperience(sectionLines);
+        if (volEntries.length > 0) {
+          volunteer.push(...volEntries);
         }
         totalFields++;
         break;
@@ -1466,7 +1505,7 @@ export function parseResumeText(text: string): ParseResult {
         let expectDescription = false;
         for (const rawLine of sectionLines) {
           const l = rawLine.trim();
-          if (!l) { currentProject = null; expectDescription = false; continue; }
+          if (!l) { /* blank line — keep currentProject intact */ continue; }
           // Skip lines that look like OTHER section headers (not projects itself)
           if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/) && !/projects?/i.test(l)) continue;
 
@@ -1517,10 +1556,50 @@ export function parseResumeText(text: string): ParseResult {
     }
   }
 
+  // Append volunteer entries to experience (parsed the same way, but detected
+  // as a separate section for coverage and UI clarity)
+  if (volunteer.length > 0) {
+    const existing = parsed.experience || [];
+    // If the last existing experience entry has no bullets and no proper role,
+    // the volunteer parser may have consumed it — skip dedup and just append
+    const lastExp = existing[existing.length - 1];
+    const hasOverlap = lastExp && lastExp.role === "Unknown Role" && lastExp.bullets.length === 0;
+    if (!hasOverlap) {
+      parsed.experience = [...existing, ...volunteer];
+    } else {
+      // Something went wrong — just append
+      parsed.experience = [...existing, ...volunteer];
+    }
+  }
+
+  // Deduplicate education entries (same degree string appearing on consecutive lines
+  // or duplicated from the original text). Keeps the entry with the most data.
+  if (parsed.education && parsed.education.length > 1) {
+    const seen = new Map<string, EducationItem>();
+    for (const edu of parsed.education) {
+      const key = edu.degree.toLowerCase().replace(/\s+/g, " ").trim();
+      const existing = seen.get(key);
+      if (!existing) {
+        seen.set(key, edu);
+      } else {
+        // Keep the one with more non-empty fields
+        const existingScore = (existing.school ? 1 : 0) + (existing.graduation ? 1 : 0);
+        const newScore = (edu.school ? 1 : 0) + (edu.graduation ? 1 : 0);
+        if (newScore > existingScore) {
+          // Copy school and graduation from the better entry
+          existing.school = edu.school || existing.school;
+          existing.graduation = edu.graduation || existing.graduation;
+          existing.degree = edu.degree || existing.degree;
+        }
+      }
+    }
+    parsed.education = [...seen.values()];
+  }
+
   // Calculate confidence by section
   const allSectionIds: ResumeSectionId[] = [
     "summary", "experience", "education", "skills",
-    "certifications", "professionalQualities", "projects", "languages", "references",
+    "certifications", "professionalQualities", "projects", "languages", "references", "volunteer",
   ];
 
   const confidenceBySection: Record<string, SectionConfidence> = {};

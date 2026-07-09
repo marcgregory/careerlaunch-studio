@@ -51,13 +51,6 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "Stanford University",
-        "degree": "M.S. Computer Science",
-        "location": "",
-        "graduation": "2014"
-      },
-      {
-        "id": "import-edu-2",
         "school": "UC Berkeley",
         "degree": "B.S. Computer Engineering",
         "location": "",
@@ -101,9 +94,10 @@
     "professionalQualities": "low",
     "projects": "low",
     "languages": "low",
-    "references": "low"
+    "references": "low",
+    "volunteer": "low"
   },
-  "importQuality": "fair",
+  "importQuality": "poor",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [
@@ -124,9 +118,9 @@
     {
       "sectionId": "education",
       "originalWordCount": 14,
-      "parsedWordCount": 12,
-      "ratio": 0.8571428571428571,
-      "status": "good"
+      "parsedWordCount": 6,
+      "ratio": 0.42857142857142855,
+      "status": "partial"
     },
     {
       "sectionId": "skills",
@@ -165,6 +159,13 @@
     },
     {
       "sectionId": "references",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

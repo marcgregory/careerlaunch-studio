@@ -136,7 +136,8 @@
     "professionalQualities": "low",
     "projects": "high",
     "languages": "low",
-    "references": "high"
+    "references": "high",
+    "volunteer": "low"
   },
   "importQuality": "fair",
   "warnings": [],
@@ -202,6 +203,13 @@
       "sectionId": "references",
       "originalWordCount": 3,
       "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     }

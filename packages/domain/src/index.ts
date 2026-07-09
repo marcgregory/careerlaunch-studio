@@ -17,7 +17,7 @@ export type ResumeDocument = {
 
 export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
 
-export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "professionalQualities" | "projects" | "languages" | "references";
+export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "professionalQualities" | "projects" | "languages" | "references" | "volunteer";
 
 export const defaultSectionOrder: ResumeSectionId[] = [
   "summary",
