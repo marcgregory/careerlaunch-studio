@@ -1,8 +1,9 @@
 "use client";
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RenameModal } from "./rename-modal";
 
@@ -14,8 +15,6 @@ type ResumeActionsProps = {
   onDeleteClick: () => void;
 };
 
-type MenuPos = { top: number; right: number } | null;
-
 export function ResumeActions({
   resumeId,
   resumeTitle,
@@ -24,67 +23,16 @@ export function ResumeActions({
   onDeleteClick,
 }: ResumeActionsProps) {
   const router = useRouter();
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPos, setMenuPos] = useState<MenuPos>(null);
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
 
-  // Position the menu when it opens
-  useEffect(() => {
-    if (!isMenuOpen) {
-      setMenuPos(null);
-      return;
-    }
-    const btn = buttonRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    setMenuPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
-  }, [isMenuOpen]);
-
-  // Global mousedown outside-click (uses mousedown, not pointerdown, so it
-  // stays within the same click event and avoids the Radix cross-event race)
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
-        onMenuOpenChange(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [isMenuOpen, onMenuOpenChange]);
-
-  // Escape key
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onMenuOpenChange(false);
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [isMenuOpen, onMenuOpenChange]);
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onMenuOpenChange(!isMenuOpen);
-    },
-    [onMenuOpenChange, isMenuOpen],
-  );
-
-  const handleRename = useCallback(() => {
+  const handleRenameSelect = useCallback(() => {
     onMenuOpenChange(false);
     setTimeout(() => setRenameOpen(true), 0);
   }, [onMenuOpenChange]);
 
-  const handleDelete = useCallback(() => {
+  const handleDeleteSelect = useCallback(() => {
     onMenuOpenChange(false);
     requestAnimationFrame(() => onDeleteClick());
   }, [onMenuOpenChange, onDeleteClick]);
@@ -163,48 +111,46 @@ export function ResumeActions({
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
   const handleRenamed = useCallback(() => router.refresh(), [router]);
 
-  const isLoading = actionLoading !== null;
-
-  return (
-    <>
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={handleClick}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-        title="More actions"
-        aria-label="More actions"
-        aria-expanded={isMenuOpen}
-      >
-        {actionLoading === "duplicate" || actionLoading === "export" ? (
-          <Loader2 size={16} className="animate-spin" />
-        ) : (
-          <EllipsisVertical size={16} />
-        )}
-      </button>
-
-      {isMenuOpen && menuPos && (
-        <div
-          ref={menuRef}
-          role="menu"
-          className="fixed z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
-          style={{ top: menuPos.top, right: menuPos.right }}
+  const menuContent = useMemo(() => {
+    const isLoading = actionLoading !== null;
+    return (
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          side="bottom"
+          sideOffset={8}
+          collisionPadding={12}
+          avoidCollisions
+          /* ────────────────────────────────────────────────────────────
+           * KEY FIX: Intercept pointerdown-outside events.
+           * When menu A is open and user clicks menu B's trigger, Radix
+           * fires pointerdown-outside on menu A.  If the target is a
+           * trigger button (has data-radix-dropdown-trigger attr),
+           * preventDefault() tells Radix NOT to close menu A.
+           *
+           * Menu B opens on the click event normally, and the parent's
+           * setActiveMenuId(id) replaces A with B in one atomic batch.
+           * No flicker because menu A never actually closes.
+           * ──────────────────────────────────────────────────────────── */
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-radix-dropdown-trigger]')) {
+              e.preventDefault();
+            }
+          }}
+          className="z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleRename}
+          <DropdownMenu.Item
+            onSelect={handleRenameSelect}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
             <Edit3 size={15} className="text-[#4b4b4b]" />
             Rename
-          </button>
+          </DropdownMenu.Item>
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleDuplicate}
+          <DropdownMenu.Item
+            onSelect={handleDuplicate}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
@@ -214,12 +160,10 @@ export function ResumeActions({
               <Copy size={15} className="text-[#4b4b4b]" />
             )}
             Duplicate
-          </button>
+          </DropdownMenu.Item>
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleExport}
+          <DropdownMenu.Item
+            onSelect={handleExport}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
@@ -234,22 +178,44 @@ export function ResumeActions({
                 Export PDF
               </>
             )}
-          </button>
+          </DropdownMenu.Item>
 
-          <div className="my-1 h-px bg-[#123c3a]/8" />
+          <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleDelete}
+          <DropdownMenu.Item
+            onSelect={handleDeleteSelect}
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
           >
             <Trash2 size={15} />
             Delete
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    );
+  }, [
+    actionLoading,
+    handleRenameSelect,
+    handleDuplicate,
+    handleExport,
+    handleDeleteSelect,
+  ]);
+
+  return (
+    <>
+      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+            title="More actions"
+            aria-label="More actions"
+          >
+            <EllipsisVertical size={16} />
           </button>
-        </div>
-      )}
+        </DropdownMenu.Trigger>
+        {menuContent}
+      </DropdownMenu.Root>
 
       {renameOpen && (
         <RenameModal
