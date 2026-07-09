@@ -45,7 +45,11 @@ export function fromStoredResume(record: { id: string; title: string; targetRole
     title: record.title,
     targetRole: record.targetRole ?? body.targetRole ?? "",
     templateId: normalizeTemplateId(body.templateId),
-    sectionOrder: normalizeSectionOrder(body.sectionOrder)
+    sectionOrder: normalizeSectionOrder(body.sectionOrder),
+    experience: dedupById(Array.isArray(body.experience) ? body.experience : []),
+    education: dedupById(Array.isArray(body.education) ? body.education : []),
+    projects: dedupById(Array.isArray(body.projects) ? body.projects : []),
+    references: dedupById(Array.isArray(body.references) ? body.references : [])
   };
 }
 
@@ -63,14 +67,27 @@ export function parseResumePayload(value: unknown): ResumeDocument {
     contact: { ...starter.contact, ...resume.contact },
     templateId: normalizeTemplateId(resume.templateId),
     sectionOrder: normalizeSectionOrder(resume.sectionOrder),
-    experience: Array.isArray(resume.experience) ? resume.experience : [],
-    education: Array.isArray(resume.education) ? resume.education : [],
+    experience: dedupById(Array.isArray(resume.experience) ? resume.experience : []),
+    education: dedupById(Array.isArray(resume.education) ? resume.education : []),
     skills: Array.isArray(resume.skills) ? resume.skills : [],
     certifications: Array.isArray(resume.certifications) ? resume.certifications : [],
     professionalQualities: Array.isArray(resume.professionalQualities) ? resume.professionalQualities : [],
-    projects: Array.isArray(resume.projects) ? resume.projects : [],
-    references: Array.isArray(resume.references) ? resume.references : []
+    projects: dedupById(Array.isArray(resume.projects) ? resume.projects : []),
+    references: dedupById(Array.isArray(resume.references) ? resume.references : [])
   };
+}
+
+/** Deduplicate an array of items with `id` fields, keeping the first occurrence. */
+function dedupById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
 }
 
 function normalizeSectionOrder(value: unknown): ResumeSectionId[] {
