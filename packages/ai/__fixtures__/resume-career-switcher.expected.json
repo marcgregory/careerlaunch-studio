@@ -1,0 +1,213 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Daniel Park",
+      "email": "daniel.park@email.com",
+      "phone": "(415) 555-0123",
+      "location": "San Francisco, CA",
+      "website": "",
+      "linkedin": "linkedin.com/in/danielpark",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Marketing Coordinator",
+        "company": "BrandAgency Inc.",
+        "location": "",
+        "start": "Jun 2021",
+        "end": "Aug 2024",
+        "bullets": [
+          "Coordinated digital marketing campaigns for 5 client accounts.",
+          "Managed social media content calendar and analytics reporting.",
+          "Collaborated with design and development teams on website updates.",
+          "Reduced campaign reporting time by 50% through Excel automation."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Freelance Web Developer",
+        "company": "Self-Employed",
+        "location": "",
+        "start": "Jan 2024",
+        "end": "Present",
+        "bullets": [
+          "Built responsive websites for 3 small business clients using React and Bootstrap.",
+          "Integrated payment processing with Stripe for e-commerce client.",
+          "Maintained and updated client sites ensuring 99% uptime."
+        ]
+      },
+      {
+        "id": "import-exp-1",
+        "role": "Teaching Assistant",
+        "company": "Hack Reactor",
+        "location": "",
+        "start": "Sep 2024",
+        "end": "Present",
+        "bullets": [
+          "Assist students with debugging, code review, and concept clarification.",
+          "Lead weekly study groups on React and Node.js topics."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of California, Los Angeles",
+        "degree": "Bachelor of Arts in Marketing",
+        "location": "",
+        "graduation": "2020"
+      }
+    ],
+    "skills": [
+      "JavaScript",
+      "React",
+      "Node.js",
+      "Python",
+      "PostgreSQL",
+      "HTML/CSS",
+      "Git",
+      "Bootstrap",
+      "REST APIs",
+      "responsive design",
+      "agile development",
+      "public speaking",
+      "project management",
+      "English (Native)",
+      "Korean (Native)"
+    ],
+    "certifications": [
+      "Full-Stack Web Development Certificate - Hack Reactor",
+      "Google Project Management Certificate"
+    ],
+    "professionalQualities": [],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Recipe Box App",
+        "description": "",
+        "bullets": [
+          "Built full-stack recipe management app using React and Node.js with PostgreSQL.",
+          "Implemented user authentication, recipe CRUD, and search/filter functionality.",
+          "Deployed on Render with 200+ registered users."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Personal Portfolio Site",
+        "description": "",
+        "bullets": [
+          "Designed and developed portfolio showcasing 8 coding projects.",
+          "Built with React and deployed on Vercel with custom domain."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Former marketing professional transitioning into software engineering. Completed intensive coding bootcamp with experience building full-stack web applications. Combining technical skills with strong communication and project management abilities."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "fair",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 27,
+      "parsedWordCount": 27,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 86,
+      "parsedWordCount": 92,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 18,
+      "parsedWordCount": 11,
+      "ratio": 0.6111111111111112,
+      "status": "partial"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 18,
+      "parsedWordCount": 22,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 55,
+      "parsedWordCount": 50,
+      "ratio": 0.9090909090909091,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 4,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 28,
+      "parsedWordCount": 28,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

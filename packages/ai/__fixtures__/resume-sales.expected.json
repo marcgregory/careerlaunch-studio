@@ -1,0 +1,189 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Michael Torres",
+      "email": "michael.torres@email.com",
+      "phone": "(214) 555-0345",
+      "location": "Dallas, TX",
+      "website": "",
+      "linkedin": "linkedin.com/in/michaeltorres",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Sales Representative",
+        "company": "CloudTech Solutions Inc.",
+        "location": "",
+        "start": "Mar 2022",
+        "end": "Present",
+        "bullets": [
+          "Exceeded annual sales quota of $1.2M by 135% in 2023 and 142% in 2024.",
+          "Managed 50+ enterprise accounts generating $2.8M in recurring revenue.",
+          "Developed strategic account plans resulting in 40% upsell rate among existing clients.",
+          "Mentored 3 junior sales representatives achieving 100% ramp completion.",
+          "Led product demonstrations and technical presentations to C-level executives."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Sales Representative",
+        "company": "DataVault Systems",
+        "location": "",
+        "start": "Jun 2020",
+        "end": "Feb 2022",
+        "bullets": [
+          "Closed 85+ deals totaling $1.5M in new business revenue over 18 months.",
+          "Generated 200+ qualified leads monthly through outbound prospecting.",
+          "Maintained 95% customer satisfaction rating based on post-sale surveys.",
+          "Collaborated with marketing team to refine messaging for target industries."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Business Development Associate",
+        "company": "StartupConnect",
+        "location": "",
+        "start": "Jan 2019",
+        "end": "May 2020",
+        "bullets": [
+          "Conducted market research identifying 50+ prospective client accounts.",
+          "Supported senior sales team with proposal preparation and CRM data management.",
+          "Attended industry events and generated 30+ qualified leads per quarter."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of North Texas",
+        "degree": "Bachelor of Business Administration in Marketing",
+        "location": "",
+        "graduation": "2018"
+      }
+    ],
+    "skills": [
+      "Sales",
+      "cold calling",
+      "lead generation",
+      "CRM (Salesforce",
+      "HubSpot)",
+      "negotiation",
+      "account management",
+      "contract negotiation",
+      "territory planning",
+      "product demonstrations",
+      "closing"
+    ],
+    "certifications": [
+      "Salesforce Certified Administrator",
+      "HubSpot Sales Software Certification"
+    ],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Results-driven sales representative with 5 years of experience in B2B technology sales. Proven track record of exceeding quotas and building long-term client relationships."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "low",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 23,
+      "parsedWordCount": 23,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 161,
+      "parsedWordCount": 135,
+      "ratio": 0.8385093167701864,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 7,
+      "parsedWordCount": 7,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "references-heavy"
+  ]
+}

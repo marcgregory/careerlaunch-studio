@@ -1,0 +1,200 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Rebecca Chang",
+      "email": "rebecca.chang@email.com",
+      "phone": "(312) 555-0789",
+      "location": "Chicago, IL",
+      "website": "",
+      "linkedin": "linkedin.com/in/rebeccachang",
+      "github": "github.com/rebeccachang"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Data Analyst",
+        "company": "InsightMetrics Corp.",
+        "location": "",
+        "start": "Jun 2022",
+        "end": "Present",
+        "bullets": [
+          "Analyzed customer behavior data for 500K+ users identifying 3 key retention drivers.",
+          "Built Tableau dashboards tracking 15+ KPIs adopted by C-suite for weekly reviews.",
+          "Reduced reporting time by 60% by automating data pipelines with Python scripts.",
+          "Conducted A/B test analysis resulting in 12% increase in conversion rate.",
+          "Presented findings to stakeholders translating technical data into business recommendations."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Junior Data Analyst",
+        "company": "MarketResearch Inc.",
+        "location": "",
+        "start": "Sep 2020",
+        "end": "May 2022",
+        "bullets": [
+          "Cleaned and transformed datasets of 1M+ records using SQL and Python.",
+          "Created weekly sales performance reports for regional management teams.",
+          "Assisted senior analysts with cohort analysis and customer segmentation.",
+          "Maintained data documentation and quality standards across 3 databases."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Illinois at Urbana-Champaign",
+        "degree": "Bachelor of Science in Statistics",
+        "location": "",
+        "graduation": "2020"
+      }
+    ],
+    "skills": [
+      "SQL",
+      "Python",
+      "Tableau",
+      "Power BI",
+      "Excel",
+      "Google Analytics",
+      "A/B testing",
+      "statistical analysis",
+      "data cleaning",
+      "data visualization",
+      "predictive modeling",
+      "English (Native)",
+      "Mandarin Chinese (Professional Working)"
+    ],
+    "certifications": [
+      "Google Data Analytics Professional Certificate",
+      "Tableau Desktop Specialist"
+    ],
+    "professionalQualities": [],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Customer Churn Prediction Model",
+        "description": "",
+        "bullets": [
+          "Built logistic regression model achieving 85% accuracy in predicting customer churn.",
+          "Identified top 5 churn indicators presented to product team for intervention."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Sales Dashboard Automation",
+        "description": "",
+        "bullets": [
+          "Developed Python script automating weekly sales report generation saving 8 hours/week.",
+          "Integrated with Slack API for automated distribution to 20+ stakeholders."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Data analyst with 4 years of experience turning raw data into actionable insights. Proficient in SQL, Python, and visualization tools. Passionate about using data to drive business decisions."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "high",
+    "professionalQualities": "low",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "good",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/6 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 28,
+      "parsedWordCount": 28,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 122,
+      "parsedWordCount": 104,
+      "ratio": 0.8524590163934426,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 19,
+      "parsedWordCount": 24,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 8,
+      "parsedWordCount": 8,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 54,
+      "parsedWordCount": 50,
+      "ratio": 0.9259259259259259,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 6,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "skills-before-experience",
+    "standard-bullets",
+    "references-heavy"
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Jennifer Walsh",
+      "email": "jennifer.walsh@email.com",
+      "phone": "(202) 555-0678",
+      "location": "Washington, DC",
+      "website": "",
+      "linkedin": "linkedin.com/in/jenniferwalsh",
+      "github": ""
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Senior Associate - Corporate Law",
+        "company": "Smith & Henderson LLP",
+        "location": "",
+        "start": "Jan 2021",
+        "end": "Present",
+        "bullets": [
+          "Lead due diligence teams for M&A transactions valued at $50M - $500M.",
+          "Drafted and negotiated 100+ commercial contracts including NDAs, service agreements, and licensing deals.",
+          "Advised clients on corporate governance matters including board resolutions and shareholder agreements.",
+          "Managed 15+ cross-border transactions involving regulatory compliance in multiple jurisdictions.",
+          "Supervised team of 4 junior associates and 2 paralegals."
+        ]
+      },
+      {
+        "id": "import-exp-2",
+        "role": "Associate Attorney",
+        "company": "Wilson Legal Group",
+        "location": "",
+        "start": "Sep 2018",
+        "end": "Dec 2020",
+        "bullets": [
+          "Represented clients in contract disputes and commercial litigation matters.",
+          "Conducted legal research and drafted motions, briefs, and memoranda.",
+          "Assisted partners with trial preparation including witness preparation and exhibit organization.",
+          "Maintained 90% favorable settlement rate for assigned caseload."
+        ]
+      },
+      {
+        "id": "import-exp-3",
+        "role": "Law Clerk",
+        "company": "Honorable Patricia Moore - U.S. District Court",
+        "location": "",
+        "start": "Sep 2017",
+        "end": "Aug 2018",
+        "bullets": [
+          "Researched legal issues and drafted memoranda on civil procedure and constitutional law.",
+          "Reviewed case filings and prepared bench memoranda for judicial review.",
+          "Observed courtroom proceedings and assisted with opinion drafting. Bar Admissions New York State Bar District of Columbia Bar U.S. District Court - Southern District of New York"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "University of Notre Dame",
+        "degree": "Bachelor of Arts in Political Science",
+        "location": "",
+        "graduation": "2013"
+      }
+    ],
+    "skills": [
+      "Contract drafting",
+      "legal research",
+      "mergers and acquisitions",
+      "corporate governance",
+      "regulatory compliance",
+      "negotiation",
+      "due diligence",
+      "litigation support",
+      "intellectual property",
+      "risk assessment",
+      "English (Native)",
+      "Spanish (Professional Working)"
+    ],
+    "certifications": [],
+    "professionalQualities": [],
+    "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Corporate attorney with 7 years of experience in mergers and acquisitions, contract law, and regulatory compliance. Admitted to the New York and District of Columbia bars."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "low",
+    "professionalQualities": "low",
+    "projects": "low",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "fair",
+  "warnings": [
+    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 26,
+      "parsedWordCount": 26,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 191,
+      "parsedWordCount": 165,
+      "ratio": 0.8638743455497382,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 18,
+      "parsedWordCount": 11,
+      "ratio": 0.6111111111111112,
+      "status": "partial"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 20,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 5,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "skills-before-experience",
+    "standard-bullets",
+    "references-heavy"
+  ]
+}

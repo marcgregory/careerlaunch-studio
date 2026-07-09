@@ -28,7 +28,8 @@ export const defaultSectionOrder: ResumeSectionId[] = [
   "professionalQualities",
   "projects",
   "languages",
-  "references"
+  "references",
+  "volunteer"
 ];
 
 export type ContactInfo = {

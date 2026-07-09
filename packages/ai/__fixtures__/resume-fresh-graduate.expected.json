@@ -1,0 +1,183 @@
+{
+  "parsed": {
+    "contact": {
+      "fullName": "Amanda Liu",
+      "email": "amanda.liu@email.com",
+      "phone": "(408) 555-0912",
+      "location": "San Jose, CA",
+      "website": "",
+      "linkedin": "linkedin.com/in/amanda-liu",
+      "github": "github.com/amanda-liu"
+    },
+    "experience": [
+      {
+        "id": "import-exp-1",
+        "role": "Code Coach",
+        "company": "Girls Who Code - San Jose Chapter",
+        "location": "",
+        "start": "Sep 2024",
+        "end": "Present",
+        "bullets": [
+          "Mentor 15 high school students in Python and web development fundamentals.",
+          "Lead weekly coding workshops and review student projects."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "import-edu-1",
+        "school": "Jose State University",
+        "degree": "Bachelor of Science in Computer Science",
+        "location": "",
+        "graduation": "2026"
+      }
+    ],
+    "skills": [
+      "Python",
+      "Java",
+      "JavaScript",
+      "React",
+      "HTML/CSS",
+      "SQL",
+      "Git",
+      "VS Code",
+      "Linux basics",
+      "English (Native)",
+      "Mandarin Chinese (Native)"
+    ],
+    "certifications": [],
+    "professionalQualities": [
+      "Dean's List - Fall 2024, Spring 2025",
+      "SJSU Hackathon - Best Beginner Project Award"
+    ],
+    "projects": [
+      {
+        "id": "import-proj-1",
+        "name": "Weather Dashboard App",
+        "description": "",
+        "bullets": [
+          "Built responsive weather application using React and OpenWeather API.",
+          "Implemented location-based forecasting with 7-day outlook display.",
+          "Deployed on Vercel with automated CI/CD pipeline."
+        ]
+      },
+      {
+        "id": "import-proj-2",
+        "name": "Task Management CLI Tool",
+        "description": "",
+        "bullets": [
+          "Developed command-line task manager in Python with SQLite persistence.",
+          "Implemented features including task creation, prioritization, and deadline tracking."
+        ]
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
+    "summary": "Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role."
+  },
+  "confidence": 90,
+  "confidenceBySection": {
+    "summary": "high",
+    "experience": "high",
+    "education": "high",
+    "skills": "high",
+    "certifications": "low",
+    "professionalQualities": "medium",
+    "projects": "high",
+    "languages": "high",
+    "references": "high",
+    "volunteer": "low"
+  },
+  "importQuality": "poor",
+  "warnings": [
+    "Could not detect any work experience entries. Check the format.",
+    "Low import quality for \"education\": 36% coverage (10/28 words preserved).",
+    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
+  ],
+  "unparsedContent": {},
+  "coverage": [
+    {
+      "sectionId": "summary",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "experience",
+      "originalWordCount": 0,
+      "parsedWordCount": 28,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "education",
+      "originalWordCount": 28,
+      "parsedWordCount": 10,
+      "ratio": 0.35714285714285715,
+      "status": "poor"
+    },
+    {
+      "sectionId": "skills",
+      "originalWordCount": 11,
+      "parsedWordCount": 16,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 14,
+      "parsedWordCount": 14,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 53,
+      "parsedWordCount": 48,
+      "ratio": 0.9056603773584906,
+      "status": "good"
+    },
+    {
+      "sectionId": "languages",
+      "originalWordCount": 5,
+      "parsedWordCount": 0,
+      "ratio": 0,
+      "status": "missing"
+    },
+    {
+      "sectionId": "references",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 34,
+      "parsedWordCount": 34,
+      "ratio": 1,
+      "status": "good"
+    }
+  ],
+  "layouts": [
+    "table-format",
+    "references-heavy"
+  ]
+}

@@ -1,0 +1,55 @@
+Rebecca Chang
+rebecca.chang@email.com
+(312) 555-0789
+Chicago, IL
+linkedin.com/in/rebeccachang
+github.com/rebeccachang
+
+Professional Summary
+Data analyst with 4 years of experience turning raw data into actionable insights. Proficient in SQL, Python, and visualization tools. Passionate about using data to drive business decisions.
+
+Skills
+SQL, Python, R, Tableau, Power BI, Excel, Google Analytics, A/B testing, statistical analysis, data cleaning, data visualization, predictive modeling
+
+Experience
+Data Analyst
+InsightMetrics Corp.
+Jun 2022 - Present
+- Analyzed customer behavior data for 500K+ users identifying 3 key retention drivers.
+- Built Tableau dashboards tracking 15+ KPIs adopted by C-suite for weekly reviews.
+- Reduced reporting time by 60% by automating data pipelines with Python scripts.
+- Conducted A/B test analysis resulting in 12% increase in conversion rate.
+- Presented findings to stakeholders translating technical data into business recommendations.
+
+Junior Data Analyst
+MarketResearch Inc.
+Sep 2020 - May 2022
+- Cleaned and transformed datasets of 1M+ records using SQL and Python.
+- Created weekly sales performance reports for regional management teams.
+- Assisted senior analysts with cohort analysis and customer segmentation.
+- Maintained data documentation and quality standards across 3 databases.
+
+Certifications
+Google Data Analytics Professional Certificate
+Tableau Desktop Specialist
+
+Education
+Bachelor of Science in Statistics
+University of Illinois at Urbana-Champaign
+2020
+
+Projects
+Customer Churn Prediction Model
+- Built logistic regression model achieving 85% accuracy in predicting customer churn.
+- Identified top 5 churn indicators presented to product team for intervention.
+
+Sales Dashboard Automation
+- Developed Python script automating weekly sales report generation saving 8 hours/week.
+- Integrated with Slack API for automated distribution to 20+ stakeholders.
+
+Languages
+English (Native)
+Mandarin Chinese (Professional Working)
+
+References
+Available upon request.

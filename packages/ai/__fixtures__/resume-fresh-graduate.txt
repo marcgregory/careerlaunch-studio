@@ -1,0 +1,48 @@
+Amanda Liu
+amanda.liu@email.com
+(408) 555-0912
+San Jose, CA
+linkedin.com/in/amanda-liu
+github.com/amanda-liu
+
+Professional Summary
+Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role.
+
+Education
+Bachelor of Science in Computer Science
+San Jose State University
+Expected 2026
+
+Relevant Coursework
+Data Structures and Algorithms, Object-Oriented Programming, Database Systems, Web Development, Operating Systems, Software Engineering
+
+Projects
+Weather Dashboard App
+- Built responsive weather application using React and OpenWeather API.
+- Implemented location-based forecasting with 7-day outlook display.
+- Deployed on Vercel with automated CI/CD pipeline.
+
+Task Management CLI Tool
+- Developed command-line task manager in Python with SQLite persistence.
+- Implemented features including task creation, prioritization, and deadline tracking.
+
+Volunteer Experience
+Code Coach
+Girls Who Code - San Jose Chapter
+Sep 2024 - Present
+- Mentor 15 high school students in Python and web development fundamentals.
+- Lead weekly coding workshops and review student projects.
+
+Skills
+Python, Java, JavaScript, React, HTML/CSS, SQL, Git, VS Code, Linux basics
+
+Honors
+Dean's List - Fall 2024, Spring 2025
+SJSU Hackathon - Best Beginner Project Award
+
+Languages
+English (Native)
+Mandarin Chinese (Native)
+
+References
+Available upon request.

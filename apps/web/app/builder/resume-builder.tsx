@@ -52,7 +52,8 @@ const sectionLabels: Record<ResumeSectionId, string> = {
   professionalQualities: "Professional Qualities",
   projects: "Projects",
   languages: "Languages",
-  references: "References"
+  references: "References",
+  volunteer: "Volunteer"
 };
 
 export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initialResume: ResumeDocument; canUsePremiumTemplates: boolean }) {
