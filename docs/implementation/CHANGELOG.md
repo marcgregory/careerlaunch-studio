@@ -2,6 +2,33 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
+## 0.9.2-alpha - 2026-07-09
+
+### Added
+
+- **Dashboard UX overhaul.** 6 high-impact improvements to the workspace dashboard.
+- **Search, sort, and filters** — client-side search bar, sort (Recently Updated / Title A–Z / Oldest First), filter (All / Targeted / Untargeted / Analyzed).
+- **Actions dropdown menu (`⋮`)** — Rename (inline modal), Duplicate, Export PDF, Delete with confirmation. Replaces the previous inline "Copy" button.
+- **Recency grouping** — resumes grouped into Today / Yesterday / This Week / Earlier sections.
+- **Enriched workspace sidebar** — 2×2 stat grid (Total / Targeted / Analyzed / Exports), upgrade CTA, quick links.
+- **Status badges** — each card shows "Draft" or "Analyzed" with color-coded dot.
+- **Relative timestamps** — "2 min ago", "Yesterday", "Jul 5" instead of raw dates.
+- **Target role as primary identifier** — role displayed prominently above the resume title.
+- **Template-color thumbnail placeholders** on each card.
+- **Separate empty states** — distinct messaging for "no resumes at all" vs. "search/filter produced no results."
+- **Rename and Delete API** — DELETE and PATCH handlers on `/api/resumes/:resumeId`.
+
+### Changed
+
+- "Continue" button relabeled to "Edit Resume →" on all cards.
+- Dashboard page restructured: server component fetches enriched data (analysis/exports counts); client components handle search, sort, filter, and grouping.
+- Workspace sidebar now computes and displays targeted/analyzed/export stats.
+- `duplicate-button.tsx` removed — functionality folded into the actions dropdown.
+
+### Fixed
+
+- Added `sonner` to web workspace `package.json` for Vercel build compatibility.
+
 ## 0.9.1-alpha - 2026-07-07
 
 ### Added

@@ -1,6 +1,6 @@
 # CareerLaunch Studio Project Status
 
-Last updated: 2026-07-07 (updated for Sprint 6D auth hardening)
+Last updated: 2026-07-09 (dashboard UX overhaul)
 
 ## Current Sprint
 
@@ -42,6 +42,22 @@ See `docs/implementation/AUTH_HARDENING_PLAN.md`.
 - **Release report format:** Standard template for all future releases (v0.9.5, v1.0.0-beta, v1.0.0, etc.)
 - **Updated build plan:** Fixed personas, rigid workflow, severity labels, release gate rules
 - **npm scripts:** `eval:dogfooding`, `eval:benchmark`, `eval:recovery`
+
+### Delivered This Sprint (Sprint 6D)
+
+**Dashboard UX Overhaul (2026-07-09):**
+- Search, sort, and filters — client-side search bar, sort (Recently Updated / Title A–Z / Oldest First), filter (All / Targeted / Untargeted / Analyzed)
+- Actions dropdown menu (`⋮`) — Rename (inline modal), Duplicate, Export PDF, Delete with confirmation
+- Recency grouping — resumes grouped by Today / Yesterday / This Week / Earlier
+- Enriched workspace sidebar — 2×2 stat grid (Total / Targeted / Analyzed / Exports), upgrade CTA
+- Status badges (Draft / Analyzed) with color-coded dots on every card
+- Relative timestamps ("2 min ago", "Yesterday", "Jul 5")
+- Target role as primary identifier above the resume title
+- Template-color thumbnail placeholders on each card
+- Separate empty states for "no resumes" vs. "search/filter produced no results"
+- "Continue" relabeled to "Edit Resume →"
+- New API: DELETE and PATCH `/api/resumes/:resumeId` for rename and delete
+- `duplicate-button.tsx` removed — folded into the actions dropdown
 
 ### Delivered This Sprint (Sprint 6C)
 
@@ -311,9 +327,9 @@ Sprint 6D — active (see Current Sprint above). Target: v0.9.5-alpha, closed be
 
 ## Last Build
 
-Local build verification passed on 2026-07-05:
+Local build verification passed on 2026-07-09:
 
-- `npm run build` — passes (all routes, including new feedback, event, and analytics/acceptance API routes)
-- `npm run test` — 169/169 AI tests + 41/41 web tests + 13/13 domain tests = 223 pass
-- `npm run typecheck` — passes (all workspaces)
-- `npm run test:e2e --workspace @careerlaunch/web` — pending database availability
+- `npm run build` — passes (all routes, including new DELETE/PATCH `/api/resumes/:resumeId`)
+- `npm run lint` — 0 errors, 5 pre-existing warnings
+- Dashboard page: search, sort, filter, recency grouping, actions dropdown, rename modal, enriched sidebar
+- Vercel deployment — requires `sonner` in web workspace (fixed)
