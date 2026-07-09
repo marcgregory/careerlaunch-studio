@@ -5,7 +5,6 @@ import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide
 import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { RenameModal } from "./rename-modal";
 
 export type ResumeCacheData = {
   pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
@@ -25,6 +24,7 @@ type ResumeActionsProps = {
   resume: SerializedResume;
   isMenuOpen: boolean;
   onMenuOpenChange: (open: boolean) => void;
+  onRenameClick: () => void;
   onDeleteClick: () => void;
 };
 
@@ -48,17 +48,17 @@ export function ResumeActions({
   resume,
   isMenuOpen,
   onMenuOpenChange,
+  onRenameClick,
   onDeleteClick,
 }: ResumeActionsProps) {
   const queryClient = useQueryClient();
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [renameOpen, setRenameOpen] = useState(false);
 
   const handleRenameSelect = useCallback(() => {
-    setRenameOpen(true);
     onMenuOpenChange(false);
-  }, [onMenuOpenChange]);
+    onRenameClick();
+  }, [onMenuOpenChange, onRenameClick]);
 
   const handleDeleteSelect = useCallback(() => {
     onMenuOpenChange(false);
@@ -144,8 +144,6 @@ export function ResumeActions({
     }
   }, [resume.id, resume.title, onMenuOpenChange]);
 
-  const handleRenameClose = useCallback(() => setRenameOpen(false), []);
-
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
     return (
@@ -227,12 +225,6 @@ export function ResumeActions({
 
   return (
     <>
-      {/*
-       * Always mount DropdownMenu.Root for every card.
-       * Only the active card has open=true.
-       * This avoids mounting/unmounting Roots on every interaction,
-       * which Radix handles poorly (extra cleanup renders).
-       */}
       <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
         <DropdownMenu.Trigger asChild>
           <button
@@ -250,14 +242,6 @@ export function ResumeActions({
         </DropdownMenu.Trigger>
         {menuContent}
       </DropdownMenu.Root>
-
-      {renameOpen && (
-        <RenameModal
-          resumeId={resume.id}
-          currentTitle={resume.title}
-          onClose={handleRenameClose}
-        />
-      )}
     </>
   );
 }

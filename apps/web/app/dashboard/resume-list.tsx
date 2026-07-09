@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal, X, Loader2, AlertTriangle, RefreshCw } from 
 import { ResumeCard } from "./resume-card";
 import { EmptyState } from "./empty-state";
 import { DeleteResumeModal } from "./delete-modal";
+import { RenameModal } from "./rename-modal";
 
 type SerializedResume = {
   id: string;
@@ -94,6 +95,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
+  const [resumeToRename, setResumeToRename] = useState<SerializedResume | null>(null);
   const isDeleteModalOpen = !!resumeToDelete;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -181,9 +183,18 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     [],
   );
 
+  const handleRenameClick = useCallback(
+    (resume: SerializedResume) => {
+      setActiveMenuId(null);
+      requestAnimationFrame(() => setResumeToRename(resume));
+    },
+    [],
+  );
+
   const handleDeleteClick = useCallback(
     (id: string, title: string) => {
       setActiveMenuId(null);
+      setResumeToRename(null);
       setTimeout(() => {
         setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
       }, 0);
@@ -269,6 +280,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     setSort("updated");
   }, []);
   const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
+  const handleRenameClose = useCallback(() => setResumeToRename(null), []);
 
   // Empty state (only when we have data loaded)
   if (sorted.length === 0 && hasActiveFilters) {
@@ -328,6 +340,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
                 parsedDate={r.parsedDate}
                 isMenuOpen={!isDeleteModalOpen && activeMenuId === r.id}
                 onMenuOpenChange={handleMenuOpenChange}
+                onRenameClick={handleRenameClick}
                 onDeleteClick={handleDeleteClick}
               />
             ))}
@@ -390,6 +403,13 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
         resumeTitle={resumeToDelete?.title ?? ""}
         open={!!resumeToDelete}
         onClose={handleDeleteClose}
+      />
+
+      {/* Global rename modal — one instance, outside card map */}
+      <RenameModal
+        resumeId={resumeToRename?.id ?? ""}
+        currentTitle={resumeToRename?.title ?? ""}
+        onClose={handleRenameClose}
       />
     </div>
   );

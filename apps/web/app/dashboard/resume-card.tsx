@@ -14,6 +14,7 @@ type ResumeCardProps = {
   isMenuOpen: boolean;
   /** Called with this card's id */
   onMenuOpenChange: (resumeId: string, open: boolean) => void;
+  onRenameClick: (resume: SerializedResume) => void;
   onDeleteClick: (resumeId: string, resumeTitle: string) => void;
 };
 
@@ -70,6 +71,7 @@ function ResumeCardInner({
   templateId,
   isMenuOpen,
   onMenuOpenChange,
+  onRenameClick,
   onDeleteClick,
 }: ResumeCardProps) {
   const { id, title, targetRole, analysisRunCount } = resume;
@@ -89,6 +91,11 @@ function ResumeCardInner({
   const handleMenuToggle = useCallback(
     (open: boolean) => onMenuOpenChange(id, open),
     [onMenuOpenChange, id],
+  );
+
+  const handleRename = useCallback(
+    () => onRenameClick(resume),
+    [onRenameClick, resume],
   );
 
   const handleDelete = useCallback(
@@ -150,6 +157,7 @@ function ResumeCardInner({
           resume={resume}
           isMenuOpen={isMenuOpen}
           onMenuOpenChange={handleMenuToggle}
+          onRenameClick={handleRename}
           onDeleteClick={handleDelete}
         />
         <Link
