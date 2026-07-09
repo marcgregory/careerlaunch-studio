@@ -56,6 +56,9 @@ export function ResumeActions({
   const [renameOpen, setRenameOpen] = useState(false);
 
   const handleRenameSelect = useCallback(() => {
+    // Set rename open BEFORE closing menu — React 18 batches these,
+    // so the modal renders in the same commit as the menu close.
+    // No flicker because there's no intermediate frame with neither.
     setRenameOpen(true);
     onMenuOpenChange(false);
   }, [onMenuOpenChange]);
