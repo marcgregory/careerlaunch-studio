@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { ResumeCacheData } from "./resume-actions";
 
 type RenameModalProps = {
   resumeId: string;
   currentTitle: string;
   onClose: () => void;
-  onRenamed: () => void;
 };
 
-export function RenameModal({ resumeId, currentTitle, onClose, onRenamed }: RenameModalProps) {
+export function RenameModal({ resumeId, currentTitle, onClose }: RenameModalProps) {
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState(currentTitle);
   const [saving, setSaving] = useState(false);
 
@@ -27,6 +29,24 @@ export function RenameModal({ resumeId, currentTitle, onClose, onRenamed }: Rena
       return;
     }
 
+    // Optimistic update: change title in cache immediately
+    queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pageParams: old.pageParams,
+        pages: old.pages.map((p) => ({
+          ...p,
+          resumes: p.resumes.map((r) =>
+            r.id === resumeId ? { ...r, title: trimmed } : r,
+          ),
+        })),
+      };
+    });
+
+    onClose();
+    toast.success("Resume renamed.");
+
     setSaving(true);
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
@@ -35,15 +55,13 @@ export function RenameModal({ resumeId, currentTitle, onClose, onRenamed }: Rena
         body: JSON.stringify({ title: trimmed }),
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Failed to rename" }));
-        toast.error(err.error);
-        return;
+        toast.error("Failed to save rename. Reverting...");
       }
-      toast.success("Resume renamed.");
-      onRenamed();
-      onClose();
+      // Background revalidate regardless
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } catch {
-      toast.error("Failed to rename resume");
+      toast.error("Failed to save rename");
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } finally {
       setSaving(false);
     }

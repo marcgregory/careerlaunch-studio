@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { ResumeCacheData } from "./resume-actions";
 
 type DeleteResumeModalProps = {
   resumeId: string;
   resumeTitle: string;
   open: boolean;
   onClose: () => void;
-  onDeleted: () => void;
 };
 
 export function DeleteResumeModal({
@@ -17,8 +18,8 @@ export function DeleteResumeModal({
   resumeTitle,
   open,
   onClose,
-  onDeleted,
 }: DeleteResumeModalProps) {
+  const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,20 +46,35 @@ export function DeleteResumeModal({
   async function handleDelete() {
     setDeleting(true);
     setError(null);
+
+    // Optimistic remove from cache
+    queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pageParams: old.pageParams,
+        pages: old.pages.map((p) => ({
+          ...p,
+          resumes: p.resumes.filter((r) => r.id !== resumeId),
+        })),
+      };
+    });
+
+    toast.success("Resume deleted.");
+    onClose();
+
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
         method: "DELETE",
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Failed to delete resume" }));
-        setError(err.error ?? "Failed to delete resume");
-        return;
+        toast.error("Failed to delete from server. Reverting...");
       }
-      toast.success("Resume deleted.");
-      onDeleted();
-      onClose();
+      // Background revalidate
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } catch {
-      setError("Failed to delete resume");
+      toast.error("Failed to delete from server");
+      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } finally {
       setDeleting(false);
     }

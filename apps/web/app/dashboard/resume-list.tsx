@@ -269,10 +269,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     setSort("updated");
   }, []);
   const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
-  const handleDeleted = useCallback(() => {
-    setResumeToDelete(null);
-    refetch();
-  }, [refetch]);
 
   // Empty state (only when we have data loaded)
   if (sorted.length === 0 && hasActiveFilters) {
@@ -394,7 +390,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
         resumeTitle={resumeToDelete?.title ?? ""}
         open={!!resumeToDelete}
         onClose={handleDeleteClose}
-        onDeleted={handleDeleted}
       />
     </div>
   );

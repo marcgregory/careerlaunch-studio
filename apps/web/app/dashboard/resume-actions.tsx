@@ -7,6 +7,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { RenameModal } from "./rename-modal";
 
+export type ResumeCacheData = {
+  pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
+  pageParams: number[];
+};
+
 export type SerializedResume = {
   id: string;
   title: string;
@@ -14,11 +19,6 @@ export type SerializedResume = {
   updatedAt: string;
   analysisRunCount: number;
   exportCount: number;
-};
-
-type InfiniteData = {
-  pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
-  pageParams: number[];
 };
 
 type ResumeActionsProps = {
@@ -30,7 +30,7 @@ type ResumeActionsProps = {
 
 /** Helper: manually re-read the query cache and insert a resume at the front */
 function optimisticallyAddResume(queryClient: ReturnType<typeof useQueryClient>, resume: SerializedResume) {
-  queryClient.setQueryData<InfiniteData>(["resumes"], (old) => {
+  queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
     if (!old) return old;
     return {
       ...old,
@@ -146,9 +146,6 @@ export function ResumeActions({
   }, [resume.id, resume.title, onMenuOpenChange]);
 
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
-  const handleRenamed = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["resumes"] });
-  }, [queryClient]);
 
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
@@ -278,7 +275,6 @@ export function ResumeActions({
           resumeId={resume.id}
           currentTitle={resume.title}
           onClose={handleRenameClose}
-          onRenamed={handleRenamed}
         />
       )}
     </>
