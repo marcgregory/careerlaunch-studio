@@ -19,7 +19,7 @@ export function WorkspaceStats({
   planName = "Free",
 }: WorkspaceStatsProps) {
   return (
-    <aside className="rounded-[28px] border border-[#123c3a] bg-[#123c3a] p-5 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] lg:sticky lg:top-[84px] lg:max-h-[calc(100vh-104px)] lg:self-start lg:overflow-y-auto lg:overscroll-contain xl:p-6">
+    <aside className="rounded-[28px] border border-[#123c3a] bg-[#123c3a] p-5 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] lg:sticky lg:top-[84px] lg:self-start xl:p-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="grid h-12 w-12 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a] xl:h-14 xl:w-14">
@@ -67,7 +67,7 @@ export function WorkspaceStats({
       <div className="mt-5 space-y-3">
         <Link
           href="/account/billing"
-          className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.08]"
+          className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 transition hover:bg-white/[0.08]"
         >
           <div className="flex items-center gap-3">
             <CreditCard size={18} className="text-[#b9ff66]" />
@@ -77,7 +77,7 @@ export function WorkspaceStats({
         </Link>
         <Link
           href="/billing"
-          className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.08]"
+          className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 transition hover:bg-white/[0.08]"
         >
           <div className="flex items-center gap-3">
             <Sparkles size={18} className="text-[#b9ff66]" />
@@ -88,7 +88,7 @@ export function WorkspaceStats({
       </div>
 
       {/* Resume count footer */}
-      <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#b9ff66] p-4 text-[#123c3a]">
+      <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#b9ff66] px-4 py-3 text-[#123c3a]">
         <FileText size={22} />
         <p className="text-sm font-black leading-5">
           {totalResumes} resume{totalResumes !== 1 ? "s" : ""} in your workspace.
