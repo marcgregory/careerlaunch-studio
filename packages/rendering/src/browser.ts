@@ -22,7 +22,12 @@ import type { Browser } from "playwright-core";
  */
 export async function launchBrowser(): Promise<Browser> {
   return playwrightChromium.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
     headless: true,
   });
 }

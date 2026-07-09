@@ -62,40 +62,36 @@ function parseBody(req) {
 /* ------------------------------------------------------------------ */
 
 let _browser;
-let _browserRefCount = 0;
 
 async function getBrowser() {
   if (_browser && _browser.isConnected()) {
-    _browserRefCount++;
     return _browser;
   }
   console.log(`[browser] launching chromium${CHROMIUM_PATH ? ` (path: ${CHROMIUM_PATH})` : ""}`);
   _browser = await chromium.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
     executablePath: CHROMIUM_PATH || undefined,
     headless: true,
   });
-  _browserRefCount = 1;
 
   // If the browser disconnects unexpectedly, clear the reference
   _browser.on("disconnected", () => {
     console.error("[browser] chromium disconnected unexpectedly");
     _browser = null;
-    _browserRefCount = 0;
   });
 
   return _browser;
-}
-
-function releaseBrowser() {
-  _browserRefCount = Math.max(0, _browserRefCount - 1);
 }
 
 async function shutdownBrowser() {
   if (_browser) {
     try { await _browser.close(); } catch { /* ignore */ }
     _browser = null;
-    _browserRefCount = 0;
   }
 }
 
@@ -104,36 +100,46 @@ async function shutdownBrowser() {
 /* ------------------------------------------------------------------ */
 
 async function renderPdf(html, signal) {
-  const browser = await getBrowser();
-  let page;
+  let lastError;
+  // Retry once if the browser crashes mid-render
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const browser = await getBrowser();
+      const page = await browser.newPage({
+        viewport: { width: 794, height: 1123 },
+      });
 
-  try {
-    page = await browser.newPage({
-      viewport: { width: 794, height: 1123 },
-    });
+      try {
+        await page.setContent(html, { waitUntil: "domcontentloaded", timeout: RENDER_TIMEOUT_MS });
 
-    // Use domcontentloaded instead of networkidle — no external assets to wait for
-    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: RENDER_TIMEOUT_MS });
-    // Wait for a custom ready marker or a brief paint guarantee
-    await page.waitForFunction(() => document.querySelector(".pdf-root") !== null, { timeout: RENDER_TIMEOUT_MS });
+        const pdf = await page.pdf({
+          format: "Letter",
+          printBackground: true,
+          margin: {
+            top: "0.35in",
+            right: "0.35in",
+            bottom: "0.35in",
+            left: "0.35in",
+          },
+          timeout: RENDER_TIMEOUT_MS,
+        });
 
-    const pdf = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: {
-        top: "0.35in",
-        right: "0.35in",
-        bottom: "0.35in",
-        left: "0.35in",
-      },
-      timeout: RENDER_TIMEOUT_MS,
-    });
-
-    return pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength);
-  } finally {
-    if (page) await page.close().catch(() => {});
-    releaseBrowser();
+        return pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength);
+      } finally {
+        await page.close().catch(() => {});
+      }
+    } catch (err) {
+      lastError = err;
+      // If the browser disconnected, kill the reference so getBrowser() re-launches
+      if (_browser && !_browser.isConnected()) {
+        _browser = null;
+        console.log(`[browser] retrying after crash (attempt ${attempt})`);
+        continue;
+      }
+      throw err;
+    }
   }
+  throw lastError;
 }
 
 /* ------------------------------------------------------------------ */
@@ -232,11 +238,22 @@ async function handleRender(req, res) {
 
 const server = http.createServer(handleRequest);
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`PDF renderer listening on port ${PORT}`);
   console.log(`  max HTML size:  ${(MAX_HTML_SIZE / 1024 / 1024).toFixed(1)} MB`);
   console.log(`  render timeout: ${RENDER_TIMEOUT_MS} ms`);
   console.log(`  auth enabled:   ${!!RENDERER_TOKEN}`);
+
+  // Warm up the browser so the first request isn't slow
+  try {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    await page.setContent("<!DOCTYPE html><html><body>warmup</body></html>", { waitUntil: "domcontentloaded" });
+    await page.close();
+    console.log("[browser] warm-up complete");
+  } catch (err) {
+    console.error("[browser] warm-up failed:", err.message);
+  }
 });
 
 async function shutdown() {

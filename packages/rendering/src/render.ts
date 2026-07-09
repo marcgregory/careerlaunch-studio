@@ -11,7 +11,7 @@ export async function renderHtmlToPdf(html: string): Promise<ArrayBuffer> {
     const page = await browser.newPage({
       viewport: { width: 794, height: 1123 },
     });
-    await page.setContent(html, { waitUntil: "networkidle" });
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
 
     const pdf = await page.pdf({
       format: "Letter",
