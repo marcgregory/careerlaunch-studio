@@ -121,24 +121,7 @@ export function ResumeActions({
           sideOffset={8}
           collisionPadding={12}
           avoidCollisions
-          /* ────────────────────────────────────────────────────────────
-           * KEY FIX: Intercept pointerdown-outside events.
-           * When menu A is open and user clicks menu B's trigger, Radix
-           * fires pointerdown-outside on menu A.  If the target is a
-           * trigger button (has data-radix-dropdown-trigger attr),
-           * preventDefault() tells Radix NOT to close menu A.
-           *
-           * Menu B opens on the click event normally, and the parent's
-           * setActiveMenuId(id) replaces A with B in one atomic batch.
-           * No flicker because menu A never actually closes.
-           * ──────────────────────────────────────────────────────────── */
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement | null;
-            if (target?.closest('[data-radix-dropdown-trigger]')) {
-              e.preventDefault();
-            }
-          }}
-          className="z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
+          className="z-[999] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
           <DropdownMenu.Item
             onSelect={handleRenameSelect}
@@ -203,19 +186,43 @@ export function ResumeActions({
 
   return (
     <>
-      <DropdownMenu.Root open={isMenuOpen} onOpenChange={onMenuOpenChange}>
-        <DropdownMenu.Trigger asChild>
-          <button
-            type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-            title="More actions"
-            aria-label="More actions"
-          >
+      {/*
+       * Render ONE Radix Root at a time — only when this card is the active menu.
+       * When closed, render a plain button.  This guarantees ZERO competing
+       * document-level pointerdown listeners.
+       */}
+      {isMenuOpen ? (
+        <DropdownMenu.Root open onOpenChange={onMenuOpenChange}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+              title="More actions"
+              aria-label="More actions"
+            >
+              <EllipsisVertical size={16} />
+            </button>
+          </DropdownMenu.Trigger>
+          {menuContent}
+        </DropdownMenu.Root>
+      ) : (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onMenuOpenChange(true);
+          }}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+          title="More actions"
+          aria-label="More actions"
+        >
+          {actionLoading === "duplicate" || actionLoading === "export" ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
             <EllipsisVertical size={16} />
-          </button>
-        </DropdownMenu.Trigger>
-        {menuContent}
-      </DropdownMenu.Root>
+          )}
+        </button>
+      )}
 
       {renameOpen && (
         <RenameModal
