@@ -56,8 +56,8 @@ export function ResumeActions({
   const [renameOpen, setRenameOpen] = useState(false);
 
   const handleRenameSelect = useCallback(() => {
+    setRenameOpen(true);
     onMenuOpenChange(false);
-    setTimeout(() => setRenameOpen(true), 0);
   }, [onMenuOpenChange]);
 
   const handleDeleteSelect = useCallback(() => {
