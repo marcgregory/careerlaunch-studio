@@ -1174,6 +1174,7 @@ export function parseResumeText(text: string): ParseResult {
     certifications: [],
     professionalQualities: [],
     projects: [],
+    references: [],
     summary: "",
   };
 

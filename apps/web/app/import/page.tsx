@@ -200,6 +200,7 @@ export default function ImportPage() {
         certifications: result.parsed.certifications || [],
         professionalQualities: result.parsed.professionalQualities || [],
         projects: result.parsed.projects || [],
+        references: result.parsed.references || [],
         summary: result.parsed.summary || "",
       };
 
@@ -584,6 +585,31 @@ export default function ImportPage() {
                               <li key={i}>{b}</li>
                             ))}
                           </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {result.parsed.references && result.parsed.references.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    References ({result.parsed.references.length})
+                  </h3>
+                  <div className="mt-2 space-y-2">
+                    {result.parsed.references.map((ref) => (
+                      <div key={ref.id} className="text-sm">
+                        <p className="font-bold">{ref.name}</p>
+                        {[ref.title, ref.company].filter(Boolean).length > 0 && (
+                          <p className="text-xs font-medium text-[#4b4b4b]">
+                            {[ref.title, ref.company].filter(Boolean).join(", ")}
+                          </p>
+                        )}
+                        {[ref.phone, ref.email].filter(Boolean).length > 0 && (
+                          <p className="text-xs text-[#777]">
+                            {[ref.phone, ref.email].filter(Boolean).join(" · ")}
+                          </p>
                         )}
                       </div>
                     ))}
