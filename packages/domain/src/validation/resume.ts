@@ -6,6 +6,8 @@ export const contactSchema = z.object({
   phone: z.string().min(1, "Phone is required."),
   location: z.string().default(""),
   website: z.string().default(""),
+  linkedin: z.string().default(""),
+  github: z.string().default(""),
 });
 
 export const experienceItemSchema = z.object({

@@ -5,7 +5,9 @@
       "email": "alex.chen@example.com",
       "phone": "+1 (408) 555-0192",
       "location": "San Jose, CA",
-      "website": ""
+      "website": "",
+      "linkedin": "",
+      "github": ""
     },
     "experience": [
       {
@@ -49,15 +51,15 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University",
-        "degree": "M.S. Computer Science - Stanford",
+        "school": "Stanford University",
+        "degree": "M.S. Computer Science",
         "location": "",
         "graduation": "2014"
       },
       {
         "id": "import-edu-2",
-        "school": "B.S. Computer Engineering - UC Berkeley",
-        "degree": "B.S. Computer Engineering - UC Berkeley",
+        "school": "UC Berkeley",
+        "degree": "B.S. Computer Engineering",
         "location": "",
         "graduation": "2012"
       }
@@ -86,6 +88,7 @@
     ],
     "professionalQualities": [],
     "projects": [],
+    "references": [],
     "summary": "Senior cloud architect with 10+ years designing scalable infrastructure for SaaS platforms."
   },
   "confidence": 90,
@@ -120,8 +123,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 14,
-      "parsedWordCount": 18,
-      "ratio": 1,
+      "parsedWordCount": 12,
+      "ratio": 0.8571428571428571,
       "status": "good"
     },
     {

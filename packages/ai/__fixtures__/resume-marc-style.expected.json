@@ -4,8 +4,10 @@
       "fullName": "MARC GREGORY B. TURNO",
       "email": "marc.gregory@email.com",
       "phone": "+63 912 345 6789",
-      "location": "",
-      "website": "linkedin.com/in/"
+      "location": "Manila, Philippines",
+      "website": "",
+      "linkedin": "linkedin.com/in/marcturno",
+      "github": ""
     },
     "experience": [
       {
@@ -117,6 +119,17 @@
         ]
       }
     ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
     "summary": "Versatile developer with expertise spanning frontend, backend, cloud infrastructure, and LLM application development. Experienced in building full-stack web applications, IoT systems, and AI-powered tools. Proven ability to design scalable architectures, optimize performance, and integrate modern AI capabilities into production systems."
   },
   "confidence": 90,
@@ -151,8 +164,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 11,
-      "parsedWordCount": 10,
-      "ratio": 0.9090909090909091,
+      "parsedWordCount": 11,
+      "ratio": 1,
       "status": "good"
     },
     {

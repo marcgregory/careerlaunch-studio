@@ -5,7 +5,9 @@
       "email": "taylor.r@example.com",
       "phone": "(212) 555-0147",
       "location": "New York, NY",
-      "website": ""
+      "website": "",
+      "linkedin": "",
+      "github": ""
     },
     "experience": [
       {
@@ -37,8 +39,8 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "B.S. Computer Science - NYU",
-        "degree": "B.S. Computer Science - NYU",
+        "school": "NYU",
+        "degree": "B.S. Computer Science",
         "location": "",
         "graduation": "2018"
       }
@@ -47,6 +49,17 @@
     "certifications": [],
     "professionalQualities": [],
     "projects": [],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
     "summary": ""
   },
   "confidence": 90,
@@ -81,8 +94,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 6,
-      "parsedWordCount": 10,
-      "ratio": 1,
+      "parsedWordCount": 5,
+      "ratio": 0.8333333333333334,
       "status": "good"
     },
     {

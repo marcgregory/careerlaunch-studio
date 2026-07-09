@@ -85,18 +85,28 @@ describe("parseResumeText", () => {
     expect(result.parsed.professionalQualities).toContain("Team player");
   });
 
-  it("should not include references content in any parsed field", () => {
+  it("should not include references content in any other parsed field", () => {
     const result = parseResumeText(SAMPLE_RESUME_TEXT);
 
-    // References section content should be excluded
-    const allText = JSON.stringify(result.parsed).toLowerCase();
-    expect(allText).not.toContain("jane doe");
-    expect(allText).not.toContain("john smith");
-    expect(allText).not.toContain("references available");
+    // References should be parsed into the references array
+    const references = result.parsed.references || [];
+    expect(references.length).toBeGreaterThan(0);
 
-    // Summary should not have been corrupted by references
+    // References boilerplate should NOT appear in summary
     const summary = result.parsed.summary || "";
     expect(summary).not.toContain("Available upon request");
+    expect(summary).not.toContain("references available");
+
+    // Reference names should NOT appear in experience, skills, or education
+    const experienceText = JSON.stringify(result.parsed.experience || []).toLowerCase();
+    expect(experienceText).not.toContain("jane doe");
+    expect(experienceText).not.toContain("john smith");
+
+    const skillsText = JSON.stringify(result.parsed.skills || []).toLowerCase();
+    expect(skillsText).not.toContain("jane doe");
+
+    const educationText = JSON.stringify(result.parsed.education || []).toLowerCase();
+    expect(educationText).not.toContain("jane doe");
   });
 
   it("should parse experience entries with correct role/company", () => {
@@ -682,5 +692,275 @@ Stuff`;
     const result = parseResumeText("");
     expect(result.importQuality).toBe("failed");
     expect(result.confidence).toBe(0);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Parser bugfix regression tests (Sprint 6D)                         */
+/* ------------------------------------------------------------------ */
+
+describe("parser bugfix regression (Sprint 6D)", () => {
+  /* Bug 6: LinkedIn URL truncated to "linkedin.com/in/" */
+  it("should capture full LinkedIn profile URL", () => {
+    const text = `Alex Rivera
+alex.rivera@email.com
+linkedin.com/in/alexrivera
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.contact?.linkedin).toContain("alexrivera");
+    expect(result.parsed.contact?.linkedin).not.toMatch(/in\/?$/);
+  });
+
+  /* Bug 6: Portfolio / GitHub / location URLs routed to correct fields */
+  it("should route URLs to correct contact fields", () => {
+    const text = `Sam Lee
+sam@example.com
+github.com/samlee
+samlee.dev
+linkedin.com/in/samlee
+San Francisco, CA
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.contact?.linkedin).toContain("samlee");
+    expect(result.parsed.contact?.github).toContain("samlee");
+    expect(result.parsed.contact?.website).toContain("samlee.dev");
+  });
+
+  /* Bug 6: Location with non-US format */
+  it("should parse non-US location formats", () => {
+    const text = `Maria Santos
+maria@email.com
+Manila, Philippines
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.contact?.location).toContain("Manila");
+    expect(result.parsed.contact?.location).toContain("Philippines");
+  });
+
+  /* Bug 8: Education multi-line preserves school, degree, graduation year */
+  it("should parse multi-line education with school on next line", () => {
+    const text = `Test User
+test@email.com
+
+Education
+Bachelor of Science in Computer Science
+University of Washington, 2016
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const edu = result.parsed.education || [];
+    expect(edu.length).toBe(1);
+    expect(edu[0].school).toBe("University of Washington");
+    expect(edu[0].degree).toBe("Bachelor of Science in Computer Science");
+    expect(edu[0].graduation).toBe("2016");
+  });
+
+  /* Bug 8: Education single-line hyphen format */
+  it("should parse single-line hyphen-format education", () => {
+    const text = `Test User
+test@email.com
+
+Education
+B.S. Computer Science - University of Washington, 2016
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const edu = result.parsed.education || [];
+    expect(edu.length).toBe(1);
+    expect(edu[0].school).toBe("University of Washington");
+    expect(edu[0].degree).toBe("B.S. Computer Science");
+    expect(edu[0].graduation).toBe("2016");
+  });
+
+  /* Bug 8: Education hyphen format with no year first */
+  it("should parse hyphen-format education: B.A. - State University, 2018", () => {
+    const text = `Test User
+test@email.com
+
+Education
+B.A. Communication Studies - Texas State University, 2018
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const edu = result.parsed.education || [];
+    expect(edu.length).toBe(1);
+    expect(edu[0].school).toBe("Texas State University");
+    expect(edu[0].degree).toBe("B.A. Communication Studies");
+    expect(edu[0].graduation).toBe("2018");
+  });
+
+  /* Bug 9: Projects with descriptions */
+  it("should parse project description from line between name and bullets", () => {
+    const text = `Test User
+test@email.com
+
+Skills
+React, TypeScript
+
+Projects
+CareerLaunch Studio
+Full-stack SaaS platform for resume creation and AI-powered improvement.
+- Built with Next.js, TypeScript, PostgreSQL, and Prisma ORM.
+- Integrated AI analysis using Gemini and Groq APIs.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const projects = result.parsed.projects || [];
+    expect(projects.length).toBe(1);
+    expect(projects[0].name).toBe("CareerLaunch Studio");
+    expect(projects[0].description).toContain("Full-stack SaaS platform");
+    expect(projects[0].bullets.length).toBe(2);
+  });
+
+  /* Bug 10: Achievements section parsed as professional qualities */
+  it("should parse Achievements heading items as professional qualities", () => {
+    const text = `Test User
+test@email.com
+
+Achievements
+Employee of the Month
+Top Performer Q4
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(2);
+    expect(result.parsed.professionalQualities).toContain("Employee of the Month");
+    expect(result.parsed.professionalQualities).toContain("Top Performer Q4");
+  });
+
+  /* Bug 10: Awards heading */
+  it("should parse Awards heading as professional qualities", () => {
+    const text = `Test User
+test@email.com
+
+Awards
+Best Innovation Award
+Team Excellence
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(1);
+    expect(result.parsed.professionalQualities).toContain("Best Innovation Award");
+  });
+
+  /* Bug 10: Honors heading */
+  it("should parse Honors heading as professional qualities", () => {
+    const text = `Test User
+test@email.com
+
+Honors
+Dean's List
+Summa Cum Laude
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(2);
+    expect(result.parsed.professionalQualities).toContain("Dean's List");
+  });
+
+  /* Bug 11: Volunteer experience parsed as experience entries */
+  it("should parse Volunteer Experience with dates and bullets", () => {
+    const text = `Test User
+test@email.com
+
+Volunteer Experience
+Web Developer
+Open Source Foundation
+Jan 2023 - Present
+- Built and maintained community website.
+- Mentored new contributors.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+    const volunteer = experience.find((e) => e.role === "Web Developer");
+    expect(volunteer).toBeDefined();
+    expect(volunteer!.company).toBe("Open Source Foundation");
+    expect(volunteer!.start).toMatch(/Jan/i);
+    expect(volunteer!.end).toMatch(/Present/i);
+    expect(volunteer!.bullets.length).toBe(2);
+  });
+
+  /* Bug 11: "Volunteering" section pattern */
+  it("should parse 'Volunteering' header as experience", () => {
+    const text = `Test User
+test@email.com
+
+Volunteering
+Tutor
+Community Center
+2022 - 2023
+- Tutored students in math and science.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+    const tutor = experience.find((e) => e.role === "Tutor");
+    expect(tutor).toBeDefined();
+  });
+
+  /* Bug 11: "Community Service" section pattern */
+  it("should parse Community Service section as experience", () => {
+    const text = `Test User
+test@email.com
+
+Community Service
+Volunteer Coordinator
+Local Shelter
+2021 - 2023
+- Coordinated weekly volunteer shifts.
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+    const coord = experience.find((e) => e.role === "Volunteer Coordinator");
+    expect(coord).toBeDefined();
+  });
+
+  /* Contact: multiple URLs on same line separated by spaces */
+  it("should not lose location when preceded by URLs", () => {
+    const text = `Alex Rivera
+alex.rivera@email.com
+(555) 000-1234
+linkedin.com/in/alexrivera
+github.com/alexrivera
+Seattle, WA
+
+Experience
+Developer | Acme | 2020 - Present
+- Worked.`;
+    const result = parseResumeText(text);
+    expect(result.parsed.contact?.linkedin).toContain("alexrivera");
+    expect(result.parsed.contact?.github).toContain("alexrivera");
+    expect(result.parsed.contact?.location).toBe("Seattle, WA");
   });
 });

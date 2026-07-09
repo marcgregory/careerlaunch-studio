@@ -395,6 +395,8 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
               <Field label="Phone" value={resume.contact.phone} error={validation.phone} onChange={(value) => updateContact("phone", value)} />
               <Field label="Location" value={resume.contact.location} onChange={(value) => updateContact("location", value)} />
               <Field label="Website" value={resume.contact.website} onChange={(value) => updateContact("website", value)} />
+              <Field label="LinkedIn" value={resume.contact.linkedin} onChange={(value) => updateContact("linkedin", value)} />
+              <Field label="GitHub" value={resume.contact.github} onChange={(value) => updateContact("github", value)} />
             </div>
           </Panel>
 

@@ -5,7 +5,9 @@
       "email": "sam.patel@email.com",
       "phone": "",
       "location": "",
-      "website": ""
+      "website": "",
+      "linkedin": "",
+      "github": ""
     },
     "experience": [
       {
@@ -24,8 +26,8 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "School of Design",
-        "degree": "B.A. Graphic Design - Rhode Island",
+        "school": "Rhode Island School of Design",
+        "degree": "B.A. Graphic Design",
         "location": "",
         "graduation": "2021"
       }
@@ -34,6 +36,7 @@
     "certifications": [],
     "professionalQualities": [],
     "projects": [],
+    "references": [],
     "summary": ""
   },
   "confidence": 90,

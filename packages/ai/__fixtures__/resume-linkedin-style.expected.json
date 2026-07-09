@@ -4,8 +4,10 @@
       "fullName": "Maria Santos",
       "email": "maria.santos@email.com",
       "phone": "",
-      "location": "",
-      "website": ""
+      "location": "Manila, Philippines",
+      "website": "",
+      "linkedin": "",
+      "github": ""
     },
     "experience": [
       {
@@ -80,6 +82,7 @@
       "Cross-functional collaborator"
     ],
     "projects": [],
+    "references": [],
     "summary": "Marketing professional with 8 years of experience in brand management, digital strategy, and content marketing across Southeast Asian markets."
   },
   "confidence": 90,
@@ -114,8 +117,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 12,
-      "parsedWordCount": 10,
-      "ratio": 0.8333333333333334,
+      "parsedWordCount": 11,
+      "ratio": 0.9166666666666666,
       "status": "good"
     },
     {

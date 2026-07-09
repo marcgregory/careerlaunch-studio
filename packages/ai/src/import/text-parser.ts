@@ -147,6 +147,24 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
       /\bqualifications\b/i,
     ],
   },
+  {
+    id: "professionalQualities",
+    patterns: [
+      /\bachievements?\b/i,
+      /\bhono?u?rs?\b/i,
+      /\bawards?\b/i,
+      /\bhonors\s+and\s+awards\b/i,
+    ],
+  },
+  {
+    id: "experience",
+    patterns: [
+      /\bvolunteer\s+experience\b/i,
+      /\bvolunteering\b/i,
+      /\bvolunteer\s+work\b/i,
+      /\bcommunity\s+service\b/i,
+    ],
+  },
 ];
 
 /**
@@ -207,7 +225,9 @@ const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const PHONE_RE =
   /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
 const LINKEDIN_RE =
-  /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/[a-zA-Z0-9_-]+\/?/;
+  /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+(?:\/?)/;
+const GITHUB_RE =
+  /(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9._-]+\/?/;
 /** Match domains that look like personal/professional websites or portfolio
  *  links. Uses \b at the start to prevent partial matches of email domains
  *  (e.g. prevents "ail.com" from matching inside "johndoe@gmail.com").
@@ -240,23 +260,38 @@ function extractContact(
       contact.phone = phoneMatch[0];
     }
 
+    // Route LinkedIn URL to contact.linkedin
     const linkedInMatch = line.match(LINKEDIN_RE);
-    if (linkedInMatch && !contact.website) {
-      contact.website = linkedInMatch[0];
-    } else if (!contact.website && !emailMatch) {
-      // Only attempt website extraction on lines that did NOT match an email.
-      // Otherwise a partial domain match (e.g. "ail.com" from inside "johndoe@gmail.com")
-      // would produce a spurious website artifact.
+    if (linkedInMatch && !contact.linkedin) {
+      contact.linkedin = linkedInMatch[0];
+      continue;
+    }
+
+    // Route GitHub URL to contact.github
+    const githubMatch = line.match(GITHUB_RE);
+    if (githubMatch && !contact.github) {
+      contact.github = githubMatch[0];
+      continue;
+    }
+
+    // General website (only on lines that did NOT match an email address,
+    // to prevent partial domain matches like "ail.com" from "johndoe@gmail.com")
+    if (!contact.website && !emailMatch) {
       const webMatch = line.match(WEBSITE_RE);
       if (webMatch) {
         contact.website = webMatch[0];
       }
     }
 
-    // Location: line that contains city/state pattern but no email/phone
+    // Location: line that contains city/state or city/country pattern
+    // but no email/phone/URL
     if (
       !contact.location &&
-      /\b[A-Z][a-z]+(?:,\s*[A-Z]{2})\b/.test(line)
+      !emailMatch &&
+      !phoneMatch &&
+      !linkedInMatch &&
+      !line.match(GITHUB_RE) &&
+      /^[A-Za-z][A-Za-z\s.-]+,\s*[A-Za-z\s.]{2,}$/.test(line.trim())
     ) {
       contact.location = line.trim();
     }
@@ -518,8 +553,10 @@ function parseEducation(lines: string[]): {
 } {
   const education: ResumeDocument["education"] = [];
   const warnings: string[] = [];
+  const consumed = new Set<number>();
 
   for (let i = 0; i < lines.length; i++) {
+    if (consumed.has(i)) continue;
     const trimmed = lines[i].trim();
     if (!trimmed || BULLET_RE.test(trimmed)) continue;
 
@@ -528,11 +565,12 @@ function parseEducation(lines: string[]): {
         trimmed,
       )
     ) {
-      const gradMatch = trimmed.match(GRAD_RE);
-      // Look ahead for the school line (non-degree, non-empty line that follows)
-      let school = extractSchool(trimmed);
-      let gradYear = gradMatch ? gradMatch[1].trim() : "";
+      // --- Step 1: extract graduation year and school from this line ---
+      let gradYear = extractGraduationYear(trimmed);
+      let school = extractSchoolV2(trimmed);
+      let degree = extractDegree(trimmed, school);
 
+      // --- Step 2: look at next line for school/graduation info ---
       if (i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
         if (
@@ -540,56 +578,67 @@ function parseEducation(lines: string[]): {
           !BULLET_RE.test(nextLine) &&
           !/\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(nextLine)
         ) {
-          // The next line looks like a school/institution name
-          const lookaheadSchool = extractSchool(nextLine);
-          // If extractSchool finds a known institution keyword, prefer it
-          if (lookaheadSchool !== nextLine) {
-            school = lookaheadSchool;
-          } else if (school === trimmed) {
-            school = nextLine;
+          // The next line looks like a school or additional context
+          const nextSchool = extractSchoolV2(nextLine);
+          const nextGrad = extractGraduationYear(nextLine);
+
+          // If the next line has a school keyword, use it as the school name
+          const hasSchoolKeyword = /\b(?:University|College|Institute|School|Academy|Polytechnic)\b/i.test(nextLine);
+          if (hasSchoolKeyword) {
+            school = nextSchool;
+            // Update gradYear from the school line if present
+            if (nextGrad) {
+              gradYear = nextGrad;
+              // Also clean degree if year was embedded there
+              degree = degree.replace(new RegExp(`,?\\s*${nextGrad}`), "").trim();
+            }
+          } else if (nextGrad && !gradYear) {
+            // School line has a year but no school keyword — save it
+            gradYear = nextGrad;
           }
-          // Extract graduation year from the school line and strip it from school
-          const nextGrad = nextLine.match(GRAD_RE);
-          if (nextGrad) {
-            gradYear = nextGrad[1].trim();
-          }
+
+          consumed.add(i + 1);
         }
       }
 
-      // Strip graduation year from school field if embedded
-      if (gradYear && school.endsWith(`, ${gradYear}`)) {
-        school = school.slice(0, -`, ${gradYear}`.length).trim();
-      } else if (gradYear && school.endsWith(` ${gradYear}`)) {
-        school = school.slice(0, -` ${gradYear}`.length).trim();
-      }
-
-      // Build degree text — strip school only if it's embedded
-      let degree = gradMatch
-        ? trimmed.replace(gradMatch[0], "").replace(/[-–,;]\s*$/, "").trim()
-        : trimmed;
-
-      // For multi-line: ensure school isn't embedded in degree text
-      // e.g. "Bachelor of Science in Information Technology - University of Santo Tomas, 2019"
-      // becomes school="University of Santo Tomas", degree="Bachelor of Science in Information Technology"
-      if (school !== trimmed) {
-        // Find where the school name starts in the trimmed line
-        const schoolIndex = trimmed.indexOf(school);
-        if (schoolIndex > 0) {
-          // School is embedded after a degree title — extract the degree
-          degree = trimmed.slice(0, schoolIndex).replace(/[-–,]\s*$/, "").trim();
+      // --- Step 3: final cleanup ---
+      // Strip graduation year from school if it leaked in
+      if (gradYear) {
+        if (school.endsWith(`, ${gradYear}`)) {
+          school = school.slice(0, -`, ${gradYear}`.length).trim();
+        } else if (school.endsWith(` ${gradYear}`)) {
+          school = school.slice(0, -` ${gradYear}`.length).trim();
         }
-        // If schoolIndex === 0, the school spans the whole line (no degree prefix),
-        // so the degree was already correctly computed as the trimmed grad year
       }
-      // Final cleanup: ensure degree doesn't end with stray punctuation
       degree = degree.replace(/[-–,]\s*$/, "").trim();
+
+      // --- Step 4: special handling for single-line hyphen format ---
+      // "Degree - School, Year" => Degree and School are separated by " - "
+      // Check the ORIGINAL degree text (trimmed) for hyphen splits, because
+      // extractSchoolV2 may have captured prefix context including the hyphen.
+      const splitCandidate = degree.includes(" - ") ? degree : trimmed;
+      if (splitCandidate.includes(" - ")) {
+        const parts = splitCandidate.split(/\s+[-–]\s+/);
+        if (parts.length >= 2) {
+          degree = parts[0].trim();
+          const combinedSchool = parts.slice(1).join(" - ").trim();
+          const yr = extractGraduationYear(combinedSchool);
+          if (yr) {
+            school = combinedSchool.replace(new RegExp(`,?\\s*${yr}`), "").trim();
+            // Only update gradYear if it wasn't already set from the next line
+            if (!gradYear) gradYear = yr;
+          } else {
+            school = combinedSchool;
+          }
+        }
+      }
 
       education.push({
         id: `import-edu-${education.length + 1}`,
-        school,
+        school: school || trimmed,
         degree: degree || trimmed,
         location: "",
-        graduation: gradYear,
+        graduation: gradYear || "",
       });
     }
   }
@@ -601,10 +650,22 @@ function parseEducation(lines: string[]): {
   return { education, warnings };
 }
 
-const GRAD_RE = /(\b(?:19|20)\d{2})\b/;
+/** Extract a 4-digit graduation year from text, returning the matched text or empty string */
+function extractGraduationYear(text: string): string {
+  const match = text.match(/\b((?:19|20)\d{2})\b/);
+  return match ? match[1].trim() : "";
+}
 
-function extractSchool(text: string): string {
-  const universities = [
+/**
+ * Extract school/institution name from text.
+ *
+ * Strategy:
+ * 1. If a known school keyword (University, College, etc.) is found,
+ *    extract from keyword forward up to 3 comma/dash-delimited tokens.
+ * 2. If no keyword found, return empty string (let the caller fall back).
+ */
+function extractSchoolV2(text: string): string {
+  const keywords = [
     "University",
     "College",
     "Institute",
@@ -612,16 +673,47 @@ function extractSchool(text: string): string {
     "Academy",
     "Polytechnic",
   ];
-  for (const keyword of universities) {
-    const index = text.search(
-      new RegExp(`\\b${keyword}\\b`, "i"),
-    );
+  for (const keyword of keywords) {
+    const index = text.search(new RegExp(`\\b${keyword}\\b`, "i"));
     if (index >= 0) {
-      const match = text.slice(index).match(/^[^,-]+(?:[,-][^,-]+){0,3}/);
-      if (match) return match[0].trim();
+      // Capture up to 2 words before the keyword, then the keyword and its
+      // comma/dash-delimited suffixes. Handles "Texas State University" (2 words
+      // before keyword) and "University of Washington, 2016" (keyword-first) alike.
+      const before = text.slice(0, index).trim();
+      const beforeWords = before.split(/\s+/).filter(Boolean);
+      const prefix = beforeWords.slice(-2).join(" ");
+      // Capture from keyword forward: up to 3 comma/dash segments or end
+      const rest = text.slice(index);
+      const colonIdx = rest.indexOf(":");
+      const effective = colonIdx >= 0 ? rest.slice(0, colonIdx) : rest;
+      const suffixMatch = effective.match(/^[^,-]+(?:[,-][^,-]+){0,2}/);
+      const suffix = suffixMatch ? suffixMatch[0].trim() : "";
+      return (prefix ? prefix + " " + suffix : suffix).trim();
     }
   }
-  return text;
+  return "";
+}
+
+/**
+ * Extract degree name from a degree line, removing school and graduation year.
+ */
+function extractDegree(text: string, school: string): string {
+  let degree = text;
+  // Remove graduation year
+  const yr = extractGraduationYear(text);
+  if (yr) {
+    degree = degree.replace(new RegExp(`,?\\s*${yr}`), "").trim();
+  }
+  // Remove school if found embedded.
+  // Strip year from school first so it matches post-year-removal degree text.
+  const cleanSchool = school.replace(new RegExp(`,?\\s*${yr}`), "").trim();
+  if (cleanSchool && cleanSchool.length > 3) {
+    const schoolIdx = degree.indexOf(cleanSchool);
+    if (schoolIdx > 0) {
+      degree = degree.slice(0, schoolIdx).replace(/[-–,]\s*$/, "").trim();
+    }
+  }
+  return degree;
 }
 
 /* ------------------------------------------------------------------ */
@@ -940,6 +1032,7 @@ function computeSectionCoverage(
         parsedWordCount += countWords(edu.degree);
         parsedWordCount += countWords(edu.school);
         parsedWordCount += countWords(edu.location);
+        parsedWordCount += countWords(edu.graduation);
       }
       break;
     }
@@ -1167,6 +1260,8 @@ export function parseResumeText(text: string): ParseResult {
       phone: contact.phone || "",
       location: contact.location || "",
       website: contact.website || "",
+      linkedin: contact.linkedin || "",
+      github: contact.github || "",
     },
     experience: [],
     education: [],
@@ -1297,12 +1392,18 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "projects": {
-        // Parse project entries: name lines followed by bullet lines
+        // Parse project entries: name lines followed by optional description
+        // and bullet lines. Supports:
+        //   Project Name
+        //   One-line description here (short, not starting with bullet)
+        //   - Bullet 1
+        //   - Bullet 2
         const projects: ResumeDocument["projects"] = [];
         let currentProject: ResumeDocument["projects"][number] | null = null;
+        let expectDescription = false;
         for (const rawLine of sectionLines) {
           const l = rawLine.trim();
-          if (!l) { currentProject = null; continue; }
+          if (!l) { currentProject = null; expectDescription = false; continue; }
           // Skip lines that look like OTHER section headers (not projects itself)
           if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/) && !/projects?/i.test(l)) continue;
 
@@ -1311,6 +1412,18 @@ export function parseResumeText(text: string): ParseResult {
             const cleaned = l.replace(/^[•\-*\d.]+\s+/, "").trim();
             if (currentProject && cleaned) {
               currentProject.bullets.push(cleaned);
+            }
+            expectDescription = false;
+          } else if (currentProject && expectDescription && currentProject.description === "") {
+            // The line immediately after the project name that is NOT a bullet
+            // and NOT a continuation of a bullet — capture as description if short
+            if (l.length < 200 && l.split(/\s+/).length < 40) {
+              currentProject.description = l;
+              expectDescription = false;
+            } else {
+              // Too long for a description — treat as a bullet
+              currentProject.bullets.push(l);
+              expectDescription = false;
             }
           } else {
             // Non-bullet line — start a new project
@@ -1321,6 +1434,7 @@ export function parseResumeText(text: string): ParseResult {
               bullets: [],
             });
             currentProject = projects[projects.length - 1];
+            expectDescription = true;
           }
         }
         parsed.projects = projects;

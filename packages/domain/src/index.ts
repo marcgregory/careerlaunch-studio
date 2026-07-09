@@ -36,6 +36,8 @@ export type ContactInfo = {
   phone: string;
   location: string;
   website: string;
+  linkedin: string;
+  github: string;
 };
 
 export type ReferenceItem = {
@@ -117,7 +119,9 @@ export const sampleResume: ResumeDocument = {
     email: "jordan.lee@email.com",
     phone: "(555) 014-7291",
     location: "Austin, TX",
-    website: "linkedin.com/in/jordanlee"
+    website: "",
+    linkedin: "linkedin.com/in/jordanlee",
+    github: ""
   },
   summary:
     "Customer-focused operations specialist with 6 years of experience improving service workflows, training frontline teams, and translating customer feedback into measurable retention gains.",

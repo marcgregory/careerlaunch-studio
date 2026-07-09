@@ -110,6 +110,8 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
             resume.contact.phone,
             resume.contact.location,
             resume.contact.website,
+            resume.contact.linkedin,
+            resume.contact.github,
           ]
             .filter(Boolean)
             .map((item) => (

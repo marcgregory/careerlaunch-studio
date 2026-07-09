@@ -5,7 +5,9 @@
       "email": "alex.rivera@email.com",
       "phone": "(555) 000-1234",
       "location": "Seattle, WA",
-      "website": ""
+      "website": "",
+      "linkedin": "",
+      "github": ""
     },
     "experience": [
       {
@@ -82,6 +84,17 @@
         ]
       }
     ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      }
+    ],
     "summary": "Versatile engineer with experience across the full stack. Proven track record of delivering production-grade systems and leading technical initiatives."
   },
   "confidence": 90,
@@ -97,7 +110,6 @@
   },
   "importQuality": "poor",
   "warnings": [
-    "Low import quality for \"education\": 39% coverage (9/23 words preserved).",
     "Low import quality for \"skills\": 17% coverage (2/12 words preserved)."
   ],
   "unparsedContent": {
@@ -121,9 +133,9 @@
     {
       "sectionId": "education",
       "originalWordCount": 23,
-      "parsedWordCount": 9,
-      "ratio": 0.391304347826087,
-      "status": "poor"
+      "parsedWordCount": 10,
+      "ratio": 0.43478260869565216,
+      "status": "partial"
     },
     {
       "sectionId": "skills",

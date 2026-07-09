@@ -1,81 +1,80 @@
-# Fix Parser Bugs — Analysis & Plan
+# Fix Resume Parser Bugs
 
-## Root Cause Analysis
+## Issues Detected
 
-After tracing the parser code against `resume-marc-style.txt` (the user's uploaded resume pattern), I've identified 5 parser bugs:
+### 1. LinkedIn URL Truncated
+- `LINKEDIN_RE`: `linkedin\.com\/[a-zA-Z0-9_-]+\/?` captures only `linkedin.com/in/` — the `/` before `marcturno` is outside the char class, so the match stops.
+- **Fix**: `linkedin\.com\/in\/[a-zA-Z0-9_-]+` to capture the full `/in/username` path.
 
-### Bug 1: Skills "Category Proficiency" table bleeds into Summary
-**Root cause**: `detectSections()` has `\bskills\b` but NOT `/category/i` or `/proficiency/i`. If a resume lists skills in a table format under a "Category" column header (instead of "Skills"), `detectSections` never creates a skills section boundary. Those lines then fall into the preceding section — typically Summary.
+### 2. Portfolio/GitHub Websites Missing
+- `ContactInfo` has only one `website` field. The parser overwrites: if LinkedIn matches first, LinkedIn fills `website`; if a personal site matches first, LinkedIn overwrites it.
+- **Fix**: Add `linkedin` and `github` fields to `ContactInfo`. Route each URL type to its own field.
 
-Additionally, `parseSummary()` has NO filtering for table-formatted content (lines with 2+ spaces indicating columns). It blindly joins everything.
+### 3. Location Missing for Non-US Formats
+- Location regex `/^[A-Z][a-z]+(?:,\s*[A-Z]{2})$/` requires a two-letter state/territory. Fails for `Manila, Philippines` (8 letters), `London, UK` (2 chars after comma but not necessarily a state code in the regex).
+- **Fix**: Widen regex to `/^[A-Za-z\s]+,\s*[A-Za-z\s.]{2,}$/` — city name + comma + region (2+ chars including periods, e.g. "Kyiv, Ukraine").
 
-### Bug 2: Experience bullet extraction stops early (missing "timelines were met.")
-**Root cause**: In the date-only bullet collection loop (lines 295-332), unmarked lines after `bulletCount > 0` trigger a date-range peek-ahead. If a bullet is the last fragment of an entry and the NEXT section header's line (e.g., "Education") is within 3 lines, the peek finds no date but the section header check via `isLikelyHeader` on the NEXT iteration breaks the loop. More critically: the date-only entry check `if (isLikelyHeader(lines[i])) break;` fires BEFORE the bullet-marker check — but the normal entry path has the same issue.
+### 4. Education: School Truncated, Year Lost, Duplicates
+- `extractSchool()` starts scanning at the word "University"/"College" and captures only 0-3 comma/dash-delimited tokens *after* it. `"Texas State University"` → matches at "University" → captures `"University"` only (no preceding tokens). `"University of Santo Tomas, 2019"` → matches at "University" → captures `"University of Santo Tomas, 2019"` with the year embedded.
+- The graduation-year extraction on line 552-555 doesn't assign to the education entry's `graduation` field — dead code.
+- No line-skipping after consuming a school line, so the school line can be re-processed as a new education entry in the next loop iteration.
 
-The real problem is visible in the normal-path bullet collection (lines 381-397): it collects EVERY non-empty line without checking `isLikelyHeader` per line. The date-only path DOES check `isLikelyHeader`, but in a slightly different order. A fragment like "timelines were met." on its own line after a bullet can get missed.
+### 5. Achievements Heading, No Items Parsed
+- No `"achievements"` pattern in `SECTION_PATTERNS`.
+- **Fix**: Add `\bachievements?\b`, `\bhono?urs?\b`, `\bawards?\b` patterns mapped to `professionalQualities`.
 
-### Bug 3: Education truncation (graduation year absorbed into school)
-**Root cause**: `extractSchool()` uses `/^[^,-]+(?:[,-][^,-]+){0,3}/` which captures comma-separated suffixes like ", 2019". When the school line is "University of Santo Tomas, 2019", `school` becomes "University of Santo Tomas, 2019" — including the graduation year. The `nextGrad` code at line 470-476 finds the year match but is DEAD CODE: it never assigns the graduation year to the entry.
+### 6. Volunteer Experience Missing Dates
+- No `"volunteer"` pattern in the experience `SECTION_PATTERNS`.
+- **Fix**: Add `\bvolunteer\b` and `\bvolunteer\s+experience\b` to experience patterns.
 
-### Bug 4: Skills 0 words parsed
-**Root cause**: `parseSkills()` drops category labels from table rows. Lines like `Frontend  HTML, CSS, TypeScript` split on 2+ spaces into `["Frontend", "HTML, CSS, TypeScript"]`. Only the last column is used. The 6 category labels ("Frontend", "Backend", "Cloud / Infra", "IT / Hardware", "LLM", "Coding with AI") are all dropped. In cases where the Skills header IS detected but the table's second column contains proficiency levels instead of skill names (e.g., "Advanced", "Intermediate"), the parser captures almost nothing.
+### 7. Project Descriptions Empty
+- The project parser always sets `description: ""`. The line between a project name and its first bullet can be a one-line description (e.g. `"Full-stack SaaS platform for resume creation and AI-powered improvement."`).
+- **Fix**: After detecting a project name, if the next non-blank, non-bullet line exists and is short (< 40 words), capture it as `description`, then continue collecting bullets.
 
-Additionally, `parseSkills` skips lines containing commas — but the second TABLE column contains commas. When `target.includes(",")`, it splits on commas. But if the target has no commas (proficiency words), it pushes the single word. With 1-2 proficiency words and a threshold of `< 3` skills, the section triggers `unparsedContent.skills`.
+### 8. Contact Parser: Site-specific URL Support
+- Current code routes ALL non-email URLs to `contact.website`. Need separate detection for:
+  - `linkedin.com/in/...` → `contact.linkedin`
+  - `github.com/...` → `contact.github`
+  - Everything else → `contact.website`
+- Fix `extractContact()` to detect and route each URL type.
 
-### Bug 5: Projects not detected
-**Root cause**: The projects section pattern `/^(?:personal\s+)?projects?\s*$/im` requires the word "Projects" to be at the START of a line (`^`). If "Projects" appears mid-line or has leading whitespace, the `^` anchor with `im` flag doesn't help if the line starts with spaces. The `m` flag makes `^` match after `\n`, but `lines[i]` in `detectSections` has already been `.trim()`-checked — actually the line IS the raw line, and `pattern.test(line)` is on the raw line. So leading spaces would cause `^` to NOT match.
+## Pre-existing Test Failure
+The test `should not include references content in any parsed field` fails because references ARE parsed into the `references` array. The test needs updating — the guardrail should assert that references content doesn't appear in *other* fields (summary, experience, skills), not that it's missing entirely.
 
-Wait — looking at `detectSections`:
-```javascript
-const line = lines[i].trim();
-if (!line || /^[•\-*]\s/.test(line)) continue;
-```
-It uses the trimmed version for the check! Then the patterns use `line` (trimmed). So `^` in the pattern SHOULD match because the line is trimmed. So what's the issue?
+## Files Changed
 
-The real issue: the PROJECTS patterns require either `^` anchor (with `im` flag) OR `\bprojects?\b`. The third pattern `/^(?:personal\s+)?projects?\s*$/im` and fourth `/^(?:personal\s+)?projects?:/im` both require `^`. The fifth pattern `/\b(?:personal|key|technical|academic|side)\s+projects?\b/i` requires a qualifier word before "Projects". The sixth pattern `/\bprojects?\s+undertaken\b/i` requires "undertaken" after.
+### 1. `packages/domain/src/index.ts`
+- Add `linkedin: string` and `github: string` to `ContactInfo`
 
-So if the section title is just "Projects" on its own line, it should match the FIRST project pattern `^(?:personal\s+)?projects?\s*$`. Let me verify: `line` = "Projects", pattern = `/^(?:personal\s+)?projects?\s*$/im`. 
-- `^` matches start of string
-- `(?:personal\s+)?` matches nothing
-- `projects?` matches "Projects"
-- `\s*` matches nothing
-- `$` matches end of string
-- Result: MATCH
+### 2. `packages/domain/src/validation/resume.ts`  
+- Add `linkedin` and `github` fields to `contactSchema` Zod validation
 
-So "Projects" on its own line SHOULD be detected. But `detectSections` has the condition `line.length < 60` — "Projects" is 8 characters, so it passes.
+### 3. `packages/ai/src/import/text-parser.ts` (main parser fixes)
+- Fix `LINKEDIN_RE` to capture full profile
+- Add `GITHUB_RE`
+- Fix location regex
+- Fix `extractSchool()` to include text before the keyword
+- Fix education line-skipping to prevent duplicates
+- Add achievements section pattern → `professionalQualities`
+- Add volunteer section pattern → `experience`
+- Add project description capture
+- Fix `extractContact()` URL routing
 
-Wait but there's also the check `seen.has(id)` — once a section ID is matched, subsequent potential matches are skipped. If "Projects" appears after Certifications, it should be fine.
+### 4. `packages/ai/__tests__/import/text-parser.test.ts`
+- Fix the references test assertion
+- Add regression tests for all fixed bugs
 
-Hmm, let me look at the trace output again. It shows:
-```
-Line 46: "Projects" -> SECTION "projects"
-```
-So projects IS detected. And the expected output shows all 3 projects with their bullets.
+### 5. `packages/ai/__fixtures__/resume-parser-bugs.expected.json`
+- Regenerate golden file
 
-So bug 5 might not be about the current fixture. Maybe a different resume format where "Projects" isn't cleanly on its own line. Or where the section boundary overlaps with the following "References" section.
+### 6. All other golden fixture `.expected.json` files  
+- Regenerate to include new `linkedin` and `github` fields in contact
 
-Actually, the real bug for projects is likely the same class as bug 1: if the section title doesn't match exactly (e.g., "Personal Projects" with a qualifier like "Related" or "Other"), or the "Projects" header comes before "Certifications" but after "Education" (different order than expected).
+### 7. `packages/rendering/src/index.tsx`, `packages/rendering/src/pdf.tsx`
+- Render `linkedin` and `github` contact fields
 
-## Fix Plan
+### 8. `packages/ai/src/analysis/static.ts`
+- Check `linkedin` and `github` in contact completeness check
 
-### Fix 1: Summary should not contain skills table
-**Change `parseSummary()`** to filter out lines that look like table rows (2+ spaces indicating column alignment) or lines that match known skill-category keywords.
-
-### Fix 2: Skills category labels preserved
-**Change `parseSkills()`** to also include the category label (first column) when a table format is detected. The category label IS part of the skills content and should be counted.
-
-### Fix 3: Experience bullet extraction — stop at section boundaries properly  
-**Change the date-only bullet loop** to also break when the line matches `isLikelyHeader()`, and ensure the peek-ahead for date ranges doesn't skip legitimate bullets.
-
-### Fix 4: Education — extract graduation year from school line
-**Change `parseEducation()`** to extract graduation year from the school line when present, and strip it from the school field.
-
-### Fix 5: Projects detection — make more robust
-**Change PROJECTS patterns** to also match "Projects" as a standalone word even when qualified with less common prefixes.
-
-## Test Plan
-
-1. Create a comprehensive new fixture that models all 5 bug patterns
-2. Add targeted regression tests in `text-parser.test.ts`
-3. Fix each bug, verify golden files, and update expected output
-4. Run full test suite to confirm no regressions
+### 9. `apps/web/app/builder/resume-builder.tsx`
+- Add `linkedin` and `github` input fields

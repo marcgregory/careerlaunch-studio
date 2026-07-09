@@ -89,7 +89,7 @@ function buildResumeHtml(resume: ResumeDocument): string {
       ${resume.targetRole ? `<p class="pdf-role">${escapeHtml(resume.targetRole)}</p>` : ""}
       <h1>${escapeHtml(resume.contact.fullName || "Your Name")}</h1>
       <div class="pdf-contact">
-        ${[resume.contact.email, resume.contact.phone, resume.contact.location, resume.contact.website]
+        ${[resume.contact.email, resume.contact.phone, resume.contact.location, resume.contact.website, resume.contact.linkedin, resume.contact.github]
           .filter(Boolean)
           .map((item) => `<span>${escapeHtml(item)}</span>`)
           .join("")}

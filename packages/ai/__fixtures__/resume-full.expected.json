@@ -5,7 +5,9 @@
       "email": "jordan.lee@email.com",
       "phone": "(555) 014-7291",
       "location": "Austin, TX",
-      "website": "linkedin.com/in/"
+      "website": "",
+      "linkedin": "linkedin.com/in/jordanlee",
+      "github": ""
     },
     "experience": [
       {
@@ -37,8 +39,8 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University",
-        "degree": "B.A. Communication Studies - Texas State",
+        "school": "Texas State University",
+        "degree": "B.A. Communication Studies",
         "location": "",
         "graduation": "2018"
       }
@@ -67,6 +69,35 @@
         "name": "Service Recovery Playbook",
         "description": "",
         "bullets": []
+      }
+    ],
+    "references": [
+      {
+        "id": "import-ref-1",
+        "name": "Available upon request.",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-2",
+        "name": "Jane Doe, Manager at Northstar Market - (555) 123-4567",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
+      },
+      {
+        "id": "import-ref-3",
+        "name": "John Smith, Director at Harbor Outfitters - (555) 987-6543",
+        "title": "",
+        "company": "",
+        "phone": "",
+        "email": "",
+        "relationship": ""
       }
     ],
     "summary": "Customer-focused operations specialist with 6 years of experience improving service workflows, training frontline teams, and translating customer feedback into measurable retention gains."
