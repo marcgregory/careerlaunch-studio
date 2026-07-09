@@ -11,7 +11,9 @@ export function createStarterResume(): ResumeDocument {
     skills: [...sampleResume.skills],
     certifications: [...sampleResume.certifications],
     professionalQualities: [...sampleResume.professionalQualities],
-    projects: sampleResume.projects.map((item) => ({ ...item, bullets: [...item.bullets] }))
+    projects: sampleResume.projects.map((item) => ({ ...item, bullets: [...item.bullets] })),
+    references: [],
+    referencesNote: ""
   };
 }
 
@@ -30,7 +32,9 @@ export function toStoredResume(resume: ResumeDocument): any {
     skills: resume.skills,
     certifications: resume.certifications,
     professionalQualities: resume.professionalQualities,
-    projects: resume.projects
+    projects: resume.projects,
+    references: resume.references,
+    referencesNote: resume.referencesNote
   };
 }
 
@@ -66,7 +70,9 @@ export function parseResumePayload(value: unknown): ResumeDocument {
     skills: Array.isArray(resume.skills) ? resume.skills : [],
     certifications: Array.isArray(resume.certifications) ? resume.certifications : [],
     professionalQualities: Array.isArray(resume.professionalQualities) ? resume.professionalQualities : [],
-    projects: Array.isArray(resume.projects) ? resume.projects : []
+    projects: Array.isArray(resume.projects) ? resume.projects : [],
+    references: Array.isArray(resume.references) ? resume.references : [],
+    referencesNote: typeof resume.referencesNote === "string" ? resume.referencesNote : ""
   };
 }
 

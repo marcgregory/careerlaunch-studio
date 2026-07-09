@@ -682,8 +682,165 @@ function parseSummary(lines: string[]): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
+/*  References parsing                                                 */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Parse reference entries from section lines.
+ *
+ * Supports common formats:
+ *   Name | Title, Company | Phone
+ *   Name | Title | Company | Phone | Email
+ *   Name - Title - Company - Phone
+ *   Name, Title, Company, Email, Phone
+ *
+ * Also handles simple bullet lists of names with contact info.
+ */
+function parseReferences(lines: string[]): ResumeDocument["references"] {
+  const references: ResumeDocument["references"] = [];
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) continue;
+
+    // Skip lines that look like section headers
+    if (/^references?\s*(available\s+upon\s+request)?$/i.test(trimmed)) continue;
+    if (trimmed.length > 150) continue;
+
+    const deBulleted = trimmed.replace(BULLET_RE, "").trim();
+    const line = deBulleted || trimmed;
+
+    // Try splitting by pipe first (most structured format)
+    // "Name | Position, Company | Phone"
+    const pipeParts = line.split("|").map((s) => s.trim()).filter(Boolean);
+    if (pipeParts.length >= 2) {
+      const ref = refFromParts(pipeParts);
+      if (ref) references.push(ref);
+      continue;
+    }
+
+    // Try splitting by dash with spaces (Name - Title - Company - Phone)
+    const dashParts = line.split(/\s+[-–]\s+/).map((s) => s.trim()).filter(Boolean);
+    if (dashParts.length >= 3) {
+      const ref = refFromParts(dashParts);
+      if (ref) references.push(ref);
+      continue;
+    }
+
+    // Try splitting by 2+ spaces (Name    Title    Phone)
+    const spaceCols = line.split(/\s{3,}/).filter(Boolean);
+    if (spaceCols.length >= 2) {
+      const ref = refFromParts(spaceCols);
+      if (ref) references.push(ref);
+      continue;
+    }
+
+    // Fallback: treat single-line entries with comma separation
+    const commaParts = line.split(",").map((s) => s.trim()).filter(Boolean);
+    if (commaParts.length >= 3) {
+      const ref = refFromParts(commaParts);
+      if (ref) references.push(ref);
+      continue;
+    }
+
+    // Last resort: just use the whole line as the name
+    if (line.length >= 3) {
+      references.push({
+        id: `import-ref-${references.length + 1}`,
+        name: line,
+        title: "",
+        company: "",
+        phone: "",
+        email: "",
+        relationship: "",
+      });
+    }
+  }
+
+  return references;
+}
+
+/**
+ * Map an array of string parts from a parsed reference line into a ReferenceItem.
+ * Heuristic: first part is name, last part is typically phone or email.
+ * Parts in between are title/company.
+ */
+function refFromParts(parts: string[]): ResumeDocument["references"][number] | null {
+  if (parts.length === 0) return null;
+
+  const name = parts[0];
+  if (!name || name.length < 2) return null;
+
+  let title = "";
+  let company = "";
+  let phone = "";
+  let email = "";
+  let relationship = "";
+
+  // Categorize the remaining parts
+  const remaining = parts.slice(1);
+
+  for (const part of remaining) {
+    if (!part) continue;
+
+    // Email detection
+    if (/^[\w.%-]+@[\w.-]+\.[a-z]{2,}$/i.test(part)) {
+      if (!email) email = part;
+      continue;
+    }
+
+    // Phone detection (digits, dashes, dots, parentheses, leading +)
+    if (/^[\+]?[\d\s\-\(\)\.]{6,20}$/.test(part.replace(/[ext\s.]*\d*$/i, "").trim())) {
+      if (!phone) phone = part;
+      continue;
+    }
+
+    // Looks like a company with common suffixes
+    if (/\b(?:Corp|Inc|LLC|Ltd|Company|Organization|Dept|Department|University|College|School)\b/i.test(part)) {
+      company = company ? `${company}, ${part}` : part;
+      continue;
+    }
+
+    // Looks like a job title (starts with preposition or common title prefix)
+    if (/^(?:Professor|Dr|Engineer|Manager|Director|Supervisor|Specialist|Coordinator|Analyst|Consultant|Officer|Head|Lead|Senior|Junior|Associate|HR|President|CEO|CFO|COO|CTO|VP|VP\s+of|AVP|AVP\s+of)\b/i.test(part)) {
+      title = title ? `${title}, ${part}` : part;
+      continue;
+    }
+
+    // Relationship markers
+    if (/\b(?:colleague|coworker|supervisor|manager|mentor|professor|teacher|client|partner|friend|former)\b/i.test(part)) {
+      relationship = relationship ? `${relationship}, ${part}` : part;
+      continue;
+    }
+
+    // Everything else: if title is empty, assume this is title+company combined
+    if (!title && !company) {
+      // Check for comma-separated "Title, Company" pattern
+      const subParts = part.split(",").map((s) => s.trim());
+      if (subParts.length >= 2) {
+        title = subParts[0];
+        company = subParts.slice(1).join(", ");
+      } else {
+        title = part;
+      }
+    } else if (!company) {
+      company = part;
+    } else {
+      // Already have both, treat as relationship or append to notes
+      relationship = relationship ? `${relationship}, ${part}` : part;
+    }
+  }
+
+  return {
+    id: `import-ref-${Math.random().toString(36).slice(2, 10)}-${Date.now()}`,
+    name,
+    title,
+    company,
+    phone,
+    email,
+    relationship,
+  };
+}
 
 function isLikelyHeader(line: string): boolean {
   const trimmed = line.trim();
@@ -807,9 +964,14 @@ function computeSectionCoverage(
       break;
     }
     case "references": {
-      // References are intentionally excluded from the resume document,
-      // so coverage is always full for the parsed model.
-      parsedWordCount = originalWordCount;
+      for (const r of parsed.references || []) {
+        parsedWordCount += countWords(r.name);
+        parsedWordCount += countWords(r.title);
+        parsedWordCount += countWords(r.company);
+        parsedWordCount += countWords(r.phone);
+        parsedWordCount += countWords(r.email);
+        parsedWordCount += countWords(r.relationship);
+      }
       break;
     }
   }
@@ -903,9 +1065,10 @@ function evaluateSection(
       return "low";
     }
     case "references": {
-      // References are intentionally excluded — if we detected the header
-      // we know they're there.
-      if (nonEmptyLines.length >= 1) return "high";
+      const refs = parsed.references || [];
+      if (refs.length >= 1 && refs.every((r) => r.name)) return "high";
+      if (refs.length >= 1) return "medium";
+      if (nonEmptyLines.length >= 1) return "low";
       return "low";
     }
     default:
@@ -1119,8 +1282,16 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "references": {
-        // References are intentionally excluded from resume output.
-        // Do not include in resume export by default.
+        const references = parseReferences(sectionLines);
+        if (references.length > 0) {
+          parsed.references = references;
+        }
+        // Track unparsed content
+        const rawRefText = sectionLines.join("\n").trim();
+        const rawRefWords = rawRefText.split(/\s+/).filter(Boolean).length;
+        if (rawRefText && rawRefWords > 5 && references.length === 0) {
+          unparsedContent.references = rawRefText;
+        }
         totalFields++;
         break;
       }

@@ -162,6 +162,10 @@ function renderSection(
         template={template}
       />
     );
+  if (section === "references")
+    return (
+      <ReferencesSection key={section} resume={resume} template={template} />
+    );
   return (
     <ProjectsSection key={section} resume={resume} template={template} />
   );
@@ -436,6 +440,50 @@ function ProjectsSection({
                   <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ReferencesSection({
+  resume,
+  template,
+}: {
+  resume: ResumeDocument;
+  template: TemplateDefinition;
+}) {
+  // Show "References available upon request" when the note is set
+  if (resume.referencesNote && !resume.references.some((r) => r.name.trim())) {
+    return (
+      <section className="mt-8">
+        <ResumeHeading template={template}>References</ResumeHeading>
+        <p className="mt-3 text-[15px] italic font-medium leading-7 text-[#4b4b4b]">
+          {resume.referencesNote}
+        </p>
+      </section>
+    );
+  }
+
+  const refs = resume.references.filter((r) => r.name.trim());
+  if (refs.length === 0) return null;
+  return (
+    <section className="mt-8">
+      <ResumeHeading template={template}>References</ResumeHeading>
+      <div className="mt-4 space-y-3">
+        {refs.map((item) => (
+          <div key={item.id} className="text-[15px] leading-relaxed">
+            <p className="font-black text-[#4b4b4b]">{item.name}</p>
+            <p className="font-medium text-[#33343b]">
+              {[item.title, item.company].filter(Boolean).join(", ")}
+            </p>
+            <p className="text-[#555]">
+              {[item.phone, item.email].filter(Boolean).join(" · ")}
+            </p>
+            {item.relationship && (
+              <p className="mt-0.5 text-sm text-[#777]">{item.relationship}</p>
             )}
           </div>
         ))}

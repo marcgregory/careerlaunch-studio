@@ -26,6 +26,16 @@ export const educationItemSchema = z.object({
   graduation: z.string().default(""),
 });
 
+export const referenceItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required."),
+  title: z.string().default(""),
+  company: z.string().default(""),
+  phone: z.string().default(""),
+  email: z.string().default(""),
+  relationship: z.string().default(""),
+});
+
 export const projectItemSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Project name is required."),
@@ -55,6 +65,8 @@ export const resumeSchema = z.object({
   certifications: z.array(z.string()).default([]),
   professionalQualities: z.array(z.string()).default([]),
   projects: z.array(projectItemSchema).default([]),
+  references: z.array(referenceItemSchema).default([]),
+  referencesNote: z.string().default(""),
 });
 
 export type ResumeFormValues = z.infer<typeof resumeSchema>;

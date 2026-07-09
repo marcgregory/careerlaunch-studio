@@ -12,6 +12,8 @@ export type ResumeDocument = {
   certifications: string[];
   professionalQualities: string[];
   projects: ProjectItem[];
+  references: ReferenceItem[];
+  referencesNote: string;
 };
 
 export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
@@ -25,7 +27,8 @@ export const defaultSectionOrder: ResumeSectionId[] = [
   "skills",
   "certifications",
   "professionalQualities",
-  "projects"
+  "projects",
+  "references"
 ];
 
 export type ContactInfo = {
@@ -34,6 +37,16 @@ export type ContactInfo = {
   phone: string;
   location: string;
   website: string;
+};
+
+export type ReferenceItem = {
+  id: string;
+  name: string;
+  title: string;
+  company: string;
+  phone: string;
+  email: string;
+  relationship: string;
 };
 
 export type ExperienceItem = {
@@ -163,7 +176,9 @@ export const sampleResume: ResumeDocument = {
       description: "Internal guide for consistent customer follow-up after escalations.",
       bullets: ["Standardized response timing, ownership rules, and outcome tracking for managers."]
     }
-  ]
+  ],
+  references: [],
+  referencesNote: ""
 };
 
 export function scoreResume(resume: ResumeDocument): ResumeCheck {
@@ -229,7 +244,9 @@ export function estimateWordCount(resume: ResumeDocument): number {
     ...resume.skills,
     ...resume.certifications,
     ...resume.professionalQualities,
-    ...resume.projects.flatMap((item) => [item.name, item.description, ...item.bullets])
+    ...resume.projects.flatMap((item) => [item.name, item.description, ...item.bullets]),
+    ...resume.references.flatMap((item) => [item.name, item.title, item.company, item.phone, item.email, item.relationship]),
+    resume.referencesNote,
   ].join(" ");
 
   return content.split(/\s+/).filter(Boolean).length;

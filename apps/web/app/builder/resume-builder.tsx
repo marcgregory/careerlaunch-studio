@@ -23,6 +23,7 @@ import {
   type EducationItem,
   type ExperienceItem,
   type ProjectItem,
+  type ReferenceItem,
   type ResumeDocument,
   type ResumeSectionId,
   type ResumeTemplateId
@@ -175,6 +176,21 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     setResume((current) => ({
       ...current,
       projects: current.projects.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    }));
+  }
+
+  function addReference() {
+    setResume((current) => ({
+      ...current,
+      references: [...current.references, { id: makeId("ref"), name: "", title: "", company: "", phone: "", email: "", relationship: "" }]
+    }));
+    toast.success("Reference added.");
+  }
+
+  function updateReference(id: string, patch: Partial<ReferenceItem>) {
+    setResume((current) => ({
+      ...current,
+      references: current.references.map((item) => (item.id === id ? { ...item, ...patch } : item))
     }));
   }
 
@@ -525,6 +541,49 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
                 </ItemCard>
               ))}
             </div>
+          </Panel>
+
+          <Panel title="References" action={<button className={tinyButtonClass} type="button" onClick={addReference}><Plus size={15} /> Add reference</button>}>
+            <StackEmpty when={resume.references.length === 0} label="No references added." action="Add professional or character references." />
+            <div className="space-y-2 sm:space-y-4">
+              {resume.references.map((item, index) => (
+                <ItemCard
+                  key={item.id}
+                  title={item.name || `Reference ${index + 1}`}
+                  onDelete={() => setResume((current) => ({ ...current, references: current.references.filter((ref) => ref.id !== item.id) }))}
+                  onMoveUp={() => setResume((current) => ({ ...current, references: moveItem(current.references, index, -1) }))}
+                  onMoveDown={() => setResume((current) => ({ ...current, references: moveItem(current.references, index, 1) }))}
+                  disableUp={index === 0}
+                  disableDown={index === resume.references.length - 1}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Name" value={item.name} error={validation[`reference.${item.id}.name`]} onChange={(value) => updateReference(item.id, { name: value })} />
+                    <Field label="Job Title" value={item.title} onChange={(value) => updateReference(item.id, { title: value })} />
+                    <Field label="Company" value={item.company} onChange={(value) => updateReference(item.id, { company: value })} />
+                    <Field label="Phone" value={item.phone} onChange={(value) => updateReference(item.id, { phone: value })} />
+                    <Field label="Email" value={item.email} onChange={(value) => updateReference(item.id, { email: value })} />
+                    <Field label="Relationship" value={item.relationship} onChange={(value) => updateReference(item.id, { relationship: value })} />
+                  </div>
+                </ItemCard>
+              ))}
+            </div>
+            {resume.references.length > 0 && (
+              <label className="mt-3 flex items-center gap-2 border-t border-[#123c3a]/10 pt-3 sm:mt-4 sm:pt-4">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-[#123c3a]/30 text-[#00796f] focus:ring-[#00796f]"
+                  checked={resume.referencesNote === "References available upon request"}
+                  onChange={(e) => {
+                    patchResume({
+                      referencesNote: e.target.checked ? "References available upon request" : ""
+                    });
+                  }}
+                />
+                <span className="text-sm font-medium text-[#4b4b4b]">
+                  Show &ldquo;References available upon request&rdquo; instead
+                </span>
+              </label>
+            )}
           </Panel>
           </div> {/* end editor panel group */}
         </aside>
