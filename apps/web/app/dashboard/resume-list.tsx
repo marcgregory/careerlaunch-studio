@@ -97,7 +97,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       setError(null);
     }, 0);
     return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally resets all state together
   }, [initialResumes, hasMoreInit]);
 
   // Fetch next page

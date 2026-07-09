@@ -25,25 +25,18 @@ export function ResumeActions({
   disabled = false,
 }: ResumeActionsProps) {
   const router = useRouter();
-  // Fully controlled via props — no local open/close/hover state
+  // Fully controlled via props — no local open/close/hover/pointer state.
+  // Radix is the sole controller: trigger click → onOpenChange → parent sets activeMenuId.
   const open = menuOpen ?? false;
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
 
-  /** Exclusive open: toggle this card's menu, closing any other */
-  const handleTriggerClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onMenuOpenChange?.(!open);
-    },
-    [onMenuOpenChange, open],
-  );
-
-  /** Only handle outside-click / escape close; trigger clicks are handled above */
+  /** Radix calls this on trigger click, outside click, and Escape.
+   *  This is the ONLY path that opens/closes the menu. */
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
-      if (!nextOpen) onMenuOpenChange?.(false);
+      onMenuOpenChange?.(nextOpen);
     },
     [onMenuOpenChange],
   );
@@ -151,14 +144,15 @@ export function ResumeActions({
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
     return (
-      <DropdownMenu.Content
-        align="end"
-        side="bottom"
-        sideOffset={8}
-        collisionPadding={12}
-        avoidCollisions
-        className="z-[60] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
-      >
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          side="bottom"
+          sideOffset={8}
+          collisionPadding={12}
+          avoidCollisions
+          className="z-[60] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
+        >
         <DropdownMenu.Item
           onSelect={handleRenameSelect}
           disabled={isLoading}
@@ -209,7 +203,8 @@ export function ResumeActions({
           <Trash2 size={15} />
           Delete
         </DropdownMenu.Item>
-      </DropdownMenu.Content>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
     );
   }, [
     actionLoading,
@@ -225,7 +220,7 @@ export function ResumeActions({
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
-            onClick={handleTriggerClick}
+            onClick={(e) => e.stopPropagation()}
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
             title="More actions"
             aria-label="More actions"
