@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Search, SlidersHorizontal, X, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { ResumeCard } from "./resume-card";
 import { EmptyState } from "./empty-state";
 import { DeleteResumeModal } from "./delete-modal";
@@ -18,8 +18,11 @@ type SerializedResume = {
 type SortMode = "updated" | "alpha" | "oldest";
 type FilterMode = "all" | "targeted" | "untargeted" | "analyzed";
 
+const PAGE_SIZE = 10;
+
 type ResumeListProps = {
-  resumes: SerializedResume[];
+  initialResumes: SerializedResume[];
+  hasMoreInit: boolean;
 };
 
 const sortModes: { value: SortMode; label: string }[] = [
@@ -46,8 +49,26 @@ function getRecencyGroup(updatedAt: Date): string {
   return "Earlier";
 }
 
+/** Skeleton card shown while loading more */
+function ResumeCardSkeleton() {
+  return (
+    <article className="grid animate-pulse gap-4 rounded-[28px] border border-[#123c3a]/10 bg-white p-5 shadow-sm md:grid-cols-[72px_1fr_auto] md:items-start">
+      <div className="hidden h-[72px] w-[72px] rounded-[18px] bg-[#e5e5e5] md:block" />
+      <div className="min-w-0 space-y-3">
+        <div className="h-4 w-20 rounded-full bg-[#e5e5e5]" />
+        <div className="h-6 w-48 rounded-lg bg-[#e5e5e5]" />
+        <div className="h-4 w-36 rounded-lg bg-[#e5e5e5]" />
+        <div className="h-3 w-24 rounded-lg bg-[#e5e5e5]" />
+      </div>
+      <div className="flex items-center gap-2 self-center">
+        <div className="h-9 w-9 rounded-xl bg-[#e5e5e5]" />
+        <div className="h-9 w-28 rounded-full bg-[#e5e5e5]" />
+      </div>
+    </article>
+  );
+}
 
-export function ResumeList({ resumes }: ResumeListProps) {
+export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("updated");
   const [filter, setFilter] = useState<FilterMode>("all");
@@ -55,6 +76,79 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<SerializedResume | null>(null);
   const isDeleteModalOpen = !!resumeToDelete;
+
+  // Infinite scroll state
+  const [resumes, setResumes] = useState<SerializedResume[]>(initialResumes);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(hasMoreInit);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMounted = useRef(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const isLoadingRef = useRef(false);
+
+  // Sync when initialResumes changes (e.g. page refresh after action)
+  // Uses setTimeout to avoid synchronous setState cascades inside effects
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setResumes(initialResumes);
+      setPage(1);
+      setHasMore(hasMoreInit);
+      setError(null);
+    }, 0);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally resets all state together
+  }, [initialResumes, hasMoreInit]);
+
+  // Fetch next page
+  const fetchNextPage = useCallback(async () => {
+    if (isLoadingRef.current || !hasMore) return;
+    isLoadingRef.current = true;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/resumes?page=${nextPage}&limit=${PAGE_SIZE}`);
+      if (!res.ok) throw new Error("Failed to load");
+      const data = await res.json();
+      if (!isMounted.current) return;
+
+      setResumes((prev) => [...prev, ...data.resumes]);
+      setPage(nextPage);
+      setHasMore(data.pagination.hasMore);
+    } catch {
+      if (isMounted.current) {
+        setError("Couldn't load more resumes.");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+      isLoadingRef.current = false;
+    }
+  }, [page, hasMore]);
+
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    isMounted.current = true;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(sentinel);
+    return () => {
+      isMounted.current = false;
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasMore]);
 
   // Stable callbacks
   const handleMenuOpenChange = useCallback(
@@ -64,7 +158,6 @@ export function ResumeList({ resumes }: ResumeListProps) {
 
   const handleDeleteClick = useCallback(
     (id: string, title: string) => {
-      // Force close menu before modal opens
       setActiveMenuId(null);
       setTimeout(() => {
         setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
@@ -156,6 +249,10 @@ export function ResumeList({ resumes }: ResumeListProps) {
     setSort("updated");
   }, []);
 
+  const handleRetry = useCallback(() => {
+    fetchNextPage();
+  }, [fetchNextPage]);
+
   // Empty state
   if (sorted.length === 0 && hasActiveFilters) {
     return (
@@ -202,7 +299,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
         />
       )}
 
-      {/* Resume cards — no inner scroll, page is the only scroll container */}
+      {/* Resume cards */}
       {groups.map((group) => (
         <section key={group.label}>
           <GroupHeader label={group.label} count={group.items.length} />
@@ -224,7 +321,56 @@ export function ResumeList({ resumes }: ResumeListProps) {
           </div>
         </section>
       ))}
-      {/* Global delete modal — rendered once, outside card map */}
+
+      {/* ─── Infinite scroll sentinel & loading states ─── */}
+
+      {/* Loading indicator — shown immediately when fetching */}
+      {isLoading && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-center gap-2 py-4">
+            <Loader2 size={18} className="animate-spin text-[#6bbf22]" />
+            <span className="text-sm font-semibold text-[#4b4b4b]/70">
+              Loading more resumes...
+            </span>
+          </div>
+          {/* Skeleton cards behind the spinner */}
+          <ResumeCardSkeleton />
+          <ResumeCardSkeleton />
+          <ResumeCardSkeleton />
+        </div>
+      )}
+
+      {/* Error state */}
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-red-200 bg-red-50/40 p-6 text-center">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-red-100 text-red-500">
+            <AlertTriangle size={20} />
+          </div>
+          <p className="text-sm font-semibold text-red-600">{error}</p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-4 py-1.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
+          >
+            <RefreshCw size={14} />
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* End-of-list message */}
+      {!hasMore && !isLoading && !error && resumes.length > 0 && (
+        <div className="flex items-center justify-center py-4">
+          <p className="text-sm font-semibold text-[#4b4b4b]/50">
+            You&apos;re all caught up.
+          </p>
+        </div>
+      )}
+
+      {/* Invisible sentinel for intersection observer */}
+      <div ref={sentinelRef} className="h-px" />
+
+      {/* Global delete modal */}
       <DeleteResumeModal
         resumeId={resumeToDelete?.id ?? ""}
         resumeTitle={resumeToDelete?.title ?? ""}

@@ -4,17 +4,44 @@ import { fromStoredResume, parseResumePayload, toStoredResume } from "../../../l
 import { can, FeatureKeys } from "../../../lib/entitlements";
 import { captureServerEvent } from "../../../lib/server-analytics";
 
-export async function GET() {
+export async function GET(request: Request) {
   const { user, response } = await requireApiUser();
   if (response) return response;
 
-  const resumes = await prisma.resumeDocument.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, targetRole: true, updatedAt: true }
-  });
+  const url = new URL(request.url);
+  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "10", 10)));
+  const skip = (page - 1) * limit;
 
-  return Response.json({ resumes });
+  const [resumes, total] = await Promise.all([
+    prisma.resumeDocument.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take: limit,
+      select: { id: true, title: true, targetRole: true, updatedAt: true, _count: { select: { analysisRuns: true, exports: true } } },
+    }),
+    prisma.resumeDocument.count({ where: { userId: user.id } }),
+  ]);
+
+  const serialized = resumes.map((r) => ({
+    id: r.id,
+    title: r.title,
+    targetRole: r.targetRole,
+    updatedAt: r.updatedAt.toISOString(),
+    analysisRunCount: r._count.analysisRuns,
+    exportCount: r._count.exports,
+  }));
+
+  return Response.json({
+    resumes: serialized,
+    pagination: {
+      page,
+      limit,
+      total,
+      hasMore: skip + resumes.length < total,
+    },
+  });
 }
 
 export async function POST(request: Request) {

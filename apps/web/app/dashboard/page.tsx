@@ -18,17 +18,17 @@ type SerializedResume = {
   exportCount: number;
 };
 
+const INITIAL_PAGE_SIZE = 10;
+
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [resumes, subscription] = await Promise.all([
+  const [allResumesForStats, subscription] = await Promise.all([
     prisma.resumeDocument.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,
-        title: true,
         targetRole: true,
-        updatedAt: true,
         _count: { select: { analysisRuns: true, exports: true } },
       },
     }),
@@ -36,14 +36,26 @@ export default async function DashboardPage() {
   ]);
   const isFree = subscription.plan === "free";
 
-  // Compute sidebar stats
-  const totalResumes = resumes.length;
-  const targetedCount = resumes.filter((r) => r.targetRole).length;
-  const analyzedCount = resumes.filter((r) => r._count.analysisRuns > 0).length;
-  const exportCount = resumes.reduce((sum, r) => sum + r._count.exports, 0);
+  const totalResumeCount = allResumesForStats.length;
+  const targetedCount = allResumesForStats.filter((r) => r.targetRole).length;
+  const analyzedCount = allResumesForStats.filter((r) => r._count.analysisRuns > 0).length;
+  const exportCount = allResumesForStats.reduce((sum, r) => sum + r._count.exports, 0);
 
-  // Serialize for client component
-  const serialized: SerializedResume[] = resumes.map((r) => ({
+  // Fetch first page for initial render
+  const initialResumes = await prisma.resumeDocument.findMany({
+    where: { userId: user.id },
+    orderBy: { updatedAt: "desc" },
+    take: INITIAL_PAGE_SIZE,
+    select: {
+      id: true,
+      title: true,
+      targetRole: true,
+      updatedAt: true,
+      _count: { select: { analysisRuns: true, exports: true } },
+    },
+  });
+
+  const serialized: SerializedResume[] = initialResumes.map((r) => ({
     id: r.id,
     title: r.title,
     targetRole: r.targetRole,
@@ -55,6 +67,8 @@ export default async function DashboardPage() {
   const planLabel =
     subscription.plan.charAt(0).toUpperCase() +
     subscription.plan.slice(1).toLowerCase();
+
+  const hasMore = initialResumes.length < totalResumeCount;
 
   return (
     <main className="signal-site min-h-screen pt-[52px] text-[#123c3a] sm:pt-[60px]">
@@ -134,12 +148,15 @@ export default async function DashboardPage() {
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
           {/* Resume list */}
           <div className="min-w-0">
-            <ResumeList resumes={serialized} />
+            <ResumeList
+              initialResumes={serialized}
+              hasMoreInit={hasMore}
+            />
           </div>
 
           {/* Workspace sidebar */}
           <WorkspaceStats
-            totalResumes={totalResumes}
+            totalResumes={totalResumeCount}
             targetedCount={targetedCount}
             analyzedCount={analyzedCount}
             exportCount={exportCount}

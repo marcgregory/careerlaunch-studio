@@ -83,6 +83,7 @@ function ResumeCardInner({
   const timeAgoLabel = useMemo(() => timeAgo(updatedAt), [updatedAt]);
   const editHref = useMemo(() => `/builder?resumeId=${id}`, [id]);
 
+  /** Relay menu state changes upward — no local menu state here */
   const handleMenuOpenChange = useCallback(
     (open: boolean) => {
       onMenuOpenChange?.(id, open);
