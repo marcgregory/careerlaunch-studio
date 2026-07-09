@@ -1,10 +1,12 @@
 "use client";
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { RenameModal } from "./rename-modal";
+import { DeleteResumeModal } from "./delete-modal";
 
 type ResumeActionsProps = {
   resumeId: string;
@@ -13,22 +15,10 @@ type ResumeActionsProps = {
 
 export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
   const router = useRouter();
-  const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
-
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   async function handleDuplicate() {
     setActionLoading("duplicate");
@@ -45,32 +35,6 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
       router.refresh();
     } catch {
       toast.error("Failed to duplicate resume");
-    } finally {
-      setActionLoading(null);
-      setOpen(false);
-    }
-  }
-
-  async function handleDelete() {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${resumeTitle}"? This cannot be undone.`,
-    );
-    if (!confirmed) return;
-
-    setActionLoading("delete");
-    try {
-      const res = await fetch(`/api/resumes/${resumeId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Failed to delete" }));
-        toast.error(err.error);
-        return;
-      }
-      toast.success("Resume deleted.");
-      router.refresh();
-    } catch {
-      toast.error("Failed to delete resume");
     } finally {
       setActionLoading(null);
       setOpen(false);
@@ -107,35 +71,39 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-          title="More actions"
-          aria-label="More actions"
-          aria-expanded={open}
-        >
-          <EllipsisVertical size={16} />
-        </button>
+      <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
+            title="More actions"
+            aria-label="More actions"
+          >
+            <EllipsisVertical size={16} />
+          </button>
+        </DropdownMenu.Trigger>
 
-        {open && (
-          <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]">
-            <button
-              type="button"
-              onClick={() => { setRenameOpen(true); setOpen(false); }}
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            sideOffset={6}
+            collisionPadding={12}
+            avoidCollisions
+            className="z-50 min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
+          >
+            <DropdownMenu.Item
+              onSelect={() => { setRenameOpen(true); }}
               disabled={actionLoading !== null}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
             >
               <Edit3 size={15} className="text-[#4b4b4b]" />
               Rename
-            </button>
+            </DropdownMenu.Item>
 
-            <button
-              type="button"
-              onClick={handleDuplicate}
+            <DropdownMenu.Item
+              onSelect={handleDuplicate}
               disabled={actionLoading !== null}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
             >
               {actionLoading === "duplicate" ? (
                 <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
@@ -143,13 +111,12 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
                 <Copy size={15} className="text-[#4b4b4b]" />
               )}
               Duplicate
-            </button>
+            </DropdownMenu.Item>
 
-            <button
-              type="button"
-              onClick={handleExport}
+            <DropdownMenu.Item
+              onSelect={handleExport}
               disabled={actionLoading !== null}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] transition hover:bg-[#f3f3f3] disabled:opacity-40"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
             >
               {actionLoading === "export" ? (
                 <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
@@ -157,15 +124,14 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
                 <Download size={15} className="text-[#4b4b4b]" />
               )}
               Export PDF
-            </button>
+            </DropdownMenu.Item>
 
-            <hr className="my-1 border-[#123c3a]/8" />
+            <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
 
-            <button
-              type="button"
-              onClick={handleDelete}
+            <DropdownMenu.Item
+              onSelect={() => { setDeleteOpen(true); }}
               disabled={actionLoading !== null}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-40"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
             >
               {actionLoading === "delete" ? (
                 <Loader2 size={15} className="animate-spin" />
@@ -173,10 +139,10 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
                 <Trash2 size={15} />
               )}
               Delete
-            </button>
-          </div>
-        )}
-      </div>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
 
       {renameOpen && (
         <RenameModal
@@ -184,6 +150,15 @@ export function ResumeActions({ resumeId, resumeTitle }: ResumeActionsProps) {
           currentTitle={resumeTitle}
           onClose={() => setRenameOpen(false)}
           onRenamed={() => { router.refresh(); }}
+        />
+      )}
+
+      {deleteOpen && (
+        <DeleteResumeModal
+          resumeId={resumeId}
+          resumeTitle={resumeTitle}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={() => { router.refresh(); }}
         />
       )}
     </>
