@@ -328,11 +328,8 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
             {group.items.map((r) => (
               <ResumeCard
                 key={r.id}
-                id={r.id}
-                title={r.title}
-                targetRole={r.targetRole}
-                updatedAt={r.parsedDate}
-                analysisRunCount={r.analysisRunCount}
+                resume={r}
+                parsedDate={r.parsedDate}
                 isMenuOpen={!isDeleteModalOpen && activeMenuId === r.id}
                 onMenuOpenChange={handleMenuOpenChange}
                 onDeleteClick={handleDeleteClick}

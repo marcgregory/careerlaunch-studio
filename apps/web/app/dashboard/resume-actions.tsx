@@ -2,27 +2,55 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { RenameModal } from "./rename-modal";
 
+export type SerializedResume = {
+  id: string;
+  title: string;
+  targetRole: string | null;
+  updatedAt: string;
+  analysisRunCount: number;
+  exportCount: number;
+};
+
+type InfiniteData = {
+  pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
+  pageParams: number[];
+};
+
 type ResumeActionsProps = {
-  resumeId: string;
-  resumeTitle: string;
+  resume: SerializedResume;
   isMenuOpen: boolean;
   onMenuOpenChange: (open: boolean) => void;
   onDeleteClick: () => void;
 };
 
+/** Helper: manually re-read the query cache and insert a resume at the front */
+function optimisticallyAddResume(queryClient: ReturnType<typeof useQueryClient>, resume: SerializedResume) {
+  queryClient.setQueryData<InfiniteData>(["resumes"], (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      pageParams: old.pageParams,
+      pages: old.pages.map((p, i) =>
+        i === 0
+          ? { ...p, resumes: [resume, ...p.resumes] }
+          : p,
+      ),
+    };
+  });
+}
+
 export function ResumeActions({
-  resumeId,
-  resumeTitle,
+  resume,
   isMenuOpen,
   onMenuOpenChange,
   onDeleteClick,
 }: ResumeActionsProps) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -41,20 +69,30 @@ export function ResumeActions({
     onMenuOpenChange(false);
     setActionLoading("duplicate");
     try {
-      const res = await fetch(`/api/resumes/${resumeId}/duplicate`, { method: "POST" });
+      const res = await fetch(`/api/resumes/${resume.id}/duplicate`, { method: "POST" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Failed to duplicate" }));
         toast.error(err.error);
         return;
       }
-      toast.success("Resume duplicated successfully.");
-      router.refresh();
+      const data = await res.json();
+      // optimistic insert
+      const duped: SerializedResume = {
+        id: data.resume.id,
+        title: data.resume.title,
+        targetRole: data.resume.targetRole ?? null,
+        updatedAt: new Date().toISOString(),
+        analysisRunCount: 0,
+        exportCount: 0,
+      };
+      optimisticallyAddResume(queryClient, duped);
+      toast.success("Resume duplicated.");
     } catch {
       toast.error("Failed to duplicate resume");
     } finally {
       setActionLoading(null);
     }
-  }, [resumeId, router, onMenuOpenChange]);
+  }, [resume.id, queryClient, onMenuOpenChange]);
 
   const handleExport = useCallback(async () => {
     onMenuOpenChange(false);
@@ -63,7 +101,7 @@ export function ResumeActions({
       const res = await fetch(`/api/export/pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeId }),
+        body: JSON.stringify({ resumeId: resume.id }),
       });
 
       if (!res.ok) {
@@ -88,7 +126,7 @@ export function ResumeActions({
         res.headers
           .get("Content-Disposition")
           ?.match(/filename="?(.+?)"?\s*$/)?.[1]
-          ?.replace(/^"|"$/g, "") ?? `${resumeTitle.replace(/[^a-z0-9]/gi, "-")}.pdf`;
+          ?.replace(/^"|"$/g, "") ?? `${resume.title.replace(/[^a-z0-9]/gi, "-")}.pdf`;
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -100,16 +138,17 @@ export function ResumeActions({
       URL.revokeObjectURL(url);
 
       toast.success("PDF downloaded successfully.");
-      router.refresh();
     } catch {
       toast.error("Failed to export resume");
     } finally {
       setActionLoading(null);
     }
-  }, [resumeId, resumeTitle, router, onMenuOpenChange]);
+  }, [resume.id, resume.title, onMenuOpenChange]);
 
   const handleRenameClose = useCallback(() => setRenameOpen(false), []);
-  const handleRenamed = useCallback(() => router.refresh(), [router]);
+  const handleRenamed = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["resumes"] });
+  }, [queryClient]);
 
   const menuContent = useMemo(() => {
     const isLoading = actionLoading !== null;
@@ -121,6 +160,16 @@ export function ResumeActions({
           sideOffset={8}
           collisionPadding={12}
           avoidCollisions
+          onPointerDownOutside={(e) => {
+            // If the outside pointerdown is on another trigger button,
+            // prevent this menu from closing — the other button's click
+            // handler will open the new menu, so activeMenuId transitions
+            // atomically from this card's id to the next.
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-radix-dropdown-trigger]') || target?.closest('[data-menu-trigger]')) {
+              e.preventDefault();
+            }
+          }}
           className="z-[999] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
           <DropdownMenu.Item
@@ -186,11 +235,6 @@ export function ResumeActions({
 
   return (
     <>
-      {/*
-       * Render ONE Radix Root at a time — only when this card is the active menu.
-       * When closed, render a plain button.  This guarantees ZERO competing
-       * document-level pointerdown listeners.
-       */}
       {isMenuOpen ? (
         <DropdownMenu.Root open onOpenChange={onMenuOpenChange}>
           <DropdownMenu.Trigger asChild>
@@ -200,7 +244,11 @@ export function ResumeActions({
               title="More actions"
               aria-label="More actions"
             >
-              <EllipsisVertical size={16} />
+              {actionLoading === "duplicate" || actionLoading === "export" ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <EllipsisVertical size={16} />
+              )}
             </button>
           </DropdownMenu.Trigger>
           {menuContent}
@@ -208,6 +256,7 @@ export function ResumeActions({
       ) : (
         <button
           type="button"
+          data-menu-trigger
           onClick={(e) => {
             e.stopPropagation();
             onMenuOpenChange(true);
@@ -226,8 +275,8 @@ export function ResumeActions({
 
       {renameOpen && (
         <RenameModal
-          resumeId={resumeId}
-          currentTitle={resumeTitle}
+          resumeId={resume.id}
+          currentTitle={resume.title}
           onClose={handleRenameClose}
           onRenamed={handleRenamed}
         />

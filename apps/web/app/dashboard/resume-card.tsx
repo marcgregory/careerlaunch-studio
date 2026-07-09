@@ -5,13 +5,12 @@ import { resumeTemplates, type TemplateDefinition } from "@careerlaunch/renderin
 import { ResumeActions } from "./resume-actions";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
+import type { SerializedResume } from "./resume-actions";
+
 type ResumeCardProps = {
-  id: string;
-  title: string;
-  targetRole: string | null;
-  updatedAt: Date;
+  resume: SerializedResume;
+  parsedDate: Date;
   templateId?: string;
-  analysisRunCount?: number;
   isMenuOpen: boolean;
   /** Called with this card's id */
   onMenuOpenChange: (resumeId: string, open: boolean) => void;
@@ -66,18 +65,16 @@ function timeAgo(date: Date): string {
 }
 
 function ResumeCardInner({
-  id,
-  title,
-  targetRole,
-  updatedAt,
+  resume,
+  parsedDate,
   templateId,
-  analysisRunCount = 0,
   isMenuOpen,
   onMenuOpenChange,
   onDeleteClick,
 }: ResumeCardProps) {
+  const { id, title, targetRole, analysisRunCount } = resume;
   const template = useMemo(() => getTemplateInfo(templateId), [templateId]);
-  const badge = useMemo(() => getStatusBadge(analysisRunCount), [analysisRunCount]);
+  const badge = useMemo(() => getStatusBadge(analysisRunCount ?? 0), [analysisRunCount]);
 
   // Client-only: suppress hydration mismatch from Date.now() in timeAgo
   const [mounted, setMounted] = useState(false);
@@ -85,7 +82,7 @@ function ResumeCardInner({
     const id = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(id);
   }, []);
-  const timeAgoLabel = useMemo(() => mounted ? timeAgo(updatedAt) : "", [mounted, updatedAt]);
+  const timeAgoLabel = useMemo(() => mounted ? timeAgo(parsedDate) : "", [mounted, parsedDate]);
   const editHref = useMemo(() => `/builder?resumeId=${id}`, [id]);
 
   /** Stable callbacks that capture this card's identity */
@@ -150,8 +147,7 @@ function ResumeCardInner({
       {/* Actions */}
       <div className="flex items-center gap-2 self-start md:self-center">
         <ResumeActions
-          resumeId={id}
-          resumeTitle={title}
+          resume={resume}
           isMenuOpen={isMenuOpen}
           onMenuOpenChange={handleMenuToggle}
           onDeleteClick={handleDelete}
