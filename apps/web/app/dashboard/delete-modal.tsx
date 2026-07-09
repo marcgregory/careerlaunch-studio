@@ -43,9 +43,9 @@ export function DeleteResumeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div
-        className="w-[90vw] max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
+        className="relative z-90 w-[90vw] max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
