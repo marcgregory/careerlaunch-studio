@@ -11,7 +11,18 @@ import { captureServerEvent } from "../../../../lib/server-analytics";
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
 
+// ── In-memory PDF cache (cleared on server restart) ──
+// Key: `${resumeId}:${updatedAt}:${templateId}:${watermarked}`
+// Value: { pdf: ArrayBuffer; cachedAt: number }
+const pdfCache = new Map<string, { pdf: ArrayBuffer; cachedAt: number }>();
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function getCacheKey(resumeId: string, updatedAt: Date, templateId: string, watermarked: boolean): string {
+  return `${resumeId}:${updatedAt.getTime()}:${templateId}:${watermarked}`;
+}
+
 export async function POST(request: Request) {
+  const startTotal = Date.now();
   const { user, response } = await requireApiUser();
   if (response) return response;
 
@@ -59,17 +70,49 @@ export async function POST(request: Request) {
   try {
     const resume = fromStoredResume(record);
     const filename = `${toSafeFilename(resume.title || "resume")}.pdf`;
+    const templateId = resume.templateId || "modern";
 
     // Determine watermark based on plan
     const exportKind = await getPdfExportKind(user.id);
-    const pdfOptions: PdfOptions = { watermarked: exportKind === "watermarked" };
+    const watermarked = exportKind === "watermarked";
+    const pdfOptions: PdfOptions = { watermarked };
+
+    // ── Check cache ──
+    const cacheKey = getCacheKey(resumeId, record.updatedAt, templateId, watermarked);
+    const cached = pdfCache.get(cacheKey);
+    if (cached && (Date.now() - cached.cachedAt) < CACHE_TTL_MS) {
+      const cachedElapsed = Date.now() - startTotal;
+
+      await prisma.exportJob.update({
+        where: { id: exportJob.id },
+        data: { status: "READY", fileUrl: `download:${filename}` },
+      });
+
+      console.log(`[pdf-export] CACHE HIT ${resumeId} (${cachedElapsed}ms)`);
+
+      return new Response(cached.pdf, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Content-Length": String(cached.pdf.byteLength),
+          "Cache-Control": "no-store",
+          "X-Export-Timing": `cache-hit ${cachedElapsed}ms`,
+        },
+      });
+    }
+
+    // ── Build HTML ──
+    const htmlStart = Date.now();
+    const html = resumeToHtml(resume, pdfOptions);
+    const htmlBuildTime = Date.now() - htmlStart;
 
     let pdf: ArrayBuffer;
 
     if (RENDERER_URL) {
       // Production: proxy to the external Docker PDF renderer service
-      const html = resumeToHtml(resume, pdfOptions);
       const requestId = getRequestId(request);
+      const renderStart = Date.now();
 
       const res = await fetch(RENDERER_URL, {
         method: "POST",
@@ -82,16 +125,22 @@ export async function POST(request: Request) {
         signal: AbortSignal.timeout(35000),
       });
 
+      const renderTime = Date.now() - renderStart;
+
       if (!res.ok) {
         const errBody = await res.text().catch(() => "unknown");
         throw new Error(`PDF renderer returned ${res.status}: ${errBody}`);
       }
 
       pdf = await res.arrayBuffer();
+      console.log(`[pdf-export] RENDER ${resumeId} (html:${htmlBuildTime}ms, render:${renderTime}ms, total:${Date.now() - startTotal}ms)`);
     } else {
       // Local dev: use in-process Playwright renderer
       pdf = await renderResumePdf(resume, pdfOptions);
     }
+
+    // ── Store in cache ──
+    pdfCache.set(cacheKey, { pdf, cachedAt: Date.now() });
 
     await prisma.exportJob.update({
       where: { id: exportJob.id },
@@ -101,10 +150,10 @@ export async function POST(request: Request) {
       }
     });
 
-    // ── Funnel: pdf_exported (server-side) ──
+    // ── Analytics ──
     captureServerEvent("pdf_exported", user.id, {
       resumeId,
-      templateId: resume.templateId,
+      templateId,
       exportKind,
       fileSize: pdf.byteLength,
       title: resume.title,
@@ -114,13 +163,15 @@ export async function POST(request: Request) {
       skillsCount: (resume.skills ?? []).length,
     });
 
+    const totalTime = Date.now() - startTotal;
     return new Response(pdf, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Content-Length": String(pdf.byteLength),
-        "Cache-Control": "no-store"
+        "Cache-Control": "no-store",
+        "X-Export-Timing": `miss ${totalTime}ms`,
       }
     });
   } catch (error) {

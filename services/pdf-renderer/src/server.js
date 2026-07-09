@@ -112,8 +112,10 @@ async function renderPdf(html, signal) {
       viewport: { width: 794, height: 1123 },
     });
 
-    // Apply a per-request timeout for setContent + pdf
-    await page.setContent(html, { waitUntil: "networkidle", timeout: RENDER_TIMEOUT_MS });
+    // Use domcontentloaded instead of networkidle — no external assets to wait for
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: RENDER_TIMEOUT_MS });
+    // Wait for a custom ready marker or a brief paint guarantee
+    await page.waitForFunction(() => document.querySelector(".pdf-root") !== null, { timeout: RENDER_TIMEOUT_MS });
 
     const pdf = await page.pdf({
       format: "Letter",
