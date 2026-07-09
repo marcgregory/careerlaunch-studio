@@ -38,7 +38,7 @@
         ]
       },
       {
-        "id": "import-exp-1",
+        "id": "import-exp-3",
         "role": "Teaching Assistant",
         "company": "Hack Reactor",
         "location": "",
@@ -53,6 +53,13 @@
     "education": [
       {
         "id": "import-edu-1",
+        "school": "Hack Reactor",
+        "degree": "Full-Stack Web Development Immersive",
+        "location": "",
+        "graduation": "2024"
+      },
+      {
+        "id": "import-edu-2",
         "school": "University of California, Los Angeles",
         "degree": "Bachelor of Arts in Marketing",
         "location": "",
@@ -128,7 +135,7 @@
     "references": "high",
     "volunteer": "low"
   },
-  "importQuality": "fair",
+  "importQuality": "excellent",
   "warnings": [
     "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
   ],
@@ -151,9 +158,9 @@
     {
       "sectionId": "education",
       "originalWordCount": 18,
-      "parsedWordCount": 11,
-      "ratio": 0.6111111111111112,
-      "status": "partial"
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "skills",

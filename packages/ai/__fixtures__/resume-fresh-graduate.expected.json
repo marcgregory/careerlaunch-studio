@@ -26,7 +26,7 @@
     "education": [
       {
         "id": "import-edu-1",
-        "school": "Jose State University",
+        "school": "San Jose State University",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
         "graduation": "2026"
@@ -100,7 +100,7 @@
   "importQuality": "poor",
   "warnings": [
     "Could not detect any work experience entries. Check the format.",
-    "Low import quality for \"education\": 36% coverage (10/28 words preserved).",
+    "Low import quality for \"education\": 39% coverage (11/28 words preserved).",
     "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
   ],
   "unparsedContent": {},
@@ -122,8 +122,8 @@
     {
       "sectionId": "education",
       "originalWordCount": 28,
-      "parsedWordCount": 10,
-      "ratio": 0.35714285714285715,
+      "parsedWordCount": 11,
+      "ratio": 0.39285714285714285,
       "status": "poor"
     },
     {

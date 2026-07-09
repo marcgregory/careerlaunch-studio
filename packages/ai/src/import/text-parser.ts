@@ -589,7 +589,7 @@ function parseEducation(lines: string[]): {
     if (!trimmed || BULLET_RE.test(trimmed)) continue;
 
     if (
-      /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(
+      /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(
         trimmed,
       )
     ) {
@@ -606,7 +606,7 @@ function parseEducation(lines: string[]): {
         if (
           nextLine &&
           !BULLET_RE.test(nextLine) &&
-          /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD)\b/i.test(nextLine)
+          /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(nextLine)
         ) {
           consumed.add(i);
           continue;
@@ -633,6 +633,10 @@ function parseEducation(lines: string[]): {
           } else if (nextGrad && !gradYear) {
             // School line has a year but no school keyword — save it
             gradYear = nextGrad;
+          } else if (nextSchool && !school) {
+            // Fallback: next line looks like a school name (e.g. bootcamp)
+            // even without traditional school keywords
+            school = nextSchool;
           }
 
           consumed.add(i + 1);
@@ -724,15 +728,35 @@ function extractSchoolV2(text: string): string {
     "Academy",
     "Polytechnic",
   ];
-  for (const keyword of keywords) {
+  // Also check for bootcamp/institution keywords that aren't traditional school terms
+  const otherKeywords = ["Hack", "General Assembly", "Flatiron"];
+  for (const keyword of otherKeywords) {
     const index = text.search(new RegExp(`\\b${keyword}\\b`, "i"));
     if (index >= 0) {
-      // Capture up to 2 words before the keyword, then the keyword and its
-      // comma/dash-delimited suffixes. Handles "Texas State University" (2 words
-      // before keyword) and "University of Washington, 2016" (keyword-first) alike.
       const before = text.slice(0, index).trim();
       const beforeWords = before.split(/\s+/).filter(Boolean);
       const prefix = beforeWords.slice(-2).join(" ");
+      // Capture from keyword forward: up to 2 additional words
+      const rest = text.slice(index);
+      const colonIdx = rest.indexOf(":");
+      const effective = colonIdx >= 0 ? rest.slice(0, colonIdx) : rest;
+      const suffixMatch = effective.match(/^[^,-]+(?:[,-][^,-]+){0,1}/);
+      const suffix = suffixMatch ? suffixMatch[0].trim() : "";
+      const result = (prefix ? prefix + " " + suffix : suffix).trim();
+      if (result.length >= 3) return result;
+    }
+  }
+
+  for (const keyword of keywords) {
+    const index = text.search(new RegExp(`\\b${keyword}\\b`, "i"));
+    if (index >= 0) {
+      // Capture up to 3 words before the keyword, then the keyword and its
+      // comma/dash-delimited suffixes. Handles "San Jose State University" (3
+      // words before keyword), "Texas State University" (2 words), and
+      // "University of Washington, 2016" (keyword-first) alike.
+      const before = text.slice(0, index).trim();
+      const beforeWords = before.split(/\s+/).filter(Boolean);
+      const prefix = beforeWords.slice(-3).join(" ");
       // Capture from keyword forward: up to 3 comma/dash segments or end
       const rest = text.slice(index);
       const colonIdx = rest.indexOf(":");
@@ -1557,19 +1581,16 @@ export function parseResumeText(text: string): ParseResult {
   }
 
   // Append volunteer entries to experience (parsed the same way, but detected
-  // as a separate section for coverage and UI clarity)
+  // as a separate section for coverage and UI clarity).
+  // Renumber volunteer IDs to avoid collision with existing experience IDs.
   if (volunteer.length > 0) {
     const existing = parsed.experience || [];
-    // If the last existing experience entry has no bullets and no proper role,
-    // the volunteer parser may have consumed it — skip dedup and just append
-    const lastExp = existing[existing.length - 1];
-    const hasOverlap = lastExp && lastExp.role === "Unknown Role" && lastExp.bullets.length === 0;
-    if (!hasOverlap) {
-      parsed.experience = [...existing, ...volunteer];
-    } else {
-      // Something went wrong — just append
-      parsed.experience = [...existing, ...volunteer];
-    }
+    const offset = existing.length;
+    const renumbered = volunteer.map((v, i) => ({
+      ...v,
+      id: `import-exp-${offset + i + 1}`,
+    }));
+    parsed.experience = [...existing, ...renumbered];
   }
 
   // Deduplicate education entries (same degree string appearing on consecutive lines
