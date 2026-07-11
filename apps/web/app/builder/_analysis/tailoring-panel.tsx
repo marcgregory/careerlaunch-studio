@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import {
   Sparkles,
   Loader2,
@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Info as InfoIcon,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SuggestionDiffModal, type ApplyState } from "../../../components/suggestion-diff-modal";
@@ -111,6 +112,28 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
       });
     } catch { /* non-critical */ }
   };
+
+  // ── Reset — clear all results without API calls ────────────────────
+  const handleReset = useCallback(() => {
+    setJobDescription("");
+    setTailor({
+      status: "idle",
+      matchScore: null,
+      matchedSkills: [],
+      missingSkills: [],
+      weakSections: [],
+      summarySuggestions: [],
+      bulletSuggestions: [],
+      skillSuggestions: [],
+      error: null,
+    });
+    setReviewingSuggestion(null);
+    setApplyState("idle");
+    setModalError(undefined);
+    setExpandedSection(null);
+    setFeedbackTriggered(new Set());
+    toast.success("Tailoring panel reset. Enter a new job description to analyze.");
+  }, []);
 
   // ── Run analysis & tailoring ─────────────────────────────────────
   const runAnalysis = useCallback(async () => {
@@ -370,14 +393,23 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
             rows={6}
             className="w-full resize-none rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-4 text-sm leading-relaxed placeholder:text-[#4b4b4b]/40 focus:border-[#00796f] focus:outline-none focus:ring-1 focus:ring-[#00796f]"
           />
-          <button
-            type="button"
-            onClick={runAnalysis}
-            disabled={!jobDescription.trim()}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[#123c3a] bg-[#123c3a] px-6 font-black text-white transition hover:bg-[#1a5550] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Sparkles size={18} /> Analyze &amp; Tailor
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-[#123c3a]/10 bg-white px-4 font-black text-[#123c3a] transition hover:bg-red-50 hover:text-red-700"
+            >
+              <RotateCcw size={16} /> Reset
+            </button>
+            <button
+              type="button"
+              onClick={runAnalysis}
+              disabled={!jobDescription.trim()}
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-[#123c3a] bg-[#123c3a] px-6 font-black text-white transition hover:bg-[#1a5550] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Sparkles size={18} /> Analyze &amp; Tailor
+            </button>
+          </div>
         </div>
       </section>
     );
@@ -603,13 +635,22 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
               ? "All suggestions reviewed"
               : `${totalPending} suggestion${totalPending !== 1 ? "s" : ""} pending`}
           </p>
-          <button
-            type="button"
-            onClick={runAnalysis}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
-          >
-            <Sparkles size={14} /> Re-analyze
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-white px-3 text-xs font-black text-[#4b4b4b] transition hover:bg-red-50 hover:text-red-700"
+            >
+              <RotateCcw size={14} /> Reset
+            </button>
+            <button
+              type="button"
+              onClick={runAnalysis}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-[#123c3a]/10 bg-white px-3 text-xs font-black text-[#123c3a] transition hover:bg-[#b9ff66]"
+            >
+              <Sparkles size={14} /> Re-analyze
+            </button>
+          </div>
         </div>
       </section>
 
