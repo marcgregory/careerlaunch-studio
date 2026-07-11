@@ -378,14 +378,20 @@ function extractContact(preambleLines: string[]): {
 const DATE_RANGE_RE =
   /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*(?:-+|–|—|to)\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
 const YEAR_RANGE_RE = /(\d{4})\s*(?:-+|–|—|to)\s*(\d{4}|present|current|now)/i;
-const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
+const INLINE_BULLET_MARKER_RE =
+  /(?:[\u2022\u25cf\u25aa\u25e6]|\u00e2(?:\u20ac\u00a2|\u2014[\u008f\u00a6]|\u2013\u00aa))/;
+const LINE_START_BULLET_MARKER_RE = new RegExp(
+  `(?:${INLINE_BULLET_MARKER_RE.source}|[*\\-]|\\d+[.)])`,
+);
+const BULLET_RE = new RegExp(`^${LINE_START_BULLET_MARKER_RE.source}\\s*`);
 function expandInlineBulletLines(lines: string[]): string[] {
   const expanded: string[] = [];
-  const inlineBulletRe = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
+  const inlineBulletRe = new RegExp(`(?=${INLINE_BULLET_MARKER_RE.source}\\s*)`, "g");
 
   for (const line of lines) {
     const trimmed = line.trim();
-    const markerCount = (trimmed.match(/[\u2022\u25cf\u25aa\u25e6]/g) || []).length;
+    const markerCount = (trimmed.match(new RegExp(INLINE_BULLET_MARKER_RE.source, "g")) || [])
+      .length;
     if (markerCount > 1) {
       const pieces = trimmed
         .split(inlineBulletRe)

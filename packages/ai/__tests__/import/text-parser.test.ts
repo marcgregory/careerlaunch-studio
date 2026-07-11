@@ -1378,3 +1378,47 @@ describe("experience wrapped bullet reconstruction regressions", () => {
     ]);
   });
 });
+
+describe("Marc Gregory PDF wrapped bullet regression", () => {
+  it("reconstructs mojibake bullet wraps before storing experience bullets", () => {
+    const text = [
+      "Marc Gregory B. Turno",
+      "marc@example.com",
+      "",
+      "Experience",
+      "Software Developer",
+      "Volenday Philippines Inc.",
+      "Feb 2023 - May 2025",
+      "â— Developed features in Scrum.",
+      "â— Built and debugged React applications.",
+      "â— Collaborated with design teams.",
+      "â— Produced clean, maintainable code.",
+      "â— Participated in daily stand-ups and feature estimation meetings to ensure project",
+      "timelines were met.",
+      "",
+      "IT Staff",
+      "Tech Solutions Co.",
+      "Jan 2020 - Dec 2022",
+      "â— Supported 200+ end users across departments.",
+      "â— Installed and maintained computer systems and secured company data through",
+      "network security measures.",
+      "â— Managed IT procurement and deployment of equipment and software.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+    const experience = result.parsed.experience || [];
+    const allBullets = experience.flatMap((entry) => entry.bullets);
+
+    expect(experience[0].bullets[4]).toBe(
+      "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+    );
+    expect(experience[1].bullets[1]).toBe(
+      "Installed and maintained computer systems and secured company data through network security measures.",
+    );
+    expect(experience[1].bullets[2]).toBe(
+      "Managed IT procurement and deployment of equipment and software.",
+    );
+    expect(allBullets).not.toContain("timelines were met.");
+    expect(allBullets).not.toContain("network security measures.");
+  });
+});
