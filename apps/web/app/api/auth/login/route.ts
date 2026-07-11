@@ -21,24 +21,36 @@ function isJsonRequest(request: Request): boolean {
   return (request.headers.get("content-type") ?? "").includes("application/json");
 }
 
+function getRateLimitHeaders(resetAt: number) {
+  return {
+    "Retry-After": String(Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))),
+    "Cache-Control": "no-store, max-age=0",
+  };
+}
+
+function rateLimitedResponse(request: Request, resetAt: number) {
+  const headers = getRateLimitHeaders(resetAt);
+  if (isJsonRequest(request)) {
+    return NextResponse.json(
+      { error: "ratelimited", message: "Too many login attempts. Please wait before trying again." },
+      { status: 429, headers },
+    );
+  }
+  return NextResponse.redirect(new URL("/login?error=ratelimited", request.url), { status: 429, headers });
+}
+
 export async function POST(request: Request) {
   const { email, password } = await parseBody(request);
   const ip = getClientIp(request);
 
   const ipLimit = checkRateLimit(`login:ip:${ip}`, 10, 60 * 1000);
   if (!ipLimit.allowed) {
-    if (isJsonRequest(request)) {
-      return NextResponse.json({ error: "ratelimited", message: "Too many login attempts. Please wait before trying again." }, { status: 429 });
-    }
-    return NextResponse.redirect(new URL("/login?error=ratelimited", request.url), { status: 429 });
+    return rateLimitedResponse(request, ipLimit.resetAt);
   }
 
   const emailLimit = checkRateLimit(`login:email:${email}`, 5, 900 * 1000);
   if (!emailLimit.allowed) {
-    if (isJsonRequest(request)) {
-      return NextResponse.json({ error: "ratelimited", message: "Too many login attempts. Please wait before trying again." }, { status: 429 });
-    }
-    return NextResponse.redirect(new URL("/login?error=ratelimited", request.url), { status: 429 });
+    return rateLimitedResponse(request, emailLimit.resetAt);
   }
 
   const user = await authenticateUser(email, password);
