@@ -497,6 +497,18 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
             addLabel="Add skill"
             emptyLabel="No skills listed."
             emptyAction="Add role-matched keywords for the job description."
+            helper={
+              <div className="rounded-2xl border border-[#123c3a]/10 bg-[#f8f8f5] p-3 text-xs font-medium leading-5 text-[#4b4b4b]">
+                <p className="font-black text-[#123c3a]">Format: <code className="rounded bg-white px-1 py-0.5 font-mono text-[0.68rem]">Category: Skill 1, Skill 2, Skill 3</code></p>
+                <ul className="mt-2 space-y-1">
+                  <li>Frontend: HTML, CSS, JavaScript, React, Next.js</li>
+                  <li>Backend: Node.js, Express, PostgreSQL, Prisma</li>
+                  <li>Cloud / Infra / Tools: AWS, Docker, Redis, Vercel</li>
+                  <li>AI Coding Agents: Cursor, Claude Code, Codex, GitHub Copilot</li>
+                </ul>
+              </div>
+            }
+            placeholder="Frontend: HTML, CSS, JavaScript, React, Next.js"
             values={resume.skills}
             onAdd={() => addListItem("skills")}
             onChange={(index, value) => updateList("skills", index, value)}
@@ -788,6 +800,8 @@ function EditableListPanel({
   addLabel,
   emptyLabel,
   emptyAction,
+  helper,
+  placeholder,
   values,
   onAdd,
   onChange,
@@ -798,6 +812,8 @@ function EditableListPanel({
   addLabel: string;
   emptyLabel: string;
   emptyAction: string;
+  helper?: React.ReactNode;
+  placeholder?: string;
   values: string[];
   onAdd: () => void;
   onChange: (index: number, value: string) => void;
@@ -806,11 +822,12 @@ function EditableListPanel({
 }) {
   return (
     <Panel title={title} action={<button className={tinyButtonClass} type="button" onClick={onAdd}><Plus size={15} /> {addLabel}</button>}>
+      {helper ? <div className="mb-3">{helper}</div> : null}
       <StackEmpty when={values.length === 0} label={emptyLabel} action={emptyAction} />
       <div className="space-y-2">
         {values.map((value, index) => (
           <div key={index} className="grid grid-cols-[1fr_auto] gap-2">
-            <input className={fieldClass} value={value} aria-label={`${title} item ${index + 1}`} onChange={(event) => onChange(index, event.target.value)} />
+            <input className={fieldClass} value={value} placeholder={placeholder} aria-label={`${title} item ${index + 1}`} onChange={(event) => onChange(index, event.target.value)} />
             <div className="flex gap-1">
               <IconButton label={`Move ${title} item up`} disabled={index === 0} onClick={() => onMove(index, -1)}><ArrowUp size={15} /></IconButton>
               <IconButton label={`Move ${title} item down`} disabled={index === values.length - 1} onClick={() => onMove(index, 1)}><ArrowDown size={15} /></IconButton>
