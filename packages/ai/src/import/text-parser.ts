@@ -400,18 +400,6 @@ function expandInlineBulletLines(lines: string[]): string[] {
   return expanded;
 }
 
-/**
- * Check if a line appears to end mid-sentence with a preposition or conjunction.
- * Used to detect wrapped bullets that should be merged.
- */
-function endsWithIncompletePhrase(text: string): boolean {
-  const trimmed = text.trim();
-  // Prepositions and conjunctions that suggest continuation: through, with, by, for, in, at, and, or, etc.
-  const incompleteEndings =
-    /\b(through|with|by|for|in|at|and|or|as|to|from|of|on|over|under|into|across|during|before|after|between|among|up|down|out|off)$/i;
-  return incompleteEndings.test(trimmed);
-}
-
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
   warnings: string[];
@@ -511,18 +499,7 @@ function parseExperience(lines: string[]): {
           }
 
           if (hasMarker) {
-            // Before adding as a new bullet, check if the previous bullet ended
-            // with an incomplete phrase (preposition/conjunction). If so, merge instead.
-            if (
-              bulletCount > 0 &&
-              bullets.length > 0 &&
-              endsWithIncompletePhrase(bullets[bullets.length - 1])
-            ) {
-              // Merge with previous bullet instead of starting a new one
-              bullets[bullets.length - 1] += " " + cleaned;
-            } else {
-              bullets.push(cleaned);
-            }
+            bullets.push(cleaned);
             bulletCount++;
             i++;
           } else if (bulletCount > 0) {
@@ -650,17 +627,7 @@ function parseExperience(lines: string[]): {
 
         // If this is a bullet marker line, add as new bullet
         if (BULLET_RE.test(bline)) {
-          // Before adding as a new bullet, check if the previous bullet ended
-          // with an incomplete phrase (preposition/conjunction). If so, merge instead.
-          if (
-            bullets.length > 0 &&
-            endsWithIncompletePhrase(bullets[bullets.length - 1])
-          ) {
-            // Merge with previous bullet instead of starting a new one
-            bullets[bullets.length - 1] += " " + cleaned;
-          } else {
-            bullets.push(cleaned);
-          }
+          bullets.push(cleaned);
         } else if (bullets.length > 0) {
           // Unmarked continuation — merge with the previous bullet
           // Check if it looks like the start of the next entry (role/company name)

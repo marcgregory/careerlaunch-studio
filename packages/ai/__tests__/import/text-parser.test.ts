@@ -1279,3 +1279,56 @@ Technical professional.`;
     expect(result.parsed.contact?.linkedin).toBe("https://linkedin.com/in/linkuser");
   });
 });
+describe("experience wrapped bullet reconstruction regressions", () => {
+  it("keeps unmarked wrapped lines inside the same bullet", () => {
+    const text = [
+      "Support Engineer",
+      "support@example.com",
+      "",
+      "Experience",
+      "IT Support Specialist",
+      "Acme Corp",
+      "2021 - Present",
+      "- Installed and maintained computer systems and secured company data through",
+      "network security measures.",
+      "- Managed IT procurement and asset tracking.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+    const bullets = result.parsed.experience?.[0]?.bullets || [];
+
+    expect(bullets).toContain(
+      "Installed and maintained computer systems and secured company data through network security measures.",
+    );
+    expect(bullets).toContain("Managed IT procurement and asset tracking.");
+    expect(bullets).toHaveLength(2);
+  });
+
+  it("does not merge a new marked bullet into an incomplete previous bullet", () => {
+    const text = [
+      "Support Engineer",
+      "support@example.com",
+      "",
+      "Experience",
+      "IT Support Specialist",
+      "Acme Corp",
+      "2021 - Present",
+      "- Installed and maintained computer systems and secured company data through",
+      "- Managed IT procurement and asset tracking.",
+      "- Participated in daily stand-ups and feature estimation meetings to ensure project",
+      "timelines were met.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+    const bullets = result.parsed.experience?.[0]?.bullets || [];
+
+    expect(bullets[0]).toBe(
+      "Installed and maintained computer systems and secured company data through",
+    );
+    expect(bullets[1]).toBe("Managed IT procurement and asset tracking.");
+    expect(bullets[2]).toBe(
+      "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+    );
+    expect(bullets).toHaveLength(3);
+  });
+});

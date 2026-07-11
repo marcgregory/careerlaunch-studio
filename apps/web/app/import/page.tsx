@@ -21,6 +21,20 @@ import { normalizeResume } from "../../lib/resume-store";
 import type { ParseResult, ImportQuality } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
+type PreviewBullet = { text: string; sourceIndex: number };
+const EXPERIENCE_PREVIEW_BULLET_LIMIT = 3;
+const EMBEDDED_BULLET_MARKER_RE = /(?=\s*[\u2022\u25cf\u25aa\u25e6]\s+)/g;
+const LEADING_BULLET_MARKER_RE = /^[\u2022\u25cf\u25aa\u25e6*\-]\s*/;
+
+function normalizeExperiencePreviewBullets(bullets: string[]): PreviewBullet[] {
+  return bullets.flatMap((bullet, sourceIndex) =>
+    bullet
+      .split(EMBEDDED_BULLET_MARKER_RE)
+      .map((piece) => piece.replace(LEADING_BULLET_MARKER_RE, "").replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .map((text) => ({ text, sourceIndex })),
+  );
+}
 
 export default function ImportPage() {
   const router = useRouter();
@@ -415,7 +429,11 @@ export default function ImportPage() {
                         )}
                       </h3>
                       <div className="mt-2 space-y-3">
-                        {previewResume.experience.map((exp) => (
+                        {previewResume.experience.map((exp) => {
+                          const previewBullets = normalizeExperiencePreviewBullets(exp.bullets);
+                          const hiddenBulletCount = Math.max(0, previewBullets.length - EXPERIENCE_PREVIEW_BULLET_LIMIT);
+
+                          return (
                           <div
                             key={exp.id}
                             className="border-l-2 border-[#b9ff66] pl-3"
@@ -436,20 +454,21 @@ export default function ImportPage() {
                                   .join(" | ")}
                               </p>
                             )}
-                            {exp.bullets.length > 0 && (
+                            {previewBullets.length > 0 && (
                               <ul className="mt-1 list-disc pl-4 text-xs font-medium leading-6 text-[#33343b]">
-                                {exp.bullets.slice(0, 3).map((b, i) => (
-                                  <li key={i}>{b}</li>
+                                {previewBullets.slice(0, EXPERIENCE_PREVIEW_BULLET_LIMIT).map((bullet, i) => (
+                                  <li key={`${bullet.sourceIndex}-${i}`}>{bullet.text}</li>
                                 ))}
-                                {exp.bullets.length > 3 && (
+                                {hiddenBulletCount > 0 && (
                                   <li className="text-[#999]">
-                                    +{exp.bullets.length - 3} more
+                                    +{hiddenBulletCount} more bullet points
                                   </li>
                                 )}
                               </ul>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
