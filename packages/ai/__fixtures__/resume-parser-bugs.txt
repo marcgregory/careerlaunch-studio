@@ -1,63 +1,47 @@
-Alex Rivera
-alex.rivera@email.com
-(555) 000-1234
-Seattle, WA
+MARC GREGORY BURNETT
+marc.gregory@email.com
++63 912 345 6789
+Makati, Philippines
 
 Professional Summary
-Versatile engineer with experience across the full stack. Proven track record of delivering production-grade systems and leading technical initiatives.
-
-Category                    Proficiency
-Frontend                    Advanced
-Backend                     Advanced
-Cloud / Infra               Intermediate
-DevOps                      Intermediate
-Database                    Advanced
-
-Experience
-Senior Software Engineer
-TechCorp Solutions
-Jan 2022 - Present
-- Designed and implemented microservices architecture serving 1M+ daily users.
-- Led migration from monolith to distributed system, reducing deploy time by 80%.
-- Established CI/CD pipelines and monitoring infrastructure.
-- Mentored 5 junior engineers through structured onboarding program
-with documented learning paths and weekly check-ins. timelines were met.
-- Authored technical design documents adopted across 3 teams.
-
-Software Engineer
-StartupXYZ Inc.
-Mar 2019 - Dec 2021
-- Built core REST APIs handling 50K requests per minute.
-- Optimized database queries reducing average response time from 400ms to 45ms.
-- Implemented real-time notification system using WebSockets and Redis.
-
-Education
-Bachelor of Science in Computer Science
-University of Washington, 2016
+Experienced full-stack developer with 8+ years building web applications and managing IT infrastructure.
 
 Skills
-React, TypeScript, Node.js, PostgreSQL, Docker, AWS, GraphQL, Redis, Python, Go, Kubernetes, Terraform
+Frontend                    React, TypeScript, Next.js, Vue.js, Angular, HTML5, CSS3, SASS, Tailwind CSS, Bootstrap, Redux, GraphQL
+Backend                     Node.js, Express, Python, Go, Java, PHP, C#, Ruby on Rails, NestJS, FastAPI, Django, Flask, Spring Boot, PostgreSQL, MySQL, MongoDB, Redis, Prisma ORM, TypeORM, Drizzle ORM, Sequelize, Knex.js
+Cloud / Infra               AWS (EC2, S3, Lambda, RDS, CloudFront, Route53), Docker, Kubernetes, Terraform, CI/CD Pipelines, GitHub Actions
+DevOps                      Jenkins, Ansible, Prometheus, Grafana, ELK Stack
+Database                    PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch, Cassandra, SQLite, MariaDB
+Testing                     Jest, Mocha, Cypress, Playwright, Vitest, Selenium
+Tools                       Git, Webpack, Vite, Babel, ESLint, Prettier, Nginx
+Languages                   PHP, JavaScript, TypeScript, Python, Go, Java, Rust, SQL, Bash, PowerShell
+PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API)
+
+Experience
+IT Specialist
+DataFlow Systems Inc.
+Jan 2018 – Present
+- Installed and maintained computer systems and secured company data through
+network security measures.
+- Managed IT procurement and vendor relationships for 200+ employee company.
+- Led a team of 5 junior IT staff members through structured training program
+with documented learning paths and weekly check-ins.
+timelines were met.
+- Deployed monitoring solutions reducing incident response time by 60%.
+- Maintained 99.9% uptime across all critical systems.
+
+Junior IT Support
+TechStart Solutions
+Jun 2015 – Dec 2017
+- Provided tier 2 support for 100+ end users.
+- Configured network equipment and firewall policies.
+- Documented IT procedures and created knowledge base articles.
+
+Education
+Bachelor of Science in Information Technology
+University of the Philippines, 2015
 
 Certifications
-AWS Solutions Architect - Professional
-Google Cloud Associate Engineer
-
-Professional Qualities
-Detail-oriented
-Strong communicator
-Problem solver
-Team leader
-
-Projects
-Distributed Task Scheduler
-- Built a fault-tolerant distributed task scheduler handling 10K tasks/min.
-- Used consistent hashing for workload distribution across worker nodes.
-- Implemented retry logic with exponential backoff and dead-letter queues.
-
-Open Source Contributions
-- Contributed to React's core documentation (merged 3 PRs).
-- Maintained a popular VS Code extension with 50K+ installs.
-- Published 5 npm packages for developer tooling.
-
-References
-Available upon request.
+CompTIA Network+
+AWS Certified Solutions Architect
+Cisco CCNA
