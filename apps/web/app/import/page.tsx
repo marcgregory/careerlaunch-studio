@@ -37,7 +37,8 @@ export default function ImportPage() {
       title: `Imported Resume - ${result.parsed.contact?.fullName || "Unnamed"}`,
       targetRole: "",
       ...result.parsed,
-      professionalQualities: result.parsed.professionalQualities || result.parsed.achievements || [],
+      professionalQualities:
+        result.parsed.professionalQualities || result.parsed.achievements || [],
     });
   }, [result]);
 
@@ -226,8 +227,7 @@ export default function ImportPage() {
           skills: previewResume?.skills.length ?? 0,
           certifications: previewResume?.certifications.length ?? 0,
           projects: previewResume?.projects.length ?? 0,
-          professionalQualities:
-            previewResume?.achievements.length ?? 0,
+          professionalQualities: previewResume?.achievements.length ?? 0,
         },
       });
 
@@ -341,238 +341,269 @@ export default function ImportPage() {
         )}
 
         {/* State: preview or saving */}
-        {(state === "preview" || state === "saving") && result && previewResume && (
-          <div className="mt-8 space-y-6">
-            {/* Import quality banner — user-friendly messaging */}
-            {(() => {
-              const banner = getQualityBanner(
-                result.importQuality,
-                result.aiRecovered,
-                result.aiRecoveredSections,
-              );
-              const Icon = banner.icon;
-              return (
-                <div
-                  className={`flex items-start gap-3 rounded-2xl border ${banner.border} ${banner.bg} p-4`}
-                  role="alert"
-                >
-                  <Icon size={20} className="mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold">{banner.title}</p>
-                    <p className="mt-1 text-sm">{banner.description}</p>
+        {(state === "preview" || state === "saving") &&
+          result &&
+          previewResume && (
+            <div className="mt-8 space-y-6">
+              {/* Import quality banner — user-friendly messaging */}
+              {(() => {
+                const banner = getQualityBanner(
+                  result.importQuality,
+                  result.aiRecovered,
+                  result.aiRecoveredSections,
+                );
+                const Icon = banner.icon;
+                return (
+                  <div
+                    className={`flex items-start gap-3 rounded-2xl border ${banner.border} ${banner.bg} p-4`}
+                    role="alert"
+                  >
+                    <Icon size={20} className="mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold">{banner.title}</p>
+                      <p className="mt-1 text-sm">{banner.description}</p>
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
 
-            {/* Parsed preview — shows the resume content, not debug data */}
-            <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
-              <h2 className="font-signal text-2xl font-black tracking-[-0.04em]">
-                {previewResume.contact.fullName || "Unknown name"}
-              </h2>
-              <p className="mt-1 text-sm font-medium text-[#4b4b4b]">
-                {[
-                  previewResume.contact.email,
-                  previewResume.contact.phone,
-                  previewResume.contact.location,
-                  previewResume.contact.website,
-                  previewResume.contact.linkedin,
-                  previewResume.contact.github,
-                ]
-                  .filter(Boolean)
-                  .join(" | ")}
-              </p>
+              {/* Parsed preview — shows the resume content, not debug data */}
+              <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
+                <h2 className="font-signal text-2xl font-black tracking-[-0.04em]">
+                  {previewResume.contact.fullName || "Unknown name"}
+                </h2>
+                <p className="mt-1 text-sm font-medium text-[#4b4b4b]">
+                  {[
+                    previewResume.contact.email,
+                    previewResume.contact.phone,
+                    previewResume.contact.location,
+                    previewResume.contact.website,
+                    previewResume.contact.linkedin,
+                    previewResume.contact.github,
+                  ]
+                    .filter(Boolean)
+                    .join(" | ")}
+                </p>
 
-              {previewResume.summary && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Summary
-                    {result.aiRecoveredSections?.includes("summary") && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
-                        <Wand2 size={10} />
-                        Repaired
-                      </span>
-                    )}
-                  </h3>
-                  <p className="mt-2 text-sm font-medium leading-6 text-[#33343b]">
-                    {previewResume.summary}
-                  </p>
-                </div>
-              )}
-
-              {previewResume.experience &&
-                previewResume.experience.length > 0 && (
+                {previewResume.summary && (
                   <div className="mt-5">
                     <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                      Experience ({previewResume.experience.length})
-                      {result.aiRecoveredSections?.includes("experience") && (
+                      Summary
+                      {result.aiRecoveredSections?.includes("summary") && (
                         <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
                           <Wand2 size={10} />
                           Repaired
                         </span>
                       )}
                     </h3>
-                    <div className="mt-2 space-y-3">
-                      {previewResume.experience.map((exp) => (
-                        <div
-                          key={exp.id}
-                          className="border-l-2 border-[#b9ff66] pl-3"
-                        >
-                          <p className="text-sm font-bold">{exp.role}</p>
-                          {([exp.company, [exp.start, exp.end].filter(Boolean).join(" - ")].filter(Boolean).length > 0) && (
+                    <p className="mt-2 text-sm font-medium leading-6 text-[#33343b]">
+                      {previewResume.summary}
+                    </p>
+                  </div>
+                )}
+
+                {previewResume.experience &&
+                  previewResume.experience.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        Experience ({previewResume.experience.length})
+                        {result.aiRecoveredSections?.includes("experience") && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+                            <Wand2 size={10} />
+                            Repaired
+                          </span>
+                        )}
+                      </h3>
+                      <div className="mt-2 space-y-3">
+                        {previewResume.experience.map((exp) => (
+                          <div
+                            key={exp.id}
+                            className="border-l-2 border-[#b9ff66] pl-3"
+                          >
+                            <p className="text-sm font-bold">{exp.role}</p>
+                            {[
+                              exp.company,
+                              [exp.start, exp.end].filter(Boolean).join(" - "),
+                            ].filter(Boolean).length > 0 && (
+                              <p className="text-xs font-medium text-[#4b4b4b]">
+                                {[
+                                  exp.company,
+                                  [exp.start, exp.end]
+                                    .filter(Boolean)
+                                    .join(" - "),
+                                ]
+                                  .filter(Boolean)
+                                  .join(" | ")}
+                              </p>
+                            )}
+                            {exp.bullets.length > 0 && (
+                              <ul className="mt-1 list-disc pl-4 text-xs font-medium leading-6 text-[#33343b]">
+                                {exp.bullets.slice(0, 3).map((b, i) => (
+                                  <li key={i}>{b}</li>
+                                ))}
+                                {exp.bullets.length > 3 && (
+                                  <li className="text-[#999]">
+                                    +{exp.bullets.length - 3} more
+                                  </li>
+                                )}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {previewResume.education &&
+                  previewResume.education.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        Education ({previewResume.education.length})
+                        {result.aiRecoveredSections?.includes("education") && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+                            <Wand2 size={10} />
+                            Repaired
+                          </span>
+                        )}
+                      </h3>
+                      <div className="mt-2 space-y-2">
+                        {previewResume.education.map((edu) => (
+                          <div key={edu.id} className="text-sm">
+                            <p className="font-bold">{edu.degree}</p>
                             <p className="text-xs font-medium text-[#4b4b4b]">
-                              {[exp.company, [exp.start, exp.end].filter(Boolean).join(" - ")].filter(Boolean).join(" | ")}
-                            </p>
-                          )}
-                          {exp.bullets.length > 0 && (
-                            <ul className="mt-1 list-disc pl-4 text-xs font-medium leading-6 text-[#33343b]">
-                              {exp.bullets.slice(0, 3).map((b, i) => (
-                                <li key={i}>{b}</li>
-                              ))}
-                              {exp.bullets.length > 3 && (
-                                <li className="text-[#999]">
-                                  +{exp.bullets.length - 3} more
-                                </li>
-                              )}
-                            </ul>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {previewResume.education &&
-                previewResume.education.length > 0 && (
-                  <div className="mt-5">
-                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                      Education ({previewResume.education.length})
-                      {result.aiRecoveredSections?.includes("education") && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
-                          <Wand2 size={10} />
-                          Repaired
-                        </span>
-                      )}
-                    </h3>
-                    <div className="mt-2 space-y-2">
-                      {previewResume.education.map((edu) => (
-                        <div key={edu.id} className="text-sm">
-                          <p className="font-bold">{edu.degree}</p>
-                          <p className="text-xs font-medium text-[#4b4b4b]">
-                            {[edu.school, edu.graduation].filter(Boolean).join(" | ")}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {previewResume.skills.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Skills ({previewResume.skills.length})
-                    {result.aiRecoveredSections?.includes("skills") && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
-                        <Wand2 size={10} />
-                        Repaired
-                      </span>
-                    )}
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {previewResume.skills.slice(0, 4).map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                    {previewResume.skills.length > 4 && (
-                      <span className="rounded-full border border-[#123c3a]/15 bg-white px-3 py-1 text-[11px] font-bold text-[#4b4b4b]">
-                        +{previewResume.skills.length - 4} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-              {previewResume.licenses.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Licenses ({previewResume.licenses.length})
-                  </h3>
-                  <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
-                    {previewResume.licenses.map((license) => (
-                      <li key={license.id} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
-                        <span>
-                          <span className="block font-bold">{license.name}</span>
-                          {[license.issuingAuthority, license.licenseNumber && `License Number: ${license.licenseNumber}`]
-                            .filter(Boolean).length > 0 && (
-                            <span className="block text-xs text-[#4b4b4b]">
-                              {[license.issuingAuthority, license.licenseNumber && `License Number: ${license.licenseNumber}`]
+                              {[edu.school, edu.graduation]
                                 .filter(Boolean)
                                 .join(" | ")}
-                            </span>
-                          )}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {previewResume.certifications &&
-                previewResume.certifications.length > 0 && (
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {previewResume.skills.length > 0 && (
                   <div className="mt-5">
                     <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                      Certifications
-                      {result.aiRecoveredSections?.includes(
-                        "certifications",
-                      ) && (
+                      Skills ({previewResume.skills.length})
+                      {result.aiRecoveredSections?.includes("skills") && (
                         <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
                           <Wand2 size={10} />
                           Repaired
                         </span>
                       )}
                     </h3>
+
+                    {/* Display categorized skills if recovered */}
+                    {result.recoveredSkillCategories &&
+                    result.recoveredSkillCategories.length > 0 ? (
+                      <div className="mt-3 space-y-3">
+                        {result.recoveredSkillCategories.map((category) => (
+                          <div key={category.category}>
+                            <p className="text-xs font-bold text-[#4b4b4b]">
+                              {category.category} ({category.items.length})
+                            </p>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {category.items.slice(0, 3).map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                              {category.items.length > 3 && (
+                                <span className="rounded-full border border-[#123c3a]/15 bg-white px-3 py-1 text-[11px] font-bold text-[#4b4b4b]">
+                                  +{category.items.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Fallback to flat skill list */
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {previewResume.skills.slice(0, 4).map((skill) => (
+                          <span
+                            key={skill}
+                            className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {previewResume.skills.length > 4 && (
+                          <span className="rounded-full border border-[#123c3a]/15 bg-white px-3 py-1 text-[11px] font-bold text-[#4b4b4b]">
+                            +{previewResume.skills.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {previewResume.licenses.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                      Licenses ({previewResume.licenses.length})
+                    </h3>
                     <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
-                      {previewResume.certifications.map((cert, i) => (
-                        <li key={i} className="flex items-start gap-2">
+                      {previewResume.licenses.map((license) => (
+                        <li key={license.id} className="flex items-start gap-2">
                           <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
-                          {cert}
+                          <span>
+                            <span className="block font-bold">
+                              {license.name}
+                            </span>
+                            {[
+                              license.issuingAuthority,
+                              license.licenseNumber &&
+                                `License Number: ${license.licenseNumber}`,
+                            ].filter(Boolean).length > 0 && (
+                              <span className="block text-xs text-[#4b4b4b]">
+                                {[
+                                  license.issuingAuthority,
+                                  license.licenseNumber &&
+                                    `License Number: ${license.licenseNumber}`,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" | ")}
+                              </span>
+                            )}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
+                {previewResume.certifications &&
+                  previewResume.certifications.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        Certifications
+                        {result.aiRecoveredSections?.includes(
+                          "certifications",
+                        ) && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+                            <Wand2 size={10} />
+                            Repaired
+                          </span>
+                        )}
+                      </h3>
+                      <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
+                        {previewResume.certifications.map((cert, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+                            {cert}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-              {previewResume.professionalQualities.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Professional Qualities ({previewResume.professionalQualities.length})
-                    {result.aiRecoveredSections?.includes(
-                      "professionalQualities",
-                    ) && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
-                        <Wand2 size={10} />
-                        Repaired
-                      </span>
-                    )}
-                  </h3>
-                  <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
-                    {previewResume.professionalQualities.map((quality, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
-                        {quality}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {previewResume.achievements &&
-                previewResume.achievements.length > 0 && (
+                {previewResume.professionalQualities.length > 0 && (
                   <div className="mt-5">
                     <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                      Achievements
+                      Professional Qualities (
+                      {previewResume.professionalQualities.length})
                       {result.aiRecoveredSections?.includes(
                         "professionalQualities",
                       ) && (
@@ -583,125 +614,167 @@ export default function ImportPage() {
                       )}
                     </h3>
                     <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
-                      {previewResume.achievements.map((qual, i) => (
+                      {previewResume.professionalQualities.map((quality, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
-                          {qual}
+                          {quality}
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-
-              {previewResume.volunteer.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Volunteer Experience ({previewResume.volunteer.length})
-                  </h3>
-                  <div className="mt-2 space-y-2">
-                    {previewResume.volunteer.map((item) => (
-                      <div key={item.id} className="text-sm">
-                        <p className="font-bold">{item.role}</p>
-                        <p className="text-xs font-medium text-[#4b4b4b]">
-                          {[item.company, [item.start, item.end].filter(Boolean).join(" - ")].filter(Boolean).join(" | ")}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {previewResume.languages.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Languages ({previewResume.languages.length})
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {previewResume.languages.map((language) => (
-                      <span key={language} className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]">
-                        {language}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {previewResume.projects && previewResume.projects.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    Projects ({previewResume.projects.length})
-                  </h3>
-                  <div className="mt-2 space-y-3">
-                    {previewResume.projects.map((proj) => (
-                      <div key={proj.id}>
-                        <p className="text-sm font-bold">{proj.name}</p>
-                        {proj.bullets.length > 0 && (
-                          <ul className="mt-1 list-disc pl-4 text-xs font-medium leading-6 text-[#33343b]">
-                            {proj.bullets.map((b, i) => (
-                              <li key={i}>{b}</li>
-                            ))}
-                          </ul>
+                {previewResume.achievements &&
+                  previewResume.achievements.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        Achievements
+                        {result.aiRecoveredSections?.includes(
+                          "professionalQualities",
+                        ) && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+                            <Wand2 size={10} />
+                            Repaired
+                          </span>
                         )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      </h3>
+                      <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
+                        {previewResume.achievements.map((qual, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+                            {qual}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-              {previewResume.references && previewResume.references.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                    References ({previewResume.references.length})
-                  </h3>
-                  <div className="mt-2 space-y-2">
-                    {previewResume.references.map((ref) => (
-                      <div key={ref.id} className="text-sm">
-                        <p className="font-bold">{ref.name}</p>
-                        {[ref.title, ref.company].filter(Boolean).length > 0 && (
+                {previewResume.volunteer.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                      Volunteer Experience ({previewResume.volunteer.length})
+                    </h3>
+                    <div className="mt-2 space-y-2">
+                      {previewResume.volunteer.map((item) => (
+                        <div key={item.id} className="text-sm">
+                          <p className="font-bold">{item.role}</p>
                           <p className="text-xs font-medium text-[#4b4b4b]">
-                            {[ref.title, ref.company].filter(Boolean).join(", ")}
+                            {[
+                              item.company,
+                              [item.start, item.end]
+                                .filter(Boolean)
+                                .join(" - "),
+                            ]
+                              .filter(Boolean)
+                              .join(" | ")}
                           </p>
-                        )}
-                        {[ref.phone, ref.email].filter(Boolean).length > 0 && (
-                          <p className="text-xs text-[#777]">
-                            {[ref.phone, ref.email].filter(Boolean).join(" · ")}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={handleReset}
-                className="text-xs font-black uppercase tracking-[0.12em] text-[#999] transition hover:text-[#123c3a]"
-              >
-                Start over
-              </button>
-              <button
-                type="button"
-                onClick={handleCreateDraft}
-                disabled={state === "saving"}
-                className={primaryButtonClass + " disabled:opacity-40"}
-              >
-                {state === "saving" ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    Creating your draft...
-                  </>
-                ) : (
-                  <>
-                    Create polished draft <ArrowRight size={18} />
-                  </>
                 )}
-              </button>
+
+                {previewResume.languages.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                      Languages ({previewResume.languages.length})
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {previewResume.languages.map((language) => (
+                        <span
+                          key={language}
+                          className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
+                        >
+                          {language}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {previewResume.projects &&
+                  previewResume.projects.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        Projects ({previewResume.projects.length})
+                      </h3>
+                      <div className="mt-2 space-y-3">
+                        {previewResume.projects.map((proj) => (
+                          <div key={proj.id}>
+                            <p className="text-sm font-bold">{proj.name}</p>
+                            {proj.bullets.length > 0 && (
+                              <ul className="mt-1 list-disc pl-4 text-xs font-medium leading-6 text-[#33343b]">
+                                {proj.bullets.map((b, i) => (
+                                  <li key={i}>{b}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {previewResume.references &&
+                  previewResume.references.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                        References ({previewResume.references.length})
+                      </h3>
+                      <div className="mt-2 space-y-2">
+                        {previewResume.references.map((ref) => (
+                          <div key={ref.id} className="text-sm">
+                            <p className="font-bold">{ref.name}</p>
+                            {[ref.title, ref.company].filter(Boolean).length >
+                              0 && (
+                              <p className="text-xs font-medium text-[#4b4b4b]">
+                                {[ref.title, ref.company]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </p>
+                            )}
+                            {[ref.phone, ref.email].filter(Boolean).length >
+                              0 && (
+                              <p className="text-xs text-[#777]">
+                                {[ref.phone, ref.email]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="text-xs font-black uppercase tracking-[0.12em] text-[#999] transition hover:text-[#123c3a]"
+                >
+                  Start over
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateDraft}
+                  disabled={state === "saving"}
+                  className={primaryButtonClass + " disabled:opacity-40"}
+                >
+                  {state === "saving" ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Creating your draft...
+                    </>
+                  ) : (
+                    <>
+                      Create polished draft <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* State: error (no result) */}
         {state === "error" && !result && (

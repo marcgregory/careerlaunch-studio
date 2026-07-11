@@ -94,7 +94,13 @@ export type MergedResult = {
 /*  Constants                                                         */
 /* ------------------------------------------------------------------ */
 
-const CRITICAL_SECTIONS = new Set(["experience", "education", "projects", "certifications", "professionalQualities"]);
+const CRITICAL_SECTIONS = new Set([
+  "experience",
+  "education",
+  "projects",
+  "certifications",
+  "professionalQualities",
+]);
 const COVERAGE_THRESHOLD = 0.8; // 80% — sections below this trigger recovery
 
 const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
@@ -118,59 +124,80 @@ const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
  * (the file-based prompt loader does not work in production Next.js bundles).
  */
 const RECOVERY_SYSTEM_PROMPT = [
-  "You are a resume reconstruction expert. Your task is to recover missing information from a resume that was only partially parsed by an automated system.",
+  "You are a resume reconstruction expert. Your task is to recover missing or fragmented information from a resume that was only partially parsed by an automated system.",
   "",
   "You will receive:",
-  "1. The **original resume text** — the full text the user pasted",
-  "2. The **parser output** — what the automated parser extracted (may be incomplete)",
+  "1. The **original resume text** — the full text the user pasted (may contain OCR artifacts or line breaks)",
+  "2. The **parser output** — what the automated parser extracted (may be incomplete, truncated, or fragmented)",
   "3. A list of **low-coverage sections** — sections where the parser preserved less than 80% of the content",
   "",
-  "For EACH low-coverage section, carefully read the original resume text and extract ALL available information. Be thorough — the original text contains the information even if the parser missed or fragmented it.",
+  "For EACH low-coverage section, carefully read the original resume text and extract ALL available information.",
+  "Be thorough and complete — recover fragmented entries, merge wrapped lines, and extract full text even when split across multiple lines.",
   "",
   "## Critical Rules",
   "- Return ONLY information that is explicitly present in the original text",
   "- Do NOT invent, infer, or rewrite content",
   "- Preserve the exact wording from the original text",
+  "- When extracting bullet points: if a bullet appears to end mid-sentence or with a preposition (through, with, by, etc.),",
+  "  look for continuation text on the next line and merge them into a complete sentence.",
   "",
-  "## Anti-Hallucination Rules — You MUST Follow These Strictly",
-  "- NEVER invent metrics, percentages, or numbers that are not in the original text",
+  "## Anti-Hallucination Rules — STRICTLY ENFORCED",
+  "- NEVER invent metrics, percentages, or numbers not in the original text",
   "- NEVER invent job titles, companies, or employment periods not in the original text",
   "- NEVER invent certification names or credential details not in the original text",
   "- NEVER invent project names or descriptions not in the original text",
-  "- NEVER invent dates, years, or timeframes that are not explicitly present",
-  "- If you are uncertain about any detail, omit it rather than guessing",
-  "- It is BETTER to return an empty array for a section than to include fabricated content",
-  "- If a section is truly absent from the resume (not just poorly parsed), return an empty result for that key",
-  "- Maintain the original order of entries within each section",
-  "- For experience: every entry must have role, company, start date, end date, and bullet points",
-  "- For education: every entry must have school, degree, and graduation year",
-  "- For projects: every entry must have at least a project name (bullets are optional)",
-  "- For skills: organize by category (Frontend, Backend, Cloud & Tools, etc.)",
-  "  with each category having a list of individual skill items.",
-  "- For certifications: list each certification as a separate string item.",
-  "- For professionalQualities: list each quality/trait as a separate string item.",
+  "- NEVER invent dates, years, or timeframes not explicitly present",
+  "- If uncertain about any detail, omit it rather than guessing",
+  "- It is BETTER to return an empty array than to include fabricated content",
+  "- If a section is truly absent from the resume, return an empty result for that key (omit the key entirely)",
   "",
-  "Return ONLY valid JSON in the following format — no markdown, no code fences, no additional text:",
+  "## Section-Specific Instructions",
+  "",
+  "### Experience Bullets",
+  "- Each bullet is a complete accomplishment or responsibility statement",
+  "- If a bullet appears truncated (ends with 'through', 'with', 'by', 'for', etc.), merge with the next line to complete it",
+  "- Clean up artifacts (extra spaces, line breaks within sentences)",
+  "- Maintain the original order",
+  "",
+  "### Skills",
+  "- Extract ALL skill categories present in the original text (Frontend, Backend, Cloud/Infrastructure, DevOps, etc.)",
+  "- Do NOT merge or combine categories — preserve each distinct category as written",
+  "- Within each category, list individual skill items separated cleanly (no parentheses artifacts like 'AWS (EC2')",
+  "- Example: { category: 'Cloud / Infrastructure', items: ['AWS (EC2, S3, Lambda)', 'Docker', 'Kubernetes'] }",
+  "- Fix fragmented skills: if you see 'AWS (EC2', 'S3', 'Lambda)' as separate items, merge into 'AWS (EC2, S3, Lambda)'",
+  "",
+  "### Certifications & Professional Qualities",
+  "- Extract each as a separate, clean string item",
+  "- No empty arrays — omit the key entirely if section has no data",
+  "",
+  "### Entry Requirements",
+  "- For experience: role, company, start date, end date, and at least one bullet point",
+  "- For education: school, degree, and graduation year",
+  "- For projects: project name (bullets optional)",
+  "",
+  "Return ONLY valid JSON in this format — no markdown, no code fences, no additional text:",
   "{",
   '  "experience": [',
-  '    { "role": "Job Title", "company": "Company Name", "start": "Month Year", "end": "Month Year or Present", "bullets": ["Accomplishment bullet point"] }',
+  '    { "role": "Job Title", "company": "Company Name", "start": "Month Year", "end": "Month Year or Present", "bullets": ["Complete accomplishment statement"] }',
   "  ],",
   '  "education": [',
   '    { "school": "University Name", "degree": "Full Degree Name", "graduation": "Year" }',
   "  ],",
   '  "skills": [',
-  '    { "category": "Frontend", "items": ["React", "TypeScript"] },',
-  '    { "category": "Backend", "items": ["Node.js", "PostgreSQL"] }',
+  '    { "category": "Frontend", "items": ["React", "TypeScript", "Next.js"] },',
+  '    { "category": "Backend", "items": ["Node.js", "PostgreSQL"] },',
+  '    { "category": "Cloud / Infrastructure", "items": ["AWS (EC2, S3, Lambda)", "Docker"] }',
   "  ],",
   '  "projects": [',
-  '    { "name": "Project Name", "bullets": ["Detail about the project"] }',
+  '    { "name": "Project Name", "bullets": ["Complete project description or detail"] }',
   "  ],",
-  '  "summary": "Full summary text as written in the original resume",',
+  '  "summary": "Full professional summary text",',
   '  "certifications": ["Certification Name 1", "Certification Name 2"],',
   '  "professionalQualities": ["Quality 1", "Quality 2"]',
   "}",
   "",
-  "Omit any section key that you could not recover. For empty sections, omit the key entirely — do not include empty arrays.",
+  "IMPORTANT: Omit any section key that you could not recover or that is empty.",
+  "Do NOT include empty arrays — only include keys with actual data.",
 ].join("\n");
 
 /**
@@ -192,32 +219,38 @@ function buildRecoveryPrompt(
     .join("\n");
 
   // Truncate original text if needed (keep within reasonable token limits)
-  const truncatedText = originalText.length > 12000
-    ? originalText.slice(0, 12000) + "\n\n[...truncated at 12000 chars for token limits]"
-    : originalText;
+  const truncatedText =
+    originalText.length > 12000
+      ? originalText.slice(0, 12000) +
+        "\n\n[...truncated at 12000 chars for token limits]"
+      : originalText;
 
   // Build a compact summary of parser output for the prompt
   const parserSummary = JSON.stringify(
     {
       contact: parserOutput.parsed.contact,
-      summary:
-        parserOutput.parsed.summary
-          ? parserOutput.parsed.summary.slice(0, 500)
-          : null,
+      summary: parserOutput.parsed.summary
+        ? parserOutput.parsed.summary.slice(0, 500)
+        : null,
       experienceCount: parserOutput.parsed.experience?.length ?? 0,
-      experiencePreview: (parserOutput.parsed.experience ?? []).map((e: { role: string; company: string; bullets: string[] }) => ({
-        role: e.role,
-        company: e.company,
-        bullets: e.bullets.length,
-      })),
+      experiencePreview: (parserOutput.parsed.experience ?? []).map(
+        (e: { role: string; company: string; bullets: string[] }) => ({
+          role: e.role,
+          company: e.company,
+          bullets: e.bullets.length,
+        }),
+      ),
       educationCount: parserOutput.parsed.education?.length ?? 0,
-      educationPreview: (parserOutput.parsed.education ?? []).map((e: { degree: string; school: string }) => ({
-        degree: e.degree,
-        school: e.school,
-      })),
+      educationPreview: (parserOutput.parsed.education ?? []).map(
+        (e: { degree: string; school: string }) => ({
+          degree: e.degree,
+          school: e.school,
+        }),
+      ),
       skillsCount: parserOutput.parsed.skills?.length ?? 0,
       certificationsCount: parserOutput.parsed.certifications?.length ?? 0,
-      professionalQualitiesCount: parserOutput.parsed.professionalQualities?.length ?? 0,
+      professionalQualitiesCount:
+        parserOutput.parsed.professionalQualities?.length ?? 0,
       projectsCount: parserOutput.parsed.projects?.length ?? 0,
     },
     null,
@@ -307,20 +340,20 @@ function parseRecoveryResponse(raw: unknown): RecoveryResult {
         ((e as Record<string, unknown>).role as string).trim().length > 0,
     );
     if (valid.length > 0) {
-      result.experience = valid.map(
-        (e: unknown) => {
-          const entry = e as Record<string, unknown>;
-          return {
-            role: String(entry.role ?? "").trim(),
-            company: String(entry.company ?? "").trim(),
-            start: String(entry.start ?? "").trim(),
-            end: String(entry.end ?? "").trim(),
-            bullets: Array.isArray(entry.bullets)
-              ? entry.bullets.map((b: unknown) => String(b).trim()).filter(Boolean)
-              : [],
-          };
-        },
-      );
+      result.experience = valid.map((e: unknown) => {
+        const entry = e as Record<string, unknown>;
+        return {
+          role: String(entry.role ?? "").trim(),
+          company: String(entry.company ?? "").trim(),
+          start: String(entry.start ?? "").trim(),
+          end: String(entry.end ?? "").trim(),
+          bullets: Array.isArray(entry.bullets)
+            ? entry.bullets
+                .map((b: unknown) => String(b).trim())
+                .filter(Boolean)
+            : [],
+        };
+      });
     }
   }
 
@@ -361,7 +394,9 @@ function parseRecoveryResponse(raw: unknown): RecoveryResult {
         return {
           name: String(entry.name ?? "").trim(),
           bullets: Array.isArray(entry.bullets)
-            ? entry.bullets.map((b: unknown) => String(b).trim()).filter(Boolean)
+            ? entry.bullets
+                .map((b: unknown) => String(b).trim())
+                .filter(Boolean)
             : [],
         };
       });
@@ -369,10 +404,7 @@ function parseRecoveryResponse(raw: unknown): RecoveryResult {
   }
 
   // Validate summary (string)
-  if (
-    typeof data.summary === "string" &&
-    data.summary.trim().length > 0
-  ) {
+  if (typeof data.summary === "string" && data.summary.trim().length > 0) {
     result.summary = data.summary.trim();
   }
 
@@ -515,7 +547,11 @@ export function mergeRecovery(
   }
 
   // ── Experience ──
-  if (recovered.experience && recovered.experience.length > 0 && needsRecovery("experience", parsed.coverage)) {
+  if (
+    recovered.experience &&
+    recovered.experience.length > 0 &&
+    needsRecovery("experience", parsed.coverage)
+  ) {
     base.experience = recovered.experience.map((e, i) => ({
       id: `import-exp-recovered-${i + 1}`,
       role: e.role,
@@ -529,7 +565,11 @@ export function mergeRecovery(
   }
 
   // ── Education ──
-  if (recovered.education && recovered.education.length > 0 && needsRecovery("education", parsed.coverage)) {
+  if (
+    recovered.education &&
+    recovered.education.length > 0 &&
+    needsRecovery("education", parsed.coverage)
+  ) {
     base.education = recovered.education.map((e, i) => ({
       id: `import-edu-recovered-${i + 1}`,
       school: e.school,
@@ -543,7 +583,11 @@ export function mergeRecovery(
   }
 
   // ── Projects ──
-  if (recovered.projects && recovered.projects.length > 0 && needsRecovery("projects", parsed.coverage)) {
+  if (
+    recovered.projects &&
+    recovered.projects.length > 0 &&
+    needsRecovery("projects", parsed.coverage)
+  ) {
     if (base.projects.length === 0) {
       base.projects = recovered.projects.map((p, i) => ({
         id: `import-proj-recovered-${i + 1}`,
@@ -627,7 +671,9 @@ export function mergeRecovery(
  * Check if any critical section in the coverage data is below the
  * recovery threshold.
  */
-export function needsAICoverageRecovery(coverage: SectionCoverageItem[]): boolean {
+export function needsAICoverageRecovery(
+  coverage: SectionCoverageItem[],
+): boolean {
   return coverage.some(
     (c) => CRITICAL_SECTIONS.has(c.sectionId) && c.ratio < COVERAGE_THRESHOLD,
   );
