@@ -37,7 +37,7 @@ export default function ImportPage() {
   // Track whether the user reached preview/saving then navigated away without creating a draft
   const reachedPreviewWithoutDraft = useRef(false);
 
-  // ── Funnel: detect import_abandoned ──
+  // â”€â”€ Funnel: detect import_abandoned â”€â”€
   // Fires when a user reaches preview but navigates away without creating a draft.
   useEffect(() => {
     function handleVisibilityChange() {
@@ -93,14 +93,14 @@ export default function ImportPage() {
     title: string;
     description: string;
   } {
-    // AI recovery successfully reconstructed sections — positive messaging
+    // AI recovery successfully reconstructed sections â€” positive messaging
     if (aiRecovered && recoveredSections && recoveredSections.length > 0) {
       return {
         icon: CheckCircle2,
         border: "border-green-200",
         bg: "bg-green-50",
-        title: "Your resume imported successfully — we fixed a few things.",
-        description: `We automatically repaired ${recoveredSections.join(", ")}. Everything looks good — you can create a polished draft right away.`,
+        title: "Your resume imported successfully â€” we fixed a few things.",
+        description: `We automatically repaired ${recoveredSections.join(", ")}. Everything looks good â€” you can create a polished draft right away.`,
       };
     }
 
@@ -129,7 +129,7 @@ export default function ImportPage() {
           icon: AlertTriangle,
           border: "border-orange-200",
           bg: "bg-orange-50",
-          title: "Import had some trouble — don't worry.",
+          title: "Import had some trouble â€” don't worry.",
           description:
             "We saved what we could. You can create a draft and edit everything in the builder.",
         };
@@ -151,7 +151,7 @@ export default function ImportPage() {
     setState("parsing");
     setError("");
 
-    // ── Funnel: import_started (client-side) ──
+    // â”€â”€ Funnel: import_started (client-side) â”€â”€
     analytics.capture("import_started", {
       textLength: text.length,
       wordCount: text.trim().split(/\s+/).length,
@@ -173,7 +173,7 @@ export default function ImportPage() {
       const data: ParseResult = await res.json();
       setResult(data);
       setState("preview");
-      // Mark that the user reached preview — used by the abandonment detector
+      // Mark that the user reached preview â€” used by the abandonment detector
       reachedPreviewWithoutDraft.current = true;
       toast.success("Resume imported successfully.");
     } catch (e) {
@@ -219,7 +219,7 @@ export default function ImportPage() {
 
       const created = await res.json();
 
-      // ── Funnel: draft_created (from import) ──
+      // â”€â”€ Funnel: draft_created (from import) â”€â”€
       analytics.capture("draft_created", {
         source: "import",
         resumeId: created.resume.id,
@@ -239,7 +239,7 @@ export default function ImportPage() {
         },
       });
 
-      // Draft was created — clear abandonment tracking
+      // Draft was created â€” clear abandonment tracking
       reachedPreviewWithoutDraft.current = false;
 
       toast.success("Draft created. Redirecting to builder...");
@@ -351,7 +351,7 @@ export default function ImportPage() {
         {/* State: preview or saving */}
         {(state === "preview" || state === "saving") && result && (
           <div className="mt-8 space-y-6">
-            {/* Import quality banner — user-friendly messaging */}
+            {/* Import quality banner â€” user-friendly messaging */}
             {(() => {
               const banner = getQualityBanner(
                 result.importQuality,
@@ -373,7 +373,7 @@ export default function ImportPage() {
               );
             })()}
 
-            {/* Parsed preview — shows the resume content, not debug data */}
+            {/* Parsed preview â€” shows the resume content, not debug data */}
             <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
               <h2 className="font-signal text-2xl font-black tracking-[-0.04em]">
                 {result.parsed.contact?.fullName || "Unknown name"}
@@ -608,7 +608,7 @@ export default function ImportPage() {
                         )}
                         {[ref.phone, ref.email].filter(Boolean).length > 0 && (
                           <p className="text-xs text-[#777]">
-                            {[ref.phone, ref.email].filter(Boolean).join(" · ")}
+                            {[ref.phone, ref.email].filter(Boolean).join(" Â· ")}
                           </p>
                         )}
                       </div>
