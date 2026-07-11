@@ -1331,4 +1331,50 @@ describe("experience wrapped bullet reconstruction regressions", () => {
     );
     expect(bullets).toHaveLength(3);
   });
+
+  it("recognizes unicode bullet markers and keeps wrapped continuation text", () => {
+    const text = [
+      "Support Engineer",
+      "support@example.com",
+      "",
+      "Experience",
+      "IT Support Specialist",
+      "Acme Corp",
+      "2021 - Present",
+      "\u25cf Installed and maintained computer systems and secured company data through",
+      "network security measures.",
+      "\u25cf Managed IT procurement and deployment of equipment and software.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+    const bullets = result.parsed.experience?.[0]?.bullets || [];
+
+    expect(bullets).toEqual([
+      "Installed and maintained computer systems and secured company data through network security measures.",
+      "Managed IT procurement and deployment of equipment and software.",
+    ]);
+  });
+
+  it("folds short orphan continuation bullets back into the previous bullet", () => {
+    const text = [
+      "Support Engineer",
+      "support@example.com",
+      "",
+      "Experience",
+      "Software Developer",
+      "Example Co",
+      "2021 - Present",
+      "- Participated in daily stand-ups and feature estimation meetings to ensure project",
+      "- timelines were met.",
+      "- Produced release notes and implementation documentation.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+    const bullets = result.parsed.experience?.[0]?.bullets || [];
+
+    expect(bullets).toEqual([
+      "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+      "Produced release notes and implementation documentation.",
+    ]);
+  });
 });

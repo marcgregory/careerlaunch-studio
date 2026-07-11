@@ -22,18 +22,65 @@ import type { ParseResult, ImportQuality } from "@careerlaunch/ai/import";
 
 type ImportState = "idle" | "parsing" | "preview" | "saving" | "error";
 type PreviewBullet = { text: string; sourceIndex: number };
+type PreviewSkillGroup = { category: string; items: string[] };
 const EXPERIENCE_PREVIEW_BULLET_LIMIT = 3;
+const SKILL_PREVIEW_LIMIT = 3;
 const EMBEDDED_BULLET_MARKER_RE = /(?=\s*[\u2022\u25cf\u25aa\u25e6]\s+)/g;
 const LEADING_BULLET_MARKER_RE = /^[\u2022\u25cf\u25aa\u25e6*\-]\s*/;
 
+function isOrphanPreviewBullet(text: string, previous: string): boolean {
+  if (!previous) return false;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (wordCount > 5) return false;
+  if (/^(?:and|or|with|through|by|for|to|from|in|on|at|of)\b/i.test(text)) return true;
+  return /^[a-z]/.test(text) && /[.!?]$/.test(text);
+}
+
 function normalizeExperiencePreviewBullets(bullets: string[]): PreviewBullet[] {
-  return bullets.flatMap((bullet, sourceIndex) =>
-    bullet
+  const normalized: PreviewBullet[] = [];
+
+  bullets.forEach((bullet, sourceIndex) => {
+    const pieces = bullet
       .split(EMBEDDED_BULLET_MARKER_RE)
       .map((piece) => piece.replace(LEADING_BULLET_MARKER_RE, "").replace(/\s+/g, " ").trim())
-      .filter(Boolean)
-      .map((text) => ({ text, sourceIndex })),
-  );
+      .filter(Boolean);
+
+    pieces.forEach((text) => {
+      const lastIndex = normalized.length - 1;
+      if (lastIndex >= 0 && isOrphanPreviewBullet(text, normalized[lastIndex].text)) {
+        normalized[lastIndex] = {
+          ...normalized[lastIndex],
+          text: `${normalized[lastIndex].text} ${text}`,
+        };
+      } else {
+        normalized.push({ text, sourceIndex });
+      }
+    });
+  });
+
+  return normalized;
+}
+
+function groupPreviewSkills(skills: string[], recovered?: Array<{ category: string; items: string[] }>): PreviewSkillGroup[] {
+  if (recovered && recovered.length > 0) return recovered;
+
+  const groups = new Map<string, string[]>();
+  const uncategorized: string[] = [];
+  for (const skill of skills) {
+    const match = skill.match(/^([^:]{2,60}):\s*(.+)$/);
+    if (!match) {
+      uncategorized.push(skill);
+      continue;
+    }
+    const category = match[1].trim();
+    const item = match[2].trim();
+    if (!groups.has(category)) groups.set(category, []);
+    groups.get(category)!.push(item);
+  }
+
+  const result = [...groups.entries()].map(([category, items]) => ({ category, items }));
+  if (uncategorized.length > 0) result.push({ category: "Skills", items: uncategorized });
+  return result;
 }
 
 export default function ImportPage() {
@@ -512,51 +559,35 @@ export default function ImportPage() {
                       )}
                     </h3>
 
-                    {/* Display categorized skills if recovered */}
-                    {result.recoveredSkillCategories &&
-                    result.recoveredSkillCategories.length > 0 ? (
-                      <div className="mt-3 space-y-3">
-                        {result.recoveredSkillCategories.map((category) => (
+                    <div className="mt-3 space-y-3">
+                      {groupPreviewSkills(previewResume.skills, result.recoveredSkillCategories).map((category) => {
+                        const visible = category.items.slice(0, SKILL_PREVIEW_LIMIT);
+                        const hidden = Math.max(0, category.items.length - SKILL_PREVIEW_LIMIT);
+
+                        return (
                           <div key={category.category}>
                             <p className="text-xs font-bold text-[#4b4b4b]">
                               {category.category} ({category.items.length})
                             </p>
                             <div className="mt-1 flex flex-wrap gap-1.5">
-                              {category.items.slice(0, 3).map((skill) => (
+                              {visible.map((skill) => (
                                 <span
-                                  key={skill}
+                                  key={`${category.category}-${skill}`}
                                   className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
                                 >
                                   {skill}
                                 </span>
                               ))}
-                              {category.items.length > 3 && (
+                              {hidden > 0 && (
                                 <span className="rounded-full border border-[#123c3a]/15 bg-white px-3 py-1 text-[11px] font-bold text-[#4b4b4b]">
-                                  +{category.items.length - 3}
+                                  +{hidden} more
                                 </span>
                               )}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      /* Fallback to flat skill list */
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {previewResume.skills.slice(0, 4).map((skill) => (
-                          <span
-                            key={skill}
-                            className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {previewResume.skills.length > 4 && (
-                          <span className="rounded-full border border-[#123c3a]/15 bg-white px-3 py-1 text-[11px] font-bold text-[#4b4b4b]">
-                            +{previewResume.skills.length - 4} more
-                          </span>
-                        )}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 {previewResume.licenses.length > 0 && (
@@ -755,7 +786,7 @@ export default function ImportPage() {
                               <p className="text-xs text-[#777]">
                                 {[ref.phone, ref.email]
                                   .filter(Boolean)
-                                  .join(" · ")}
+                                  .join(" | ")}
                               </p>
                             )}
                           </div>

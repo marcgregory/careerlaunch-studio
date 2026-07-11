@@ -378,14 +378,14 @@ function extractContact(preambleLines: string[]): {
 const DATE_RANGE_RE =
   /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*(?:-+|–|—|to)\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
 const YEAR_RANGE_RE = /(\d{4})\s*(?:-+|–|—|to)\s*(\d{4}|present|current|now)/i;
-const BULLET_RE = /^(?:[•●▪◦*\-]|\d+[.)])\s*/;
+const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
 function expandInlineBulletLines(lines: string[]): string[] {
   const expanded: string[] = [];
-  const inlineBulletRe = /(?=[•●▪◦]\s*)/g;
+  const inlineBulletRe = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
 
   for (const line of lines) {
     const trimmed = line.trim();
-    const markerCount = (trimmed.match(/[•●▪◦]/g) || []).length;
+    const markerCount = (trimmed.match(/[\u2022\u25cf\u25aa\u25e6]/g) || []).length;
     if (markerCount > 1) {
       const pieces = trimmed
         .split(inlineBulletRe)
@@ -400,6 +400,37 @@ function expandInlineBulletLines(lines: string[]): string[] {
   return expanded;
 }
 
+function cleanBulletText(value: string): string {
+  return value.replace(BULLET_RE, "").replace(/\s+/g, " ").trim();
+}
+
+function isOrphanBulletContinuation(text: string, previous: string): boolean {
+  if (!previous) return false;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (wordCount > 5) return false;
+  if (/^(?:and|or|with|through|by|for|to|from|in|on|at|of)\b/i.test(text)) {
+    return true;
+  }
+  return /^[a-z]/.test(text) && /[.!?]$/.test(text);
+}
+
+function normalizeExperienceBullets(bullets: string[]): string[] {
+  const normalized: string[] = [];
+
+  for (const piece of expandInlineBulletLines(bullets)) {
+    const cleaned = cleanBulletText(piece);
+    if (!cleaned) continue;
+
+    const lastIndex = normalized.length - 1;
+    if (lastIndex >= 0 && isOrphanBulletContinuation(cleaned, normalized[lastIndex])) {
+      normalized[lastIndex] = `${normalized[lastIndex]} ${cleaned}`;
+    } else {
+      normalized.push(cleaned);
+    }
+  }
+
+  return normalized;
+}
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
   warnings: string[];
@@ -492,7 +523,7 @@ function parseExperience(lines: string[]): {
           if (isLikelyHeader(lines[i])) break;
 
           const hasMarker = BULLET_RE.test(bline);
-          const cleaned = bline.replace(BULLET_RE, "").trim();
+          const cleaned = cleanBulletText(bline);
           if (!cleaned) {
             i++;
             continue;
@@ -561,7 +592,7 @@ function parseExperience(lines: string[]): {
           location: "",
           start: normalizeDate(start),
           end: normalizeDate(end),
-          bullets,
+          bullets: normalizeExperienceBullets(bullets),
         });
         continue;
       }
@@ -619,7 +650,7 @@ function parseExperience(lines: string[]): {
         if (isLikelyHeader(lines[i])) {
           break;
         }
-        const cleaned = bline.replace(BULLET_RE, "").trim();
+        const cleaned = cleanBulletText(bline);
         if (!cleaned) {
           i++;
           continue;
@@ -686,7 +717,7 @@ function parseExperience(lines: string[]): {
         location: "",
         start: normalizeDate(start),
         end: normalizeDate(end),
-        bullets,
+        bullets: normalizeExperienceBullets(bullets),
       });
     } else {
       i++;
