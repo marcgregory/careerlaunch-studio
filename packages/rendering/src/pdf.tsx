@@ -17,7 +17,7 @@ export type PdfOptions = {
 /**
  * Render a resume to a PDF buffer using an in-process Playwright browser.
  *
- * For local development â€” on Vercel you should set `PDF_RENDERER_URL`
+ * For local development — on Vercel you should set `PDF_RENDERER_URL`
  * and use `resumeToHtml()` + external renderer instead.
  */
 export async function renderResumePdf(
@@ -146,7 +146,7 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
 
     // Premium two-column layout: each column is a flex column with skill groups.
     // Within each group, skills are rendered as dot-separated inline text
-    // instead of bulky pills â€” cleaner and more compact.
+    // instead of bulky pills — cleaner and more compact.
     const rendered = totalGroups <= 2
       ? // 1-2 groups: side by side in a two-column grid
         `<div class="pdf-skills-grid">${groups.map((g) => `
@@ -175,12 +175,10 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
     </section>`;
   }
 
-  if (section === "professionalQualities" && resume.professionalQualities.filter(Boolean).length > 0) {
-    const quals = resume.professionalQualities.filter(Boolean).map((q) => `<li>${escapeHtml(q)}</li>`).join("");
-    return `<section>
-      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Achievements</h2></div>
-      <ul class="pdf-qualities-list">${quals}</ul>
-    </section>`;
+  if (section === "professionalQualities") {
+    const achievements = resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities;
+    const rendered = renderPdfStringList("Achievements", achievements);
+    if (rendered) return rendered;
   }
 
   if (section === 'licenses' && resume.licenses.filter((item) => item.name.trim()).length > 0) {
@@ -256,7 +254,7 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
       <div class="pdf-ref-item">
         <strong>${escapeHtml(item.name)}</strong>
         ${[item.title, item.company].filter(Boolean).length > 0 ? `<div class="pdf-muted">${[item.title, item.company].filter(Boolean).map(escapeHtml).join(", ")}</div>` : ""}
-        ${[item.phone, item.email].filter(Boolean).length > 0 ? `<div class="pdf-ref-contact">${[item.phone, item.email].filter(Boolean).map(escapeHtml).join(" Â· ")}</div>` : ""}
+        ${[item.phone, item.email].filter(Boolean).length > 0 ? `<div class="pdf-ref-contact">${[item.phone, item.email].filter(Boolean).map(escapeHtml).join(" · ")}</div>` : ""}
         ${item.relationship ? `<div class="pdf-ref-rel">${escapeHtml(item.relationship)}</div>` : ""}
       </div>`).join("\n");
 
@@ -366,7 +364,7 @@ function pdfCss(t: TemplateDefinition): string {
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
-    /* Premium dot-separated inline skills â€” clean and compact */
+    /* Premium dot-separated inline skills — clean and compact */
     .pdf-skill-items {
       margin: 0;
       color: #33343b;
@@ -375,7 +373,7 @@ function pdfCss(t: TemplateDefinition): string {
       line-height: 1.7;
     }
     .pdf-skill-items span + span::before {
-      content: " â€¢ ";
+      content: " • ";
       color: ${markerC};
       font-weight: 700;
     }
@@ -400,7 +398,7 @@ function pdfCss(t: TemplateDefinition): string {
     .pdf-skills-stack .pdf-skill-group + .pdf-skill-group {
       margin-top: 12px;
     }
-    /* Certification list â€” cleaner than comma-concatenated text */
+    /* Certification list — cleaner than comma-concatenated text */
     .pdf-cert-list {
       margin: 8px 0 0; padding: 0;
       list-style: none;
@@ -414,7 +412,7 @@ function pdfCss(t: TemplateDefinition): string {
       line-height: 1.55;
     }
     .pdf-cert-list li::before {
-      content: "â–¸";
+      content: "▸";
       position: absolute;
       left: 0;
       color: ${markerC};
@@ -425,7 +423,7 @@ function pdfCss(t: TemplateDefinition): string {
     .pdf-ref-item strong { display: block; color: ${nameColor}; font-weight: ${t.nameStyle === "plain" ? "700" : "900"}; }
     .pdf-ref-contact { color: #555555; font-size: 11px; margin-top: 1px; }
     .pdf-ref-rel { color: #777777; font-size: 11px; font-style: italic; margin-top: 1px; }
-    /* Professional qualities â€” designed bullet list */
+    /* Professional qualities — designed bullet list */
     .pdf-qualities-list {
       margin: 8px 0 0; padding: 0;
       list-style: none;
@@ -440,7 +438,7 @@ function pdfCss(t: TemplateDefinition): string {
       line-height: 1.55;
     }
     .pdf-qualities-list li + li::before {
-      content: "â€”";
+      content: "—";
       margin-right: 18px;
       color: ${markerC};
       font-weight: 700;

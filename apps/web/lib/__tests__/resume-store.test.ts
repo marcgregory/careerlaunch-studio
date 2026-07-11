@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultSectionOrder } from "@careerlaunch/domain";
-import { fromStoredResume, parseResumePayload } from "../resume-store";
+import { fromStoredResume, normalizeResume, parseResumePayload, toStoredResume } from "../resume-store";
 
 describe("resume-store section order normalization", () => {
   it("deduplicates repeated sections so Projects renders once", () => {
@@ -70,5 +70,47 @@ describe("resume-store section order normalization", () => {
     expect(resume.sectionOrder.filter((section) => section === "projects")).toHaveLength(1);
     expect(resume.sectionOrder[0]).toBe("projects");
     expect(resume.sectionOrder[1]).toBe("references");
+  });
+});
+describe("resume-store canonical import normalization", () => {
+  it("repairs stored mojibake once and stores achievements as separate items", () => {
+    const badEmDash = "\u00e2\u20ac\u201d";
+    const badMiddleDot = "\u00c2\u00b7";
+
+    const resume = normalizeResume({
+      id: "nurse-import",
+      title: "Nurse Import",
+      targetRole: "Registered Nurse",
+      templateId: "modern",
+      contact: { fullName: "Taylor Nurse", email: "taylor@example.com", phone: "555-0100", location: "Austin, TX", website: "", linkedin: "", github: "" },
+      summary: `Patient safety ${badEmDash} clinical quality`,
+      achievements: [`Nurse of the Year (2023)${badEmDash}Patient Safety Excellence Award (2022)${badEmDash}Clinical Leadership Recognition (2021)`],
+      skills: Array.from({ length: 16 }, (_, index) => `Skill ${index + 1}`),
+      references: [
+        {
+          id: "ref-1",
+          name: "Michael Lewis, RN",
+          title: "Nurse Manager",
+          company: "St. Mary's Medical Center",
+          phone: `+1 (555) 440-1987 ${badMiddleDot} direct`,
+          email: "mlewis@stmarys.org",
+          relationship: "",
+        },
+      ],
+    });
+
+    expect(resume.achievements).toEqual([
+      "Nurse of the Year (2023)",
+      "Patient Safety Excellence Award (2022)",
+      "Clinical Leadership Recognition (2021)",
+    ]);
+    expect(resume.skills).toHaveLength(16);
+    expect(resume.references[0]?.phone).toContain("\u00b7");
+
+    const serialized = JSON.stringify(toStoredResume(resume));
+    expect(serialized).toContain("\u2014");
+    expect(serialized).toContain("\u00b7");
+    expect(serialized).not.toContain(badEmDash);
+    expect(serialized).not.toContain(badMiddleDot);
   });
 });

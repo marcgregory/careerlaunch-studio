@@ -7,6 +7,12 @@ import { captureServerEvent } from "../../../../lib/server-analytics";
 
 const MAX_IMPORT_SIZE = 50 * 1024; // 50 KB
 
+function jsonUtf8(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  return new Response(JSON.stringify(body), { ...init, headers });
+}
+
 type ProviderEntry = {
   name: "gemini" | "groq";
   apiKey: string;
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
   // Rate limit: 5 imports per hour per user
   const rl = checkRateLimit(`import:${user.id}`, 5, 60 * 60 * 1000);
   if (!rl.allowed) {
-    return Response.json(
+    return jsonUtf8(
       { error: "Rate limit exceeded. Try again later." },
       {
         status: 429,
@@ -44,31 +50,31 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as { text?: string };
   } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonUtf8({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   if (!body.text || typeof body.text !== "string") {
-    return Response.json(
+    return jsonUtf8(
       { error: "text field is required and must be a string" },
       { status: 400 },
     );
   }
 
   if (body.text.length > MAX_IMPORT_SIZE) {
-    return Response.json(
+    return jsonUtf8(
       { error: "Text exceeds maximum size of 50 KB" },
       { status: 413 },
     );
   }
 
   if (body.text.trim().length === 0) {
-    return Response.json(
+    return jsonUtf8(
       { error: "Text cannot be empty" },
       { status: 400 },
     );
   }
 
-  // ── Funnel: import_started ──
+  // -- Funnel: import_started --
   captureServerEvent("import_started", user.id, {
     textLength: body.text.length,
     lineCount: body.text.split("\n").length,
@@ -78,7 +84,7 @@ export async function POST(request: Request) {
   try {
     result = parseResumeText(body.text);
 
-    // ── AI Recovery Pass ─────────────────────────────────────────────
+    // -- AI Recovery Pass ---------------------------------------------
     // If critical sections have low coverage, attempt AI reconstruction
     // using the original resume text. This runs automatically so users
     // rarely need to manually fix low-quality imports.
@@ -173,7 +179,7 @@ export async function POST(request: Request) {
         aiRecovery.failedProviders = failedProviders;
 
         if (recovery && usedProvider) {
-          // ── Recovery succeeded ──
+          // -- Recovery succeeded --
           aiRecovery.status = usedProvider === aiRecovery.primaryProvider ? "succeeded" : "fallback";
           aiRecovery.usedProvider = usedProvider;
           if (aiRecovery.status === "fallback") {
@@ -213,7 +219,7 @@ export async function POST(request: Request) {
             preRecoveryData,
           };
         } else {
-          // ── All providers failed ──
+          // -- All providers failed --
           aiRecovery.status = "failed";
           aiRecovery.usedProvider = null;
           aiRecovery.reason = `All AI providers failed: ${failedProviders.join(", ")}`;
@@ -234,7 +240,7 @@ export async function POST(request: Request) {
       result = { ...result, aiRecovery };
     }
 
-    // ── Funnel: import_completed with coverage deltas and layout info ──
+    // -- Funnel: import_completed with coverage deltas and layout info --
     const sectionCounts: Record<string, number> = {
       experience: result.parsed.experience?.length ?? 0,
       education: result.parsed.education?.length ?? 0,
@@ -269,19 +275,19 @@ export async function POST(request: Request) {
   } catch (error) {
     reportError(error, getRequestId(request), { route: "import-text" });
 
-    // ── Funnel: import_completed (error) ──
+    // -- Funnel: import_completed (error) --
     captureServerEvent("import_completed", user.id, {
       error: error instanceof Error ? error.message : "Import failed",
       importQuality: "failed" as const,
     });
 
-    return Response.json(
+    return jsonUtf8(
       { error: error instanceof Error ? error.message : "Import parsing failed" },
       { status: 500 },
     );
   }
 
-  return Response.json(result, { status: 200 });
+  return jsonUtf8(result, { status: 200 });
 }
 
 /**

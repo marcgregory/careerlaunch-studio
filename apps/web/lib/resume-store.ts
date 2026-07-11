@@ -57,20 +57,20 @@ export function parseResumePayload(value: unknown): ResumeDocument {
   return normalizeResume(resume);
 }
 
-function normalizeResume(value: Partial<ResumeDocument>): ResumeDocument {
+export function normalizeResume(value: Partial<ResumeDocument>): ResumeDocument {
   const starter = sampleResume;
-  const achievements = normalizeStringList(value.achievements);
-  const legacyAchievements = normalizeStringList(value.professionalQualities);
+  const achievements = normalizeAchievementList(value.achievements);
+  const legacyAchievements = normalizeAchievementList(value.professionalQualities);
 
   return {
     ...starter,
     ...value,
     id: value.id ?? starter.id,
-    title: value.title ?? starter.title,
-    targetRole: value.targetRole ?? '',
+    title: normalizeTextValue(value.title ?? starter.title),
+    targetRole: normalizeTextValue(value.targetRole ?? ''),
     templateId: normalizeTemplateId(value.templateId),
-    contact: { ...starter.contact, ...value.contact },
-    summary: value.summary ?? '',
+    contact: normalizeContact({ ...starter.contact, ...value.contact }),
+    summary: normalizeTextValue(value.summary ?? ''),
     sectionOrder: normalizeSectionOrder(value.sectionOrder),
     experience: dedupById(Array.isArray(value.experience) ? value.experience : []),
     education: dedupById(Array.isArray(value.education) ? value.education : [], 'school').map((item) => ({ ...item, honors: item.honors ?? [] })),
@@ -81,7 +81,7 @@ function normalizeResume(value: Partial<ResumeDocument>): ResumeDocument {
     volunteer: dedupById(Array.isArray(value.volunteer) ? value.volunteer : []),
     achievements: achievements.length > 0 ? achievements : legacyAchievements,
     languages: normalizeStringList(value.languages),
-    references: dedupById(Array.isArray(value.references) ? value.references : []),
+    references: normalizeReferences(value.references),
     awards: normalizeStringList(value.awards),
     memberships: normalizeStringList(value.memberships),
     publications: normalizeStringList(value.publications),
@@ -110,6 +110,35 @@ function dedupById<T extends { id: string }>(items: T[], nameField?: keyof T): T
   return result;
 }
 
+function normalizeContact(value: ResumeDocument['contact']): ResumeDocument['contact'] {
+  return {
+    fullName: normalizeTextValue(value.fullName ?? ''),
+    email: normalizeTextValue(value.email ?? ''),
+    phone: normalizeTextValue(value.phone ?? ''),
+    location: normalizeTextValue(value.location ?? ''),
+    website: normalizeTextValue(value.website ?? ''),
+    linkedin: normalizeTextValue(value.linkedin ?? ''),
+    github: normalizeTextValue(value.github ?? ''),
+  };
+}
+
+function normalizeReferences(value: unknown): ResumeDocument['references'] {
+  if (!Array.isArray(value)) return [];
+  return dedupById(
+    value
+      .filter((item): item is Partial<ResumeDocument['references'][number]> => item && typeof item === 'object')
+      .map((item, index) => ({
+        id: item.id ?? 'ref-' + (index + 1),
+        name: normalizeTextValue(item.name ?? ''),
+        title: normalizeTextValue(item.title ?? ''),
+        company: normalizeTextValue(item.company ?? ''),
+        phone: normalizeTextValue(item.phone ?? ''),
+        email: normalizeTextValue(item.email ?? ''),
+        relationship: normalizeTextValue(item.relationship ?? ''),
+      })),
+  );
+}
+
 function normalizeProjects(value: unknown): ProjectItem[] {
   if (!Array.isArray(value)) return [];
   return dedupById(
@@ -117,10 +146,10 @@ function normalizeProjects(value: unknown): ProjectItem[] {
       .filter((item): item is Partial<ProjectItem> => item && typeof item === 'object')
       .map((item, index) => ({
         id: item.id ?? 'project-' + (index + 1),
-        name: item.name ?? '',
-        description: item.description ?? '',
-        technologies: Array.isArray(item.technologies) ? item.technologies.filter((v): v is string => typeof v === 'string') : [],
-        bullets: Array.isArray(item.bullets) ? item.bullets.filter((v): v is string => typeof v === 'string') : [],
+        name: normalizeTextValue(item.name ?? ''),
+        description: normalizeTextValue(item.description ?? ''),
+        technologies: normalizeStringList(item.technologies),
+        bullets: normalizeStringList(item.bullets),
       })),
     'name',
   );
@@ -131,25 +160,67 @@ function normalizeLicenses(value: unknown): LicenseItem[] {
   return value
     .map((item, index): LicenseItem | null => {
       if (typeof item === 'string') {
-        return { id: 'license-' + (index + 1), name: item, issuingAuthority: '', licenseNumber: '', expirationDate: '' };
+        return { id: 'license-' + (index + 1), name: normalizeTextValue(item), issuingAuthority: '', licenseNumber: '', expirationDate: '' };
       }
       if (!item || typeof item !== 'object') return null;
       const record = item as Partial<LicenseItem>;
       return {
         id: record.id ?? 'license-' + (index + 1),
-        name: record.name ?? '',
-        issuingAuthority: record.issuingAuthority ?? '',
-        licenseNumber: record.licenseNumber ?? '',
-        expirationDate: record.expirationDate ?? '',
+        name: normalizeTextValue(record.name ?? ''),
+        issuingAuthority: normalizeTextValue(record.issuingAuthority ?? ''),
+        licenseNumber: normalizeTextValue(record.licenseNumber ?? ''),
+        expirationDate: normalizeTextValue(record.expirationDate ?? ''),
       };
     })
     .filter((item): item is LicenseItem => !!item && item.name.trim().length > 0);
 }
 
 function normalizeStringList(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+  if (typeof value === 'string') return normalizeDelimitedList(value);
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === 'string')
+        .map(normalizeTextValue)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+    : [];
 }
 
+function normalizeAchievementList(value: unknown): string[] {
+  const source = typeof value === 'string' ? [value] : Array.isArray(value) ? value : [];
+  return source
+    .filter((item): item is string => typeof item === 'string')
+    .flatMap((item) => splitAchievementValue(normalizeTextValue(item)))
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function normalizeDelimitedList(value: string): string[] {
+  return normalizeTextValue(value)
+    .split(/[,;|\u2022]/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function splitAchievementValue(value: string): string[] {
+  return value
+    .split(/\s*[\u2014\u2013]\s*/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function normalizeTextValue(value: string): string {
+  return value
+    .replaceAll('\u00e2\u20ac\u201d', '\u2014')
+    .replaceAll('\u00e2\u20ac\u0153', '\u2013')
+    .replaceAll('\u00e2\u20ac\u00a2', '\u2022')
+    .replaceAll('\u00c2\u00b7', '\u00b7')
+    .replaceAll('\u00c3\u201a\u00c2\u00b7', '\u00b7')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u009d', '\u2014')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u0153', '\u2013')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00c2\u00a2', '\u2022')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2', '\u2019');
+}
 function normalizeSectionOrder(value: unknown): ResumeSectionId[] {
   if (!Array.isArray(value)) return [...defaultSectionOrder];
   const allowed = new Set<ResumeSectionId>(defaultSectionOrder);

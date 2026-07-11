@@ -84,7 +84,9 @@
       }
     ],
     "achievements": [
-      "Nurse of the Year (2023)—Patient Safety Excellence Award (2022)—Clinical Leadership Recognition (2021)"
+      "Nurse of the Year (2023)",
+      "Patient Safety Excellence Award (2022)",
+      "Clinical Leadership Recognition (2021)"
     ],
     "languages": [],
     "awards": [],
@@ -92,7 +94,9 @@
     "publications": [],
     "training": [],
     "professionalQualities": [
-      "Nurse of the Year (2023)—Patient Safety Excellence Award (2022)—Clinical Leadership Recognition (2021)"
+      "Nurse of the Year (2023)",
+      "Patient Safety Excellence Award (2022)",
+      "Clinical Leadership Recognition (2021)"
     ],
     "projects": [
       {
@@ -158,7 +162,7 @@
     "memberships": "low",
     "publications": "low",
     "training": "low",
-    "professionalQualities": "medium"
+    "professionalQualities": "high"
   },
   "importQuality": "fair",
   "warnings": [],
@@ -223,7 +227,7 @@
     {
       "sectionId": "achievements",
       "originalWordCount": 0,
-      "parsedWordCount": 12,
+      "parsedWordCount": 14,
       "ratio": 1,
       "status": "good"
     },
@@ -272,7 +276,7 @@
     {
       "sectionId": "professionalQualities",
       "originalWordCount": 12,
-      "parsedWordCount": 12,
+      "parsedWordCount": 14,
       "ratio": 1,
       "status": "good"
     }

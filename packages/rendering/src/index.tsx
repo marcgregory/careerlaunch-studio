@@ -389,19 +389,14 @@ function ProfessionalQualitiesSection({
   resume: ResumeDocument;
   template: TemplateDefinition;
 }) {
-  const quals = resume.professionalQualities.filter(Boolean);
-  if (quals.length === 0) return null;
+  const achievements = (resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities).filter(Boolean);
+  if (achievements.length === 0) return null;
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Achievements</ResumeHeading>
-      <p className="mt-3 text-[15px] font-medium leading-7 text-[#33343b]">
-        {quals.map((q, i) => (
-          <span key={q}>
-            {i > 0 && <span className="mx-2 text-[#bbb]">â€”</span>}
-            {q}
-          </span>
-        ))}
-      </p>
+      <ul className={`mt-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b] ${template.markerClass}`}>
+        {achievements.map((item) => <li key={item}>{item}</li>)}
+      </ul>
     </section>
   );
 }
@@ -420,7 +415,7 @@ function SkillsSection({
   const groups = groupSkills(skills);
   const MAX_VISIBLE = 4;
 
-  // Single group or no categorized skills â†’ flat pill layout with +N more indicator
+  // Single group or no categorized skills → flat pill layout with +N more indicator
   if (groups.length <= 1) {
     const items = groups[0]?.items ?? skills;
     const visible = items.slice(0, MAX_VISIBLE);
@@ -438,7 +433,7 @@ function SkillsSection({
           {hidden > 0 && (
             <span
               className="inline-flex items-center rounded-full border border-[#123c3a]/20 bg-white/60 px-3 py-1.5 text-xs font-bold text-[#4b4b4b]"
-              title={`${items.length} total â€” ${hidden} more: ${items.slice(MAX_VISIBLE).join(", ")}`}
+              title={`${items.length} total — ${hidden} more: ${items.slice(MAX_VISIBLE).join(", ")}`}
             >
               +{hidden} more
             </span>
@@ -448,7 +443,7 @@ function SkillsSection({
     );
   }
 
-  // Multiple categories â€” show first 4 per group with +N more indicator
+  // Multiple categories — show first 4 per group with +N more indicator
   return (
     <section className="mt-8">
       <ResumeHeading template={template}>Skills</ResumeHeading>
@@ -465,7 +460,7 @@ function SkillsSection({
               <p className="text-[15px] font-medium leading-7 text-[#33343b]">
                 {visible.map((skill, i) => (
                   <span key={skill}>
-                    {i > 0 && <span className="mx-1.5 text-[#bbb]">â€¢</span>}
+                    {i > 0 && <span className="mx-1.5 text-[#bbb]">•</span>}
                     {skill}
                   </span>
                 ))}
@@ -567,7 +562,7 @@ function ReferencesSection({
               {[item.title, item.company].filter(Boolean).join(", ")}
             </p>
             <p className="text-[#555]">
-              {[item.phone, item.email].filter(Boolean).join(" Â· ")}
+              {[item.phone, item.email].filter(Boolean).join(" · ")}
             </p>
             {item.relationship && (
               <p className="mt-0.5 text-sm text-[#777]">{item.relationship}</p>

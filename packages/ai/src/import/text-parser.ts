@@ -9,7 +9,7 @@ export type SectionConfidence = "high" | "medium" | "low";
 export type CoverageStatus = "good" | "partial" | "poor" | "missing";
 
 /**
- * Overall import quality â€” derived from per-section coverage ratios.
+ * Overall import quality — derived from per-section coverage ratios.
  * This is the source of truth for the import UI headline and CTA behavior.
  */
 export type ImportQuality = "excellent" | "good" | "fair" | "poor" | "failed";
@@ -24,11 +24,11 @@ export type SectionCoverageItem = {
 
 export type ParseResult = {
   parsed: Partial<ResumeDocument>;
-  /** Legacy overall confidence (0â€“100). Replaced by `importQuality` for
+  /** Legacy overall confidence (0–100). Replaced by `importQuality` for
    *  user-facing display. Kept for analytics backward-compatibility. */
   confidence: number;
   confidenceBySection: Record<string, SectionConfidence>;
-  /** Overall import quality â€” the source of truth for headline display
+  /** Overall import quality — the source of truth for headline display
    *  and CTA behavior. Derived from per-section coverage ratios of
    *  critical sections (experience, education, skills). */
   importQuality: ImportQuality;
@@ -94,11 +94,11 @@ const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
 ];
 /**
  * Find section boundaries in plain text.
- * Returns a map of section id â†’ { start, end } line indices.
+ * Returns a map of section id → { start, end } line indices.
  *
  * Handles cases where multiple headers map to the same section ID
- * (e.g. "Experience" and "Volunteer Experience" both â†’ experience,
- *  "Professional Qualities" and "Achievements" both â†’ professionalQualities).
+ * (e.g. "Experience" and "Volunteer Experience" both → experience,
+ *  "Professional Qualities" and "Achievements" both → professionalQualities).
  * Same-ID headers at different positions extend the section boundary rather
  * than creating duplicate entries.
  */
@@ -110,13 +110,13 @@ function detectSections(
     { start: number; end: number }
   >();
 
-  // Build ordered list of ALL matched headers (no seen-set dedup â€” let same-ID
+  // Build ordered list of ALL matched headers (no seen-set dedup — let same-ID
   // headers through so "Volunteer Experience" is not blocked by "Experience").
   const headers: { index: number; id: ResumeSectionId; header: string }[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (!line || /^[â€¢\-*]\s/.test(line)) continue;
+    if (!line || /^[•\-*]\s/.test(line)) continue;
 
     for (const { id, patterns } of SECTION_PATTERNS) {
       for (const pattern of patterns) {
@@ -137,21 +137,21 @@ function detectSections(
 
   // Merge adjacent same-ID headers: keep the first, skip the rest.
   // This handles "Professional Qualities" followed by "Achievements" (both
-  // â†’ professionalQualities) â€” we keep "Professional Qualities" as the start
+  // → professionalQualities) — we keep "Professional Qualities" as the start
   // and "Achievements" is absorbed into the same section.
   const merged: typeof headers = [];
   for (const h of headers) {
     if (merged.length > 0 && merged[merged.length - 1].id === h.id) {
-      continue; // same-ID consecutive â†’ skip
+      continue; // same-ID consecutive → skip
     }
     merged.push(h);
   }
 
   // Build sections map. If the same section ID appears again later (e.g.
-  // "Experience" then "Volunteer Experience" both â†’ experience), EXTEND the
+  // "Experience" then "Volunteer Experience" both → experience), EXTEND the
   // existing section boundary to include the later content.
   // BUT: don't extend if doing so would overlap with another detected section
-  // (e.g. "Projects" at end-of-document after "References" â€” extending projects
+  // (e.g. "Projects" at end-of-document after "References" — extending projects
   //  would swallow the references content).
   const allHeaderIndices = new Set(merged.map((h) => h.index));
 
@@ -274,10 +274,10 @@ function extractContact(
 /* ------------------------------------------------------------------ */
 
 const DATE_RANGE_RE =
-  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*[-â€“to]+\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
+  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*[-–to]+\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
 const YEAR_RANGE_RE =
-  /(\d{4})\s*[-â€“]\s*(\d{4}|present|current|now)/i;
-const BULLET_RE = /^[â€¢\-*\d.]+(?:\s+|$)/;
+  /(\d{4})\s*[-–]\s*(\d{4}|present|current|now)/i;
+const BULLET_RE = /^[•\-*\d.]+(?:\s+|$)/;
 
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
@@ -301,13 +301,13 @@ function parseExperience(lines: string[]): {
       const fullText = line;
       const withoutDate = fullText.replace(dateMatch[0], "").trim();
 
-      // BUG FIX: When a line contains ONLY a date range ("Feb 2023 â€“ May 2025")
+      // BUG FIX: When a line contains ONLY a date range ("Feb 2023 – May 2025")
       // with no role/company text on the same line, look backward at preceding
       // non-empty lines to find the role and company.
       // Common resume format:
-      //   Software Developer            â† role
-      //   Volenday Philippines Inc.     â† company
-      //   Feb 2023 â€“ May 2025           â† date-only line (was being used as role!)
+      //   Software Developer            <- role
+      //   Volenday Philippines Inc.     <- company
+      //   Feb 2023 – May 2025           <- date-only line (was being used as role!)
       const isDateOnly = withoutDate.length === 0;
 
       if (isDateOnly) {
@@ -339,14 +339,14 @@ function parseExperience(lines: string[]): {
           }
         }
 
-        // Role may still carry date text from a prior bad parse â€” clean it
+        // Role may still carry date text from a prior bad parse — clean it
         role = role.replace(DATE_RANGE_RE, "").replace(YEAR_RANGE_RE, "").trim() || "Unknown Role";
 
         const [start, end] = dateMatch[1] && dateMatch[2]
           ? [dateMatch[1].trim(), dateMatch[2].trim()]
           : ["", ""];
 
-        // Collect bullets â€” accept lines with or without bullet markers,
+        // Collect bullets — accept lines with or without bullet markers,
         // but stop when we detect the start of the next entry.
         i++;
         const bullets: string[] = [];
@@ -387,7 +387,7 @@ function parseExperience(lines: string[]): {
             bulletCount++;
             i++;
           } else {
-            // No bullets collected yet â€” this is likely the start of the next entry
+            // No bullets collected yet — this is likely the start of the next entry
             // BUT: if the line looks like bullet prose (long, no date peek-ahead),
             // treat it as the first unmarked bullet instead of breaking.
             let nextHasDate = false;
@@ -400,7 +400,7 @@ function parseExperience(lines: string[]): {
               }
             }
             if (!nextHasDate && cleaned.length >= 30) {
-              // Long unmarked prose line that doesn't precede a date â†’ treat as bullet
+              // Long unmarked prose line that doesn't precede a date → treat as bullet
               bullets.push(cleaned);
               bulletCount++;
               i++;
@@ -442,7 +442,7 @@ function parseExperience(lines: string[]): {
           const companyParts = pipeSplit.slice(1).filter(Boolean);
           company = companyParts.join(" | ").replace(/\|\s*$/, "").trim();
         } else {
-          const dashSplit = withoutDate.split(/\s+[-â€“]\s+/);
+          const dashSplit = withoutDate.split(/\s+[-–]\s+/);
           if (dashSplit.length >= 2) {
             company = dashSplit[0].trim();
             role = dashSplit.slice(1).join(" - ").trim();
@@ -478,7 +478,7 @@ function parseExperience(lines: string[]): {
         if (BULLET_RE.test(bline)) {
           bullets.push(cleaned);
         } else if (bullets.length > 0) {
-          // Unmarked continuation â€” merge with the previous bullet
+          // Unmarked continuation — merge with the previous bullet
           // Check if it looks like the start of the next entry (role/company name)
           let nextHasDate = false;
           const peekLimit = Math.min(i + 3, lines.length - 1);
@@ -493,7 +493,7 @@ function parseExperience(lines: string[]): {
           if (nextHasDate && isNextEntry) break;
           bullets[bullets.length - 1] += " " + cleaned;
         } else {
-          // No bullets collected yet â€” check if this looks like unmarked bullet prose
+          // No bullets collected yet — check if this looks like unmarked bullet prose
           let nextHasDate = false;
           const peekLimit = Math.min(i + 3, lines.length - 1);
           for (let look = 1; look <= peekLimit - i; look++) {
@@ -514,7 +514,7 @@ function parseExperience(lines: string[]): {
 
       // Deduplicate: if role ends with company text, strip company from role
       const cleanRole = company && role.toLowerCase().endsWith(company.toLowerCase())
-        ? role.slice(0, -company.length).replace(/[-â€“|]\s*$/, "").trim()
+        ? role.slice(0, -company.length).replace(/[-–|]\s*$/, "").trim()
         : role;
 
       experience.push({
@@ -541,7 +541,7 @@ function parseExperience(lines: string[]): {
 function atSlice(atSplit: string[], dateMatch: RegExpMatchArray): string {
   const parts = atSplit.slice(1);
   const joined = parts.join(" at ");
-  return joined.replace(dateMatch[0], "").replace(/[-â€“]\s*$/, "").trim();
+  return joined.replace(dateMatch[0], "").replace(/[-–]\s*$/, "").trim();
 }
 
 /* ------------------------------------------------------------------ */
@@ -580,7 +580,7 @@ function parseEducation(lines: string[]): {
         }
         const nextLine = nextIdx < lines.length ? lines[nextIdx].trim() : "";
         // If the next line is ALSO a degree line (duplicate in source text),
-        // skip this entry â€” the dup will be handled by the duplicate line itself.
+        // skip this entry — the dup will be handled by the duplicate line itself.
         if (
           nextLine &&
           !BULLET_RE.test(nextLine) &&
@@ -611,7 +611,7 @@ function parseEducation(lines: string[]): {
               degree = degree.replace(new RegExp(`,?\\s*${nextGrad}`), "").trim();
             }
           } else if (nextGrad && !gradYear) {
-            // School line has a year but no school keyword â€” save it
+            // School line has a year but no school keyword — save it
             gradYear = nextGrad;
           } else if (nextSchool && !school) {
             // Fallback: next line looks like a school name (e.g. bootcamp)
@@ -649,7 +649,7 @@ function parseEducation(lines: string[]): {
           school = school.slice(0, -` ${gradYear}`.length).trim();
         }
       }
-      degree = degree.replace(/[-â€“,]\s*$/, "").trim();
+      degree = degree.replace(/[-–,]\s*$/, "").trim();
 
       // --- Step 4: special handling for single-line hyphen format ---
       // "Degree - School, Year" => Degree and School are separated by " - "
@@ -657,7 +657,7 @@ function parseEducation(lines: string[]): {
       // extractSchoolV2 may have captured prefix context including the hyphen.
       const splitCandidate = degree.includes(" - ") ? degree : trimmed;
       if (splitCandidate.includes(" - ")) {
-        const parts = splitCandidate.split(/\s+[-â€“]\s+/);
+        const parts = splitCandidate.split(/\s+[-–]\s+/);
         if (parts.length >= 2) {
           degree = parts[0].trim();
           const combinedSchool = parts.slice(1).join(" - ").trim();
@@ -772,7 +772,7 @@ function extractDegree(text: string, school: string): string {
   if (cleanSchool && cleanSchool.length > 3) {
     const schoolIdx = degree.indexOf(cleanSchool);
     if (schoolIdx > 0) {
-      degree = degree.slice(0, schoolIdx).replace(/[-â€“,]\s*$/, "").trim();
+      degree = degree.slice(0, schoolIdx).replace(/[-–,]\s*$/, "").trim();
     }
   }
   return degree;
@@ -789,19 +789,19 @@ function parseSkills(lines: string[]): string[] {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // Strip bullet markers if present â€” skills are often listed as bullet items
+    // Strip bullet markers if present — skills are often listed as bullet items
     const deBulleted = trimmed.replace(BULLET_RE, "").trim();
     const useLine = deBulleted || trimmed;
 
     // Detect table-format skills with category labels separated by 2+ spaces
     // "Frontend                    HTML, CSS, TypeScript"
     const cols = useLine.split(/\s{2,}/).filter(Boolean);
-    // Take the last column (actual skills) â€” earlier columns are category labels
+    // Take the last column (actual skills) — earlier columns are category labels
     const target = cols.length > 1 ? cols[cols.length - 1] : useLine;
 
     // Split on comma, pipe, bullet, or newline within the skills section
     const candidates = target
-      .split(/[,|â€¢;]\s*/)
+      .split(/[,|•;]\s*/)
       .map((s) => s.trim())
       .filter((s) => s.length > 1 && s.length < 60);
 
@@ -1014,7 +1014,7 @@ function parseReferences(lines: string[]): ResumeDocument["references"] {
     }
 
     // Try splitting by dash with spaces (Name - Title - Company - Phone)
-    const dashParts = line.split(/\s+[-â€“]\s+/).map((s) => s.trim()).filter(Boolean);
+    const dashParts = line.split(/\s+[-–]\s+/).map((s) => s.trim()).filter(Boolean);
     if (dashParts.length >= 3) {
       const ref = refFromParts(dashParts);
       if (ref) references.push(ref);
@@ -1165,7 +1165,7 @@ function isLikelyHeader(line: string): boolean {
 
 /**
  * Check if text starts with a lowercase article, preposition, or conjunction
- * â€” a sign this line is a continuation of the previous bullet, not a new entry.
+ * — a sign this line is a continuation of the previous bullet, not a new entry.
  */
 function startsWithArticle(text: string): boolean {
   return /^(?:with|and|through|using|by|for|in|on|at|to|the|a|an|of|its|their|his|her|our|enabling|ensuring|focusing|leveraging|including|providing|while|during|across|within|after|before|under|over|between|throughout|following|resulting)\b/i.test(text.trim());
@@ -1201,6 +1201,18 @@ function normalizeDate(value: string): string {
   return value;
 }
 
+function repairMojibake(value: string): string {
+  return value
+    .replaceAll('\u00e2\u20ac\u201d', '\u2014')
+    .replaceAll('\u00e2\u20ac\u0153', '\u2013')
+    .replaceAll('\u00e2\u20ac\u00a2', '\u2022')
+    .replaceAll('\u00c2\u00b7', '\u00b7')
+    .replaceAll('\u00c3\u201a\u00c2\u00b7', '\u00b7')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u009d', '\u2014')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u0153', '\u2013')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00c2\u00a2', '\u2022')
+    .replaceAll('\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u201e\u00a2', '\u2019');
+}
 /* ------------------------------------------------------------------ */
 /*  Main parser                                                        */
 /* ------------------------------------------------------------------ */
@@ -1374,7 +1386,7 @@ function evaluateSection(
       return "low";
     }
     case "languages": {
-      // Languages are absorbed into skills â€” confidence is derived from
+      // Languages are absorbed into skills — confidence is derived from
       // the overall skills count
       const skills = parsed.skills || [];
       if (skills.length >= 5) return "high";
@@ -1406,11 +1418,11 @@ const CRITICAL_SECTIONS = new Set(["experience", "education", "skills"]);
  * headline never contradicts what the coverage table shows.
  *
  * Thresholds:
- *   excellent  â€“ all critical sections â‰¥ 90%
- *   good       â€“ all critical sections â‰¥ 80%
- *   fair       â€“ all critical sections â‰¥ 50%
- *   poor       â€“ no critical section is "missing" but some are below 50%
- *   failed     â€“ any critical section is completely "missing" (ratio === 0)
+ *   excellent  – all critical sections ≥ 90%
+ *   good       – all critical sections ≥ 80%
+ *   fair       – all critical sections ≥ 50%
+ *   poor       – no critical section is "missing" but some are below 50%
+ *   failed     – any critical section is completely "missing" (ratio === 0)
  */
 export function deriveImportQuality(coverage: SectionCoverageItem[]): ImportQuality {
   const critical = coverage.filter((c) => CRITICAL_SECTIONS.has(c.sectionId));
@@ -1432,6 +1444,7 @@ export function deriveImportQuality(coverage: SectionCoverageItem[]): ImportQual
 export function parseResumeText(text: string): ParseResult {
   const warnings: string[] = [];
 
+  text = repairMojibake(text);
   if (!text || text.trim().length === 0) {
     const emptyConfidence: Record<string, SectionConfidence> = {};
     for (const sid of ["summary","experience","education","skills","certifications","professionalQualities","projects","languages","references"]) {
@@ -1508,7 +1521,7 @@ export function parseResumeText(text: string): ParseResult {
     summary: "",
   };
 
-  /** Volunteer experience â€” parsed separately from paid experience */
+  /** Volunteer experience — parsed separately from paid experience */
   const volunteer: ExperienceItem[] = [];
 
   // Track which section IDs were explicitly detected via headers,
@@ -1523,7 +1536,7 @@ export function parseResumeText(text: string): ParseResult {
     sectionLinesMap.set(sectionId, lines.slice(bounds.start, bounds.end));
   }
 
-  // Track unparsed content per section â€” raw text that the structured parser could not fit.
+  // Track unparsed content per section — raw text that the structured parser could not fit.
   const unparsedContent: Record<string, string> = {};
 
   for (const [sectionId, bounds] of sections) {
@@ -1824,12 +1837,12 @@ export function parseResumeText(text: string): ParseResult {
 
 /**
  * Layout signatures that distinguish resume formats.
- * Each signature is a function that scores 0â€“1 for how strongly the
+ * Each signature is a function that scores 0–1 for how strongly the
  * input text matches a known layout pattern.
  *
  * A resume may match multiple signatures (e.g. "standard-bullets" and
  * "skills-before-experience"). The classifier returns ALL signatures
- * that score â‰¥ 0.5 so analytics can slice by multiple dimensions.
+ * that score ≥ 0.5 so analytics can slice by multiple dimensions.
  */
 type LayoutSignature = {
   id: string;
@@ -1901,20 +1914,20 @@ const LAYOUT_SIGNATURES: LayoutSignature[] = [
     id: "standard-bullets",
     label: "Standard Bullet-Point Resume",
     score: (lines) => {
-      const bulletLines = lines.filter((l) => /^[â€¢\-*\d.]+\s/.test(l.trim()));
+      const bulletLines = lines.filter((l) => /^[•\-*\d.]+\s/.test(l.trim()));
       if (bulletLines.length === 0) return 0;
-      const roleLines = lines.filter((l) => /â€”/.test(l) || /\bat\b/i.test(l));
+      const roleLines = lines.filter((l) => /—/.test(l) || /\bat\b/i.test(l));
       return bulletLines.length >= 3 && roleLines.length >= 1 ? 1 : 0;
     },
   },
   {
-    // Minimal/short resume â€” fewer than 30 non-empty lines and no bullet content
+    // Minimal/short resume — fewer than 30 non-empty lines and no bullet content
     id: "minimal",
     label: "Minimal Resume",
     score: (lines) => {
       const nonEmpty = lines.filter((l) => l.trim().length > 0);
       if (nonEmpty.length > 30) return 0;
-      const bulletLines = nonEmpty.filter((l) => /^[â€¢\-*\d.]+\s/.test(l.trim()));
+      const bulletLines = nonEmpty.filter((l) => /^[•\-*\d.]+\s/.test(l.trim()));
       return bulletLines.length === 0 ? 1 : 0.3;
     },
   },
@@ -1933,7 +1946,7 @@ const LAYOUT_SIGNATURES: LayoutSignature[] = [
     score: (lines, sections) => {
       const eduBounds = sections.get("education");
       if (!eduBounds) return 0;
-      if (sections.has("certifications")) return 0; // Has its own section â€” not this layout
+      if (sections.has("certifications")) return 0; // Has its own section — not this layout
       const eduLines = lines.slice(eduBounds.start, eduBounds.end);
       const certKeywords = eduLines.filter((l) =>
         /\b(certified|certification|credential|license)\b/i.test(l),

@@ -521,11 +521,11 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
             addLabel="Add quality"
             emptyLabel="No professional qualities listed."
             emptyAction="Add top traits or strengths like 'Detail-oriented', 'Team player'."
-            values={resume.professionalQualities}
-            onAdd={() => addListItem("professionalQualities")}
-            onChange={(index, value) => updateList("professionalQualities", index, value)}
-            onDelete={(index) => removeListItem("professionalQualities", index)}
-            onMove={(index, direction) => moveListItem("professionalQualities", index, direction)}
+            values={resume.achievements}
+            onAdd={() => addListItem("achievements")}
+            onChange={(index, value) => updateList("achievements", index, value)}
+            onDelete={(index) => removeListItem("achievements", index)}
+            onMove={(index, direction) => moveListItem("achievements", index, direction)}
           />
 
           <Panel title="Projects" action={<button className={tinyButtonClass} type="button" onClick={addProject}><Plus size={15} /> Add project</button>}>
