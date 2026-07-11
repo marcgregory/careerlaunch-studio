@@ -832,17 +832,86 @@ function parseStringList(lines: string[], options?: { splitDash?: boolean }): st
   return [...new Set(items)];
 }
 
+const LICENSE_NUMBER_LABEL_RE = /^\s*(?:license\b|lic(?:\.|\b)|registration\b|reg(?:\.|\b)|bar\b)\s*(?:number|no\.?|#)?\s*[:#.]?\s*(.+)$/i;
+const EXPIRATION_LABEL_RE = /^\s*(?:expires?|expiration|valid\s+through|through)\s*[:#-]?\s*(.+)$/i;
+const AUTHORITY_LABEL_RE = /^\s*(?:issued\s+by|issuer|issuing\s+authority|authority)\s*[:#-]?\s*(.+)$/i;
+const LICENSE_SEPARATOR_RE = /\s*(?:\||–|—)\s*/;
+
+function extractLicenseNumber(line: string): string {
+  const match = line.match(LICENSE_NUMBER_LABEL_RE);
+  return match ? match[1].trim() : '';
+}
+
+function extractExpiration(line: string): string {
+  const match = line.match(EXPIRATION_LABEL_RE);
+  return match ? match[1].trim() : '';
+}
+
+function extractAuthority(line: string): string {
+  const match = line.match(AUTHORITY_LABEL_RE);
+  return match ? match[1].trim() : '';
+}
+
 function looksLikeLicenseLine(line: string): boolean {
-  return /\b(?:licen[cs]e|registration|credential)\b/i.test(line) || /\b(?:lic|reg|credential)\s*(?:#|no\.?|number|id)\b/i.test(line);
+  const cleaned = line.trim();
+  if (!cleaned) return false;
+  if (LICENSE_NUMBER_LABEL_RE.test(cleaned) || EXPIRATION_LABEL_RE.test(cleaned) || AUTHORITY_LABEL_RE.test(cleaned)) return true;
+  if (/\b(?:licensed|registered|registration|credential|bar)\b/i.test(cleaned) && LICENSE_SEPARATOR_RE.test(cleaned)) return true;
+  if (cleaned.split('|').length >= 3) return true;
+  return false;
+}
+
+function looksLikeLicenseIdentifier(value: string): boolean {
+  const trimmed = value.trim();
+  return /^(?:[A-Z]{1,5}[-.]?)?\d{3,}[A-Z0-9.-]*$/i.test(trimmed) || /^[A-Z]{2,}\d{3,}[A-Z0-9.-]*$/i.test(trimmed);
+}
+
+function splitLicenseAndCertificationLines(lines: string[]): { licenseLines: string[]; certLines: string[] } {
+  const cleaned = lines
+    .map((line) => line.trim().replace(BULLET_RE, '').trim())
+    .filter((line) => line && !/^(?:certifications?|licenses?)$/i.test(line));
+
+  const licenseIndexes = new Set<number>();
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i];
+    const next = cleaned[i + 1] ?? '';
+    const following = cleaned[i + 2] ?? '';
+
+    if (looksLikeLicenseLine(line)) {
+      licenseIndexes.add(i);
+      if (LICENSE_NUMBER_LABEL_RE.test(line) && i > 0) licenseIndexes.add(i - 1);
+      continue;
+    }
+
+    if (LICENSE_NUMBER_LABEL_RE.test(next)) {
+      licenseIndexes.add(i);
+      licenseIndexes.add(i + 1);
+      continue;
+    }
+
+    if (next && LICENSE_NUMBER_LABEL_RE.test(following)) {
+      licenseIndexes.add(i);
+      licenseIndexes.add(i + 1);
+      licenseIndexes.add(i + 2);
+    }
+  }
+
+  return {
+    licenseLines: cleaned.filter((_, index) => licenseIndexes.has(index)),
+    certLines: cleaned.filter((_, index) => !licenseIndexes.has(index)),
+  };
 }
 
 function parseLicenses(lines: string[]): LicenseItem[] {
   const licenses: LicenseItem[] = [];
   const cleaned = lines
     .map((line) => line.trim().replace(BULLET_RE, '').trim())
-    .filter((line) => line && !isLikelyHeader(line));
+    .filter((line) => line && !/^(?:certifications?|licenses?)$/i.test(line));
 
   let current: LicenseItem | null = null;
+
+  const emptyLicense = (): LicenseItem => ({ id: '', name: '', issuingAuthority: '', licenseNumber: '', expirationDate: '' });
   const pushCurrent = () => {
     if (current && current.name.trim()) {
       licenses.push({ ...current, id: 'import-license-' + (licenses.length + 1) });
@@ -851,40 +920,68 @@ function parseLicenses(lines: string[]): LicenseItem[] {
   };
 
   for (const line of cleaned) {
-    const numberMatch = line.match(/\b(?:license|lic|registration|reg|credential)\s*(?:number|no\.?|#|id)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9.-]{2,})\b/i);
-    const expirationMatch = line.match(/\b(?:expires?|expiration|valid\s+through|through)\s*[:#-]?\s*([A-Za-z]+\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4}|(?:19|20)\d{2})\b/i);
-    const authorityMatch = line.match(/\b(?:issued\s+by|issuer|issuing\s+authority|authority|board)\s*[:#-]?\s*(.+)$/i);
+    const labeledNumber = extractLicenseNumber(line);
+    const labeledExpiration = extractExpiration(line);
+    const labeledAuthority = extractAuthority(line);
 
-    if (!current || (looksLikeLicenseLine(line) && current.name && (numberMatch || /\s[–—-]\s/.test(line)))) {
-      pushCurrent();
-      current = { id: '', name: '', issuingAuthority: '', licenseNumber: '', expirationDate: '' };
+    if (labeledNumber) {
+      current ??= emptyLicense();
+      if (!current.licenseNumber) current.licenseNumber = labeledNumber;
+      continue;
     }
 
-    current ??= { id: '', name: '', issuingAuthority: '', licenseNumber: '', expirationDate: '' };
+    if (labeledExpiration) {
+      current ??= emptyLicense();
+      if (!current.expirationDate) current.expirationDate = labeledExpiration;
+      continue;
+    }
 
-    if (numberMatch && !current.licenseNumber) current.licenseNumber = numberMatch[1].trim();
-    if (expirationMatch && !current.expirationDate) current.expirationDate = expirationMatch[1].trim();
-    if (authorityMatch && !current.issuingAuthority) current.issuingAuthority = authorityMatch[1].trim();
+    if (labeledAuthority) {
+      current ??= emptyLicense();
+      if (!current.issuingAuthority) current.issuingAuthority = labeledAuthority;
+      continue;
+    }
 
-    const withoutMetadata = line
-      .replace(/\b(?:license|lic|registration|reg|credential)\s*(?:number|no\.?|#|id)?\s*[:#-]?\s*[A-Z0-9][A-Z0-9.-]{2,}\b/gi, '')
-      .replace(/\b(?:expires?|expiration|valid\s+through|through)\s*[:#-]?\s*(?:[A-Za-z]+\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4}|(?:19|20)\d{2})\b/gi, '')
-      .replace(/\b(?:issued\s+by|issuer|issuing\s+authority|authority)\s*[:#-]?\s*.+$/i, '')
-      .trim();
+    const parts = line.split(LICENSE_SEPARATOR_RE).map((part) => part.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      pushCurrent();
+      current = emptyLicense();
+      current.name = parts[0];
+      current.issuingAuthority = parts[1] ?? '';
 
-    if (!current.name && withoutMetadata) {
-      const parts = withoutMetadata.split(/\s+[–—-]\s+/).map((p) => p.trim()).filter(Boolean);
-      current.name = parts[0] || withoutMetadata;
-      if (parts.length > 1 && !current.issuingAuthority) current.issuingAuthority = parts[1];
-    } else if (!current.issuingAuthority && withoutMetadata && withoutMetadata !== current.name && !looksLikeLicenseLine(withoutMetadata)) {
-      current.issuingAuthority = withoutMetadata;
+      for (const part of parts.slice(2)) {
+        const partNumber = extractLicenseNumber(part);
+        if (partNumber && !current.licenseNumber) {
+          current.licenseNumber = partNumber;
+        } else if (!current.licenseNumber && looksLikeLicenseIdentifier(part)) {
+          current.licenseNumber = part;
+        } else if (!current.issuingAuthority) {
+          current.issuingAuthority = part;
+        }
+      }
+      continue;
+    }
+
+    if (!current) {
+      current = emptyLicense();
+      current.name = line;
+      continue;
+    }
+
+    if (!current.name) {
+      current.name = line;
+    } else if (!current.issuingAuthority) {
+      current.issuingAuthority = line;
+    } else {
+      pushCurrent();
+      current = emptyLicense();
+      current.name = line;
     }
   }
 
   pushCurrent();
   return licenses;
 }
-
 function parseProjects(lines: string[]): ResumeDocument['projects'] {
   const projects: ResumeDocument['projects'] = [];
   let currentProject: ResumeDocument['projects'][number] | null = null;
@@ -1599,8 +1696,7 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "certifications": {
-        const licenseLines = sectionLines.filter((line) => looksLikeLicenseLine(line));
-        const certLines = sectionLines.filter((line) => !looksLikeLicenseLine(line));
+        const { licenseLines, certLines } = splitLicenseAndCertificationLines(sectionLines);
         const licenses = parseLicenses(licenseLines);
         const certs = parseStringList(certLines).filter((item) => !/^certifications?$/i.test(item));
         if (licenses.length > 0) parsed.licenses = [...(parsed.licenses || []), ...licenses];

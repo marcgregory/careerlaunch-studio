@@ -1095,3 +1095,69 @@ Developer | Acme | 2020 - Present
     expect(projects.length).toBe(3);
   });
 });
+
+describe("license parsing regression", () => {
+  it("parses separator-based license records without substring corruption", () => {
+    const text = `Emily Rodriguez
+emily@example.com
+
+Certifications
+Registered Nurse (RN) – Texas Board of Nursing
+License Number: RN12345678
+Basic Life Support (BLS)
+Advanced Cardiovascular Life Support (ACLS)
+Pediatric Advanced Life Support (PALS)
+NIH Stroke Scale Certification`;
+
+    const result = parseResumeText(text);
+    const license = result.parsed.licenses?.[0];
+    const allText = JSON.stringify(result.parsed);
+
+    expect(license).toBeDefined();
+    expect(license?.name).toBe("Registered Nurse (RN)");
+    expect(license?.issuingAuthority).toBe("Texas Board of Nursing");
+    expect(license?.licenseNumber).toBe("RN12345678");
+    expect(result.parsed.certifications).toEqual([
+      "Basic Life Support (BLS)",
+      "Advanced Cardiovascular Life Support (ACLS)",
+      "Pediatric Advanced Life Support (PALS)",
+      "NIH Stroke Scale Certification",
+    ]);
+    expect(allText).not.toContain("License Number: istered");
+    expect(allText).not.toContain('"name":"Nurse (RN)"');
+    expect(allText).not.toContain('"issuingAuthority":"of Nursing"');
+  });
+
+  it("supports pipe-separated and multi-line generic license formats", () => {
+    const text = `Test User
+test@example.com
+
+Licenses
+Professional Engineer | California Board for Professional Engineers | PE12345
+CPA
+California Board of Accountancy
+License No. CPA987654
+Licensed Attorney, New York
+Bar Number: 1234567`;
+
+    const result = parseResumeText(text);
+    const licenses = result.parsed.licenses || [];
+
+    expect(licenses).toEqual([
+      expect.objectContaining({
+        name: "Professional Engineer",
+        issuingAuthority: "California Board for Professional Engineers",
+        licenseNumber: "PE12345",
+      }),
+      expect.objectContaining({
+        name: "CPA",
+        issuingAuthority: "California Board of Accountancy",
+        licenseNumber: "CPA987654",
+      }),
+      expect.objectContaining({
+        name: "Licensed Attorney, New York",
+        licenseNumber: "1234567",
+      }),
+    ]);
+  });
+});

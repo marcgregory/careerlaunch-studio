@@ -63,13 +63,20 @@
       "+14 more"
     ],
     "certifications": [
-      "Registered Nurse (RN) – Texas Board of Nursing",
       "Basic Life Support (BLS)",
       "Advanced Cardiovascular Life Support (ACLS)",
       "Pediatric Advanced Life Support (PALS)",
       "NIH Stroke Scale Certification"
     ],
-    "licenses": [],
+    "licenses": [
+      {
+        "id": "import-license-1",
+        "name": "Registered Nurse (RN)",
+        "issuingAuthority": "Texas Board of Nursing",
+        "licenseNumber": "RN12345678",
+        "expirationDate": ""
+      }
+    ],
     "volunteer": [
       {
         "id": "import-vol-1",
@@ -206,14 +213,14 @@
     {
       "sectionId": "certifications",
       "originalWordCount": 30,
-      "parsedWordCount": 26,
-      "ratio": 0.8666666666666667,
-      "status": "good"
+      "parsedWordCount": 18,
+      "ratio": 0.6,
+      "status": "partial"
     },
     {
       "sectionId": "licenses",
       "originalWordCount": 0,
-      "parsedWordCount": 0,
+      "parsedWordCount": 8,
       "ratio": 1,
       "status": "good"
     },

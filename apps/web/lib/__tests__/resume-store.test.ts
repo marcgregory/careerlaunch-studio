@@ -114,3 +114,33 @@ describe("resume-store canonical import normalization", () => {
     expect(serialized).not.toContain(badMiddleDot);
   });
 });
+
+describe("resume-store license consistency", () => {
+  it("persists the same normalized license object used by import preview and builder", () => {
+    const resume = normalizeResume({
+      id: "license-import",
+      title: "License Import",
+      templateId: "modern",
+      licenses: [
+        {
+          id: "license-1",
+          name: "Registered Nurse (RN)",
+          issuingAuthority: "Texas Board of Nursing",
+          licenseNumber: "RN12345678",
+          expirationDate: "",
+        },
+      ],
+    });
+
+    const stored = toStoredResume(resume);
+    expect(stored.licenses).toHaveLength(1);
+    expect(stored.licenses[0]).toEqual(
+      expect.objectContaining({
+        name: "Registered Nurse (RN)",
+        issuingAuthority: "Texas Board of Nursing",
+        licenseNumber: "RN12345678",
+      }),
+    );
+    expect(JSON.stringify(stored)).not.toContain("License Number: istered");
+  });
+});

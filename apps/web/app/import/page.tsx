@@ -456,7 +456,7 @@ export default function ImportPage() {
                         <div key={edu.id} className="text-sm">
                           <p className="font-bold">{edu.degree}</p>
                           <p className="text-xs font-medium text-[#4b4b4b]">
-                            {edu.school}
+                            {[edu.school, edu.graduation].filter(Boolean).join(" | ")}
                           </p>
                         </div>
                       ))}
@@ -490,6 +490,31 @@ export default function ImportPage() {
                       </span>
                     )}
                   </div>
+                </div>
+              )}
+              {previewResume.licenses.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    Licenses ({previewResume.licenses.length})
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
+                    {previewResume.licenses.map((license) => (
+                      <li key={license.id} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+                        <span>
+                          <span className="block font-bold">{license.name}</span>
+                          {[license.issuingAuthority, license.licenseNumber && `License Number: ${license.licenseNumber}`]
+                            .filter(Boolean).length > 0 && (
+                            <span className="block text-xs text-[#4b4b4b]">
+                              {[license.issuingAuthority, license.licenseNumber && `License Number: ${license.licenseNumber}`]
+                                .filter(Boolean)
+                                .join(" | ")}
+                            </span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
               {previewResume.certifications &&
@@ -542,6 +567,38 @@ export default function ImportPage() {
                   </div>
                 )}
 
+              {previewResume.volunteer.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    Volunteer Experience ({previewResume.volunteer.length})
+                  </h3>
+                  <div className="mt-2 space-y-2">
+                    {previewResume.volunteer.map((item) => (
+                      <div key={item.id} className="text-sm">
+                        <p className="font-bold">{item.role}</p>
+                        <p className="text-xs font-medium text-[#4b4b4b]">
+                          {[item.company, [item.start, item.end].filter(Boolean).join(" - ")].filter(Boolean).join(" | ")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {previewResume.languages.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    Languages ({previewResume.languages.length})
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {previewResume.languages.map((language) => (
+                      <span key={language} className="rounded-full bg-[#f0f0f0] px-3 py-1 text-[11px] font-bold text-[#333]">
+                        {language}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {previewResume.projects && previewResume.projects.length > 0 && (
                 <div className="mt-5">
                   <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
