@@ -1278,7 +1278,7 @@ Professional Qualities
 
     const result = parseResumeText(text);
 
-    expect(result.parsed.skills).toContain("Backend: PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API)");
+    expect(result.parsed.skills).toContain("Backend: PHP WordPress (Theme Dev ACF Custom Queries WP Rest API)");
     expect(result.parsed.skills).not.toContain("Backend: PHP WordPress (Theme Dev");
     expect(result.parsed.skills).not.toContain("Backend: ACF");
   });

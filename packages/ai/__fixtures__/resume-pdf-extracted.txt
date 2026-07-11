@@ -1,0 +1,60 @@
+MARC GREGORY B. TURNO
+marc.gregory@email.com
++63 912 345 6789
+Manila, Philippines
+linkedin.com/in/marcturno
+
+Professional Summary
+Versatile developer with expertise spanning frontend, backend, cloud infrastructure, and LLM application development. Experienced in building full-stack web applications, IoT systems, and AI-powered tools.
+
+Skills
+Frontend                    HTML, CSS, TypeScript, React, Next.js, Tailwind CSS
+Backend                     Node.js, Express, Python, Go, PostgreSQL, Prisma ORM
+Cloud / Infra               AWS (EC2, S3, Lambda), Docker, CI/CD Pipelines
+IT / Hardware               System administration, Network configuration, Technical support
+LLM                         Prompt engineering, RAG pipelines, LangChain, Gemini API
+Coding with AI              GitHub Copilot, Claude Code, Cursor, Windsurf
+Backend                     Node Express, PHP WordPress (Theme Dev, ACF, Custom
+                            Queries, WP Rest API),
+                            Prisma, Firebase (Auth, Storage, Firestore), Fastapi,
+                            and websocket
+
+Experience
+Software Developer
+Volenday Philippines Inc.
+Feb 2023 – May 2025
+- Developed and maintained full-stack web applications using React, TypeScript, and Node.js.
+- Built and debugged RESTful APIs and third-party integrations for client-facing platforms.
+- Collaborated with cross-functional teams to define requirements and deliver features on schedule.
+- Participated in daily stand-ups and feature estimation meetings to ensure project
+timelines were met.
+- Produced clean, maintainable code following industry best practices.
+
+IT Staff
+Tech Solutions Co.
+Jan 2020 – Dec 2022
+- Installed and maintained computer systems and secured company data through
+network security measures.
+- Managed IT procurement and deployment of equipment and software.
+- Achieved 99% network uptime over 24-month period through proactive monitoring.
+- Automated routine system administration tasks using PowerShell and Bash scripts.
+
+Education
+Bachelor of Science in Information Technology
+University of Santo Tomas, 2019
+
+Certifications
+Safety Officer (SO2) - Department of Labor and Employment
+Arduino Programming Certificate - University of the Philippines
+Webpage Database Integration - STI College
+Dataworld Training Program - Dataworld Corp.
+Internship Completion - Tech Solutions Co.
+
+Projects
+CareerLaunch Studio
+- Full-stack SaaS platform for resume creation and AI-powered improvement.
+- Built with Next.js, TypeScript, PostgreSQL, and Prisma ORM.
+- Integrated AI analysis using Gemini and Groq APIs.
+
+References
+Available upon request.

@@ -21,8 +21,8 @@
           "Developed and maintained full-stack web applications using React, TypeScript, and Node.js.",
           "Built and debugged RESTful APIs and third-party integrations for client-facing platforms.",
           "Collaborated with cross-functional teams to define requirements and deliver features on schedule.",
-          "Produced clean, maintainable code following industry best practices.",
-          "Participated in code reviews and mentored junior developers."
+          "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+          "Produced clean, maintainable code following industry best practices."
         ]
       },
       {
@@ -33,8 +33,8 @@
         "start": "Jan 2020",
         "end": "Dec 2022",
         "bullets": [
-          "Supported 200+ end users across 3 departments with hardware, software, and network issues.",
-          "Configured and maintained 80+ workstations, servers, and networking equipment.",
+          "Installed and maintained computer systems and secured company data through network security measures.",
+          "Managed IT procurement and deployment of equipment and software.",
           "Achieved 99% network uptime over 24-month period through proactive monitoring.",
           "Automated routine system administration tasks using PowerShell and Bash scripts."
         ]
@@ -77,7 +77,13 @@
       "Coding with AI: GitHub Copilot",
       "Coding with AI: Claude Code",
       "Coding with AI: Cursor",
-      "Coding with AI: Windsurf"
+      "Coding with AI: Windsurf",
+      "Backend: Node Express",
+      "Backend: PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API)",
+      "Backend: Prisma",
+      "Backend: Firebase (Auth, Storage, Firestore)",
+      "Backend: Fastapi",
+      "Backend: and websocket"
     ],
     "certifications": [],
     "licenses": [],
@@ -100,28 +106,6 @@
           "Built with Next.js, TypeScript, PostgreSQL, and Prisma ORM.",
           "Integrated AI analysis using Gemini and Groq APIs."
         ]
-      },
-      {
-        "id": "import-proj-2",
-        "name": "Sentience IoT",
-        "description": "",
-        "technologies": [],
-        "bullets": [
-          "IoT-based environmental monitoring system using ESP32 and multiple sensors.",
-          "Real-time data visualization dashboard with alerting capabilities.",
-          "Deployed on AWS with Docker containerization."
-        ]
-      },
-      {
-        "id": "import-proj-3",
-        "name": "Exclusive E-Commerce",
-        "description": "",
-        "technologies": [],
-        "bullets": [
-          "Full-featured e-commerce platform with product management and payment processing.",
-          "Implemented Stripe integration and order management workflow.",
-          "Responsive design with Tailwind CSS and server-side rendering."
-        ]
       }
     ],
     "references": [
@@ -135,7 +119,7 @@
         "relationship": ""
       }
     ],
-    "summary": "Versatile developer with expertise spanning frontend, backend, cloud infrastructure, and LLM application development. Experienced in building full-stack web applications, IoT systems, and AI-powered tools. Proven ability to design scalable architectures, optimize performance, and integrate modern AI capabilities into production systems."
+    "summary": "Versatile developer with expertise spanning frontend, backend, cloud infrastructure, and LLM application development. Experienced in building full-stack web applications, IoT systems, and AI-powered tools."
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -162,16 +146,16 @@
   "coverage": [
     {
       "sectionId": "summary",
-      "originalWordCount": 40,
-      "parsedWordCount": 40,
+      "originalWordCount": 24,
+      "parsedWordCount": 24,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "experience",
-      "originalWordCount": 121,
-      "parsedWordCount": 102,
-      "ratio": 0.8429752066115702,
+      "originalWordCount": 127,
+      "parsedWordCount": 108,
+      "ratio": 0.8503937007874016,
       "status": "good"
     },
     {
@@ -183,16 +167,16 @@
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 52,
-      "parsedWordCount": 86,
+      "originalWordCount": 73,
+      "parsedWordCount": 112,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "projects",
-      "originalWordCount": 86,
-      "parsedWordCount": 77,
-      "ratio": 0.8953488372093024,
+      "originalWordCount": 30,
+      "parsedWordCount": 27,
+      "ratio": 0.9,
       "status": "good"
     },
     {

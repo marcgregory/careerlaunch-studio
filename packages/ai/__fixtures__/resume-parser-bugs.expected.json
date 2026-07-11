@@ -1,10 +1,10 @@
 {
   "parsed": {
     "contact": {
-      "fullName": "Alex Rivera",
-      "email": "alex.rivera@email.com",
-      "phone": "(555) 000-1234",
-      "location": "Seattle, WA",
+      "fullName": "MARC GREGORY BURNETT",
+      "email": "marc.gregory@email.com",
+      "phone": "+63 912 345 6789",
+      "location": "Makati, Philippines",
       "website": "",
       "linkedin": "",
       "github": ""
@@ -12,54 +12,127 @@
     "experience": [
       {
         "id": "import-exp-1",
-        "role": "Senior Software Engineer",
-        "company": "TechCorp Solutions",
+        "role": "IT Specialist",
+        "company": "DataFlow Systems Inc.",
         "location": "",
-        "start": "Jan 2022",
+        "start": "Jan 2018",
         "end": "Present",
         "bullets": [
-          "Designed and implemented microservices architecture serving 1M+ daily users.",
-          "Led migration from monolith to distributed system, reducing deploy time by 80%.",
-          "Established CI/CD pipelines and monitoring infrastructure.",
-          "Mentored 5 junior engineers through structured onboarding program with documented learning paths and weekly check-ins. timelines were met.",
-          "Authored technical design documents adopted across 3 teams."
+          "Installed and maintained computer systems and secured company data through network security measures.",
+          "Managed IT procurement and vendor relationships for 200+ employee company.",
+          "Led a team of 5 junior IT staff members through structured training program with documented learning paths and weekly check-ins. timelines were met.",
+          "Deployed monitoring solutions reducing incident response time by 60%.",
+          "Maintained 99.9% uptime across all critical systems."
         ]
       },
       {
         "id": "import-exp-2",
-        "role": "Software Engineer",
-        "company": "StartupXYZ Inc.",
+        "role": "Junior IT Support",
+        "company": "TechStart Solutions",
         "location": "",
-        "start": "Mar 2019",
-        "end": "Dec 2021",
+        "start": "Jun 2015",
+        "end": "Dec 2017",
         "bullets": [
-          "Built core REST APIs handling 50K requests per minute.",
-          "Optimized database queries reducing average response time from 400ms to 45ms.",
-          "Implemented real-time notification system using WebSockets and Redis."
+          "Provided tier 2 support for 100+ end users.",
+          "Configured network equipment and firewall policies.",
+          "Documented IT procedures and created knowledge base articles."
         ]
       }
     ],
     "education": [
       {
         "id": "import-edu-1",
-        "school": "University of Washington",
-        "degree": "Bachelor of Science in Computer Science",
+        "school": "University of the Philippines",
+        "degree": "Bachelor of Science in Information Technology",
         "location": "",
-        "graduation": "2016",
+        "graduation": "2015",
         "gpa": "",
         "honors": []
       }
     ],
     "skills": [
-      "Frontend: Advanced",
-      "Backend: Advanced",
-      "Cloud / Infra: Intermediate",
-      "DevOps: Intermediate",
-      "Database: Advanced"
+      "Frontend: React",
+      "Frontend: TypeScript",
+      "Frontend: Next.js",
+      "Frontend: Vue.js",
+      "Frontend: Angular",
+      "Frontend: HTML5",
+      "Frontend: CSS3",
+      "Frontend: SASS",
+      "Frontend: Tailwind CSS",
+      "Frontend: Bootstrap",
+      "Frontend: Redux",
+      "Frontend: GraphQL",
+      "Backend: Node.js",
+      "Backend: Express",
+      "Backend: Python",
+      "Backend: Go",
+      "Backend: Java",
+      "Backend: PHP",
+      "Backend: C#",
+      "Backend: Ruby on Rails",
+      "Backend: NestJS",
+      "Backend: FastAPI",
+      "Backend: Django",
+      "Backend: Flask",
+      "Backend: Spring Boot",
+      "Backend: PostgreSQL",
+      "Backend: MySQL",
+      "Backend: MongoDB",
+      "Backend: Redis",
+      "Backend: Prisma ORM",
+      "Backend: TypeORM",
+      "Backend: Drizzle ORM",
+      "Backend: Sequelize",
+      "Backend: Knex.js",
+      "Cloud / Infra: AWS (EC2, S3, Lambda, RDS, CloudFront, Route53)",
+      "Cloud / Infra: Docker",
+      "Cloud / Infra: Kubernetes",
+      "Cloud / Infra: Terraform",
+      "Cloud / Infra: CI/CD Pipelines",
+      "Cloud / Infra: GitHub Actions",
+      "DevOps: Jenkins",
+      "DevOps: Ansible",
+      "DevOps: Prometheus",
+      "DevOps: Grafana",
+      "DevOps: ELK Stack",
+      "Database: PostgreSQL",
+      "Database: MySQL",
+      "Database: MongoDB",
+      "Database: Redis",
+      "Database: Elasticsearch",
+      "Database: Cassandra",
+      "Database: SQLite",
+      "Database: MariaDB",
+      "Testing: Jest",
+      "Testing: Mocha",
+      "Testing: Cypress",
+      "Testing: Playwright",
+      "Testing: Vitest",
+      "Testing: Selenium",
+      "Tools: Git",
+      "Tools: Webpack",
+      "Tools: Vite",
+      "Tools: Babel",
+      "Tools: ESLint",
+      "Tools: Prettier",
+      "Tools: Nginx",
+      "Languages: PHP",
+      "Languages: JavaScript",
+      "Languages: TypeScript",
+      "Languages: Python",
+      "Languages: Go",
+      "Languages: Java",
+      "Languages: Rust",
+      "Languages: SQL",
+      "Languages: Bash",
+      "Languages: PowerShell",
+      "Languages: PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API)"
     ],
     "certifications": [
-      "AWS Solutions Architect - Professional",
-      "Google Cloud Associate Engineer"
+      "CompTIA Network+",
+      "AWS Certified Solutions Architect",
+      "Cisco CCNA"
     ],
     "licenses": [],
     "volunteer": [],
@@ -69,48 +142,10 @@
     "memberships": [],
     "publications": [],
     "training": [],
-    "professionalQualities": [
-      "Detail-oriented",
-      "Strong communicator",
-      "Problem solver",
-      "Team leader"
-    ],
-    "projects": [
-      {
-        "id": "import-proj-1",
-        "name": "Distributed Task Scheduler",
-        "description": "",
-        "technologies": [],
-        "bullets": [
-          "Built a fault-tolerant distributed task scheduler handling 10K tasks/min.",
-          "Used consistent hashing for workload distribution across worker nodes.",
-          "Implemented retry logic with exponential backoff and dead-letter queues."
-        ]
-      },
-      {
-        "id": "import-proj-2",
-        "name": "Open Source Contributions",
-        "description": "",
-        "technologies": [],
-        "bullets": [
-          "Contributed to React's core documentation (merged 3 PRs).",
-          "Maintained a popular VS Code extension with 50K+ installs.",
-          "Published 5 npm packages for developer tooling."
-        ]
-      }
-    ],
-    "references": [
-      {
-        "id": "import-ref-1",
-        "name": "Available upon request.",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      }
-    ],
-    "summary": "Versatile engineer with experience across the full stack. Proven track record of delivering production-grade systems and leading technical initiatives."
+    "professionalQualities": [],
+    "projects": [],
+    "references": [],
+    "summary": "Experienced full-stack developer with 8+ years building web applications and managing IT infrastructure."
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -118,18 +153,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "projects": "high",
+    "projects": "low",
     "certifications": "high",
     "licenses": "low",
     "volunteer": "low",
     "achievements": "low",
     "awards": "low",
     "languages": "low",
-    "references": "high",
+    "references": "low",
     "memberships": "low",
     "publications": "low",
     "training": "low",
-    "professionalQualities": "high"
+    "professionalQualities": "low"
   },
   "importQuality": "good",
   "warnings": [],
@@ -137,43 +172,43 @@
   "coverage": [
     {
       "sectionId": "summary",
-      "originalWordCount": 19,
-      "parsedWordCount": 19,
+      "originalWordCount": 13,
+      "parsedWordCount": 13,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "experience",
-      "originalWordCount": 107,
-      "parsedWordCount": 90,
-      "ratio": 0.8411214953271028,
+      "originalWordCount": 111,
+      "parsedWordCount": 94,
+      "ratio": 0.8468468468468469,
       "status": "good"
     },
     {
       "sectionId": "education",
-      "originalWordCount": 10,
-      "parsedWordCount": 10,
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 12,
-      "parsedWordCount": 12,
+      "originalWordCount": 111,
+      "parsedWordCount": 190,
       "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "projects",
-      "originalWordCount": 63,
-      "parsedWordCount": 57,
-      "ratio": 0.9047619047619048,
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "certifications",
-      "originalWordCount": 9,
-      "parsedWordCount": 9,
+      "originalWordCount": 8,
+      "parsedWordCount": 8,
       "ratio": 1,
       "status": "good"
     },
@@ -194,7 +229,7 @@
     {
       "sectionId": "achievements",
       "originalWordCount": 0,
-      "parsedWordCount": 7,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -214,8 +249,8 @@
     },
     {
       "sectionId": "references",
-      "originalWordCount": 3,
-      "parsedWordCount": 3,
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -242,14 +277,14 @@
     },
     {
       "sectionId": "professionalQualities",
-      "originalWordCount": 7,
-      "parsedWordCount": 7,
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     }
   ],
   "layouts": [
-    "skills-before-experience",
-    "references-heavy"
+    "table-format",
+    "skills-before-experience"
   ]
 }

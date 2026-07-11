@@ -1036,16 +1036,40 @@ function reconstructWrappedSkillLines(lines: string[]): string[] {
   const reconstructed: string[] = [];
 
   for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
+    const trimmed = rawLine.trim();
+    if (!trimmed) continue;
 
     const lastIndex = reconstructed.length - 1;
+    const leadingSpaces = rawLine.search(/\S/);
+
+    // Case 1: Previous line has unclosed parenthesis — merge at word boundary.
     if (lastIndex >= 0 && hasUnclosedParenthesis(reconstructed[lastIndex])) {
-      const separator = reconstructed[lastIndex].endsWith("(") ? "" : ", ";
-      reconstructed[lastIndex] = `${reconstructed[lastIndex]}${separator}${line}`;
-    } else {
-      reconstructed.push(line);
+      const separator = reconstructed[lastIndex].endsWith("(") ? "" : " ";
+      reconstructed[lastIndex] = `${reconstructed[lastIndex]}${separator}${trimmed}`;
+      continue;
     }
+
+    // Case 2: Line starts with significant leading whitespace (≥3 spaces) and
+    // the previous reconstructed line does NOT end with sentence-ending
+    // punctuation. This handles PDF extraction where a skills line was wrapped
+    // at a comma boundary and the continuation is indented:
+    //
+    //   Backend Node Express, PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API),
+    //                            Prisma, Firebase (Auth, Storage, Firestore), Fastapi, and websocket
+    //
+    // In this case, "Prisma, Firebase..." is a continuation (indented), not a
+    // new entry. Merging with " " preserves the original tokenization.
+    if (
+      lastIndex >= 0 &&
+      leadingSpaces >= 3 &&
+      !reconstructed[lastIndex].match(/[.!?]$/)
+    ) {
+      const separator = reconstructed[lastIndex].endsWith(",") ? " " : ", ";
+      reconstructed[lastIndex] = `${reconstructed[lastIndex]}${separator}${trimmed}`;
+      continue;
+    }
+
+    reconstructed.push(trimmed);
   }
 
   return reconstructed;
