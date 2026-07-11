@@ -36,18 +36,6 @@
           "Integrated payment processing with Stripe for e-commerce client.",
           "Maintained and updated client sites ensuring 99% uptime."
         ]
-      },
-      {
-        "id": "import-exp-3",
-        "role": "Teaching Assistant",
-        "company": "Hack Reactor",
-        "location": "",
-        "start": "Sep 2024",
-        "end": "Present",
-        "bullets": [
-          "Assist students with debugging, code review, and concept clarification.",
-          "Lead weekly study groups on React and Node.js topics."
-        ]
       }
     ],
     "education": [
@@ -120,7 +108,21 @@
         "relationship": ""
       }
     ],
-    "summary": "Former marketing professional transitioning into software engineering. Completed intensive coding bootcamp with experience building full-stack web applications. Combining technical skills with strong communication and project management abilities."
+    "summary": "Former marketing professional transitioning into software engineering. Completed intensive coding bootcamp with experience building full-stack web applications. Combining technical skills with strong communication and project management abilities.",
+    "volunteer": [
+      {
+        "id": "import-vol-1",
+        "role": "Teaching Assistant",
+        "company": "Hack Reactor",
+        "location": "",
+        "start": "Sep 2024",
+        "end": "Present",
+        "bullets": [
+          "Assist students with debugging, code review, and concept clarification.",
+          "Lead weekly study groups on React and Node.js topics."
+        ]
+      }
+    ]
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -128,6 +130,7 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
+    "licenses": "low",
     "certifications": "high",
     "professionalQualities": "low",
     "projects": "high",
@@ -135,7 +138,7 @@
     "references": "high",
     "volunteer": "low"
   },
-  "importQuality": "excellent",
+  "importQuality": "good",
   "warnings": [
     "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
   ],
@@ -151,8 +154,8 @@
     {
       "sectionId": "experience",
       "originalWordCount": 86,
-      "parsedWordCount": 92,
-      "ratio": 1,
+      "parsedWordCount": 70,
+      "ratio": 0.813953488372093,
       "status": "good"
     },
     {
@@ -166,6 +169,13 @@
       "sectionId": "skills",
       "originalWordCount": 18,
       "parsedWordCount": 22,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },

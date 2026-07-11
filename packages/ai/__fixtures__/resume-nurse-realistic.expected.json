@@ -42,17 +42,6 @@
         "bullets": [
           "Assisted senior nurses with patient care. Documented patient records using Epic EMR. Performed vital sign monitoring and patient assessments. Participated in quality improvement initiatives."
         ]
-      },
-      {
-        "id": "import-exp-4",
-        "role": "Medical Volunteer",
-        "company": "American Red Cross",
-        "location": "",
-        "start": "2020",
-        "end": "Present",
-        "bullets": [
-          "Participate in disaster relief medical missions. Provide first aid during community outreach programs."
-        ]
       }
     ],
     "education": [
@@ -72,9 +61,6 @@
       "+14 more"
     ],
     "certifications": [
-      "Registered Nurse (RN) – Texas Board of Nursing",
-      "License Number: RN12345678",
-      "CERTIFICATIONS",
       "Basic Life Support (BLS)",
       "Advanced Cardiovascular Life Support (ACLS)",
       "Pediatric Advanced Life Support (PALS)",
@@ -103,86 +89,49 @@
       {
         "id": "import-ref-1",
         "name": "Dr. Sarah Thompson",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
+        "title": "Chief Nursing Officer",
+        "company": "Dallas General Hospital",
+        "phone": "+1 (555) 201-7788",
+        "email": "sarah.thompson@dghospital.org",
         "relationship": ""
       },
       {
         "id": "import-ref-2",
-        "name": "Chief Nursing Officer, Dallas General Hospital",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
+        "name": "Michael Lewis, RN",
+        "title": "Nurse Manager",
+        "company": "St. Mary's Medical Center",
+        "phone": "+1 (555) 440-1987",
+        "email": "mlewis@stmarys.org",
         "relationship": ""
       },
       {
         "id": "import-ref-3",
-        "name": "+1 (555) 201-7788 · sarah.thompson@dghospital.org",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-4",
-        "name": "Michael Lewis, RN",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-5",
-        "name": "+1 (555) 440-1987 · mlewis@stmarys.org",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-6",
-        "name": "Nurse Manager, St. Mary's Medical Center",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-7",
         "name": "Professor Linda Carter",
         "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-8",
-        "name": "University of Texas Health Science Center",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
-        "relationship": ""
-      },
-      {
-        "id": "import-ref-9",
-        "name": "+1 (555) 811-4433 · lcarter@uthsc.edu",
-        "title": "",
-        "company": "",
-        "phone": "",
-        "email": "",
+        "company": "University of Texas Health Science Center",
+        "phone": "+1 (555) 811-4433",
+        "email": "lcarter@uthsc.edu",
         "relationship": ""
       }
     ],
-    "summary": "Compassionate Registered Nurse with over 7 years of experience providing high-quality patient care in emergency, medical-surgical, and intensive care settings. Skilled in patient assessment, medication administration, interdisciplinary collaboration, and electronic medical records. Passionate about improving patient outcomes while maintaining exceptional standards of safety and care."
+    "summary": "Compassionate Registered Nurse with over 7 years of experience providing high-quality patient care in emergency, medical-surgical, and intensive care settings. Skilled in patient assessment, medication administration, interdisciplinary collaboration, and electronic medical records. Passionate about improving patient outcomes while maintaining exceptional standards of safety and care.",
+    "licenses": [
+      "Registered Nurse (RN) – Texas Board of Nursing",
+      "License Number: RN12345678"
+    ],
+    "volunteer": [
+      {
+        "id": "import-vol-1",
+        "role": "Medical Volunteer",
+        "company": "American Red Cross",
+        "location": "",
+        "start": "2020",
+        "end": "Present",
+        "bullets": [
+          "Participate in disaster relief medical missions. Provide first aid during community outreach programs."
+        ]
+      }
+    ]
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -190,14 +139,15 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "certifications": "medium",
+    "licenses": "low",
+    "certifications": "high",
     "professionalQualities": "high",
     "projects": "high",
     "languages": "low",
     "references": "high",
     "volunteer": "low"
   },
-  "importQuality": "good",
+  "importQuality": "fair",
   "warnings": [],
   "unparsedContent": {
     "projects": "Hospital Fall Prevention Initiative\nReduced inpatient falls by 18%.\nElectronic Medication Tracking\nImproved medication documentation accuracy by 21%."
@@ -213,9 +163,9 @@
     {
       "sectionId": "experience",
       "originalWordCount": 157,
-      "parsedWordCount": 140,
-      "ratio": 0.89171974522293,
-      "status": "good"
+      "parsedWordCount": 122,
+      "ratio": 0.7770700636942676,
+      "status": "partial"
     },
     {
       "sectionId": "education",
@@ -232,11 +182,18 @@
       "status": "good"
     },
     {
-      "sectionId": "certifications",
-      "originalWordCount": 30,
-      "parsedWordCount": 30,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 30,
+      "parsedWordCount": 18,
+      "ratio": 0.6,
+      "status": "partial"
     },
     {
       "sectionId": "professionalQualities",
@@ -262,8 +219,8 @@
     {
       "sectionId": "references",
       "originalWordCount": 42,
-      "parsedWordCount": 42,
-      "ratio": 1,
+      "parsedWordCount": 39,
+      "ratio": 0.9285714285714286,
       "status": "good"
     },
     {

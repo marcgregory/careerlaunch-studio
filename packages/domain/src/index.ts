@@ -9,21 +9,24 @@ export type ResumeDocument = {
   experience: ExperienceItem[];
   education: EducationItem[];
   skills: string[];
+  licenses: string[];
   certifications: string[];
   professionalQualities: string[];
   projects: ProjectItem[];
+  volunteer: ExperienceItem[];
   references: ReferenceItem[];
 };
 
 export type ResumeTemplateId = "modern" | "executive" | "minimal" | "ats";
 
-export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "certifications" | "professionalQualities" | "projects" | "languages" | "references" | "volunteer";
+export type ResumeSectionId = "summary" | "experience" | "education" | "skills" | "licenses" | "certifications" | "professionalQualities" | "projects" | "languages" | "references" | "volunteer";
 
 export const defaultSectionOrder: ResumeSectionId[] = [
   "summary",
   "experience",
   "education",
   "skills",
+  "licenses",
   "certifications",
   "professionalQualities",
   "projects",
@@ -172,6 +175,7 @@ export const sampleResume: ResumeDocument = {
     "Retention analysis",
     "Conflict resolution"
   ],
+  licenses: [],
   certifications: ["HubSpot Customer Success Certificate"],
   professionalQualities: [],
   projects: [
@@ -182,6 +186,7 @@ export const sampleResume: ResumeDocument = {
       bullets: ["Standardized response timing, ownership rules, and outcome tracking for managers."]
     }
   ],
+  volunteer: [],
   references: []
 };
 
@@ -246,9 +251,11 @@ export function estimateWordCount(resume: ResumeDocument): number {
     ...resume.experience.flatMap((item) => [item.role, item.company, ...item.bullets]),
     ...resume.education.flatMap((item) => [item.school, item.degree]),
     ...resume.skills,
+    ...resume.licenses,
     ...resume.certifications,
     ...resume.professionalQualities,
     ...resume.projects.flatMap((item) => [item.name, item.description, ...item.bullets]),
+    ...resume.volunteer.flatMap((item) => [item.role, item.company, ...item.bullets]),
     ...resume.references.flatMap((item) => [item.name, item.title, item.company, item.phone, item.email, item.relationship]),
   ].join(" ");
 

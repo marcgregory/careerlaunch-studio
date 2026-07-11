@@ -197,6 +197,7 @@ function detectSections(
 
     for (const { id, patterns } of SECTION_PATTERNS) {
       for (const pattern of patterns) {
+        if (id === "experience" && /\bvolunteer\s+experience\b/i.test(line)) continue;
         if (pattern.test(line) && line.length < 60) {
           headers.push({ index: i, id, header: line });
           break;
@@ -920,10 +921,39 @@ function parseSummary(lines: string[]): string {
  *
  * Also handles simple bullet lists of names with contact info.
  */
+function groupReferenceLines(lines: string[]): string[] {
+  const cleaned = lines
+    .map((line) => line.trim().replace(BULLET_RE, '').trim())
+    .filter((line) => line && !/^references?\s*(available\s+upon\s+request)?$/i.test(line));
+  const grouped: string[] = [];
+  for (let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i];
+    const next = cleaned[i + 1] || '';
+    const third = cleaned[i + 2] || '';
+    const lineHasContact = EMAIL_RE.test(line) || PHONE_RE.test(line);
+    const nextHasContact = EMAIL_RE.test(next) || PHONE_RE.test(next);
+    const thirdHasContact = EMAIL_RE.test(third) || PHONE_RE.test(third);
+
+    if (!lineHasContact && next && nextHasContact && third && !thirdHasContact) {
+      grouped.push([line, third, next].join(' | '));
+      i += 2;
+      continue;
+    }
+
+    if (!lineHasContact && next && !nextHasContact && third && thirdHasContact) {
+      grouped.push([line, next, third].join(' | '));
+      i += 2;
+      continue;
+    }
+
+    grouped.push(line);
+  }
+  return grouped;
+}
 function parseReferences(lines: string[]): ResumeDocument["references"] {
   const references: ResumeDocument["references"] = [];
 
-  for (const rawLine of lines) {
+  for (const rawLine of groupReferenceLines(lines)) {
     const trimmed = rawLine.trim();
     if (!trimmed) continue;
 
@@ -970,7 +1000,7 @@ function parseReferences(lines: string[]): ResumeDocument["references"] {
     // Last resort: just use the whole line as the name
     if (line.length >= 3) {
       references.push({
-        id: `import-ref-${references.length + 1}`,
+        id: "import-ref-0",
         name: line,
         title: "",
         company: "",
@@ -981,6 +1011,9 @@ function parseReferences(lines: string[]): ResumeDocument["references"] {
     }
   }
 
+  references.forEach((reference, index) => {
+    reference.id = "import-ref-" + (index + 1);
+  });
   return references;
 }
 
@@ -1007,6 +1040,14 @@ function refFromParts(parts: string[]): ResumeDocument["references"][number] | n
   for (const part of remaining) {
     if (!part) continue;
 
+    const embeddedEmail = part.match(EMAIL_RE);
+    const embeddedPhone = part.match(PHONE_RE);
+    if (embeddedEmail || embeddedPhone) {
+      if (embeddedEmail && !email) email = embeddedEmail[0];
+      if (embeddedPhone && !phone) phone = embeddedPhone[0];
+      continue;
+    }
+
     // Email detection
     if (/^[\w.%-]+@[\w.-]+\.[a-z]{2,}$/i.test(part)) {
       if (!email) email = part;
@@ -1026,11 +1067,16 @@ function refFromParts(parts: string[]): ResumeDocument["references"][number] | n
     }
 
     // Looks like a job title (starts with preposition or common title prefix)
-    if (/^(?:Professor|Dr|Engineer|Manager|Director|Supervisor|Specialist|Coordinator|Analyst|Consultant|Officer|Head|Lead|Senior|Junior|Associate|HR|President|CEO|CFO|COO|CTO|VP|VP\s+of|AVP|AVP\s+of)\b/i.test(part)) {
-      title = title ? `${title}, ${part}` : part;
+    if (/^(?:Professor|Dr|Engineer|Nurse|Manager|Director|Supervisor|Specialist|Coordinator|Analyst|Consultant|Officer|Head|Lead|Senior|Junior|Associate|HR|President|CEO|CFO|COO|CTO|VP|VP\s+of|AVP|AVP\s+of)\b/i.test(part)) {
+      const titleParts = part.split(',').map((s) => s.trim()).filter(Boolean);
+      if (titleParts.length >= 2) {
+        title = title ? title + ', ' + titleParts[0] : titleParts[0];
+        company = company ? company + ', ' + titleParts.slice(1).join(', ') : titleParts.slice(1).join(', ');
+      } else {
+        title = title ? title + ', ' + part : part;
+      }
       continue;
     }
-
     // Relationship markers
     if (/\b(?:colleague|coworker|supervisor|manager|mentor|professor|teacher|client|partner|friend|former)\b/i.test(part)) {
       relationship = relationship ? `${relationship}, ${part}` : part;
@@ -1056,7 +1102,7 @@ function refFromParts(parts: string[]): ResumeDocument["references"][number] | n
   }
 
   return {
-    id: `import-ref-${Math.random().toString(36).slice(2, 10)}-${Date.now()}`,
+    id: "import-ref-0",
     name,
     title,
     company,
@@ -1508,23 +1554,27 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "certifications": {
-        const certs = sectionLines
-          .map((l) => l.trim())
-          .filter((l) => l.length > 0)
-          .map((l) => l.replace(BULLET_RE, "").trim())
-          .filter(Boolean);
-        if (certs.length > 0) {
-          parsed.certifications = certs;
-        }
-        // Track unparsed content
-        const rawText = sectionLines.join("\n").trim();
-        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
-        if (rawText && rawWords > 5 && certs.length === 0) {
-          unparsedContent.certifications = rawText;
-        }
-        totalFields++;
-        break;
-      }
+        const certs: string[] = [];
+        const licenses: string[] = [];
+        for (const rawLine of sectionLines) {
+          const item = rawLine.trim().replace(BULLET_RE, "").trim();
+ if (!item || /^certifications?$/i.test(item)) continue;
+ if (/\blicense\s+number\b/i.test(item) || /\bregistered\s+nurse\b|\bRN\b.*\bboard\b|\bboard\s+of\s+nursing\b/i.test(item)) {
+ licenses.push(item);
+ } else {
+ certs.push(item);
+ }
+ }
+ if (licenses.length > 0) parsed.licenses = licenses;
+ if (certs.length > 0) parsed.certifications = certs;
+ const rawText = sectionLines.join("\n").trim();
+ const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+ if (rawText && rawWords > 5 && certs.length === 0 && licenses.length === 0) {
+ unparsedContent.certifications = rawText;
+ }
+ totalFields++;
+ break;
+       }
       case "professionalQualities": {
         const quals = sectionLines
           .map((l) => l.trim())
@@ -1637,19 +1687,24 @@ export function parseResumeText(text: string): ParseResult {
     }
   }
 
-  // Append volunteer entries to experience (parsed the same way, but detected
-  // as a separate section for coverage and UI clarity).
-  // Renumber volunteer IDs to avoid collision with existing experience IDs.
+// Store volunteer entries separately so volunteer work does not appear under paid Experience.
   if (volunteer.length > 0) {
-    const existing = parsed.experience || [];
-    const offset = existing.length;
-    const renumbered = volunteer.map((v, i) => ({
+    parsed.volunteer = volunteer.map((v, i) => ({
       ...v,
-      id: `import-exp-${offset + i + 1}`,
+      id: "import-vol-" + (i + 1),
     }));
-    parsed.experience = [...existing, ...renumbered];
   }
-
+  const volunteerLike = (parsed.experience || []).filter((entry) => /volunteer/i.test(entry.role));
+  if (volunteerLike.length > 0) {
+    parsed.experience = (parsed.experience || []).filter((entry) => !/volunteer/i.test(entry.role));
+    parsed.volunteer = [
+      ...(parsed.volunteer || []),
+      ...volunteerLike.map((entry, i) => ({
+        ...entry,
+        id: 'import-vol-' + ((parsed.volunteer?.length || 0) + i + 1),
+      })),
+    ];
+  }
   // Deduplicate education entries (same degree string appearing on consecutive lines
   // or duplicated from the original text). Keeps the entry with the most data.
   if (parsed.education && parsed.education.length > 1) {
@@ -1691,7 +1746,7 @@ export function parseResumeText(text: string): ParseResult {
   // Calculate confidence by section
   const allSectionIds: ResumeSectionId[] = [
     "summary", "experience", "education", "skills",
-    "certifications", "professionalQualities", "projects", "languages", "references", "volunteer",
+    "licenses", "certifications", "professionalQualities", "projects", "languages", "references", "volunteer",
   ];
 
   const confidenceBySection: Record<string, SectionConfidence> = {};

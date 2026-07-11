@@ -9,20 +9,7 @@
       "linkedin": "linkedin.com/in/amanda-liu",
       "github": "github.com/amanda-liu"
     },
-    "experience": [
-      {
-        "id": "import-exp-1",
-        "role": "Code Coach",
-        "company": "Girls Who Code - San Jose Chapter",
-        "location": "",
-        "start": "Sep 2024",
-        "end": "Present",
-        "bullets": [
-          "Mentor 15 high school students in Python and web development fundamentals.",
-          "Lead weekly coding workshops and review student projects."
-        ]
-      }
-    ],
+    "experience": [],
     "education": [
       {
         "id": "import-edu-1",
@@ -82,14 +69,29 @@
         "relationship": ""
       }
     ],
-    "summary": "Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role."
+    "summary": "Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role.",
+    "volunteer": [
+      {
+        "id": "import-vol-1",
+        "role": "Code Coach",
+        "company": "Girls Who Code - San Jose Chapter",
+        "location": "",
+        "start": "Sep 2024",
+        "end": "Present",
+        "bullets": [
+          "Mentor 15 high school students in Python and web development fundamentals.",
+          "Lead weekly coding workshops and review student projects."
+        ]
+      }
+    ]
   },
-  "confidence": 90,
+  "confidence": 60,
   "confidenceBySection": {
     "summary": "high",
-    "experience": "high",
+    "experience": "low",
     "education": "high",
     "skills": "high",
+    "licenses": "low",
     "certifications": "low",
     "professionalQualities": "medium",
     "projects": "high",
@@ -99,7 +101,7 @@
   },
   "importQuality": "poor",
   "warnings": [
-    "Could not detect any work experience entries. Check the format.",
+    "Could not detect work experience entries. Check that dates are included.",
     "Low import quality for \"education\": 39% coverage (11/28 words preserved).",
     "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
   ],
@@ -115,7 +117,7 @@
     {
       "sectionId": "experience",
       "originalWordCount": 0,
-      "parsedWordCount": 28,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -130,6 +132,13 @@
       "sectionId": "skills",
       "originalWordCount": 11,
       "parsedWordCount": 16,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },

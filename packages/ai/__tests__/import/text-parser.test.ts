@@ -897,8 +897,8 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    const experience = result.parsed.experience || [];
-    const volunteer = experience.find((e) => e.role === "Web Developer");
+    const volunteerEntries = result.parsed.volunteer || [];
+    const volunteer = volunteerEntries.find((e) => e.role === "Web Developer");
     expect(volunteer).toBeDefined();
     expect(volunteer!.company).toBe("Open Source Foundation");
     expect(volunteer!.start).toMatch(/Jan/i);
@@ -921,8 +921,8 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    const experience = result.parsed.experience || [];
-    const tutor = experience.find((e) => e.role === "Tutor");
+    const volunteerEntries = result.parsed.volunteer || [];
+    const tutor = volunteerEntries.find((e) => e.role === "Tutor");
     expect(tutor).toBeDefined();
   });
 
@@ -941,8 +941,8 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    const experience = result.parsed.experience || [];
-    const coord = experience.find((e) => e.role === "Volunteer Coordinator");
+    const volunteerEntries = result.parsed.volunteer || [];
+    const coord = volunteerEntries.find((e) => e.role === "Volunteer Coordinator");
     expect(coord).toBeDefined();
   });
 
@@ -991,11 +991,12 @@ Code for America
 
     const result = parseResumeText(text);
     const experience = result.parsed.experience || [];
+    const volunteerEntries = result.parsed.volunteer || [];
 
-    const volEntry = experience.find((e) => e.company === "Code for America");
+    const volEntry = volunteerEntries.find((e) => e.company === "Code for America");
     expect(volEntry).toBeDefined();
     expect(volEntry!.role).toBe("Data Mentor");
-    expect(experience.length).toBeGreaterThanOrEqual(2);
+    expect(experience).toHaveLength(1);
 
     // The first entry should be from Experience, not Volunteer
     expect(experience[0].company).toBe("Some Company");

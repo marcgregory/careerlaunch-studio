@@ -107,6 +107,7 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
+    "licenses": "low",
     "certifications": "high",
     "professionalQualities": "low",
     "projects": "low",
@@ -143,6 +144,13 @@
       "sectionId": "skills",
       "originalWordCount": 19,
       "parsedWordCount": 19,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },

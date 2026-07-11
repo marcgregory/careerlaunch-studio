@@ -48,8 +48,9 @@ const sectionLabels: Record<ResumeSectionId, string> = {
   experience: "Experience",
   education: "Education",
   skills: "Skills",
+  licenses: "Licenses",
   certifications: "Certifications",
-  professionalQualities: "Professional Qualities",
+  professionalQualities: "Achievements",
   projects: "Projects",
   languages: "Languages",
   references: "References",
@@ -196,24 +197,24 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     }));
   }
 
-  function updateList(section: "skills" | "certifications" | "professionalQualities", index: number, value: string) {
+  function updateList(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number, value: string) {
     setResume((current) => ({
       ...current,
       [section]: current[section].map((item, itemIndex) => (itemIndex === index ? value : item))
     }));
   }
 
-  function addListItem(section: "skills" | "certifications" | "professionalQualities") {
+  function addListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities") {
     setResume((current) => ({ ...current, [section]: [...current[section], ""] }));
     toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item added.`);
   }
 
-  function removeListItem(section: "skills" | "certifications" | "professionalQualities", index: number) {
+  function removeListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number) {
     setResume((current) => ({ ...current, [section]: current[section].filter((_, itemIndex) => itemIndex !== index) }));
     toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item removed.`);
   }
 
-  function moveListItem(section: "skills" | "certifications" | "professionalQualities", index: number, direction: -1 | 1) {
+  function moveListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number, direction: -1 | 1) {
     setResume((current) => ({ ...current, [section]: moveItem(current[section], index, direction) }));
   }
 

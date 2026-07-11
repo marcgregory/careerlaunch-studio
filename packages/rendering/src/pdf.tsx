@@ -178,7 +178,7 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   if (section === "professionalQualities" && resume.professionalQualities.filter(Boolean).length > 0) {
     const quals = resume.professionalQualities.filter(Boolean).map((q) => `<li>${escapeHtml(q)}</li>`).join("");
     return `<section>
-      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Professional Qualities</h2></div>
+      <div class="pdf-section-title-wrap"><h2 class="pdf-section-title">Achievements</h2></div>
       <ul class="pdf-qualities-list">${quals}</ul>
     </section>`;
   }

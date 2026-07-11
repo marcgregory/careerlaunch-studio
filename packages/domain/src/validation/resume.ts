@@ -64,9 +64,11 @@ export const resumeSchema = z.object({
   experience: z.array(experienceItemSchema).default([]),
   education: z.array(educationItemSchema).default([]),
   skills: z.array(z.string()).default([]),
+  licenses: z.array(z.string()).default([]),
   certifications: z.array(z.string()).default([]),
   professionalQualities: z.array(z.string()).default([]),
   projects: z.array(projectItemSchema).default([]),
+  volunteer: z.array(experienceItemSchema).default([]),
   references: z.array(referenceItemSchema).default([]),
 });
 

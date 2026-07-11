@@ -549,7 +549,7 @@ export default function ImportPage() {
                 result.parsed.professionalQualities.length > 0 && (
                   <div className="mt-5">
                     <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
-                      Professional Qualities
+                      Achievements
                       {result.aiRecoveredSections?.includes(
                         "professionalQualities",
                       ) && (

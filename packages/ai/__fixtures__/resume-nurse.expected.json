@@ -65,7 +65,6 @@
       "Spanish (Conversational)"
     ],
     "certifications": [
-      "Registered Nurse (RN) - Illinois Board of Nursing",
       "Basic Life Support (BLS) - American Heart Association",
       "Advanced Cardiac Life Support (ACLS) - American Heart Association"
     ],
@@ -82,7 +81,10 @@
         "relationship": ""
       }
     ],
-    "summary": "Certified registered nurse with 6 years of experience in medical-surgical nursing and progressive care. Skilled in patient assessment, care coordination, and interdisciplinary collaboration."
+    "summary": "Certified registered nurse with 6 years of experience in medical-surgical nursing and progressive care. Skilled in patient assessment, care coordination, and interdisciplinary collaboration.",
+    "licenses": [
+      "Registered Nurse (RN) - Illinois Board of Nursing"
+    ]
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -90,6 +92,7 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
+    "licenses": "low",
     "certifications": "high",
     "professionalQualities": "low",
     "projects": "low",
@@ -132,11 +135,18 @@
       "status": "good"
     },
     {
-      "sectionId": "certifications",
-      "originalWordCount": 25,
-      "parsedWordCount": 25,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 25,
+      "parsedWordCount": 17,
+      "ratio": 0.68,
+      "status": "partial"
     },
     {
       "sectionId": "professionalQualities",

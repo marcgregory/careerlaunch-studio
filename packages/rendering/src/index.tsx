@@ -300,7 +300,7 @@ function ProfessionalQualitiesSection({
   if (quals.length === 0) return null;
   return (
     <section className="mt-8">
-      <ResumeHeading template={template}>Professional Qualities</ResumeHeading>
+      <ResumeHeading template={template}>Achievements</ResumeHeading>
       <p className="mt-3 text-[15px] font-medium leading-7 text-[#33343b]">
         {quals.map((q, i) => (
           <span key={q}>
