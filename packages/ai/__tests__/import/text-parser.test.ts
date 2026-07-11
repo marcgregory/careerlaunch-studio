@@ -1257,6 +1257,32 @@ Professional Qualities
     expect(result.parsed.achievements).toEqual([]);
   });
 
+
+  it("reconstructs wrapped parenthetical skill lines before splitting items", () => {
+    const text = [
+      "Marc Gregory B. Turno",
+      "markyturns@gmail.com",
+      "",
+      "Skills",
+      "Backend                     Node Express",
+      "PHP WordPress (Theme Dev",
+      "ACF",
+      "Custom Queries",
+      "WP Rest API)",
+      "IT/Hardware                 Computer Networking, POS Systems",
+      "",
+      "Experience",
+      "Developer | Example Co | 2020 - Present",
+      "- Worked.",
+    ].join("\n");
+
+    const result = parseResumeText(text);
+
+    expect(result.parsed.skills).toContain("Backend: PHP WordPress (Theme Dev, ACF, Custom Queries, WP Rest API)");
+    expect(result.parsed.skills).not.toContain("Backend: PHP WordPress (Theme Dev");
+    expect(result.parsed.skills).not.toContain("Backend: ACF");
+  });
+
   it("extracts portfolio, GitHub, and LinkedIn links from the header", () => {
     const text = `Link User
 link@example.com

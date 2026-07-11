@@ -104,8 +104,13 @@ const CRITICAL_SECTIONS = new Set([
 const COVERAGE_THRESHOLD = 0.8; // 80% — sections below this trigger recovery
 
 const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
-const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
-const EMBEDDED_BULLET_RE = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
+const INLINE_BULLET_MARKER_RE =
+  /(?:[\u2022\u25cf\u25aa\u25e6]|\u00e2(?:\u20ac\u00a2|\u2014[\u008f\u00a6]|\u2013\u00aa))/;
+const LINE_START_BULLET_MARKER_RE = new RegExp(
+  `(?:${INLINE_BULLET_MARKER_RE.source}|[*\\-]|\\d+[.)])`,
+);
+const BULLET_RE = new RegExp(`^${LINE_START_BULLET_MARKER_RE.source}\\s*`);
+const EMBEDDED_BULLET_RE = new RegExp(`(?=${INLINE_BULLET_MARKER_RE.source}\\s*)`, "g");
 
 function cleanBulletText(value: string): string {
   return value.replace(BULLET_RE, "").replace(/\s+/g, " ").trim();

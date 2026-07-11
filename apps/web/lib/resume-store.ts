@@ -110,8 +110,13 @@ function dedupById<T extends { id: string }>(items: T[], nameField?: keyof T): T
   return result;
 }
 
-const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
-const EMBEDDED_BULLET_RE = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
+const INLINE_BULLET_MARKER_RE =
+  /(?:[\u2022\u25cf\u25aa\u25e6]|\u00e2(?:\u20ac\u00a2|\u2014[\u008f\u00a6]|\u2013\u00aa))/;
+const LINE_START_BULLET_MARKER_RE = new RegExp(
+  `(?:${INLINE_BULLET_MARKER_RE.source}|[*\\-]|\\d+[.)])`,
+);
+const BULLET_RE = new RegExp(`^${LINE_START_BULLET_MARKER_RE.source}\\s*`);
+const EMBEDDED_BULLET_RE = new RegExp(`(?=${INLINE_BULLET_MARKER_RE.source}\\s*)`, 'g');
 
 function normalizeExperienceItems(value: unknown): ResumeDocument['experience'] {
   if (!Array.isArray(value)) return [];

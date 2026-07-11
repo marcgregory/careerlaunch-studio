@@ -732,7 +732,9 @@ describe("mergeRecovery bullet normalization", () => {
           bullets: [
             "Participated in daily stand-ups and feature estimation meetings to ensure project",
             "timelines were met.",
-            "Installed and maintained computer systems and secured company data through\n\u25cf Managed IT procurement and deployment of equipment and software.",
+            "Installed and maintained computer systems and secured company data through",
+            "network security measures.",
+            "\u00e2\u2014\u008f Managed IT procurement and deployment of equipment and software.",
           ],
         },
       ],
@@ -740,7 +742,7 @@ describe("mergeRecovery bullet normalization", () => {
 
     expect(merged.parsed.experience?.[0]?.bullets).toEqual([
       "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
-      "Installed and maintained computer systems and secured company data through",
+      "Installed and maintained computer systems and secured company data through network security measures.",
       "Managed IT procurement and deployment of equipment and software.",
     ]);
   });

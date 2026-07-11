@@ -25,8 +25,13 @@ type PreviewBullet = { text: string; sourceIndex: number };
 type PreviewSkillGroup = { category: string; items: string[] };
 const EXPERIENCE_PREVIEW_BULLET_LIMIT = 3;
 const SKILL_PREVIEW_LIMIT = 3;
-const EMBEDDED_BULLET_MARKER_RE = /(?=\s*[\u2022\u25cf\u25aa\u25e6]\s+)/g;
-const LEADING_BULLET_MARKER_RE = /^[\u2022\u25cf\u25aa\u25e6*\-]\s*/;
+const INLINE_BULLET_MARKER_RE =
+  /(?:[\u2022\u25cf\u25aa\u25e6]|\u00e2(?:\u20ac\u00a2|\u2014[\u008f\u00a6]|\u2013\u00aa))/;
+const LINE_START_BULLET_MARKER_RE = new RegExp(
+  `(?:${INLINE_BULLET_MARKER_RE.source}|[*\\-]|\\d+[.)])`,
+);
+const EMBEDDED_BULLET_MARKER_RE = new RegExp(`(?=\\s*${INLINE_BULLET_MARKER_RE.source}\\s+)`, "g");
+const LEADING_BULLET_MARKER_RE = new RegExp(`^${LINE_START_BULLET_MARKER_RE.source}\\s*`);
 
 function isOrphanPreviewBullet(text: string, previous: string): boolean {
   if (!previous) return false;

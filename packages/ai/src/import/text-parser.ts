@@ -1023,6 +1023,33 @@ function extractDegree(text: string, school: string): string {
 /*  Skills parsing                                                     */
 /* ------------------------------------------------------------------ */
 
+function countChar(value: string, char: string): number {
+  return [...value].filter((candidate) => candidate === char).length;
+}
+
+function hasUnclosedParenthesis(value: string): boolean {
+  return countChar(value, "(") > countChar(value, ")");
+}
+
+function reconstructWrappedSkillLines(lines: string[]): string[] {
+  const reconstructed: string[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const lastIndex = reconstructed.length - 1;
+    if (lastIndex >= 0 && hasUnclosedParenthesis(reconstructed[lastIndex])) {
+      const separator = reconstructed[lastIndex].endsWith("(") ? "" : ", ";
+      reconstructed[lastIndex] = `${reconstructed[lastIndex]}${separator}${line}`;
+    } else {
+      reconstructed.push(line);
+    }
+  }
+
+  return reconstructed;
+}
+
 function parseSkills(lines: string[]): string[] {
   const skills: string[] = [];
   let currentCategory = "";
@@ -1035,7 +1062,7 @@ function parseSkills(lines: string[]): string[] {
 
   const categoryLineRe = /^([A-Za-z][A-Za-z0-9 /&+.#-]{1,40})\s{2,}(.+)$/;
 
-  for (const line of lines) {
+  for (const line of reconstructWrappedSkillLines(lines)) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
@@ -1086,10 +1113,27 @@ function parseSkills(lines: string[]): string[] {
 }
 
 function splitSkillItems(value: string): string[] {
-  return value
-    .split(/[,|;•●▪◦]\s*/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const items: string[] = [];
+  let current = "";
+  let parenDepth = 0;
+
+  for (const char of value) {
+    if (char === "(") parenDepth++;
+    if (char === ")" && parenDepth > 0) parenDepth--;
+
+    if (parenDepth === 0 && /[,|;\u2022\u25cf\u25aa\u25e6]/.test(char)) {
+      const item = current.trim();
+      if (item) items.push(item);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  const finalItem = current.trim();
+  if (finalItem) items.push(finalItem);
+  return items;
 }
 function isDividerLine(line: string): boolean {
   return /^[_\-=]{4,}$/.test(line.trim());
