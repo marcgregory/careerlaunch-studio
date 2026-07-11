@@ -298,15 +298,13 @@ function detectSections(
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const PHONE_RE = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
 const LINKEDIN_RE =
-  /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+(?:\/?)/;
+  /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+(?:\/?)/i;
 const GITHUB_RE = /(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9._-]+\/?/i;
 /** Match domains that look like personal/professional websites or portfolio
- *  links. Uses \b at the start to prevent partial matches of email domains
- *  (e.g. prevents "ail.com" from matching inside "johndoe@gmail.com").
- *  Explicitly excludes common email provider domains, LinkedIn, GitHub, and standalone
- *  email TLD-like fragments. */
+ *  links. Uses negative lookbehind to prevent matching single words or email
+ *  addresses. Requires at least domain.TLD pattern. */
 const WEBSITE_RE =
-  /(?:https?:\/\/)?(?:www\.)?(?!linkedin)(?!github)(?![\w.-]*@)(?!(?:gmail|yahoo|outlook|hotmail|protonmail|icloud|aol|zoho|yandex|mail)\.[a-zA-Z]{2,})[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/i;
+  /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?:\/[^\s]*)?/i;
 
 function extractContact(preambleLines: string[]): {
   contact: Partial<ResumeDocument["contact"]>;
@@ -401,6 +399,19 @@ function expandInlineBulletLines(lines: string[]): string[] {
 
   return expanded;
 }
+
+/**
+ * Check if a line appears to end mid-sentence with a preposition or conjunction.
+ * Used to detect wrapped bullets that should be merged.
+ */
+function endsWithIncompletePhrase(text: string): boolean {
+  const trimmed = text.trim();
+  // Prepositions and conjunctions that suggest continuation: through, with, by, for, in, at, and, or, etc.
+  const incompleteEndings =
+    /\b(through|with|by|for|in|at|and|or|as|to|from|of|on|over|under|into|across|during|before|after|between|among|up|down|out|off)$/i;
+  return incompleteEndings.test(trimmed);
+}
+
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
   warnings: string[];
@@ -500,7 +511,18 @@ function parseExperience(lines: string[]): {
           }
 
           if (hasMarker) {
-            bullets.push(cleaned);
+            // Before adding as a new bullet, check if the previous bullet ended
+            // with an incomplete phrase (preposition/conjunction). If so, merge instead.
+            if (
+              bulletCount > 0 &&
+              bullets.length > 0 &&
+              endsWithIncompletePhrase(bullets[bullets.length - 1])
+            ) {
+              // Merge with previous bullet instead of starting a new one
+              bullets[bullets.length - 1] += " " + cleaned;
+            } else {
+              bullets.push(cleaned);
+            }
             bulletCount++;
             i++;
           } else if (bulletCount > 0) {
@@ -628,7 +650,17 @@ function parseExperience(lines: string[]): {
 
         // If this is a bullet marker line, add as new bullet
         if (BULLET_RE.test(bline)) {
-          bullets.push(cleaned);
+          // Before adding as a new bullet, check if the previous bullet ended
+          // with an incomplete phrase (preposition/conjunction). If so, merge instead.
+          if (
+            bullets.length > 0 &&
+            endsWithIncompletePhrase(bullets[bullets.length - 1])
+          ) {
+            // Merge with previous bullet instead of starting a new one
+            bullets[bullets.length - 1] += " " + cleaned;
+          } else {
+            bullets.push(cleaned);
+          }
         } else if (bullets.length > 0) {
           // Unmarked continuation — merge with the previous bullet
           // Check if it looks like the start of the next entry (role/company name)
