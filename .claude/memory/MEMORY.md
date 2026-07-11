@@ -7,3 +7,4 @@
 - [Import recovered layouts tracking](import-recovered-layouts-tracking.md) — Track which layouts were fixed by AI
 - [Parser structural experience detection](parser-structural-experience-detection.md) — Post-beta: detect experience entries structurally
 - [Dashboard UX Overhaul](dashboard-ux-improvements.md) — Search, sort, filters, actions menu, recency grouping, enriched sidebar
+- [Deprioritize parser](deprioritize-parser.md) — Freeze import parser as best-effort; focus on core product features
