@@ -151,7 +151,8 @@ function getSessionCookieOptions() {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: sessionMaxAge
+    maxAge: sessionMaxAge,
+    priority: "high" as const
   };
 }
 
