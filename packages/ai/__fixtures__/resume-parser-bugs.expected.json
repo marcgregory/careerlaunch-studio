@@ -45,7 +45,9 @@
         "school": "University of Washington",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
-        "graduation": "2016"
+        "graduation": "2016",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -56,6 +58,19 @@
       "AWS Solutions Architect - Professional",
       "Google Cloud Associate Engineer"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [
+      "Detail-oriented",
+      "Strong communicator",
+      "Problem solver",
+      "Team leader"
+    ],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Detail-oriented",
       "Strong communicator",
@@ -67,6 +82,7 @@
         "id": "import-proj-1",
         "name": "Distributed Task Scheduler",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Built a fault-tolerant distributed task scheduler handling 10K tasks/min.",
           "Used consistent hashing for workload distribution across worker nodes.",
@@ -77,6 +93,7 @@
         "id": "import-proj-2",
         "name": "Open Source Contributions",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Contributed to React's core documentation (merged 3 PRs).",
           "Maintained a popular VS Code extension with 50K+ installs.",
@@ -103,13 +120,18 @@
     "experience": "high",
     "education": "high",
     "skills": "medium",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "high",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "high"
   },
   "importQuality": "poor",
   "warnings": [
@@ -148,10 +170,10 @@
       "status": "poor"
     },
     {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
+      "sectionId": "projects",
+      "originalWordCount": 63,
+      "parsedWordCount": 57,
+      "ratio": 0.9047619047619048,
       "status": "good"
     },
     {
@@ -162,17 +184,31 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 7,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
       "parsedWordCount": 7,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
-      "originalWordCount": 63,
-      "parsedWordCount": 57,
-      "ratio": 0.9047619047619048,
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {
@@ -190,9 +226,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 7,
+      "parsedWordCount": 7,
       "ratio": 1,
       "status": "good"
     }

@@ -46,7 +46,9 @@
         "school": "University of Illinois at Urbana-Champaign",
         "degree": "Bachelor of Science in Statistics",
         "location": "",
-        "graduation": "2020"
+        "graduation": "2020",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -60,20 +62,30 @@
       "statistical analysis",
       "data cleaning",
       "data visualization",
-      "predictive modeling",
-      "English (Native)",
-      "Mandarin Chinese (Professional Working)"
+      "predictive modeling"
     ],
     "certifications": [
       "Google Data Analytics Professional Certificate",
       "Tableau Desktop Specialist"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)",
+      "Mandarin Chinese (Professional Working)"
+    ],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
         "name": "Customer Churn Prediction Model",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Built logistic regression model achieving 85% accuracy in predicting customer churn.",
           "Identified top 5 churn indicators presented to product team for intervention."
@@ -83,6 +95,7 @@
         "id": "import-proj-2",
         "name": "Sales Dashboard Automation",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Developed Python script automating weekly sales report generation saving 8 hours/week.",
           "Integrated with Slack API for automated distribution to 20+ stakeholders."
@@ -108,18 +121,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/6 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -146,7 +162,21 @@
     {
       "sectionId": "skills",
       "originalWordCount": 19,
-      "parsedWordCount": 24,
+      "parsedWordCount": 18,
+      "ratio": 0.9473684210526315,
+      "status": "good"
+    },
+    {
+      "sectionId": "projects",
+      "originalWordCount": 54,
+      "parsedWordCount": 50,
+      "ratio": 0.9259259259259259,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 8,
+      "parsedWordCount": 8,
       "ratio": 1,
       "status": "good"
     },
@@ -158,32 +188,32 @@
       "status": "good"
     },
     {
-      "sectionId": "certifications",
-      "originalWordCount": 8,
-      "parsedWordCount": 8,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
+      "sectionId": "volunteer",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
-      "originalWordCount": 54,
-      "parsedWordCount": 50,
-      "ratio": 0.9259259259259259,
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {
       "sectionId": "languages",
       "originalWordCount": 6,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 6,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -193,7 +223,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

@@ -59,14 +59,18 @@
         "school": "University of Washington",
         "degree": "Master of Business Administration",
         "location": "",
-        "graduation": "2017"
+        "graduation": "2017",
+        "gpa": "",
+        "honors": []
       },
       {
         "id": "import-edu-2",
         "school": "University of Oregon",
         "degree": "Bachelor of Arts in Business Administration",
         "location": "",
-        "graduation": "2014"
+        "graduation": "2014",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -86,6 +90,14 @@
       "Project Management Professional (PMP) - PMI",
       "Certified ScrumMaster (CSM) - Scrum Alliance"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -107,13 +119,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
   "warnings": [],
@@ -148,7 +165,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -162,14 +179,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -190,7 +221,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

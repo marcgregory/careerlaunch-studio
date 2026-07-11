@@ -46,7 +46,9 @@
         "school": "University of Santo Tomas",
         "degree": "Bachelor of Science in Information Technology",
         "location": "",
-        "graduation": "2019"
+        "graduation": "2019",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -80,12 +82,21 @@
       "Windsurf"
     ],
     "certifications": [],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
         "name": "CareerLaunch Studio",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Full-stack SaaS platform for resume creation and AI-powered improvement.",
           "Built with Next.js, TypeScript, PostgreSQL, and Prisma ORM.",
@@ -96,6 +107,7 @@
         "id": "import-proj-2",
         "name": "Sentience IoT",
         "description": "",
+        "technologies": [],
         "bullets": [
           "IoT-based environmental monitoring system using ESP32 and multiple sensors.",
           "Real-time data visualization dashboard with alerting capabilities.",
@@ -106,6 +118,7 @@
         "id": "import-proj-3",
         "name": "Exclusive E-Commerce",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Full-featured e-commerce platform with product management and payment processing.",
           "Implemented Stripe integration and order management workflow.",
@@ -132,13 +145,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "low",
-    "professionalQualities": "low",
     "projects": "high",
+    "certifications": "low",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "fair",
   "warnings": [],
@@ -173,10 +191,10 @@
       "status": "partial"
     },
     {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
+      "sectionId": "projects",
+      "originalWordCount": 86,
+      "parsedWordCount": 77,
+      "ratio": 0.8953488372093024,
       "status": "good"
     },
     {
@@ -187,17 +205,31 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
-      "originalWordCount": 86,
-      "parsedWordCount": 77,
-      "ratio": 0.8953488372093024,
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
       "status": "good"
     },
     {
@@ -215,7 +247,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

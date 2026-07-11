@@ -1,4 +1,4 @@
-import type { ResumeDocument, ResumeSectionId, ExperienceItem, EducationItem } from "@careerlaunch/domain";
+import type { ResumeDocument, ResumeSectionId, ExperienceItem, EducationItem, LicenseItem } from "@careerlaunch/domain";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -75,100 +75,23 @@ export type ParseResult = {
 /* ------------------------------------------------------------------ */
 
 const SECTION_PATTERNS: { id: ResumeSectionId; patterns: RegExp[] }[] = [
-  {
-    id: "summary",
-    patterns: [
-      /\b(?:professional\s+)?summary\b/i,
-      /\bprofile\b/i,
-      /\babout\s+me\b/i,
-      /\bobjective\b/i,
-      /\bcareer\s+overview\b/i,
-    ],
-  },
-  {
-    id: "experience",
-    patterns: [
-      /\b(?:work\s+)?experience\b/i,
-      /\bemployment\b/i,
-      /\bwork\s+history\b/i,
-      /\bprofessional\s+experience\b/i,
-      /\brelevant\s+experience\b/i,
-    ],
-  },
-  {
-    id: "volunteer",
-    patterns: [
-      /\bvolunteer\s+experience\b/i,
-      /\bvolunteering\b/i,
-      /\bvolunteer\s+work\b/i,
-      /\bcommunity\s+service\b/i,
-    ],
-  },
-  {
-    id: "education",
-    patterns: [
-      /\beducation\b/i,
-      /\bacademic\s+(?:background|history)\b/i,
-    ],
-  },
-  {
-    id: "skills",
-    patterns: [
-      /\bskills\b/i,
-      /\b(?:core\s+)?competencies\b/i,
-      /\btechnical\s+skills\b/i,
-      /\bproficiency\b/i,
-      /\bcategory\s+proficiency\b/i,
-    ],
-  },
-  {
-    id: "certifications",
-    patterns: [
-      /\bcertifications?\b/i,
-      /\bcertificates?\b/i,
-      /\blicenses?\b/i,
-      /\bcredentials?\b/i,
-    ],
-  },
-  {
-    id: "projects",
-    patterns: [
-      /^(?:personal\s+)?projects?\s*$/im,
-      /^(?:personal\s+)?projects?:/im,
-      /\b(?:personal|key|technical|academic|side|other|relevant|software|open[- ]source)\s+projects?\b/i,
-      /\bprojects?\s+undertaken\b/i,
-      /\bprojects?\s+include\b/i,
-    ],
-  },
-  {
-    id: "languages",
-    patterns: [
-      /^languages?\s*$/im,
-      /^languages?\s*:\s*$/im,
-    ],
-  },
-  {
-    id: "references",
-    patterns: [
-      /\breferences?\b/i,
-      /\breferences?\s+available\b/i,
-    ],
-  },
-  {
-    id: "professionalQualities",
-    patterns: [
-      /\bprofessional\s+qualities\b/i,
-      /\bprofessional\s+qualifications\b/i,
-      /\bcore\s+qualifications\b/i,
-      /\bqualifications\b/i,
-      /\bachievements?\b/i,
-      /\bhono?u?rs?\b/i,
-      /\bawards?\b/i,
-      /\bhonors\s+and\s+awards\b/i,
-    ],
-  },
+  { id: 'summary', patterns: [/\b(?:professional\s+)?summary\b/i, /\bprofile\b/i, /\babout\s+me\b/i, /\bobjective\b/i, /\bcareer\s+overview\b/i] },
+  { id: 'experience', patterns: [/\b(?:work\s+)?experience\b/i, /\bemployment\b/i, /\bwork\s+history\b/i, /\bprofessional\s+experience\b/i, /\brelevant\s+experience\b/i] },
+  { id: 'volunteer', patterns: [/\bvolunteer\s+experience\b/i, /\bvolunteer\s+work\b/i, /\bcommunity\s+service\b/i, /\bvolunteering\b/i] },
+  { id: 'education', patterns: [/\beducation\b/i, /\bacademic\s+(?:background|history)\b/i] },
+  { id: 'skills', patterns: [/\bskills\b/i, /\b(?:core\s+)?competencies\b/i, /\btechnical\s+skills\b/i, /\bproficiency\b/i, /\bcategory\s+proficiency\b/i] },
+  { id: 'projects', patterns: [/^(?:personal\s+)?projects?\s*$/im, /^(?:personal\s+)?projects?:/im, /\b(?:personal|key|technical|academic|side|other|relevant|software|open[- ]source)\s+projects?\b/i, /\bprojects?\s+undertaken\b/i, /\bprojects?\s+include\b/i] },
+  { id: 'certifications', patterns: [/\bcertifications?\b/i, /\bcertificates?\b/i, /\bcredentials?\b/i] },
+  { id: 'licenses', patterns: [/\blicenses?\b/i, /\bprofessional\s+licenses?\b/i, /\bregistrations?\b/i, /\bprofessional\s+registrations?\b/i] },
+  { id: 'achievements', patterns: [/\bachievements?\b/i, /\brecognition\b/i] },
+  { id: 'awards', patterns: [/\bawards?\b/i, /\bhono?u?rs?\b/i, /\bhonors\s+and\s+awards\b/i] },
+  { id: 'languages', patterns: [/^languages?\s*$/im, /^languages?\s*:\s*$/im] },
+  { id: 'references', patterns: [/\breferences?\b/i, /\breferences?\s+available\b/i] },
+  { id: 'memberships', patterns: [/\bmemberships?\b/i, /\bprofessional\s+memberships?\b/i, /\baffiliations?\b/i] },
+  { id: 'publications', patterns: [/\bpublications?\b/i, /\bresearch\b/i] },
+  { id: 'training', patterns: [/\btraining\b/i, /\bprofessional\s+development\b/i, /\bworkshops?\b/i] },
+  { id: 'professionalQualities', patterns: [/\bprofessional\s+qualities\b/i, /\bprofessional\s+qualifications\b/i, /\bcore\s+qualifications\b/i, /\bqualifications\b/i] },
 ];
-
 /**
  * Find section boundaries in plain text.
  * Returns a map of section id â†’ { start, end } line indices.
@@ -198,7 +121,10 @@ function detectSections(
     for (const { id, patterns } of SECTION_PATTERNS) {
       for (const pattern of patterns) {
         if (id === "experience" && /\bvolunteer\s+experience\b/i.test(line)) continue;
-        if (pattern.test(line) && line.length < 60) {
+        const ambiguousHeading = id === 'awards' || id === 'achievements' || id === 'certifications' || id === 'licenses' || id === 'training';
+        const wordCount = line.split(/\s+/).filter(Boolean).length;
+        const hasItemSignals = /\d|\(|\)/.test(line) || wordCount > 3;
+        if (pattern.test(line) && line.length < 60 && (!ambiguousHeading || !hasItemSignals)) {
           headers.push({ index: i, id, header: line });
           break;
         }
@@ -746,12 +672,15 @@ function parseEducation(lines: string[]): {
         }
       }
 
+      const extras = extractEducationExtras(lines, i, Math.min(lines.length, i + 5));
       education.push({
-        id: `import-edu-${education.length + 1}`,
+        id: 'import-edu-' + (education.length + 1),
         school: school || trimmed,
         degree: degree || trimmed,
-        location: "",
-        graduation: gradYear || "",
+        location: '',
+ graduation: gradYear || '',
+        gpa: extras.gpa,
+        honors: extras.honors,
       });
     }
   }
@@ -887,6 +816,117 @@ function parseSkills(lines: string[]): string[] {
   return [...new Set(skills)];
 }
 
+function parseStringList(lines: string[], options?: { splitDash?: boolean }): string[] {
+  const items: string[] = [];
+  for (const raw of lines) {
+    const line = raw.trim().replace(BULLET_RE, '').trim();
+    if (!line) continue;
+    const pieces = options?.splitDash
+      ? line.split(/\s*[–—]\s*/)
+      : line.split(/[,;•|]\s*/);
+    for (const piece of pieces) {
+      const item = piece.trim();
+      if (item && item.length > 1) items.push(item);
+    }
+  }
+  return [...new Set(items)];
+}
+
+function looksLikeLicenseLine(line: string): boolean {
+  return /\b(?:licen[cs]e|registration|credential)\b/i.test(line) || /\b(?:lic|reg|credential)\s*(?:#|no\.?|number|id)\b/i.test(line);
+}
+
+function parseLicenses(lines: string[]): LicenseItem[] {
+  const licenses: LicenseItem[] = [];
+  const cleaned = lines
+    .map((line) => line.trim().replace(BULLET_RE, '').trim())
+    .filter((line) => line && !isLikelyHeader(line));
+
+  let current: LicenseItem | null = null;
+  const pushCurrent = () => {
+    if (current && current.name.trim()) {
+      licenses.push({ ...current, id: 'import-license-' + (licenses.length + 1) });
+    }
+    current = null;
+  };
+
+  for (const line of cleaned) {
+    const numberMatch = line.match(/\b(?:license|lic|registration|reg|credential)\s*(?:number|no\.?|#|id)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9.-]{2,})\b/i);
+    const expirationMatch = line.match(/\b(?:expires?|expiration|valid\s+through|through)\s*[:#-]?\s*([A-Za-z]+\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4}|(?:19|20)\d{2})\b/i);
+    const authorityMatch = line.match(/\b(?:issued\s+by|issuer|issuing\s+authority|authority|board)\s*[:#-]?\s*(.+)$/i);
+
+    if (!current || (looksLikeLicenseLine(line) && current.name && (numberMatch || /\s[–—-]\s/.test(line)))) {
+      pushCurrent();
+      current = { id: '', name: '', issuingAuthority: '', licenseNumber: '', expirationDate: '' };
+    }
+
+    current ??= { id: '', name: '', issuingAuthority: '', licenseNumber: '', expirationDate: '' };
+
+    if (numberMatch && !current.licenseNumber) current.licenseNumber = numberMatch[1].trim();
+    if (expirationMatch && !current.expirationDate) current.expirationDate = expirationMatch[1].trim();
+    if (authorityMatch && !current.issuingAuthority) current.issuingAuthority = authorityMatch[1].trim();
+
+    const withoutMetadata = line
+      .replace(/\b(?:license|lic|registration|reg|credential)\s*(?:number|no\.?|#|id)?\s*[:#-]?\s*[A-Z0-9][A-Z0-9.-]{2,}\b/gi, '')
+      .replace(/\b(?:expires?|expiration|valid\s+through|through)\s*[:#-]?\s*(?:[A-Za-z]+\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4}|(?:19|20)\d{2})\b/gi, '')
+      .replace(/\b(?:issued\s+by|issuer|issuing\s+authority|authority)\s*[:#-]?\s*.+$/i, '')
+      .trim();
+
+    if (!current.name && withoutMetadata) {
+      const parts = withoutMetadata.split(/\s+[–—-]\s+/).map((p) => p.trim()).filter(Boolean);
+      current.name = parts[0] || withoutMetadata;
+      if (parts.length > 1 && !current.issuingAuthority) current.issuingAuthority = parts[1];
+    } else if (!current.issuingAuthority && withoutMetadata && withoutMetadata !== current.name && !looksLikeLicenseLine(withoutMetadata)) {
+      current.issuingAuthority = withoutMetadata;
+    }
+  }
+
+  pushCurrent();
+  return licenses;
+}
+
+function parseProjects(lines: string[]): ResumeDocument['projects'] {
+  const projects: ResumeDocument['projects'] = [];
+  let currentProject: ResumeDocument['projects'][number] | null = null;
+  let expectDescription = false;
+
+  for (const rawLine of lines) {
+    const l = rawLine.trim();
+    if (!l) continue;
+    if (isLikelyHeader(l) && !l.match(/^[•\-*\d.]/) && !/projects?/i.test(l)) continue;
+
+    const cleaned = l.replace(BULLET_RE, '').trim();
+    const technologyMatch = cleaned.match(/^(?:technologies|technology|tech\s+stack|tools)\s*:\s*(.+)$/i);
+    if (technologyMatch && currentProject) {
+      currentProject.technologies = parseStringList([technologyMatch[1]]);
+      expectDescription = false;
+      continue;
+    }
+
+    if (BULLET_RE.test(l)) {
+      if (currentProject && cleaned) currentProject.bullets.push(cleaned);
+      expectDescription = false;
+    } else if (currentProject && expectDescription && currentProject.description === '') {
+      if (cleaned.length < 200 && cleaned.split(/\s+/).length < 40) currentProject.description = cleaned;
+      else currentProject.bullets.push(cleaned);
+      expectDescription = false;
+    } else {
+      projects.push({ id: 'import-proj-' + (projects.length + 1), name: cleaned, description: '', technologies: [], bullets: [] });
+      currentProject = projects[projects.length - 1];
+      expectDescription = true;
+    }
+  }
+
+  return projects;
+}
+
+function extractEducationExtras(lines: string[], start: number, end: number): { gpa: string; honors: string[] } {
+  const windowText = lines.slice(start, Math.min(lines.length, end)).join(' ');
+  const gpaMatch = windowText.match(/\bGPA\s*[:]?\s*([0-4](?:\.\d{1,2})?(?:\s*\/\s*4(?:\.0)?)?)/i);
+  const honors = parseStringList(lines.slice(start, Math.min(lines.length, end)))
+    .filter((item) => /\b(?:honou?rs?|cum\s+laude|magna|summa|dean'?s\s+list|distinction)\b/i.test(item));
+  return { gpa: gpaMatch ? gpaMatch[1].trim() : '', honors };
+}
 /* ------------------------------------------------------------------ */
 /*  Summary parsing                                                    */
 /* ------------------------------------------------------------------ */
@@ -1181,7 +1221,7 @@ function computeSectionCoverage(
   const originalWordCount = sectionLines
     .map((l) => l.trim())
     .filter((l) => l.length > 0)
-    .join(" ")
+    .join(' ')
     .split(/\s+/)
     .filter(Boolean).length;
 
@@ -1192,94 +1232,78 @@ function computeSectionCoverage(
   let parsedWordCount = 0;
 
   switch (sectionId) {
-    case "summary": {
-      parsedWordCount = countWords(parsed.summary || "");
+    case 'summary':
+      parsedWordCount = countWords(parsed.summary || '');
       break;
-    }
-    case "experience": {
+    case 'experience':
       for (const exp of parsed.experience || []) {
-        parsedWordCount += countWords(exp.role);
-        parsedWordCount += countWords(exp.company);
-        parsedWordCount += countWords(exp.location);
+        parsedWordCount += countWords(exp.role) + countWords(exp.company) + countWords(exp.location);
         for (const b of exp.bullets) parsedWordCount += countWords(b);
       }
       break;
-    }
-    case "volunteer": {
-      // Volunteer uses the experience parser; entries are merged into
-      // parsed.experience. Coverage for volunteer is 100% by definition
-      // since the same parser that handles experience lines handles these.
-      // Use sectionLines as parsedWordCount to avoid double-counting
-      // experience's entries.
-      parsedWordCount = originalWordCount;
-      break;
-    }
-    case "education": {
-      for (const edu of parsed.education || []) {
-        parsedWordCount += countWords(edu.degree);
-        parsedWordCount += countWords(edu.school);
-        parsedWordCount += countWords(edu.location);
-        parsedWordCount += countWords(edu.graduation);
+    case 'volunteer':
+      for (const exp of parsed.volunteer || []) {
+        parsedWordCount += countWords(exp.role) + countWords(exp.company) + countWords(exp.location);
+        for (const b of exp.bullets) parsedWordCount += countWords(b);
       }
       break;
-    }
-    case "skills": {
+    case 'education':
+      for (const edu of parsed.education || []) {
+        parsedWordCount += countWords(edu.degree) + countWords(edu.school) + countWords(edu.location) + countWords(edu.graduation) + countWords(edu.gpa ?? '');
+        for (const h of edu.honors ?? []) parsedWordCount += countWords(h);
+      }
+      break;
+    case 'skills':
       for (const s of parsed.skills || []) parsedWordCount += countWords(s);
       break;
-    }
-    case "certifications": {
-      for (const c of parsed.certifications || []) parsedWordCount += countWords(c);
-      break;
-    }
-    case "professionalQualities": {
-      for (const q of parsed.professionalQualities || []) parsedWordCount += countWords(q);
-      break;
-    }
-    case "projects": {
+    case 'projects':
       for (const p of parsed.projects || []) {
-        parsedWordCount += countWords(p.name);
-        parsedWordCount += countWords(p.description);
+        parsedWordCount += countWords(p.name) + countWords(p.description);
+        for (const t of p.technologies ?? []) parsedWordCount += countWords(t);
         for (const b of p.bullets) parsedWordCount += countWords(b);
       }
       break;
-    }
-    case "languages": {
-      // Languages are absorbed into skills for coverage purposes
-      // (they are not a separate parsed field)
+    case 'certifications':
+      for (const c of parsed.certifications || []) parsedWordCount += countWords(c);
       break;
-    }
-    case "references": {
-      for (const r of parsed.references || []) {
-        parsedWordCount += countWords(r.name);
-        parsedWordCount += countWords(r.title);
-        parsedWordCount += countWords(r.company);
-        parsedWordCount += countWords(r.phone);
-        parsedWordCount += countWords(r.email);
-        parsedWordCount += countWords(r.relationship);
+    case 'licenses':
+      for (const l of parsed.licenses || []) {
+        parsedWordCount += countWords(l.name) + countWords(l.issuingAuthority) + countWords(l.licenseNumber) + countWords(l.expirationDate);
       }
+      break;
+    case 'achievements':
+    case 'professionalQualities':
+      for (const q of ((parsed.achievements?.length ? parsed.achievements : parsed.professionalQualities) || [])) parsedWordCount += countWords(q);
+      break;
+    case 'languages':
+      for (const l of parsed.languages || []) parsedWordCount += countWords(l);
+      break;
+    case 'references':
+      for (const r of parsed.references || []) {
+        parsedWordCount += countWords(r.name) + countWords(r.title) + countWords(r.company) + countWords(r.phone) + countWords(r.email) + countWords(r.relationship);
+      }
+      break;
+    case 'awards':
+    case 'memberships':
+    case 'publications':
+    case 'training': {
+      const list = sectionId === 'awards'
+        ? parsed.awards || []
+        : sectionId === 'memberships'
+          ? parsed.memberships || []
+          : sectionId === 'publications'
+            ? parsed.publications || []
+            : parsed.training || [];
+      for (const item of list) parsedWordCount += countWords(item);
       break;
     }
   }
 
-  const ratio = originalWordCount > 0
-    ? Math.min(1, parsedWordCount / originalWordCount)
-    : 1;
+  const ratio = originalWordCount > 0 ? Math.min(1, parsedWordCount / originalWordCount) : 1;
+  const status: CoverageStatus = ratio >= 0.8 ? 'good' : ratio >= 0.4 ? 'partial' : ratio >= 0.1 ? 'poor' : 'missing';
 
-  let status: CoverageStatus;
-  if (ratio >= 0.8) status = "good";
-  else if (ratio >= 0.4) status = "partial";
-  else if (ratio >= 0.1) status = "poor";
-  else status = "missing";
-
-  return {
-    sectionId,
-    originalWordCount,
-    parsedWordCount,
-    ratio,
-    status,
-  };
+  return { sectionId, originalWordCount, parsedWordCount, ratio, status };
 }
-
 /* ------------------------------------------------------------------ */
 /*  Section confidence scoring                                        */
 /* ------------------------------------------------------------------ */
@@ -1470,6 +1494,14 @@ export function parseResumeText(text: string): ParseResult {
     education: [],
     skills: [],
     certifications: [],
+    licenses: [],
+    volunteer: [],
+    achievements: [],
+    languages: [],
+    awards: [],
+    memberships: [],
+    publications: [],
+    training: [],
     professionalQualities: [],
     projects: [],
     references: [],
@@ -1554,59 +1586,72 @@ export function parseResumeText(text: string): ParseResult {
         break;
       }
       case "certifications": {
-        const certs: string[] = [];
-        const licenses: string[] = [];
-        for (const rawLine of sectionLines) {
-          const item = rawLine.trim().replace(BULLET_RE, "").trim();
- if (!item || /^certifications?$/i.test(item)) continue;
- if (/\blicense\s+number\b/i.test(item) || /\bregistered\s+nurse\b|\bRN\b.*\bboard\b|\bboard\s+of\s+nursing\b/i.test(item)) {
- licenses.push(item);
- } else {
- certs.push(item);
- }
- }
- if (licenses.length > 0) parsed.licenses = licenses;
- if (certs.length > 0) parsed.certifications = certs;
- const rawText = sectionLines.join("\n").trim();
- const rawWords = rawText.split(/\s+/).filter(Boolean).length;
- if (rawText && rawWords > 5 && certs.length === 0 && licenses.length === 0) {
- unparsedContent.certifications = rawText;
- }
- totalFields++;
- break;
-       }
-      case "professionalQualities": {
-        const quals = sectionLines
-          .map((l) => l.trim())
-          .filter((l) => l.length > 0)
-          .flatMap((l) => l.replace(BULLET_RE, "").split(/\s*[â€“â€”]\s*/))
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (quals.length > 0) {
-          parsed.professionalQualities = quals;
+        const licenseLines = sectionLines.filter((line) => looksLikeLicenseLine(line));
+        const certLines = sectionLines.filter((line) => !looksLikeLicenseLine(line));
+        const licenses = parseLicenses(licenseLines);
+        const certs = parseStringList(certLines).filter((item) => !/^certifications?$/i.test(item));
+        if (licenses.length > 0) parsed.licenses = [...(parsed.licenses || []), ...licenses];
+        if (certs.length > 0) parsed.certifications = certs;
+        const rawText = sectionLines.join("\n").trim();
+        const rawWords = rawText.split(/\s+/).filter(Boolean).length;
+        if (rawText && rawWords > 5 && certs.length === 0 && licenses.length === 0) {
+          unparsedContent.certifications = rawText;
         }
         totalFields++;
         break;
       }
-      case "volunteer": {
+      case "licenses": {
+        const licenses = parseLicenses(sectionLines);
+        if (licenses.length > 0) parsed.licenses = [...(parsed.licenses || []), ...licenses];
+        totalFields++;
+        break;
+      }
+      case 'professionalQualities':
+      case 'achievements': {
+        const achievements = parseStringList(sectionLines, { splitDash: true });
+        if (achievements.length > 0) {
+          parsed.achievements = achievements;
+          parsed.professionalQualities = achievements;
+        }
+        totalFields++;
+        break;
+      }
+      case 'awards': {
+        const awards = parseStringList(sectionLines, { splitDash: true });
+        if (awards.length > 0) {
+          parsed.awards = awards;
+          parsed.professionalQualities = parsed.professionalQualities?.length ? parsed.professionalQualities : awards;
+        }
+        totalFields++;
+        break;
+      }
+      case 'memberships': {
+        const memberships = parseStringList(sectionLines);
+        if (memberships.length > 0) parsed.memberships = memberships;
+        totalFields++;
+        break;
+      }
+      case 'publications': {
+        const publications = parseStringList(sectionLines, { splitDash: false });
+        if (publications.length > 0) parsed.publications = publications;
+        totalFields++;
+        break;
+      }
+      case 'training': {
+        const training = parseStringList(sectionLines, { splitDash: false });
+        if (training.length > 0) parsed.training = training;
+        totalFields++;
+        break;
+      }
+      case 'volunteer': {
         const { experience: volEntries } = parseExperience(sectionLines);
-        if (volEntries.length > 0) {
-          volunteer.push(...volEntries);
-        }
+        if (volEntries.length > 0) volunteer.push(...volEntries);
         totalFields++;
         break;
       }
-      case "languages": {
-        // Parse languages as comma-separated or bullet items, append to skills
-        const langItems = sectionLines
-          .map((l) => l.trim())
-          .filter((l) => l.length > 0)
-          .flatMap((l) => l.replace(BULLET_RE, "").split(/[,;â€¢|]\s*/))
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0);
-        if (langItems.length > 0) {
-          parsed.skills = [...(parsed.skills || []), ...langItems];
-        }
+      case 'languages': {
+        const languages = parseStringList(sectionLines);
+        if (languages.length > 0) parsed.languages = languages;
         totalFields++;
         break;
       }
@@ -1624,61 +1669,16 @@ export function parseResumeText(text: string): ParseResult {
         totalFields++;
         break;
       }
-      case "projects": {
-        // Parse project entries: name lines followed by optional description
-        // and bullet lines. Supports:
-        //   Project Name
-        //   One-line description here (short, not starting with bullet)
-        //   - Bullet 1
-        //   - Bullet 2
-        const projects: ResumeDocument["projects"] = [];
-        let currentProject: ResumeDocument["projects"][number] | null = null;
-        let expectDescription = false;
-        for (const rawLine of sectionLines) {
-          const l = rawLine.trim();
-          if (!l) { /* blank line â€” keep currentProject intact */ continue; }
-          // Skip lines that look like OTHER section headers (not projects itself)
-          if (isLikelyHeader(l) && !l.match(/^[â€¢\-*\d.]/) && !/projects?/i.test(l)) continue;
-
-          // Check if this is a bullet line
-          if (/^[â€¢\-*\d.]+\s/.test(l)) {
-            const cleaned = l.replace(/^[â€¢\-*\d.]+\s+/, "").trim();
-            if (currentProject && cleaned) {
-              currentProject.bullets.push(cleaned);
-            }
-            expectDescription = false;
-          } else if (currentProject && expectDescription && currentProject.description === "") {
-            // The line immediately after the project name that is NOT a bullet
-            // and NOT a continuation of a bullet â€” capture as description if short
-            if (l.length < 200 && l.split(/\s+/).length < 40) {
-              currentProject.description = l;
-              expectDescription = false;
-            } else {
-              // Too long for a description â€” treat as a bullet
-              currentProject.bullets.push(l);
-              expectDescription = false;
-            }
-          } else {
-            // Non-bullet line â€” start a new project
-            projects.push({
-              id: `import-proj-${projects.length + 1}`,
-              name: l,
-              description: "",
-              bullets: [],
-            });
-            currentProject = projects[projects.length - 1];
-            expectDescription = true;
-          }
-        }
+      case 'projects': {
+        const projects = parseProjects(sectionLines);
         parsed.projects = projects;
-        // Track unparsed content when projects exist but parsed coverage is low
-        const rawText = sectionLines.join("\n").trim();
+        const rawText = sectionLines.join('\n').trim();
         const rawWords = rawText.split(/\s+/).filter(Boolean).length;
         const parsedWords = projects.reduce(
-          (sum, p) => sum + p.bullets.join(" ").split(/\s+/).filter(Boolean).length,
+          (sum, p) => sum + [p.name, p.description, ...(p.technologies ?? []), ...p.bullets].join(' ').split(/\s+/).filter(Boolean).length,
           0,
         );
-        if (rawText && rawWords > 10 && parsedWords < 3) {
+        if (rawText && rawWords > 10 && parsedWords < rawWords * 0.3) {
           unparsedContent.projects = rawText;
         }
         totalFields++;
@@ -1745,8 +1745,10 @@ export function parseResumeText(text: string): ParseResult {
 
   // Calculate confidence by section
   const allSectionIds: ResumeSectionId[] = [
-    "summary", "experience", "education", "skills",
-    "licenses", "certifications", "professionalQualities", "projects", "languages", "references", "volunteer",
+    'summary', 'experience', 'education', 'skills', 'projects',
+    'certifications', 'licenses', 'volunteer', 'achievements',
+    'awards', 'languages', 'references', 'memberships', 'publications',
+    'training', 'professionalQualities',
   ];
 
   const confidenceBySection: Record<string, SectionConfidence> = {};

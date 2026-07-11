@@ -55,7 +55,9 @@
         "school": "University of California, Berkeley",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
-        "graduation": "2027"
+        "graduation": "2027",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -70,11 +72,23 @@
       "Data structures",
       "Algorithms",
       "Machine learning",
-      "Public speaking",
+      "Public speaking"
+    ],
+    "certifications": [],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
       "English (Native)",
       "Korean (Native)"
     ],
-    "certifications": [],
+    "awards": [
+      "Dean's List - Fall 2023, Spring 2024",
+      "ACM ICPC Regional Finalist"
+    ],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Dean's List - Fall 2023, Spring 2024",
       "ACM ICPC Regional Finalist"
@@ -84,6 +98,7 @@
         "id": "import-proj-1",
         "name": "Course Scheduler App",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Built web app for UC Berkeley students to plan class schedules with conflict detection.",
           "Used React, Node.js, and PostgreSQL with 500+ active users.",
@@ -94,6 +109,7 @@
         "id": "import-proj-2",
         "name": "Chess AI Engine",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Implemented minimax algorithm with alpha-beta pruning.",
           "Achieved 1800+ Elo rating against online opponents.",
@@ -120,18 +136,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "low",
-    "professionalQualities": "medium",
     "projects": "high",
+    "certifications": "low",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "poor",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -158,28 +177,7 @@
     {
       "sectionId": "skills",
       "originalWordCount": 15,
-      "parsedWordCount": 19,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 11,
-      "parsedWordCount": 11,
+      "parsedWordCount": 15,
       "ratio": 1,
       "status": "good"
     },
@@ -191,11 +189,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 11,
+      "parsedWordCount": 11,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 4,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 4,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -205,9 +238,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 11,
       "ratio": 1,
       "status": "good"
     }

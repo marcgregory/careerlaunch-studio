@@ -54,7 +54,9 @@
         "school": "UC Berkeley",
         "degree": "B.S. Computer Engineering",
         "location": "",
-        "graduation": "2012"
+        "graduation": "2012",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -79,6 +81,14 @@
       "AWS DevOps Engineer Professional",
       "CISSP"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [],
@@ -90,13 +100,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "medium",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "medium",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "low",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "poor",
   "warnings": [],
@@ -131,7 +146,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -145,14 +160,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -173,7 +202,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

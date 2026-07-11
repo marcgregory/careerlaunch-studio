@@ -59,7 +59,9 @@
         "school": "Georgia State University",
         "degree": "Bachelor of Science in Human Resource Management",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -79,6 +81,14 @@
       "Professional in Human Resources (PHR) - HRCI",
       "SHRM Certified Professional (SHRM-CP)"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -100,13 +110,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
   "warnings": [],
@@ -141,7 +156,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -155,14 +170,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -183,7 +212,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

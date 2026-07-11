@@ -45,14 +45,18 @@
         "school": "University of Texas at Austin",
         "degree": "Master of Education in Curriculum and Instruction",
         "location": "",
-        "graduation": "2020"
+        "graduation": "2020",
+        "gpa": "",
+        "honors": []
       },
       {
         "id": "import-edu-2",
         "school": "University of Texas at Austin",
         "degree": "Bachelor of Science in Mathematics",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -70,6 +74,17 @@
       "Texas Teaching Certification - Mathematics 7-12",
       "ESL Supplemental Certification"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [
+      "AP Statistics Summer Institute - College Board",
+      "Restorative Practices Training - HISD"
+    ],
     "professionalQualities": [],
     "projects": [],
     "references": [],
@@ -81,15 +96,20 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "low",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
-  "importQuality": "fair",
+  "importQuality": "good",
   "warnings": [],
   "unparsedContent": {},
   "coverage": [
@@ -109,10 +129,10 @@
     },
     {
       "sectionId": "education",
-      "originalWordCount": 38,
+      "originalWordCount": 24,
       "parsedWordCount": 24,
-      "ratio": 0.631578947368421,
-      "status": "partial"
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "skills",
@@ -122,7 +142,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -136,14 +156,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -164,7 +198,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

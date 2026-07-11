@@ -50,7 +50,7 @@
           "Managed daily operations for $150M division with 200+ staff.",
           "Developed KPIs and reporting systems adopted company-wide.",
           "Spearheaded digital transformation initiative modernizing legacy systems.",
-          "Built customer success team reducing churn from 15% to 5% annually. Board Memberships TechBridge Foundation - Board Chair Boston Innovation Council - Advisory Board Member"
+          "Built customer success team reducing churn from 15% to 5% annually."
         ]
       }
     ],
@@ -60,24 +60,39 @@
         "school": "Harvard Business School",
         "degree": "Master of Business Administration",
         "location": "",
-        "graduation": "2008"
+        "graduation": "2008",
+        "gpa": "",
+        "honors": []
       },
       {
         "id": "import-edu-2",
         "school": "Massachusetts Institute of Technology",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
-        "graduation": "2002"
+        "graduation": "2002",
+        "gpa": "",
+        "honors": []
       }
     ],
-    "skills": [
-      "English (Native)",
-      "French (Professional Working)"
-    ],
+    "skills": [],
     "certifications": [
       "Certified Board Director - NACD",
       "Six Sigma Black Belt"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)",
+      "French (Professional Working)"
+    ],
+    "awards": [],
+    "memberships": [
+      "TechBridge Foundation - Board Chair",
+      "Boston Innovation Council - Advisory Board Member"
+    ],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -99,18 +114,21 @@
     "experience": "high",
     "education": "high",
     "skills": "low",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
-    "languages": "medium",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
+    "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -122,9 +140,9 @@
     },
     {
       "sectionId": "experience",
-      "originalWordCount": 191,
-      "parsedWordCount": 164,
-      "ratio": 0.8586387434554974,
+      "originalWordCount": 177,
+      "parsedWordCount": 150,
+      "ratio": 0.847457627118644,
       "status": "good"
     },
     {
@@ -136,27 +154,6 @@
     },
     {
       "sectionId": "skills",
-      "originalWordCount": 0,
-      "parsedWordCount": 5,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 9,
-      "parsedWordCount": 9,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -170,11 +167,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 5,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 5,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -184,7 +216,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

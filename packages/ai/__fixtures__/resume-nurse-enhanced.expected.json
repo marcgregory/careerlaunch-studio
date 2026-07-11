@@ -50,7 +50,9 @@
         "school": "University of Texas Health Science Center",
         "degree": "Bachelor of Science in Nursing",
         "location": "",
-        "graduation": "2016"
+        "graduation": "2016",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -61,27 +63,50 @@
       "+14 more"
     ],
     "certifications": [
+      "Registered Nurse (RN) – Texas Board of Nursing",
       "Basic Life Support (BLS)",
       "Advanced Cardiovascular Life Support (ACLS)",
       "Pediatric Advanced Life Support (PALS)",
       "NIH Stroke Scale Certification"
     ],
+    "licenses": [],
+    "volunteer": [
+      {
+        "id": "import-vol-1",
+        "role": "Medical Volunteer",
+        "company": "American Red Cross",
+        "location": "",
+        "start": "2020",
+        "end": "Present",
+        "bullets": [
+          "Participate in disaster relief medical missions. Provide first aid during community outreach programs."
+        ]
+      }
+    ],
+    "achievements": [
+      "Nurse of the Year (2023)—Patient Safety Excellence Award (2022)—Clinical Leadership Recognition (2021)"
+    ],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
-      "Nurse of the Year (2023)",
-      "Patient Safety Excellence Award (2022)",
-      "Clinical Leadership Recognition (2021)"
+      "Nurse of the Year (2023)—Patient Safety Excellence Award (2022)—Clinical Leadership Recognition (2021)"
     ],
     "projects": [
       {
         "id": "import-proj-1",
         "name": "Hospital Fall Prevention Initiative",
         "description": "Reduced inpatient falls by 18%.",
+        "technologies": [],
         "bullets": []
       },
       {
         "id": "import-proj-2",
         "name": "Electronic Medication Tracking",
         "description": "Improved medication documentation accuracy by 21%.",
+        "technologies": [],
         "bullets": []
       }
     ],
@@ -114,24 +139,7 @@
         "relationship": ""
       }
     ],
-    "summary": "Compassionate Registered Nurse with over 7 years of experience providing high-quality patient care in emergency, medical-surgical, and intensive care settings. Skilled in patient assessment, medication administration, interdisciplinary collaboration, and electronic medical records. Passionate about improving patient outcomes while maintaining exceptional standards of safety and care.",
-    "licenses": [
-      "Registered Nurse (RN) – Texas Board of Nursing",
-      "License Number: RN12345678"
-    ],
-    "volunteer": [
-      {
-        "id": "import-vol-1",
-        "role": "Medical Volunteer",
-        "company": "American Red Cross",
-        "location": "",
-        "start": "2020",
-        "end": "Present",
-        "bullets": [
-          "Participate in disaster relief medical missions. Provide first aid during community outreach programs."
-        ]
-      }
-    ]
+    "summary": "Compassionate Registered Nurse with over 7 years of experience providing high-quality patient care in emergency, medical-surgical, and intensive care settings. Skilled in patient assessment, medication administration, interdisciplinary collaboration, and electronic medical records. Passionate about improving patient outcomes while maintaining exceptional standards of safety and care."
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -139,19 +147,22 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "high",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "medium"
   },
   "importQuality": "fair",
   "warnings": [],
-  "unparsedContent": {
-    "projects": "Hospital Fall Prevention Initiative\nReduced inpatient falls by 18%.\nElectronic Medication Tracking\nImproved medication documentation accuracy by 21%."
-  },
+  "unparsedContent": {},
   "coverage": [
     {
       "sectionId": "summary",
@@ -182,6 +193,20 @@
       "status": "good"
     },
     {
+      "sectionId": "projects",
+      "originalWordCount": 18,
+      "parsedWordCount": 18,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "certifications",
+      "originalWordCount": 30,
+      "parsedWordCount": 26,
+      "ratio": 0.8666666666666667,
+      "status": "good"
+    },
+    {
       "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
@@ -189,23 +214,23 @@
       "status": "good"
     },
     {
-      "sectionId": "certifications",
-      "originalWordCount": 30,
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
       "parsedWordCount": 18,
-      "ratio": 0.6,
-      "status": "partial"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 12,
-      "parsedWordCount": 14,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
-      "originalWordCount": 18,
-      "parsedWordCount": 18,
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -224,9 +249,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 12,
+      "parsedWordCount": 12,
       "ratio": 1,
       "status": "good"
     }

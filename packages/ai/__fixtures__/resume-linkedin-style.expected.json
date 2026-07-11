@@ -44,9 +44,7 @@
         "start": "Jun 2015",
         "end": "Feb 2017",
         "bullets": [
-          "Assisted in executing 12 product launch campaigns.",
-          "Conducted competitor analysis and market research reports.",
-          "Managed social media accounts across 4 platforms."
+          "Assisted in executing 12 product launch campaigns."
         ]
       }
     ],
@@ -56,7 +54,9 @@
         "school": "University of the Philippines",
         "degree": "Bachelor of Science in Business Administration",
         "location": "",
-        "graduation": "2015"
+        "graduation": "2015",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -75,6 +75,19 @@
       "HubSpot Content Marketing Certification",
       "Meta Certified Digital Marketing Associate"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [
+      "Creative thinker",
+      "Data-driven",
+      "Adaptable",
+      "Cross-functional collaborator"
+    ],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Creative thinker",
       "Data-driven",
@@ -91,13 +104,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "high",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "low",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "high"
   },
   "importQuality": "fair",
   "warnings": [],
@@ -113,8 +131,8 @@
     {
       "sectionId": "experience",
       "originalWordCount": 124,
-      "parsedWordCount": 95,
-      "ratio": 0.7661290322580645,
+      "parsedWordCount": 81,
+      "ratio": 0.6532258064516129,
       "status": "partial"
     },
     {
@@ -132,7 +150,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -146,14 +164,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 6,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
       "parsedWordCount": 6,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -174,9 +206,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 6,
+      "parsedWordCount": 6,
       "ratio": 1,
       "status": "good"
     }

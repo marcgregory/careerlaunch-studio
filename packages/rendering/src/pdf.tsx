@@ -183,6 +183,57 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
     </section>`;
   }
 
+  if (section === 'licenses' && resume.licenses.filter((item) => item.name.trim()).length > 0) {
+    const items = resume.licenses
+      .filter((item) => item.name.trim())
+      .map((item) => '<li><strong>' + escapeHtml(item.name) + '</strong>'
+        + (item.issuingAuthority ? '<div class=\'pdf-muted\'>' + escapeHtml(item.issuingAuthority) + '</div>' : '')
+        + (item.licenseNumber ? '<div class=\'pdf-ref-contact\'>License Number: ' + escapeHtml(item.licenseNumber) + '</div>' : '')
+        + (item.expirationDate ? '<div class=\'pdf-ref-contact\'>Expires: ' + escapeHtml(item.expirationDate) + '</div>' : '')
+        + '</li>')
+      .join('');
+    return '<section><div class=\'pdf-section-title-wrap\'><h2 class=\'pdf-section-title\'>Licenses</h2></div><ul class=\'pdf-cert-list\'>' + items + '</ul></section>';
+  }
+
+  if (section === 'volunteer' && resume.volunteer.length > 0) {
+    const entries = resume.volunteer.map((item) => '<article class=\'pdf-entry\'>'
+      + '<div class=\'pdf-entry-top\'><div><h3>' + escapeHtml(item.role) + '</h3><p class=\'pdf-muted\'>' + [item.company, item.location].filter(Boolean).map(escapeHtml).join(' - ') + '</p></div>'
+      + '<p class=\'pdf-dates\'>' + [item.start, item.end].filter(Boolean).map(escapeHtml).join(' - ') + '</p></div>'
+      + (item.bullets.filter(Boolean).length > 0 ? '<ul>' + item.bullets.filter(Boolean).map((b) => '<li>' + escapeHtml(b) + '</li>').join('') + '</ul>' : '')
+      + '</article>').join('\n');
+    return '<section><div class=\'pdf-section-title-wrap\'><h2 class=\'pdf-section-title\'>Volunteer Experience</h2></div>' + entries + '</section>';
+  }
+
+  if (section === 'achievements') {
+    const achievements = resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities;
+    const rendered = renderPdfStringList('Achievements', achievements);
+    if (rendered) return rendered;
+  }
+
+  if (section === 'awards') {
+    const rendered = renderPdfStringList('Awards', resume.awards);
+    if (rendered) return rendered;
+  }
+
+  if (section === 'languages') {
+    const rendered = renderPdfStringList('Languages', resume.languages);
+    if (rendered) return rendered;
+  }
+
+  if (section === 'memberships') {
+    const rendered = renderPdfStringList('Professional Memberships', resume.memberships);
+    if (rendered) return rendered;
+  }
+
+  if (section === 'publications') {
+    const rendered = renderPdfStringList('Publications', resume.publications);
+    if (rendered) return rendered;
+  }
+
+  if (section === 'training') {
+    const rendered = renderPdfStringList('Training', resume.training);
+    if (rendered) return rendered;
+  }
   if (section === "projects" && resume.projects.length > 0) {
     const entries = resume.projects.map((item) => `
       <article class="pdf-entry">
@@ -218,6 +269,12 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   return null;
 }
 
+function renderPdfStringList(title: string, items: string[]): string | null {
+  const values = items.filter(Boolean);
+  if (values.length === 0) return null;
+  const rendered = values.map((item) => '<li>' + escapeHtml(item) + '</li>').join('');
+  return '<section><div class=\'pdf-section-title-wrap\'><h2 class=\'pdf-section-title\'>' + escapeHtml(title) + '</h2></div><ul class=\'pdf-cert-list\'>' + rendered + '</ul></section>';
+}
 /* ------------------------------------------------------------------ */
 /*  CSS generation                                                     */
 /* ------------------------------------------------------------------ */

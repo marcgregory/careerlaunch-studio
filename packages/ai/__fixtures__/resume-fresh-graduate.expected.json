@@ -16,7 +16,9 @@
         "school": "San Jose State University",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
-        "graduation": "2026"
+        "graduation": "2026",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -28,11 +30,35 @@
       "SQL",
       "Git",
       "VS Code",
-      "Linux basics",
+      "Linux basics"
+    ],
+    "certifications": [],
+    "licenses": [],
+    "volunteer": [
+      {
+        "id": "import-vol-1",
+        "role": "Code Coach",
+        "company": "Girls Who Code - San Jose Chapter",
+        "location": "",
+        "start": "Sep 2024",
+        "end": "Present",
+        "bullets": [
+          "Mentor 15 high school students in Python and web development fundamentals."
+        ]
+      }
+    ],
+    "achievements": [],
+    "languages": [
       "English (Native)",
       "Mandarin Chinese (Native)"
     ],
-    "certifications": [],
+    "awards": [
+      "Dean's List - Fall 2024, Spring 2025",
+      "SJSU Hackathon - Best Beginner Project Award"
+    ],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Dean's List - Fall 2024, Spring 2025",
       "SJSU Hackathon - Best Beginner Project Award"
@@ -42,6 +68,7 @@
         "id": "import-proj-1",
         "name": "Weather Dashboard App",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Built responsive weather application using React and OpenWeather API.",
           "Implemented location-based forecasting with 7-day outlook display.",
@@ -52,6 +79,7 @@
         "id": "import-proj-2",
         "name": "Task Management CLI Tool",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Developed command-line task manager in Python with SQLite persistence.",
           "Implemented features including task creation, prioritization, and deadline tracking."
@@ -69,21 +97,7 @@
         "relationship": ""
       }
     ],
-    "summary": "Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role.",
-    "volunteer": [
-      {
-        "id": "import-vol-1",
-        "role": "Code Coach",
-        "company": "Girls Who Code - San Jose Chapter",
-        "location": "",
-        "start": "Sep 2024",
-        "end": "Present",
-        "bullets": [
-          "Mentor 15 high school students in Python and web development fundamentals.",
-          "Lead weekly coding workshops and review student projects."
-        ]
-      }
-    ]
+    "summary": "Recent computer science graduate with internship experience in software development. Eager to apply technical skills and collaborate on impactful projects in a full-time engineering role."
   },
   "confidence": 60,
   "confidenceBySection": {
@@ -91,19 +105,23 @@
     "experience": "low",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "low",
-    "professionalQualities": "medium",
     "projects": "high",
+    "certifications": "low",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "poor",
   "warnings": [
     "Could not detect work experience entries. Check that dates are included.",
-    "Low import quality for \"education\": 39% coverage (11/28 words preserved).",
-    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
+    "Low import quality for \"education\": 39% coverage (11/28 words preserved)."
   ],
   "unparsedContent": {},
   "coverage": [
@@ -131,28 +149,7 @@
     {
       "sectionId": "skills",
       "originalWordCount": 11,
-      "parsedWordCount": 16,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 14,
-      "parsedWordCount": 14,
+      "parsedWordCount": 11,
       "ratio": 1,
       "status": "good"
     },
@@ -164,11 +161,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 34,
+      "parsedWordCount": 20,
+      "ratio": 0.5882352941176471,
+      "status": "partial"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 14,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 14,
+      "parsedWordCount": 14,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 5,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 5,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -178,9 +210,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
-      "originalWordCount": 34,
-      "parsedWordCount": 34,
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 0,
+      "parsedWordCount": 14,
       "ratio": 1,
       "status": "good"
     }

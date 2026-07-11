@@ -42,7 +42,9 @@
         "school": "Texas State University",
         "degree": "B.A. Communication Studies",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -57,6 +59,19 @@
       "HubSpot Customer Success Certificate",
       "Project Management Professional (PMP)"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [
+      "Detail-oriented",
+      "Team player",
+      "Strong communicator",
+      "Problem solver"
+    ],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Detail-oriented",
       "Team player",
@@ -68,6 +83,7 @@
         "id": "import-proj-1",
         "name": "Service Recovery Playbook",
         "description": "",
+        "technologies": [],
         "bullets": []
       }
     ],
@@ -108,13 +124,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "high",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "high"
   },
   "importQuality": "good",
   "warnings": [],
@@ -149,9 +170,9 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
+      "sectionId": "projects",
+      "originalWordCount": 3,
+      "parsedWordCount": 3,
       "ratio": 1,
       "status": "good"
     },
@@ -163,16 +184,30 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 7,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
       "parsedWordCount": 7,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
-      "originalWordCount": 3,
-      "parsedWordCount": 3,
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -191,9 +226,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 7,
+      "parsedWordCount": 7,
       "ratio": 1,
       "status": "good"
     }

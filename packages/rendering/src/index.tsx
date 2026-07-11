@@ -148,7 +148,7 @@ function renderSection(
     );
   if (section === "skills")
     return <SkillsSection key={section} resume={resume} template={template} />;
-  if (section === "certifications")
+  if (section === 'certifications')
     return (
       <CertificationsSection
         key={section}
@@ -156,7 +156,11 @@ function renderSection(
         template={template}
       />
     );
-  if (section === "professionalQualities")
+  if (section === 'licenses')
+    return <LicensesSection key={section} resume={resume} template={template} />;
+  if (section === 'volunteer')
+    return <VolunteerSection key={section} resume={resume} template={template} />;
+  if (section === 'achievements' || section === 'professionalQualities')
     return (
       <ProfessionalQualitiesSection
         key={section}
@@ -164,12 +168,20 @@ function renderSection(
         template={template}
       />
     );
-  if (section === "references")
+  if (section === 'awards')
+    return <StringListSection key={section} title='Awards' items={resume.awards} template={template} />;
+  if (section === 'memberships')
+    return <StringListSection key={section} title='Professional Memberships' items={resume.memberships} template={template} />;
+  if (section === 'publications')
+    return <StringListSection key={section} title='Publications' items={resume.publications} template={template} />;
+  if (section === 'training')
+    return <StringListSection key={section} title='Training' items={resume.training} template={template} />;
+  if (section === 'languages')
+    return <StringListSection key={section} title='Languages' items={resume.languages} template={template} />;
+  if (section === 'references')
     return (
       <ReferencesSection key={section} resume={resume} template={template} />
     );
-  if (section === "languages")
-    return null; // Languages are rendered as part of skills
   if (section === "projects")
     return (
       <ProjectsSection key={section} resume={resume} template={template} />
@@ -289,6 +301,87 @@ function EducationSection({
   );
 }
 
+function VolunteerSection({
+  resume,
+  template,
+}: {
+  resume: ResumeDocument;
+  template: TemplateDefinition;
+}) {
+  if (resume.volunteer.length === 0) return null;
+  return (
+    <section className='mt-8'>
+      <ResumeHeading template={template}>Volunteer Experience</ResumeHeading>
+      <div className='mt-4 space-y-6'>
+        {resume.volunteer.map((item) => (
+          <div key={item.id}>
+            <div className='flex flex-wrap items-baseline justify-between gap-2'>
+              <div>
+                <h3 className='text-lg font-bold leading-tight'>{item.role}</h3>
+                <p className='text-[15px] font-black text-[#4b4b4b]'>{[item.company, item.location].filter(Boolean).join(' - ')}</p>
+              </div>
+              <p className='text-[15px] font-black text-[#777]'>{[item.start, item.end].filter(Boolean).join(' - ')}</p>
+            </div>
+            {item.bullets.filter(Boolean).length > 0 && (
+              <ul className='mt-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b]'>
+                {item.bullets.filter(Boolean).map((bullet) => <li key={bullet}>{bullet}</li>)}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LicensesSection({
+  resume,
+  template,
+}: {
+  resume: ResumeDocument;
+  template: TemplateDefinition;
+}) {
+  const licenses = resume.licenses.filter((item) => item.name.trim());
+  if (licenses.length === 0) return null;
+  return (
+    <section className='mt-8'>
+      <ResumeHeading template={template}>Licenses</ResumeHeading>
+      <ul className='mt-3 space-y-2 text-[15px] font-medium text-[#33343b]'>
+        {licenses.map((item) => (
+          <li key={item.id}>
+            <span className='font-black text-[#4b4b4b]'>{item.name}</span>
+            {[item.issuingAuthority, item.licenseNumber && 'License Number: ' + item.licenseNumber, item.expirationDate && 'Expires: ' + item.expirationDate]
+              .filter(Boolean)
+              .map((detail) => (
+                <div key={detail} className='text-[#555]'>{detail}</div>
+              ))}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function StringListSection({
+  title,
+  items,
+  template,
+}: {
+  title: string;
+  items: string[];
+  template: TemplateDefinition;
+}) {
+  const values = items.filter(Boolean);
+  if (values.length === 0) return null;
+  return (
+    <section className='mt-8'>
+      <ResumeHeading template={template}>{title}</ResumeHeading>
+      <ul className='mt-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b]'>
+        {values.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    </section>
+  );
+}
 function ProfessionalQualitiesSection({
   resume,
   template,

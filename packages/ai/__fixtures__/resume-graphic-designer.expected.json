@@ -58,7 +58,9 @@
         "school": "Rhode Island School of Design",
         "degree": "Bachelor of Fine Arts in Graphic Design",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -73,19 +75,29 @@
       "illustration",
       "prototyping",
       "print design",
-      "photo retouching",
-      "English (Native)"
+      "photo retouching"
     ],
     "certifications": [
       "Google UX Design Certificate",
       "Adobe Certified Professional - Visual Design"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)"
+    ],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
         "name": "Personal Brand Refresh",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Redesigned personal brand identity including logo, website, and social media assets.",
           "Featured in 3 design publications and received AIGA Design Award."
@@ -95,6 +107,7 @@
         "id": "import-proj-2",
         "name": "Community Mural Project",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Led 10-person volunteer team creating 200ft community mural.",
           "Coordinated with city officials for permitting and material procurement."
@@ -120,18 +133,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/2 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -158,28 +174,7 @@
     {
       "sectionId": "skills",
       "originalWordCount": 19,
-      "parsedWordCount": 21,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 10,
-      "parsedWordCount": 10,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
+      "parsedWordCount": 19,
       "ratio": 1,
       "status": "good"
     },
@@ -191,11 +186,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 10,
+      "parsedWordCount": 10,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 2,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 2,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -205,7 +235,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

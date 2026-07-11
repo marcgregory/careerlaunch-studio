@@ -29,7 +29,9 @@
         "school": "University of Washington",
         "degree": "B.S. Computer Science",
         "location": "",
-        "graduation": "2022"
+        "graduation": "2022",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -47,6 +49,16 @@
       "Agile/Scrum"
     ],
     "certifications": [],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [
+      "Results-driven"
+    ],
+    "languages": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [
       "Results-driven"
     ],
@@ -60,13 +72,18 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "low",
-    "professionalQualities": "medium",
     "projects": "low",
+    "certifications": "low",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "low",
     "references": "low",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "medium"
   },
   "importQuality": "fair",
   "warnings": [],
@@ -101,7 +118,7 @@
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -115,14 +132,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 1,
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
       "parsedWordCount": 1,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -143,9 +174,30 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
       "originalWordCount": 0,
       "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
+      "originalWordCount": 1,
+      "parsedWordCount": 1,
       "ratio": 1,
       "status": "good"
     }

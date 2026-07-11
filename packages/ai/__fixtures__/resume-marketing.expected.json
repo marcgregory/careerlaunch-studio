@@ -59,7 +59,9 @@
         "school": "University of Southern California",
         "degree": "Bachelor of Arts in Marketing",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -73,14 +75,23 @@
       "Adobe Creative Suite",
       "campaign analytics",
       "brand strategy",
-      "project management",
-      "English (Native)",
-      "Korean (Native)"
+      "project management"
     ],
     "certifications": [
       "Google Analytics Individual Qualification",
       "HubSpot Inbound Marketing Certification"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)",
+      "Korean (Native)"
+    ],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -102,18 +113,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -140,12 +154,12 @@
     {
       "sectionId": "skills",
       "originalWordCount": 21,
-      "parsedWordCount": 25,
+      "parsedWordCount": 21,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -159,14 +173,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -175,9 +203,9 @@
     {
       "sectionId": "languages",
       "originalWordCount": 4,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 4,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -187,7 +215,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

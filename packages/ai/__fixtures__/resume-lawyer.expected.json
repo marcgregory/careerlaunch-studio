@@ -59,7 +59,9 @@
         "school": "University of Notre Dame",
         "degree": "Bachelor of Arts in Political Science",
         "location": "",
-        "graduation": "2013"
+        "graduation": "2013",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -72,11 +74,20 @@
       "due diligence",
       "litigation support",
       "intellectual property",
-      "risk assessment",
+      "risk assessment"
+    ],
+    "certifications": [],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
       "English (Native)",
       "Spanish (Professional Working)"
     ],
-    "certifications": [],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -98,18 +109,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "low",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "low",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "fair",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/5 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -136,12 +150,12 @@
     {
       "sectionId": "skills",
       "originalWordCount": 20,
-      "parsedWordCount": 25,
+      "parsedWordCount": 20,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "licenses",
+      "sectionId": "projects",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -155,14 +169,28 @@
       "status": "good"
     },
     {
-      "sectionId": "professionalQualities",
+      "sectionId": "licenses",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
     {
-      "sectionId": "projects",
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,
@@ -171,9 +199,9 @@
     {
       "sectionId": "languages",
       "originalWordCount": 5,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 5,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -183,7 +211,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

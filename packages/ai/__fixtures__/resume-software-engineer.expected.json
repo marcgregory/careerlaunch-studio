@@ -59,7 +59,9 @@
         "school": "Bachelor of Science in Computer Science",
         "degree": "Bachelor of Science in Computer Science",
         "location": "",
-        "graduation": "2016"
+        "graduation": "2016",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -86,20 +88,30 @@
       "Jest",
       "Playwright",
       "Datadog",
-      "Sentry",
-      "English (Native)",
-      "Mandarin Chinese (Professional Working)"
+      "Sentry"
     ],
     "certifications": [
       "AWS Solutions Architect - Associate",
       "Google Cloud Associate Engineer"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)",
+      "Mandarin Chinese (Professional Working)"
+    ],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
         "name": "Open Source: react-hook-form-contrib",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Published 5 npm packages adopted by 3K+ repositories.",
           "Maintained documentation and triaged community issues."
@@ -109,6 +121,7 @@
         "id": "import-proj-2",
         "name": "Personal Portfolio Dashboard",
         "description": "",
+        "technologies": [],
         "bullets": [
           "Built real-time analytics dashboard using Next.js and Chart.js.",
           "Integrated GitHub and LinkedIn APIs for unified activity feed."
@@ -134,18 +147,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "high",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/6 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -172,28 +188,7 @@
     {
       "sectionId": "skills",
       "originalWordCount": 30,
-      "parsedWordCount": 36,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 9,
-      "parsedWordCount": 9,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
+      "parsedWordCount": 30,
       "ratio": 1,
       "status": "good"
     },
@@ -205,11 +200,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 9,
+      "parsedWordCount": 9,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 6,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 6,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -219,7 +249,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

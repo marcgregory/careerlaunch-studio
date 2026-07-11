@@ -46,7 +46,9 @@
         "school": "Loyola University Chicago",
         "degree": "Bachelor of Science in Nursing",
         "location": "",
-        "graduation": "2018"
+        "graduation": "2018",
+        "gpa": "",
+        "honors": []
       }
     ],
     "skills": [
@@ -60,14 +62,24 @@
       "patient education",
       "critical thinking",
       "BLS",
-      "ACLS",
-      "English (Native)",
-      "Spanish (Conversational)"
+      "ACLS"
     ],
     "certifications": [
+      "Registered Nurse (RN) - Illinois Board of Nursing",
       "Basic Life Support (BLS) - American Heart Association",
       "Advanced Cardiac Life Support (ACLS) - American Heart Association"
     ],
+    "licenses": [],
+    "volunteer": [],
+    "achievements": [],
+    "languages": [
+      "English (Native)",
+      "Spanish (Conversational)"
+    ],
+    "awards": [],
+    "memberships": [],
+    "publications": [],
+    "training": [],
     "professionalQualities": [],
     "projects": [],
     "references": [
@@ -81,10 +93,7 @@
         "relationship": ""
       }
     ],
-    "summary": "Certified registered nurse with 6 years of experience in medical-surgical nursing and progressive care. Skilled in patient assessment, care coordination, and interdisciplinary collaboration.",
-    "licenses": [
-      "Registered Nurse (RN) - Illinois Board of Nursing"
-    ]
+    "summary": "Certified registered nurse with 6 years of experience in medical-surgical nursing and progressive care. Skilled in patient assessment, care coordination, and interdisciplinary collaboration."
   },
   "confidence": 90,
   "confidenceBySection": {
@@ -92,18 +101,21 @@
     "experience": "high",
     "education": "high",
     "skills": "high",
-    "licenses": "low",
-    "certifications": "high",
-    "professionalQualities": "low",
     "projects": "low",
+    "certifications": "high",
+    "licenses": "low",
+    "volunteer": "low",
+    "achievements": "low",
+    "awards": "low",
     "languages": "high",
     "references": "high",
-    "volunteer": "low"
+    "memberships": "low",
+    "publications": "low",
+    "training": "low",
+    "professionalQualities": "low"
   },
   "importQuality": "good",
-  "warnings": [
-    "Low import quality for \"languages\": 0% coverage (0/4 words preserved)."
-  ],
+  "warnings": [],
   "unparsedContent": {},
   "coverage": [
     {
@@ -130,28 +142,7 @@
     {
       "sectionId": "skills",
       "originalWordCount": 20,
-      "parsedWordCount": 24,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "licenses",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
-      "ratio": 1,
-      "status": "good"
-    },
-    {
-      "sectionId": "certifications",
-      "originalWordCount": 25,
-      "parsedWordCount": 17,
-      "ratio": 0.68,
-      "status": "partial"
-    },
-    {
-      "sectionId": "professionalQualities",
-      "originalWordCount": 0,
-      "parsedWordCount": 0,
+      "parsedWordCount": 20,
       "ratio": 1,
       "status": "good"
     },
@@ -163,11 +154,46 @@
       "status": "good"
     },
     {
+      "sectionId": "certifications",
+      "originalWordCount": 25,
+      "parsedWordCount": 25,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "licenses",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "volunteer",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "achievements",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "awards",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
       "sectionId": "languages",
       "originalWordCount": 4,
-      "parsedWordCount": 0,
-      "ratio": 0,
-      "status": "missing"
+      "parsedWordCount": 4,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "references",
@@ -177,7 +203,28 @@
       "status": "good"
     },
     {
-      "sectionId": "volunteer",
+      "sectionId": "memberships",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "publications",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "training",
+      "originalWordCount": 0,
+      "parsedWordCount": 0,
+      "ratio": 1,
+      "status": "good"
+    },
+    {
+      "sectionId": "professionalQualities",
       "originalWordCount": 0,
       "parsedWordCount": 0,
       "ratio": 1,

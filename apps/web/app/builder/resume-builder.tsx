@@ -37,6 +37,7 @@ import { useAnalytics } from "../../lib/analytics";
 import { AppHeader } from "../../components/app-header";
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
+type EditableStringListSection = 'skills' | 'certifications' | 'professionalQualities' | 'achievements' | 'languages' | 'awards' | 'memberships' | 'publications' | 'training';
 type UpgradePrompt = {
   title: string;
   message: string;
@@ -44,17 +45,22 @@ type UpgradePrompt = {
 };
 
 const sectionLabels: Record<ResumeSectionId, string> = {
-  summary: "Summary",
-  experience: "Experience",
-  education: "Education",
-  skills: "Skills",
-  licenses: "Licenses",
-  certifications: "Certifications",
-  professionalQualities: "Achievements",
-  projects: "Projects",
-  languages: "Languages",
-  references: "References",
-  volunteer: "Volunteer"
+  summary: 'Summary',
+  experience: 'Experience',
+  education: 'Education',
+  skills: 'Skills',
+  licenses: 'Licenses',
+  certifications: 'Certifications',
+  professionalQualities: 'Achievements',
+  achievements: 'Achievements',
+  awards: 'Awards',
+  memberships: 'Memberships',
+  publications: 'Publications',
+  training: 'Training',
+  projects: 'Projects',
+  languages: 'Languages',
+  references: 'References',
+  volunteer: 'Volunteer Experience'
 };
 
 export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initialResume: ResumeDocument; canUsePremiumTemplates: boolean }) {
@@ -197,24 +203,24 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
     }));
   }
 
-  function updateList(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number, value: string) {
+  function updateList(section: EditableStringListSection, index: number, value: string) {
     setResume((current) => ({
       ...current,
       [section]: current[section].map((item, itemIndex) => (itemIndex === index ? value : item))
     }));
   }
 
-  function addListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities") {
+  function addListItem(section: EditableStringListSection) {
     setResume((current) => ({ ...current, [section]: [...current[section], ""] }));
     toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item added.`);
   }
 
-  function removeListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number) {
+  function removeListItem(section: EditableStringListSection, index: number) {
     setResume((current) => ({ ...current, [section]: current[section].filter((_, itemIndex) => itemIndex !== index) }));
     toast.success(`${sectionLabels[section as ResumeSectionId] ?? section} item removed.`);
   }
 
-  function moveListItem(section: "skills" | "licenses" | "certifications" | "professionalQualities", index: number, direction: -1 | 1) {
+  function moveListItem(section: EditableStringListSection, index: number, direction: -1 | 1) {
     setResume((current) => ({ ...current, [section]: moveItem(current[section], index, direction) }));
   }
 
