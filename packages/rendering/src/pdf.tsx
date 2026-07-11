@@ -509,8 +509,6 @@ function groupSkills(skills: string[]): SkillGroup[] {
   for (const [category, items] of groups) {
     result.push({ category, items });
   }
-  // Sort groups by category name for stable ordering
-  result.sort((a, b) => a.category.localeCompare(b.category));
 
   if (uncategorized.length > 0) {
     result.push({ category: "Skills", items: uncategorized });
