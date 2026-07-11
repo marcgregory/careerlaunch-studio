@@ -79,14 +79,14 @@ export function normalizeResume(value: Partial<ResumeDocument>): ResumeDocument 
     certifications: normalizeStringList(value.certifications),
     licenses: normalizeLicenses(value.licenses),
     volunteer: dedupById(Array.isArray(value.volunteer) ? value.volunteer : []),
-    achievements: achievements.length > 0 ? achievements : legacyAchievements,
+    achievements,
     languages: normalizeStringList(value.languages),
     references: normalizeReferences(value.references),
     awards: normalizeStringList(value.awards),
     memberships: normalizeStringList(value.memberships),
     publications: normalizeStringList(value.publications),
     training: normalizeStringList(value.training),
-    professionalQualities: legacyAchievements.length > 0 ? legacyAchievements : achievements,
+    professionalQualities: legacyAchievements,
   };
 }
 

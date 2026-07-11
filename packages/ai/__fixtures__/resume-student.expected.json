@@ -89,10 +89,7 @@
     "memberships": [],
     "publications": [],
     "training": [],
-    "professionalQualities": [
-      "Dean's List - Fall 2023, Spring 2024",
-      "ACM ICPC Regional Finalist"
-    ],
+    "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
@@ -212,7 +209,7 @@
     {
       "sectionId": "achievements",
       "originalWordCount": 0,
-      "parsedWordCount": 11,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -261,7 +258,7 @@
     {
       "sectionId": "professionalQualities",
       "originalWordCount": 0,
-      "parsedWordCount": 11,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     }

@@ -156,8 +156,10 @@ function detectSections(
   const allHeaderIndices = new Set(merged.map((h) => h.index));
 
   for (let i = 0; i < merged.length; i++) {
-    const end =
-      i + 1 < merged.length ? merged[i + 1].index : lines.length;
+    const nextDistinctHeader = merged
+      .slice(i + 1)
+      .find((h) => h.index > merged[i].index);
+    const end = nextDistinctHeader ? nextDistinctHeader.index : lines.length;
 
     if (sections.has(merged[i].id)) {
       const existing = sections.get(merged[i].id)!;
@@ -274,15 +276,35 @@ function extractContact(
 /* ------------------------------------------------------------------ */
 
 const DATE_RANGE_RE =
-  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*[-–to]+\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
+  /(\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\d{4})\s*\d{0,4})\s*(?:-+|–|—|to)\s*(\w+(?:\s+\d{4})?|\d{4}|present|current|now)/i;
 const YEAR_RANGE_RE =
-  /(\d{4})\s*[-–]\s*(\d{4}|present|current|now)/i;
-const BULLET_RE = /^[•\-*\d.]+(?:\s+|$)/;
+  /(\d{4})\s*(?:-+|–|—|to)\s*(\d{4}|present|current|now)/i;
+const BULLET_RE = /^(?:[•●▪◦*\-]|\d+[.)])\s*/;
+function expandInlineBulletLines(lines: string[]): string[] {
+  const expanded: string[] = [];
+  const inlineBulletRe = /(?=[•●▪◦]\s*)/g;
 
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const markerCount = (trimmed.match(/[•●▪◦]/g) || []).length;
+    if (markerCount > 1) {
+      const pieces = trimmed
+        .split(inlineBulletRe)
+        .map((piece) => piece.trim())
+        .filter(Boolean);
+      expanded.push(...pieces);
+    } else {
+      expanded.push(line);
+    }
+  }
+
+  return expanded;
+}
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
   warnings: string[];
 } {
+  lines = expandInlineBulletLines(lines);
   const experience: ResumeDocument["experience"] = [];
   const warnings: string[] = [];
   let i = 0;
@@ -562,7 +584,7 @@ function parseEducation(lines: string[]): {
     if (!trimmed || BULLET_RE.test(trimmed)) continue;
 
     if (
-      /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(
+      /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(
         trimmed,
       )
     ) {
@@ -584,7 +606,7 @@ function parseEducation(lines: string[]): {
         if (
           nextLine &&
           !BULLET_RE.test(nextLine) &&
-          /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Associate|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(nextLine)
+          /\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(nextLine)
         ) {
           consumed.add(i);
           // Only consume blank lines between the duplicates, not the duplicate itself
@@ -650,6 +672,20 @@ function parseEducation(lines: string[]): {
         }
       }
       degree = degree.replace(/[-–,]\s*$/, "").trim();
+
+      const structuralParts = trimmed.includes("|")
+        ? trimmed.split(/\s*\|\s*/).map((part) => part.trim()).filter(Boolean)
+        : [];
+      if (structuralParts.length >= 2) {
+        degree = structuralParts[0].replace(/\(?\b(?:19|20)\d{2}\b\)?/g, "").trim();
+        const schoolText = structuralParts.slice(1).join(" - ");
+        const structuralGrad = extractGraduationYear(schoolText);
+        school = schoolText
+          .replace(/\(?\b(?:19|20)\d{2}\b\)?/g, "")
+          .replace(new RegExp("[,-]\\s*" + String.fromCharCode(36)), "")
+          .trim();
+        if (structuralGrad && gradYear === "") gradYear = structuralGrad;
+      }
 
       // --- Step 4: special handling for single-line hyphen format ---
       // "Degree - School, Year" => Degree and School are separated by " - "
@@ -784,43 +820,77 @@ function extractDegree(text: string, school: string): string {
 
 function parseSkills(lines: string[]): string[] {
   const skills: string[] = [];
+  let currentCategory = '';
+
+  const pushSkill = (skill: string, category = currentCategory) => {
+    const value = skill.trim();
+    if (!value || value.length <= 1 || value.length >= 80) return;
+    skills.push(category ? `${category}: ${value}` : value);
+  };
+
+  const categoryLineRe = /^([A-Za-z][A-Za-z0-9 /&+.#-]{1,40})\s{2,}(.+)$/;
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // Strip bullet markers if present — skills are often listed as bullet items
-    const deBulleted = trimmed.replace(BULLET_RE, "").trim();
+    const deBulleted = trimmed.replace(BULLET_RE, '').trim();
     const useLine = deBulleted || trimmed;
 
-    // Detect table-format skills with category labels separated by 2+ spaces
-    // "Frontend                    HTML, CSS, TypeScript"
-    const cols = useLine.split(/\s{2,}/).filter(Boolean);
-    // Take the last column (actual skills) — earlier columns are category labels
-    const target = cols.length > 1 ? cols[cols.length - 1] : useLine;
+    const categoryMatch = useLine.match(categoryLineRe);
+    if (categoryMatch) {
+      currentCategory = categoryMatch[1].trim();
+      for (const item of splitSkillItems(categoryMatch[2])) pushSkill(item, currentCategory);
+      continue;
+    }
 
-    // Split on comma, pipe, bullet, or newline within the skills section
-    const candidates = target
-      .split(/[,|•;]\s*/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 1 && s.length < 60);
+    const colonMatch = useLine.match(/^([A-Za-z][A-Za-z0-9 /&+.#-]{1,40})\s*:\s*(.+)$/);
+    if (colonMatch) {
+      currentCategory = colonMatch[1].trim();
+      for (const item of splitSkillItems(colonMatch[2])) pushSkill(item, currentCategory);
+      continue;
+    }
 
-    if (target.includes(",") || target.includes("|")) {
-      skills.push(...candidates);
+    const categoryPrefixMatch = useLine.match(/^(Cloud\s*\/\s*Infra(?:\s*\/\s*Tools)?|IT\s*\/\s*Hardware|Coding with AI|Soft Skills?|Technical Skills?|Project Management|Frontend|Backend|DevOps|Database|Testing(?: Tools)?|Tools|Languages?|Frameworks?|Libraries|LLM|Automation|Design|Marketing|Accounting|Finance|Clinical|Leadership|Management)\s+(.+)$/i);
+    if (categoryPrefixMatch) {
+      currentCategory = categoryPrefixMatch[1].trim();
+      for (const item of splitSkillItems(categoryPrefixMatch[2])) pushSkill(item, currentCategory);
+      continue;
+    }
+
+    if (useLine.includes(',') || useLine.includes('|') || /[•●▪◦;]/.test(useLine)) {
+      for (const item of splitSkillItems(useLine)) pushSkill(item, currentCategory);
     } else {
-      // For single values, still prefer the last column from table format
-      skills.push(target);
+      pushSkill(useLine, currentCategory);
     }
   }
 
   return [...new Set(skills)];
 }
 
+function splitSkillItems(value: string): string[] {
+  return value
+    .split(/[,|;•●▪◦]\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+function isDividerLine(line: string): boolean {
+  return /^[_\-=]{4,}$/.test(line.trim());
+}
+
+function looksLikeEducationContentLine(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  if (/^\(?\d{4}\)?$/.test(trimmed)) return true;
+  if (/\b(?:B\.?(?:A|S|Sc|Eng)|M\.?(?:A|S|Sc|Eng|BA|FA)|Ph\.?D\.?|Bachelor|Master|Doctorate|MBA|MD|JD|Bootcamp|Immersive|Apprenticeship)\b/i.test(trimmed)) return true;
+  if (/\b(?:University|College|Institute|School|Academy|Polytechnic)\b/i.test(trimmed)) return true;
+  return false;
+}
 function parseStringList(lines: string[], options?: { splitDash?: boolean }): string[] {
   const items: string[] = [];
   for (const raw of lines) {
     const line = raw.trim().replace(BULLET_RE, '').trim();
-    if (!line) continue;
+    if (!line || isDividerLine(line)) continue;
     const pieces = options?.splitDash
       ? line.split(/\s*[–—]\s*/)
       : line.split(/[,;•|]\s*/);
@@ -1698,7 +1768,9 @@ export function parseResumeText(text: string): ParseResult {
       case "certifications": {
         const { licenseLines, certLines } = splitLicenseAndCertificationLines(sectionLines);
         const licenses = parseLicenses(licenseLines);
-        const certs = parseStringList(certLines).filter((item) => !/^certifications?$/i.test(item));
+        const certs = parseStringList(certLines)
+          .filter((item) => !/^certifications?$/i.test(item))
+          .filter((item) => !looksLikeEducationContentLine(item));
         if (licenses.length > 0) parsed.licenses = [...(parsed.licenses || []), ...licenses];
         if (certs.length > 0) parsed.certifications = certs;
         const rawText = sectionLines.join("\n").trim();
@@ -1715,12 +1787,18 @@ export function parseResumeText(text: string): ParseResult {
         totalFields++;
         break;
       }
-      case 'professionalQualities':
+      case 'professionalQualities': {
+        const qualities = parseStringList(sectionLines, { splitDash: true });
+        if (qualities.length > 0) {
+          parsed.professionalQualities = qualities;
+        }
+        totalFields++;
+        break;
+      }
       case 'achievements': {
         const achievements = parseStringList(sectionLines, { splitDash: true });
         if (achievements.length > 0) {
           parsed.achievements = achievements;
-          parsed.professionalQualities = achievements;
         }
         totalFields++;
         break;
@@ -1729,7 +1807,6 @@ export function parseResumeText(text: string): ParseResult {
         const awards = parseStringList(sectionLines, { splitDash: true });
         if (awards.length > 0) {
           parsed.awards = awards;
-          parsed.professionalQualities = parsed.professionalQualities?.length ? parsed.professionalQualities : awards;
         }
         totalFields++;
         break;

@@ -432,8 +432,8 @@ Developer | Acme | 2020 - Present
     // Skills array should have items
     expect(result.parsed.skills!.length).toBeGreaterThanOrEqual(3);
     // Should include actual skills not just proficiency levels
-    expect(result.parsed.skills).toContain("HTML");
-    expect(result.parsed.skills).toContain("React");
+    expect(result.parsed.skills).toContain("Frontend: HTML");
+    expect(result.parsed.skills).toContain("Frontend: React");
   });
 
   /* ------------------------------------------------------------------ */
@@ -829,8 +829,8 @@ Developer | Acme | 2020 - Present
     expect(projects[0].bullets.length).toBe(2);
   });
 
-  /* Bug 10: Achievements section parsed as professional qualities */
-  it("should parse Achievements heading items as professional qualities", () => {
+  /* Bug 10: Achievements section parsed as achievements */
+  it("should parse Achievements heading items as achievements", () => {
     const text = `Test User
 test@email.com
 
@@ -842,13 +842,13 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(2);
-    expect(result.parsed.professionalQualities).toContain("Employee of the Month");
-    expect(result.parsed.professionalQualities).toContain("Top Performer Q4");
+    expect(result.parsed.achievements?.length).toBeGreaterThanOrEqual(2);
+    expect(result.parsed.achievements).toContain("Employee of the Month");
+    expect(result.parsed.achievements).toContain("Top Performer Q4");
   });
 
   /* Bug 10: Awards heading */
-  it("should parse Awards heading as professional qualities", () => {
+  it("should parse Awards heading as awards", () => {
     const text = `Test User
 test@email.com
 
@@ -860,12 +860,12 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(1);
-    expect(result.parsed.professionalQualities).toContain("Best Innovation Award");
+    expect(result.parsed.awards?.length).toBeGreaterThanOrEqual(1);
+    expect(result.parsed.awards).toContain("Best Innovation Award");
   });
 
   /* Bug 10: Honors heading */
-  it("should parse Honors heading as professional qualities", () => {
+  it("should parse Honors heading as awards", () => {
     const text = `Test User
 test@email.com
 
@@ -877,8 +877,8 @@ Experience
 Developer | Acme | 2020 - Present
 - Worked.`;
     const result = parseResumeText(text);
-    expect(result.parsed.professionalQualities?.length).toBeGreaterThanOrEqual(2);
-    expect(result.parsed.professionalQualities).toContain("Dean's List");
+    expect(result.parsed.awards?.length).toBeGreaterThanOrEqual(2);
+    expect(result.parsed.awards).toContain("Dean's List");
   });
 
   /* Bug 11: Volunteer experience parsed as experience entries */
@@ -1043,12 +1043,12 @@ Developer | Acme | 2020 - Present
 - Worked.`;
 
     const result = parseResumeText(text);
-    const quals = result.parsed.professionalQualities || [];
+    const achievements = result.parsed.achievements || [];
 
-    expect(quals).toContain("Employee of the Year (2023)");
-    expect(quals).toContain("Analytics Excellence Award (2022)");
-    expect(quals).toContain("Speaker at Data Summit Texas 2024");
-    expect(quals.length).toBeGreaterThanOrEqual(3);
+    expect(achievements).toContain("Employee of the Year (2023)");
+    expect(achievements).toContain("Analytics Excellence Award (2022)");
+    expect(achievements).toContain("Speaker at Data Summit Texas 2024");
+    expect(achievements.length).toBeGreaterThanOrEqual(3);
   });
 
   /* Issue 4: Project descriptions and bullets preserved */
@@ -1159,5 +1159,123 @@ Bar Number: 1234567`;
         licenseNumber: "1234567",
       }),
     ]);
+  });
+});
+describe("generic PDF extraction regressions", () => {
+  it("parses combined Education & Certifications sections without losing either side", () => {
+    const text = `Marc Example
+marc@example.com
+
+Education & Certifications
+BS in Computer Engineering | Cagayan de Oro College – PHINMA (2015)
+______________________________________________________________________
+Certified Safety Officer 2
+IT Internship
+Arduino Programming
+Webpage Database & Client-Server Software
+Dataworld End User Tech Update`;
+
+    const result = parseResumeText(text);
+
+    expect(result.parsed.education).toHaveLength(1);
+    expect(result.parsed.education?.[0]).toEqual(
+      expect.objectContaining({
+        degree: "BS in Computer Engineering",
+        graduation: "2015",
+      }),
+    );
+    expect(result.parsed.education?.[0].school).toContain("Cagayan de Oro College");
+    expect(result.parsed.certifications).toEqual([
+      "Certified Safety Officer 2",
+      "IT Internship",
+      "Arduino Programming",
+      "Webpage Database & Client-Server Software",
+      "Dataworld End User Tech Update",
+    ]);
+    expect(result.parsed.certifications).not.toContain("______________________________________________________________________");
+  });
+
+  it("preserves skill table categories using category-prefixed skill values", () => {
+    const text = `Skill User
+skill@example.com
+
+Skills
+Frontend                    HTML
+CSS
+JavaScript
+React JS
+Backend                     Node.js
+Express
+Cloud / Infra / Tools       Git
+Docker
+IT/Hardware                 Computer Troubleshooting`;
+
+    const result = parseResumeText(text);
+
+    expect(result.parsed.skills).toContain("Frontend: HTML");
+    expect(result.parsed.skills).toContain("Frontend: CSS");
+    expect(result.parsed.skills).toContain("Backend: Node.js");
+    expect(result.parsed.skills).toContain("Cloud / Infra / Tools: Docker");
+    expect(result.parsed.skills).toContain("IT/Hardware: Computer Troubleshooting");
+    expect(result.parsed.skills).not.toContain("Frontend HTML");
+  });
+
+  it("splits inline PDF bullet runs into separate experience bullets", () => {
+    const text = `Bullet User
+bullet@example.com
+
+Experience
+Developer
+Example Company
+Feb 2023 - May 2025
+● Developed features in Scrum. ● Built and debugged React applications. ● Collaborated with design teams.
+continued delivery timelines.`;
+
+    const result = parseResumeText(text);
+    const bullets = result.parsed.experience?.[0]?.bullets || [];
+
+    expect(bullets).toHaveLength(3);
+    expect(bullets[0]).toBe("Developed features in Scrum.");
+    expect(bullets[1]).toBe("Built and debugged React applications.");
+    expect(bullets[2]).toContain("Collaborated with design teams. continued delivery timelines.");
+  });
+
+  it("keeps Professional Qualities separate from Achievements", () => {
+    const text = `Quality User
+quality@example.com
+
+Professional Qualities
+• Hardworking and Trustworthy
+• Strong team collaborator with a growth mindset`;
+
+    const result = parseResumeText(text);
+
+    expect(result.parsed.professionalQualities).toEqual([
+      "Hardworking and Trustworthy",
+      "Strong team collaborator with a growth mindset",
+    ]);
+    expect(result.parsed.achievements).toEqual([]);
+  });
+
+  it("extracts portfolio, GitHub, and LinkedIn links from the header", () => {
+    const text = `Link User
+link@example.com
+09924133206
+Misamis Oriental, Philippines
+Portfolio
+https://linkuser.dev
+GitHub
+https://github.com/linkuser
+LinkedIn
+https://linkedin.com/in/linkuser
+
+Summary
+Technical professional.`;
+
+    const result = parseResumeText(text);
+
+    expect(result.parsed.contact?.website).toBe("https://linkuser.dev");
+    expect(result.parsed.contact?.github).toBe("https://github.com/linkuser");
+    expect(result.parsed.contact?.linkedin).toBe("https://linkedin.com/in/linkuser");
   });
 });

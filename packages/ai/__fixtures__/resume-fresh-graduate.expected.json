@@ -59,10 +59,7 @@
     "memberships": [],
     "publications": [],
     "training": [],
-    "professionalQualities": [
-      "Dean's List - Fall 2024, Spring 2025",
-      "SJSU Hackathon - Best Beginner Project Award"
-    ],
+    "professionalQualities": [],
     "projects": [
       {
         "id": "import-proj-1",
@@ -184,7 +181,7 @@
     {
       "sectionId": "achievements",
       "originalWordCount": 0,
-      "parsedWordCount": 14,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     },
@@ -233,7 +230,7 @@
     {
       "sectionId": "professionalQualities",
       "originalWordCount": 0,
-      "parsedWordCount": 14,
+      "parsedWordCount": 0,
       "ratio": 1,
       "status": "good"
     }

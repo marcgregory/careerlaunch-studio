@@ -51,8 +51,11 @@
       }
     ],
     "skills": [
-      "Advanced",
-      "Intermediate"
+      "Frontend: Advanced",
+      "Backend: Advanced",
+      "Cloud / Infra: Intermediate",
+      "DevOps: Intermediate",
+      "Database: Advanced"
     ],
     "certifications": [
       "AWS Solutions Architect - Professional",
@@ -60,12 +63,7 @@
     ],
     "licenses": [],
     "volunteer": [],
-    "achievements": [
-      "Detail-oriented",
-      "Strong communicator",
-      "Problem solver",
-      "Team leader"
-    ],
+    "achievements": [],
     "languages": [],
     "awards": [],
     "memberships": [],
@@ -119,7 +117,7 @@
     "summary": "high",
     "experience": "high",
     "education": "high",
-    "skills": "medium",
+    "skills": "high",
     "projects": "high",
     "certifications": "high",
     "licenses": "low",
@@ -133,13 +131,9 @@
     "training": "low",
     "professionalQualities": "high"
   },
-  "importQuality": "poor",
-  "warnings": [
-    "Low import quality for \"skills\": 17% coverage (2/12 words preserved)."
-  ],
-  "unparsedContent": {
-    "skills": "Frontend                    Advanced\nBackend                     Advanced\nCloud / Infra               Intermediate\nDevOps                      Intermediate\nDatabase                    Advanced"
-  },
+  "importQuality": "good",
+  "warnings": [],
+  "unparsedContent": {},
   "coverage": [
     {
       "sectionId": "summary",
@@ -165,9 +159,9 @@
     {
       "sectionId": "skills",
       "originalWordCount": 12,
-      "parsedWordCount": 2,
-      "ratio": 0.16666666666666666,
-      "status": "poor"
+      "parsedWordCount": 12,
+      "ratio": 1,
+      "status": "good"
     },
     {
       "sectionId": "projects",

@@ -103,11 +103,11 @@ describe("parseResumeText golden files", () => {
     expect(skills).not.toContain("Testing");
     expect(skills).not.toContain("Tools");
     // Actual skill values should be present
-    expect(skills).toContain("Jest");
-    expect(skills).toContain("Vitest");
-    expect(skills).toContain("Playwright");
-    expect(skills).toContain("TypeScript");
-    expect(skills).toContain("SQL");
+    expect(skills).toContain("Testing Tools: Jest");
+    expect(skills).toContain("Testing Tools: Vitest");
+    expect(skills).toContain("Testing Tools: Playwright");
+    expect(skills).toContain("Languages: TypeScript");
+    expect(skills).toContain("Languages: SQL");
   });
 
   it("should omit empty Certifications section from coverage (guardrail: no empty sections)", () => {

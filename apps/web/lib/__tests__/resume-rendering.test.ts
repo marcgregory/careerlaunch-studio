@@ -38,8 +38,9 @@ describe("ResumePreview section rendering source guard", () => {
       "utf8",
     );
 
-    expect(reactSource).toContain("const achievements = (resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities)");
-    expect(reactSource).toContain("<ul className={`mt-3 list-disc");
+    expect(reactSource).toContain("title='Achievements' items={resume.achievements}");
+    expect(reactSource).toContain("title='Professional Qualities' items={resume.professionalQualities}");
+    expect(reactSource).toContain("<ul className='mt-3 list-disc");
     expect(reactSource).toContain('join(" · ")');
     expect(pdfSource).toContain('join(" · ")');
     expect(reactSource + pdfSource).not.toContain("\u00e2\u20ac\u201d");

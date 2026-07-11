@@ -375,6 +375,9 @@ export default function ImportPage() {
                   previewResume.contact.email,
                   previewResume.contact.phone,
                   previewResume.contact.location,
+                  previewResume.contact.website,
+                  previewResume.contact.linkedin,
+                  previewResume.contact.github,
                 ]
                   .filter(Boolean)
                   .join(" | ")}
@@ -416,9 +419,9 @@ export default function ImportPage() {
                           className="border-l-2 border-[#b9ff66] pl-3"
                         >
                           <p className="text-sm font-bold">{exp.role}</p>
-                          {exp.company && (
+                          {([exp.company, [exp.start, exp.end].filter(Boolean).join(" - ")].filter(Boolean).length > 0) && (
                             <p className="text-xs font-medium text-[#4b4b4b]">
-                              {exp.company}
+                              {[exp.company, [exp.start, exp.end].filter(Boolean).join(" - ")].filter(Boolean).join(" | ")}
                             </p>
                           )}
                           {exp.bullets.length > 0 && (
@@ -542,6 +545,29 @@ export default function ImportPage() {
                   </div>
                 )}
 
+              {previewResume.professionalQualities.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#999]">
+                    Professional Qualities ({previewResume.professionalQualities.length})
+                    {result.aiRecoveredSections?.includes(
+                      "professionalQualities",
+                    ) && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#e8f5e9] px-2 py-0.5 text-[10px] font-bold text-[#2e7d32]">
+                        <Wand2 size={10} />
+                        Repaired
+                      </span>
+                    )}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm font-medium text-[#33343b]">
+                    {previewResume.professionalQualities.map((quality, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b9ff66]" />
+                        {quality}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {previewResume.achievements &&
                 previewResume.achievements.length > 0 && (
                   <div className="mt-5">

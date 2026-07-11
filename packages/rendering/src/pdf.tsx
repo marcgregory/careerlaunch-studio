@@ -176,8 +176,7 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   }
 
   if (section === "professionalQualities") {
-    const achievements = resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities;
-    const rendered = renderPdfStringList("Achievements", achievements);
+    const rendered = renderPdfStringList("Professional Qualities", resume.professionalQualities);
     if (rendered) return rendered;
   }
 
@@ -203,8 +202,7 @@ function renderPdfSection(section: string, resume: ResumeDocument): string | nul
   }
 
   if (section === 'achievements') {
-    const achievements = resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities;
-    const rendered = renderPdfStringList('Achievements', achievements);
+    const rendered = renderPdfStringList('Achievements', resume.achievements);
     if (rendered) return rendered;
   }
 

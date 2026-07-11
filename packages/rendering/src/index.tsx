@@ -160,14 +160,10 @@ function renderSection(
     return <LicensesSection key={section} resume={resume} template={template} />;
   if (section === 'volunteer')
     return <VolunteerSection key={section} resume={resume} template={template} />;
-  if (section === 'achievements' || section === 'professionalQualities')
-    return (
-      <ProfessionalQualitiesSection
-        key={section}
-        resume={resume}
-        template={template}
-      />
-    );
+  if (section === 'achievements')
+    return <StringListSection key={section} title='Achievements' items={resume.achievements} template={template} />;
+  if (section === 'professionalQualities')
+    return <StringListSection key={section} title='Professional Qualities' items={resume.professionalQualities} template={template} />;
   if (section === 'awards')
     return <StringListSection key={section} title='Awards' items={resume.awards} template={template} />;
   if (section === 'memberships')
@@ -382,25 +378,6 @@ function StringListSection({
     </section>
   );
 }
-function ProfessionalQualitiesSection({
-  resume,
-  template,
-}: {
-  resume: ResumeDocument;
-  template: TemplateDefinition;
-}) {
-  const achievements = (resume.achievements.length > 0 ? resume.achievements : resume.professionalQualities).filter(Boolean);
-  if (achievements.length === 0) return null;
-  return (
-    <section className="mt-8">
-      <ResumeHeading template={template}>Achievements</ResumeHeading>
-      <ul className={`mt-3 list-disc space-y-1.5 pl-5 text-[15px] font-medium leading-7 text-[#33343b] ${template.markerClass}`}>
-        {achievements.map((item) => <li key={item}>{item}</li>)}
-      </ul>
-    </section>
-  );
-}
-
 function SkillsSection({
   resume,
   template,

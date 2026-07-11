@@ -54,6 +54,7 @@ export const defaultSectionOrder: ResumeSectionId[] = [
   'licenses',
   'volunteer',
   'achievements',
+  'professionalQualities',
   'awards',
   'languages',
   'memberships',
