@@ -96,6 +96,24 @@ describe("deterministicTailor", () => {
       expect(s.confidence).toBeLessThanOrEqual(1);
     }
   });
+
+  it("does not suggest existing or duplicate skills after normalization", () => {
+    const input: TailoringInput = {
+      resume: {
+        ...sampleResume,
+        skills: ["HTML", "React JS", "Node.js", "PostgreSQL"],
+      },
+      jobAnalysis: sampleJobAnalysis,
+      gapAnalysis: {
+        ...sampleGapAnalysis,
+        missingSkills: ["html", "react.js", "nodejs", "Postgres", "AWS", "aws"],
+      },
+    };
+    const result = deterministicTailor(input);
+    const skillSuggestions = result.filter((s) => s.category === "skills");
+
+    expect(skillSuggestions.map((s) => s.after)).toEqual(["AWS"]);
+  });
 });
 
 describe("validateTailorSuggestions", () => {
@@ -171,5 +189,52 @@ describe("validateTailorSuggestions", () => {
     const result = validateTailorSuggestions(suggestions, sampleResume);
     expect(result.length).toBe(1);
     expect(result[0].confidence).toBeLessThanOrEqual(0.3);
+  });
+  it("filters provider skill suggestions that already exist after normalization", () => {
+    const suggestions: TailorSuggestion[] = [
+      {
+        id: "skills:add-html:skills",
+        category: "skills",
+        location: { sectionId: "skills" },
+        before: "",
+        after: "javascript",
+        reason: "Add JavaScript.",
+        confidence: 0.9,
+        severity: "major",
+      },
+      {
+        id: "skills:add-node:skills",
+        category: "skills",
+        location: { sectionId: "skills" },
+        before: "",
+        after: "nodejs",
+        reason: "Add Node.js.",
+        confidence: 0.9,
+        severity: "major",
+      },
+      {
+        id: "skills:add-aws:skills",
+        category: "skills",
+        location: { sectionId: "skills" },
+        before: "",
+        after: "AWS",
+        reason: "Add AWS.",
+        confidence: 0.9,
+        severity: "major",
+      },
+      {
+        id: "skills:add-aws-duplicate:skills",
+        category: "skills",
+        location: { sectionId: "skills" },
+        before: "",
+        after: "aws",
+        reason: "Add AWS again.",
+        confidence: 0.9,
+        severity: "major",
+      },
+    ];
+
+    const result = validateTailorSuggestions(suggestions, sampleResume);
+    expect(result.map((s) => s.after)).toEqual(["AWS"]);
   });
 });

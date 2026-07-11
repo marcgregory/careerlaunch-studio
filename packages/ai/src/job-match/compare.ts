@@ -2,6 +2,12 @@ import type { NormalizedResume } from "../analysis/types";
 import type { NormalizedJob } from "./types";
 import { suggestionId } from "../suggestion/types";
 import type { Suggestion } from "../suggestion/types";
+import {
+  createSkillMap,
+  normalizeSkill,
+  normalizedSkillMentioned,
+  skillDisplayValue,
+} from "../skills/normalization";
 
 /**
  * Result of comparing a resume to a normalized job description.
@@ -19,23 +25,20 @@ export interface ComparisonResult {
  * Check if a skill name appears anywhere in the resume text (bullets, summary).
  */
 function skillMentionedInResume(skill: string, resume: NormalizedResume): boolean {
-  const lower = skill.toLowerCase();
   const searchText = [
     resume.summary,
     ...resume.sections.flatMap((s) => s.bullets),
     ...resume.projects.flatMap((p) => p.bullets),
-  ]
-    .join(" ")
-    .toLowerCase();
+  ].join(" ");
 
-  return searchText.includes(lower);
+  return normalizedSkillMentioned(skill, searchText);
 }
 
 /**
  * Normalize a skill name to a canonical casing (first letter uppercase).
  */
 function formatSkillName(skill: string): string {
-  return skill
+  return skillDisplayValue(skill)
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
@@ -52,23 +55,27 @@ export function compare(
   resume: NormalizedResume,
   job: NormalizedJob,
 ): ComparisonResult {
-  const existingSkills = new Set(resume.skills.map((s) => s.toLowerCase()));
+  const resumeSkillMap = createSkillMap(resume.skills);
+  const seenJobSkills = new Set<string>();
   const presentSkills: string[] = [];
   const missingSkills: string[] = [];
   const suggestions: Suggestion[] = [];
 
   for (const rawSkill of job.skills) {
-    const lowerSkill = rawSkill.toLowerCase();
+    const normalizedSkill = normalizeSkill(rawSkill);
+    if (!normalizedSkill || seenJobSkills.has(normalizedSkill)) continue;
+    seenJobSkills.add(normalizedSkill);
 
-    if (existingSkills.has(lowerSkill)) {
-      presentSkills.push(formatSkillName(rawSkill));
+    const existingSkill = resumeSkillMap.get(normalizedSkill);
+    if (existingSkill) {
+      presentSkills.push(skillDisplayValue(existingSkill));
     } else if (skillMentionedInResume(rawSkill, resume)) {
-      // The skill appears in text but isn't in the formal skills list →
-      // suggest adding it
-      presentSkills.push(formatSkillName(rawSkill));
+      // The skill appears in text but is not in the formal skills list, so
+      // suggest adding it.
       const formatted = formatSkillName(rawSkill);
+      presentSkills.push(formatted);
       suggestions.push({
-        id: suggestionId("skills", "add", rawSkill.replace(/\s+/g, "-")),
+        id: suggestionId("skills", "add", normalizedSkill.replace(/\s+/g, "-")),
         category: "job-match",
         severity: "medium",
         title: `Add "${formatted}" to your skills list`,
@@ -80,11 +87,10 @@ export function compare(
         source: "static",
       });
     } else {
-      // Skill is completely missing
-      missingSkills.push(formatSkillName(rawSkill));
       const formatted = formatSkillName(rawSkill);
+      missingSkills.push(formatted);
       suggestions.push({
-        id: suggestionId("skills", "add", rawSkill.replace(/\s+/g, "-")),
+        id: suggestionId("skills", "add", normalizedSkill.replace(/\s+/g, "-")),
         category: "job-match",
         severity: "medium",
         title: `Add "${formatted}" to your skills list`,

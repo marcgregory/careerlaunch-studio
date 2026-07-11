@@ -4,7 +4,7 @@
  * Validates that suggestions are safe to apply:
  * - `before` text actually exists in the resume (stale-target protection)
  * - `after` text does not fabricate experience or achievements
- * - Confidence scores are in range 0–1
+ * - Confidence scores are in range 0â€“1
  *
  * Also detects and flags potentially risky rewrites:
  * - Fabricated metrics (numbers not in the original)
@@ -14,8 +14,9 @@
 
 import type { TailorSuggestion, SafetyFlag } from "./types";
 import type { NormalizedResume } from "../analysis/types";
+import { createSkillMap, normalizeSkill, skillsMatch } from "../skills/normalization";
 
-// ─── Leadership inflation detection ──────────────────────────────────────
+// â”€â”€â”€ Leadership inflation detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const WEAK_VERBS = [
   "assisted", "helped", "participated", "contributed", "supported",
@@ -30,7 +31,7 @@ const STRONG_VERBS = [
   "transformed", "overhauled", "reorganized",
 ];
 
-// ─── Main function ───────────────────────────────────────────────────────
+// â”€â”€â”€ Main function â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Validate and filter tailoring suggestions.
@@ -42,17 +43,21 @@ export function validateTailorSuggestions(
   suggestions: TailorSuggestion[],
   resume: NormalizedResume,
 ): TailorSuggestion[] {
+  const resumeSkillMap = createSkillMap(resume.skills);
+  const suggestedSkillKeys = new Set<string>();
+
   return suggestions
     .filter((s) => validateConfidence(s))
     .filter((s) => validateBefore(s, resume))
     .filter((s) => validateNoFabrication(s, resume))
+    .filter((s) => validateUniqueSkillSuggestion(s, resumeSkillMap, suggestedSkillKeys))
     .map((s) => {
       const flags = detectSafetyFlags(s);
       return flags.length > 0 ? { ...s, safetyFlags: flags } : s;
     });
 }
 
-// ─── Individual validators ───────────────────────────────────────────────
+// â”€â”€â”€ Individual validators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function validateConfidence(s: TailorSuggestion): boolean {
   if (typeof s.confidence !== "number" || s.confidence < 0 || s.confidence > 1) {
@@ -85,13 +90,32 @@ function validateBefore(s: TailorSuggestion, resume: NormalizedResume): boolean 
   // Check skills
   if (s.category === "skills") {
     return resume.skills.some(
-      (skill) => skill.toLowerCase() === s.before.trim().toLowerCase(),
+      (skill) => skillsMatch(skill, s.before.trim()),
     );
   }
 
   return true;
 }
 
+
+function validateUniqueSkillSuggestion(
+  s: TailorSuggestion,
+  resumeSkillMap: Map<string, string>,
+  suggestedSkillKeys: Set<string>,
+): boolean {
+  if (s.category !== "skills" || !s.after) return true;
+
+  const normalizedAfter = normalizeSkill(s.after);
+  if (!normalizedAfter) return false;
+
+  if (!s.before || s.before.trim().length === 0) {
+    if (resumeSkillMap.has(normalizedAfter)) return false;
+    if (suggestedSkillKeys.has(normalizedAfter)) return false;
+    suggestedSkillKeys.add(normalizedAfter);
+  }
+
+  return true;
+}
 function validateNoFabrication(s: TailorSuggestion, resume: NormalizedResume): boolean {
   if (!s.after || s.after.trim().length === 0) return false;
 
@@ -102,7 +126,7 @@ function validateNoFabrication(s: TailorSuggestion, resume: NormalizedResume): b
     const afterNumbers = extractNumbers(s.after);
     const newNumbers = afterNumbers.filter((n) => !beforeNumbers.includes(n));
     if (newNumbers.length > 0) {
-      // The AI invented metrics — mark this as low confidence
+      // The AI invented metrics â€” mark this as low confidence
       s.confidence = Math.min(s.confidence, 0.3);
     }
   }
@@ -115,7 +139,7 @@ function validateNoFabrication(s: TailorSuggestion, resume: NormalizedResume): b
   return true;
 }
 
-// ─── Safety flag detection ───────────────────────────────────────────────
+// â”€â”€â”€ Safety flag detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function detectSafetyFlags(suggestion: TailorSuggestion): SafetyFlag[] {
   const flags: SafetyFlag[] = [];
@@ -164,7 +188,7 @@ export function detectSafetyFlags(suggestion: TailorSuggestion): SafetyFlag[] {
   return flags;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STOP_WORDS = new Set([
   "this", "that", "and", "the", "with", "from", "your", "their",

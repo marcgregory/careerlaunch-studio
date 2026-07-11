@@ -79,4 +79,15 @@ describe("normalizeJobDescription", () => {
     const result = normalizeJobDescription("Python and React and AWS");
     expect(result.skills).toEqual(["aws", "python", "react"]);
   });
+  it("deduplicates normalized skill aliases from job descriptions", () => {
+    const result = normalizeJobDescription(
+      "Need React.js, reactjs, Node JS, nodejs, Next JS, nextjs, Tailwind CSS, tailwindcss, PostgreSQL, and Postgres.",
+    );
+
+    expect(result.skills.filter((skill) => skill.includes("react"))).toHaveLength(1);
+    expect(result.skills.filter((skill) => skill.includes("node"))).toHaveLength(1);
+    expect(result.skills.filter((skill) => skill.includes("next"))).toHaveLength(1);
+    expect(result.skills.filter((skill) => skill.includes("tailwind"))).toHaveLength(1);
+    expect(result.skills.filter((skill) => skill.includes("postgres"))).toHaveLength(1);
+  });
 });

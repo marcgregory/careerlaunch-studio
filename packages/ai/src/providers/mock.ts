@@ -6,6 +6,7 @@ import type {
   ProviderHealth,
 } from "../analysis/types";
 import { suggestionId } from "../suggestion/types";
+import { createSkillMap, normalizeSkill } from "../skills/normalization";
 
 /**
  * Mock provider that returns realistic fake analysis results.
@@ -88,20 +89,26 @@ export class MockProvider implements AIProvider {
     const { resume, jobAnalysis } = input;
 
     // Compare resume skills against job required skills
-    const resumeSkills = new Set(resume.skills.map(s => s.toLowerCase()));
+    const resumeSkillMap = createSkillMap(resume.skills);
+    const seenRequiredSkills = new Set<string>();
     const matchedSkills: string[] = [];
     const missingSkills: string[] = [];
 
     for (const skill of jobAnalysis.requiredSkills) {
-      if (resumeSkills.has(skill.toLowerCase())) {
+      const normalizedSkill = normalizeSkill(skill);
+      if (!normalizedSkill || seenRequiredSkills.has(normalizedSkill)) continue;
+      seenRequiredSkills.add(normalizedSkill);
+
+      if (resumeSkillMap.has(normalizedSkill)) {
         matchedSkills.push(skill);
       } else {
         missingSkills.push(skill);
       }
     }
 
-    const matchScore = jobAnalysis.requiredSkills.length > 0
-      ? Math.round((matchedSkills.length / jobAnalysis.requiredSkills.length) * 100)
+    const totalRequiredSkills = seenRequiredSkills.size;
+    const matchScore = totalRequiredSkills > 0
+      ? Math.round((matchedSkills.length / totalRequiredSkills) * 100)
       : 50;
 
     const weakSections: import("../gap-analysis/types").GapAnalysis["weakSections"] = [];

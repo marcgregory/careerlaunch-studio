@@ -1,11 +1,12 @@
 import type { NormalizedJob } from "./types";
 import type { NormalizedResume } from "../analysis/types";
+import { normalizeSkill } from "../skills/normalization";
 
 /**
  * Extract keyword-related metadata from a job match comparison.
  *
  * This module provides additional keyword analysis beyond simple skill
- * matching — token overlap, density, and frequency analysis.
+ * matching â€” token overlap, density, and frequency analysis.
  * Primarily used for debugging and future AI enrichment.
  */
 
@@ -14,7 +15,7 @@ export interface KeywordAnalysis {
   totalTokens: number;
   /** Tokens that appear in both the JD and the resume */
   overlapTokens: string[];
-  /** Overlap ratio (0–1) */
+  /** Overlap ratio (0â€“1) */
   overlapRatio: number;
 }
 
@@ -50,7 +51,13 @@ function resumeTokenSet(resume: NormalizedResume): Set<string> {
     .split(/\s+/)
     .filter((t) => t.length > 2 && !STOP_WORDS.has(t));
 
-  return new Set(tokens);
+  const tokenSet = new Set(tokens);
+  for (const skill of resume.skills) {
+    const normalized = normalizeSkill(skill);
+    if (normalized) tokenSet.add(normalized);
+  }
+
+  return tokenSet;
 }
 
 /**
@@ -65,6 +72,10 @@ export function analyzeKeywords(
 ): KeywordAnalysis {
   const resumeTokens = resumeTokenSet(resume);
   const jobTokens = new Set(job.tokens.filter((t) => t.length > 2));
+  for (const skill of job.skills) {
+    const normalized = normalizeSkill(skill);
+    if (normalized) jobTokens.add(normalized);
+  }
 
   const overlapTokens: string[] = [];
   for (const token of jobTokens) {

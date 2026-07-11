@@ -34,7 +34,7 @@ describe("compare", () => {
   it("identifies present skills from the resume skills list", () => {
     const job = normalizeJobDescription("Need TypeScript and Python");
     const result = compare(SAMPLE_RESUME, job);
-    expect(result.presentSkills).toContain("Typescript");
+    expect(result.presentSkills).toContain("TypeScript");
     expect(result.presentSkills).toContain("Python");
   });
 
@@ -43,7 +43,7 @@ describe("compare", () => {
     const result = compare(SAMPLE_RESUME, job);
     expect(result.missingSkills).toContain("React");
     expect(result.missingSkills).toContain("Docker");
-    expect(result.presentSkills).toContain("Typescript");
+    expect(result.presentSkills).toContain("TypeScript");
   });
 
   it("treats skill mentioned in body text as present if not in skills list", () => {
@@ -88,5 +88,43 @@ describe("compare", () => {
       expect(s.title).toMatch(/^Add "/);
       expect(s.title).not.toContain('add "ci/cd"'); // not lowercased
     }
+  });
+  it("matches resume skills case-insensitively and preserves resume display casing", () => {
+    const resume: NormalizedResume = {
+      ...SAMPLE_RESUME,
+      skills: ["HTML", "JavaScript", "React JS"],
+    };
+    const job = { tokens: [], skills: ["html", "javascript", "react.js"], experience: [] };
+    const result = compare(resume, job);
+
+    expect(result.presentSkills).toEqual(["HTML", "JavaScript", "React JS"]);
+    expect(result.missingSkills).toEqual([]);
+    expect(result.suggestions).toEqual([]);
+  });
+
+  it("compares categorized resume skill items instead of whole category strings", () => {
+    const resume: NormalizedResume = {
+      ...SAMPLE_RESUME,
+      skills: ["Frontend: HTML", "Frontend: CSS", "Frontend: React JS"],
+    };
+    const job = { tokens: [], skills: ["html", "css", "react.js"], experience: [] };
+    const result = compare(resume, job);
+
+    expect(result.presentSkills).toEqual(["HTML", "CSS", "React JS"]);
+    expect(result.missingSkills).toEqual([]);
+  });
+
+  it("deduplicates equivalent job skill suggestions", () => {
+    const resume: NormalizedResume = {
+      ...SAMPLE_RESUME,
+      skills: [],
+      summary: "",
+      sections: [],
+    };
+    const job = { tokens: [], skills: ["HTML", "Html", "html"], experience: [] };
+    const result = compare(resume, job);
+
+    expect(result.missingSkills).toEqual(["HTML"]);
+    expect(result.suggestions).toHaveLength(1);
   });
 });

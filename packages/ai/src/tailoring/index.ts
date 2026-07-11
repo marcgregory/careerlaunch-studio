@@ -1,5 +1,5 @@
 /**
- * AI Resume Tailoring — Phase 3 of the pipeline.
+ * AI Resume Tailoring â€” Phase 3 of the pipeline.
  *
  * Generates targeted rewrite suggestions for Professional Summary,
  * Experience bullets, and Skills section based on gap analysis results.
@@ -13,12 +13,13 @@ import { emptyTailorResult } from "./types";
 import { getProvider } from "../providers/index";
 import { validateTailorSuggestions } from "./post-process";
 import { suggestionId } from "../suggestion/types";
+import { createSkillMap, normalizeSkill } from "../skills/normalization";
 
 export type { TailoringInput, TailorSuggestion, SafetyFlag, SafetyFlagType } from "./types";
 export { validateTailorSuggestions, detectSafetyFlags } from "./post-process";
 
 /**
- * Run AI resume tailoring — generate rewrite suggestions.
+ * Run AI resume tailoring â€” generate rewrite suggestions.
  *
  * Delegates to the configured AI provider if it supports `tailorResume`.
  * Falls back to deterministic skill-add suggestions.
@@ -42,7 +43,7 @@ export async function runTailoring(
       }
     }
   } catch {
-    // No provider registered — fall through to deterministic
+    // No provider registered â€” fall through to deterministic
   }
 
   return deterministicTailor(input);
@@ -58,11 +59,24 @@ export function deterministicTailor(input: TailoringInput): TailorSuggestion[] {
   const suggestions: TailorSuggestion[] = [];
   const { resume, gapAnalysis } = input;
 
-  // Add missing skills as add_skill suggestions
-  for (let i = 0; i < gapAnalysis.missingSkills.length; i++) {
-    const skill = gapAnalysis.missingSkills[i];
+  // Add missing skills as add_skill suggestions.
+  const resumeSkillMap = createSkillMap(resume.skills);
+  const suggestedSkillKeys = new Set<string>();
+  let skillSuggestionIndex = 0;
+
+  for (const skill of gapAnalysis.missingSkills) {
+    const normalizedSkill = normalizeSkill(skill);
+    if (
+      !normalizedSkill ||
+      resumeSkillMap.has(normalizedSkill) ||
+      suggestedSkillKeys.has(normalizedSkill)
+    ) {
+      continue;
+    }
+
+    suggestedSkillKeys.add(normalizedSkill);
     suggestions.push({
-      id: suggestionId("skills", `tailor-add-${i}`, "skills"),
+      id: suggestionId("skills", `tailor-add-${skillSuggestionIndex++}`, "skills"),
       category: "skills",
       location: { sectionId: "skills" },
       before: "",

@@ -59,6 +59,15 @@ export type {
 
 export { computeOverallScore, computeCategoryScores } from "./scoring/index";
 
+// Skill normalization
+export {
+  normalizeSkill,
+  skillsMatch,
+  uniqueSkillsByNormalization,
+  createSkillMap,
+  SKILL_ALIASES,
+} from "./skills/normalization";
+
 // Job-match engine
 export { runJobMatch, deterministicRunJobMatch, normalizeJobDescription, compare, computeMatchScore, analyzeKeywords } from "./job-match/index";
 export type { JobMatchResult, JobMatchInput, NormalizedJob } from "./job-match/types";

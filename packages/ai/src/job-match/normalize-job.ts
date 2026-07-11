@@ -1,4 +1,5 @@
 import type { NormalizedJob } from "./types";
+import { normalizeSkill, uniqueSkillsByNormalization } from "../skills/normalization";
 
 /**
  * Known skills dictionary for MVP job-match extraction.
@@ -11,11 +12,11 @@ import type { NormalizedJob } from "./types";
  */
 const SKILL_DICTIONARY = new Set([
   // Frontend
-  "react", "angular", "vue", "svelte", "next.js", "nextjs", "typescript",
-  "javascript", "html", "css", "scss", "tailwind", "bootstrap", "webpack",
+  "react", "reactjs", "angular", "vue", "svelte", "next", "next.js", "nextjs", "typescript",
+  "javascript", "html", "css", "scss", "tailwind", "tailwindcss", "bootstrap", "webpack",
   "redux", "graphql", "rest", "api", "ajax", "jquery",
   // Backend
-  "node.js", "nodejs", "express", "django", "flask", "ruby on rails",
+  "node", "node.js", "nodejs", "express", "django", "flask", "ruby on rails",
   "spring", "asp.net", "go", "golang", "rust", "c#", "java", "python",
   "php", "laravel", "swift", "kotlin",
   // Database
@@ -56,9 +57,12 @@ function skillPattern(skill: string): RegExp {
 }
 
 function extractSkills(text: string): string[] {
-  return Array.from(SKILL_DICTIONARY)
+  const matched = Array.from(SKILL_DICTIONARY)
     .filter((skill) => skillPattern(skill).test(text))
     .sort();
+  return uniqueSkillsByNormalization(matched).sort((a, b) =>
+    normalizeSkill(a).localeCompare(normalizeSkill(b)),
+  );
 }
 
 /**
@@ -115,7 +119,7 @@ function extractExperience(text: string): string[] {
  * Normalize a raw job description into a structured, tokenized form.
  *
  * Returns tokens, extracted skills, and experience indicators.
- * The result is fully deterministic — the same text always produces the same output.
+ * The result is fully deterministic â€” the same text always produces the same output.
  */
 export function normalizeJobDescription(text: string): NormalizedJob {
   const trimmed = text.trim();

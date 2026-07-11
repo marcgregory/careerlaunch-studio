@@ -5,6 +5,7 @@ import type {
   EducationItem,
   LicenseItem,
 } from "@careerlaunch/domain";
+import { uniqueSkillsByNormalization } from "../skills/normalization";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -1109,7 +1110,7 @@ function parseSkills(lines: string[]): string[] {
     }
   }
 
-  return [...new Set(skills)];
+  return uniqueSkillsByNormalization(skills, { preserveCategories: true });
 }
 
 function splitSkillItems(value: string): string[] {
