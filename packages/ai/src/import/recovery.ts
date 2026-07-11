@@ -104,6 +104,42 @@ const CRITICAL_SECTIONS = new Set([
 const COVERAGE_THRESHOLD = 0.8; // 80% — sections below this trigger recovery
 
 const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
+const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
+const EMBEDDED_BULLET_RE = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
+
+function cleanBulletText(value: string): string {
+  return value.replace(BULLET_RE, "").replace(/\s+/g, " ").trim();
+}
+
+function isOrphanBulletContinuation(text: string, previous: string): boolean {
+  if (!previous) return false;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (wordCount > 5) return false;
+  if (/^(?:and|or|with|through|by|for|to|from|in|on|at|of)\b/i.test(text)) return true;
+  return /^[a-z]/.test(text) && /[.!?]$/.test(text);
+}
+
+function normalizeRecoveredBullets(bullets: string[] = []): string[] {
+  const normalized: string[] = [];
+
+  for (const bullet of bullets) {
+    const pieces = bullet
+      .split(EMBEDDED_BULLET_RE)
+      .map(cleanBulletText)
+      .filter(Boolean);
+
+    for (const piece of pieces) {
+      const lastIndex = normalized.length - 1;
+      if (lastIndex >= 0 && isOrphanBulletContinuation(piece, normalized[lastIndex])) {
+        normalized[lastIndex] = `${normalized[lastIndex]} ${piece}`;
+      } else {
+        normalized.push(piece);
+      }
+    }
+  }
+
+  return normalized;
+}
 
 /** Groq fallback model list (first available is tried first). */
 const GROQ_DEFAULT_MODELS = [
@@ -580,7 +616,7 @@ export function mergeRecovery(
       location: "",
       start: e.start ?? "",
       end: e.end ?? "",
-      bullets: e.bullets ?? [],
+      bullets: normalizeRecoveredBullets(e.bullets),
     }));
     recoveredSections.push("experience");
   }
@@ -614,7 +650,7 @@ export function mergeRecovery(
         id: `import-proj-recovered-${i + 1}`,
         name: p.name,
         description: "",
-        bullets: p.bullets ?? [],
+        bullets: normalizeRecoveredBullets(p.bullets),
       }));
     } else {
       // Deduplicate: add AI projects not already in parser output
@@ -627,7 +663,7 @@ export function mergeRecovery(
             id: `import-proj-recovered-${base.projects.length + 1}`,
             name: proj.name,
             description: "",
-            bullets: proj.bullets ?? [],
+            bullets: normalizeRecoveredBullets(proj.bullets),
           });
           existingNames.add(proj.name.toLowerCase());
         }

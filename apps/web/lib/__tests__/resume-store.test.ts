@@ -144,3 +144,33 @@ describe("resume-store license consistency", () => {
     expect(JSON.stringify(stored)).not.toContain("License Number: istered");
   });
 });
+describe("resume-store experience bullet normalization", () => {
+  it("repairs orphan and embedded bullet artifacts before builder rendering", () => {
+    const resume = normalizeResume({
+      id: "bullet-import",
+      title: "Bullet Import",
+      templateId: "modern",
+      experience: [
+        {
+          id: "exp-1",
+          role: "Developer",
+          company: "Example Co",
+          location: "",
+          start: "2021",
+          end: "Present",
+          bullets: [
+            "Participated in daily stand-ups and feature estimation meetings to ensure project",
+            "timelines were met.",
+            "Installed and maintained computer systems and secured company data through\n\u25cf Managed IT procurement and deployment of equipment and software.",
+          ],
+        },
+      ],
+    });
+
+    expect(resume.experience[0]?.bullets).toEqual([
+      "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+      "Installed and maintained computer systems and secured company data through",
+      "Managed IT procurement and deployment of equipment and software.",
+    ]);
+  });
+});

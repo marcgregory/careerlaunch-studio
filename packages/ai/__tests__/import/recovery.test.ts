@@ -705,3 +705,43 @@ describe("mergeRecovery", () => {
     expect(merged.parsed.skills).toHaveLength(4);
   });
 });
+
+describe("mergeRecovery bullet normalization", () => {
+  it("normalizes recovered experience bullets before returning merged data", () => {
+    const parserResult = makeParseResult({
+      parsed: {
+        contact: { fullName: "Test", email: "test@example.com", phone: "", location: "", website: "" },
+        summary: "",
+        experience: [],
+        education: [],
+        skills: [],
+        certifications: [],
+        professionalQualities: [],
+        projects: [],
+      },
+      coverage: [makeCoverageItem("experience", 0.2, 4, 40)],
+    });
+
+    const merged = mergeRecovery(parserResult, {
+      experience: [
+        {
+          role: "Developer",
+          company: "Example Co",
+          start: "2021",
+          end: "Present",
+          bullets: [
+            "Participated in daily stand-ups and feature estimation meetings to ensure project",
+            "timelines were met.",
+            "Installed and maintained computer systems and secured company data through\n\u25cf Managed IT procurement and deployment of equipment and software.",
+          ],
+        },
+      ],
+    });
+
+    expect(merged.parsed.experience?.[0]?.bullets).toEqual([
+      "Participated in daily stand-ups and feature estimation meetings to ensure project timelines were met.",
+      "Installed and maintained computer systems and secured company data through",
+      "Managed IT procurement and deployment of equipment and software.",
+    ]);
+  });
+});

@@ -72,13 +72,13 @@ export function normalizeResume(value: Partial<ResumeDocument>): ResumeDocument 
     contact: normalizeContact({ ...starter.contact, ...value.contact }),
     summary: normalizeTextValue(value.summary ?? ''),
     sectionOrder: normalizeSectionOrder(value.sectionOrder),
-    experience: dedupById(Array.isArray(value.experience) ? value.experience : []),
+    experience: normalizeExperienceItems(value.experience),
     education: dedupById(Array.isArray(value.education) ? value.education : [], 'school').map((item) => ({ ...item, honors: item.honors ?? [] })),
     skills: normalizeStringList(value.skills),
     projects: normalizeProjects(value.projects),
     certifications: normalizeStringList(value.certifications),
     licenses: normalizeLicenses(value.licenses),
-    volunteer: dedupById(Array.isArray(value.volunteer) ? value.volunteer : []),
+    volunteer: normalizeExperienceItems(value.volunteer),
     achievements,
     languages: normalizeStringList(value.languages),
     references: normalizeReferences(value.references),
@@ -110,6 +110,56 @@ function dedupById<T extends { id: string }>(items: T[], nameField?: keyof T): T
   return result;
 }
 
+const BULLET_RE = /^(?:[\u2022\u25cf\u25aa\u25e6*\-]|\d+[.)])\s*/;
+const EMBEDDED_BULLET_RE = /(?=[\u2022\u25cf\u25aa\u25e6]\s*)/g;
+
+function normalizeExperienceItems(value: unknown): ResumeDocument['experience'] {
+  if (!Array.isArray(value)) return [];
+  return dedupById(
+    value
+      .filter((item): item is Partial<ResumeDocument['experience'][number]> => item && typeof item === 'object')
+      .map((item, index) => ({
+        id: item.id ?? 'experience-' + (index + 1),
+        role: normalizeTextValue(item.role ?? ''),
+        company: normalizeTextValue(item.company ?? ''),
+        location: normalizeTextValue(item.location ?? ''),
+        start: normalizeTextValue(item.start ?? ''),
+        end: normalizeTextValue(item.end ?? ''),
+        bullets: normalizeBulletList(item.bullets),
+      })),
+  );
+}
+
+function normalizeBulletList(value: unknown): string[] {
+  const source = normalizeStringList(value);
+  const normalized: string[] = [];
+
+  for (const bullet of source) {
+    const pieces = bullet
+      .split(EMBEDDED_BULLET_RE)
+      .map((piece) => piece.replace(BULLET_RE, '').replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+
+    for (const piece of pieces) {
+      const lastIndex = normalized.length - 1;
+      if (lastIndex >= 0 && isOrphanBulletContinuation(piece, normalized[lastIndex])) {
+        normalized[lastIndex] = normalized[lastIndex] + ' ' + piece;
+      } else {
+        normalized.push(piece);
+      }
+    }
+  }
+
+  return normalized;
+}
+
+function isOrphanBulletContinuation(text: string, previous: string): boolean {
+  if (!previous) return false;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (wordCount > 5) return false;
+  if (/^(?:and|or|with|through|by|for|to|from|in|on|at|of)\b/i.test(text)) return true;
+  return /^[a-z]/.test(text) && /[.!?]$/.test(text);
+}
 function normalizeContact(value: ResumeDocument['contact']): ResumeDocument['contact'] {
   return {
     fullName: normalizeTextValue(value.fullName ?? ''),
