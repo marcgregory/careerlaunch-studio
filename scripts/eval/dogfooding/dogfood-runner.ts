@@ -25,6 +25,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { requireRealAIProvider } from "../provider-preflight";
 import {
   deterministicAnalyzeJob,
   deterministicGapAnalysis,
@@ -127,6 +128,8 @@ function validateTailoring(suggestions: TailorSuggestion[]): string[] {
 // ─── Runner ──────────────────────────────────────────────────────────────
 
 async function run(): Promise<void> {
+  requireRealAIProvider();
+
   const args = process.argv.slice(2);
   const jsonOutput = args.includes("--json");
 

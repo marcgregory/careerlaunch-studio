@@ -20,6 +20,8 @@
  *   8. CostLimitError            — verify CostLimitError is catchable
  */
 
+import { requireRealAIProvider } from "./provider-preflight";
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 interface ErrorScenario {
@@ -420,6 +422,8 @@ async function testCostLimitError(): Promise<ErrorScenario> {
 // ─── Main ─────────────────────────────────────────────────────────────────
 
 async function run(): Promise<void> {
+  requireRealAIProvider();
+
   const args = process.argv.slice(2);
   const jsonOutput = args.includes("--json");
 

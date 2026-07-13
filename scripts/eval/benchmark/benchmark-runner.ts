@@ -26,6 +26,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { requireRealAIProvider } from "../provider-preflight";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -751,6 +752,8 @@ function writeReportFile(report: BenchmarkReport): void {
 // ─── Main runner ──────────────────────────────────────────────────────────
 
 async function run(): Promise<void> {
+  requireRealAIProvider();
+
   const args = process.argv.slice(2);
   const useAI = args.includes("--ai");
   const jsonOutput = args.includes("--json");
