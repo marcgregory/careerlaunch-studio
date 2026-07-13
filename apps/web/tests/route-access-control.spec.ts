@@ -15,7 +15,7 @@ test("all guest-only auth pages redirect signed-in users", async ({ page }) => {
   test.skip(!process.env.DATABASE_URL, "Set DATABASE_URL to run the database-backed e2e path.");
   await registerSession(page);
 
-  for (const path of ["/login", "/register", "/forgot-password", "/reset-password?token=test&email=test@example.com"]) {
+  for (const path of ["/login", "/register", "/forgot-password", "/reset-password?token=test&email=test@example.com", "/verify-email"]) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/dashboard$/);
   }
@@ -28,13 +28,7 @@ test("all authenticated client pages redirect anonymous visitors", async ({ page
   }
 });
 
-test("verify-email remains public and uses a session-aware header", async ({ page }) => {
+test("verify-email remains available to anonymous visitors", async ({ page }) => {
   await page.goto("/verify-email");
   await expect(page.getByRole("link", { name: "Sign in", exact: true }).first()).toHaveAttribute("href", "/login");
-
-  test.skip(!process.env.DATABASE_URL, "Set DATABASE_URL to run the database-backed e2e path.");
-  await registerSession(page);
-  await page.goto("/verify-email");
-
-  await expect(page.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
 });
