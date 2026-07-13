@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
+import { getCurrentUser } from "../../lib/auth";
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const user = await getCurrentUser();
+
   return (
     <main className="auth-signal min-h-screen px-5 py-6 text-[#123c3a]">
       <nav className="mx-auto flex max-w-4xl items-center justify-between">
         <Link href="/" className="font-signal text-2xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22]">
           CareerLaunch
         </Link>
-        <Link href="/login" className="rounded-full px-4 py-2 text-sm font-black transition hover:bg-[#123c3a] hover:text-[#b9ff66]">
-          Sign in
+        <Link href={user ? "/dashboard" : "/login"} className="rounded-full px-4 py-2 text-sm font-black transition hover:bg-[#123c3a] hover:text-[#b9ff66]">
+          {user ? "Dashboard" : "Sign in"}
         </Link>
       </nav>
 
