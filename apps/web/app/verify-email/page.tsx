@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Sparkles, XCircle } from "lucide-react";
+import { getCurrentUser } from "../../lib/auth";
 
 export default async function VerifyEmailPage({
   searchParams,
 }: {
   searchParams?: Promise<{ success?: string; error?: string }>;
 }) {
+  const user = await getCurrentUser();
   const params = searchParams ? await searchParams : {};
   const success = params.success === "true";
   const error = params.error;
@@ -16,8 +18,8 @@ export default async function VerifyEmailPage({
         <Link href="/" className="font-signal text-2xl font-black tracking-[-0.08em] transition hover:text-[#6bbf22]">
           CareerLaunch
         </Link>
-        <Link href="/login" className="rounded-full px-4 py-2 text-sm font-black transition hover:bg-[#123c3a] hover:text-[#b9ff66]">
-          Sign in
+        <Link href={user ? "/dashboard" : "/login"} className="rounded-full px-4 py-2 text-sm font-black transition hover:bg-[#123c3a] hover:text-[#b9ff66]">
+          {user ? "Dashboard" : "Sign in"}
         </Link>
       </nav>
 
