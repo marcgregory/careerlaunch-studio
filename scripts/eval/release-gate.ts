@@ -62,8 +62,9 @@ export function loadEvaluationEnv(): void {
 
 export async function requireRealProvider(preferred?: RealProviderName): Promise<ProviderSelection> {
   const providers = await getAvailableProviders();
-  const ordered = preferred
-    ? [...providers.filter((p) => p.name === preferred), ...providers.filter((p) => p.name !== preferred)]
+  const preferredProvider = preferred ?? getPreferredProviderFromEnv();
+  const ordered = preferredProvider
+    ? [...providers.filter((p) => p.name === preferredProvider), ...providers.filter((p) => p.name !== preferredProvider)]
     : providers;
 
   if (ordered.length === 0) {
@@ -96,23 +97,30 @@ export async function requireProviderPair(): Promise<{ primary: ProviderSelectio
     throw new Error("Recovery gate requires both GEMINI_API_KEY and GROQ_API_KEY in the evaluation environment to prove real provider fallback.");
   }
 
-  const healthy: ProviderSelection[] = [];
-  for (const candidate of providers) {
-    const health = await candidate.provider.healthCheck();
-    if (health.available) {
-      healthy.push({
-        ...candidate,
-        model: health.model || candidate.model,
-        healthLatencyMs: health.latency,
-      });
-    }
+  const preferredSecondary = getPreferredProviderFromEnv();
+  const secondaryCandidates = preferredSecondary
+    ? [...providers.filter((p) => p.name === preferredSecondary), ...providers.filter((p) => p.name !== preferredSecondary)]
+    : [...providers].reverse();
+
+  const secondaryBase = secondaryCandidates[0];
+  const primaryBase = providers.find((p) => p.name !== secondaryBase.name) ?? providers[0];
+  const secondaryHealth = await secondaryBase.provider.healthCheck();
+
+  if (!secondaryHealth.available) {
+    throw new Error(`Recovery gate requires a healthy secondary provider in the evaluation environment; ${secondaryBase.name}/${secondaryHealth.model || secondaryBase.model} health check failed.`);
   }
 
-  if (healthy.length < 2) {
-    throw new Error("Recovery gate requires two healthy real providers in the evaluation environment; one or more health checks failed.");
-  }
-
-  return { primary: healthy[0], secondary: healthy[1] };
+  return {
+    primary: {
+      ...primaryBase,
+      healthLatencyMs: 0,
+    },
+    secondary: {
+      ...secondaryBase,
+      model: secondaryHealth.model || secondaryBase.model,
+      healthLatencyMs: secondaryHealth.latency,
+    },
+  };
 }
 
 export async function measuredProviderCall<T>(
@@ -291,6 +299,11 @@ export function getCredentialPresence(): Record<RealProviderName, boolean> {
   };
 }
 
+function getPreferredProviderFromEnv(): RealProviderName | undefined {
+  const value = (process.env.AI_EVAL_PROVIDER || process.env.AI_DEFAULT_PROVIDER || "").trim().toLowerCase();
+  if (value === "gemini" || value === "groq") return value;
+  return undefined;
+}
 function loadDotEnvEval(): void {
   const envPath = join(process.cwd(), ".env.eval");
   if (!existsSync(envPath)) return;
@@ -323,8 +336,5 @@ function formatList(items: string[]): string {
   if (items.length === 0) return "- None";
   return items.map((item) => `- ${item}`).join("\n");
 }
-
-
-
 
 

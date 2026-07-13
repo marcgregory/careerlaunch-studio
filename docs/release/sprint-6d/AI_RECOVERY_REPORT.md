@@ -1,33 +1,40 @@
 # AI Recovery Report
 
-- Date/time: 2026-07-13T08:51:39.480Z
-- Environment: local
-- Provider/model: none
-- Credential presence: Gemini=no, Groq=no
+- Date/time: 2026-07-13T09:45:21.081Z
+- Environment: production
+- Provider/model: groq/llama-3.1-8b-instant
+- Credential presence: Gemini=yes, Groq=yes
 - Commands run: npm run eval:recovery
-- Pass/fail totals: 0 passed, 1 failed
+- Pass/fail totals: 1 passed, 0 failed
 
 ## Credential Status
 
-- Gemini: credential present: no
-- Groq: credential present: no
+- Gemini: credential present: yes
+- Groq: credential present: yes
 
 ## Provider Calls
 
-- No provider calls recorded
+- Provider: Groq
+  Model: llama-3.1-8b-instant
+  Credential present: yes
+  Operation: recovery.secondary.matchJob
+  Duration: 649ms
+  Retry count: 0
+  Fallback path: gemini: deliberate failure -> groq
+  Token usage: unavailable
 
 ## Latency Results
 
-- None
+- Primary provider failure recovers to secondary provider: 1074ms
 
 ## Failures Found
 
-- Recovery gate requires both GEMINI_API_KEY and GROQ_API_KEY in the evaluation environment to prove real provider fallback.
+- None
 
 ## Fixes Applied
 
-- Recovery gate now fails unless provider-to-provider fallback can be proven.
+- Recovery gate now requires two real providers and rejects mock/static fallback as successful recovery.
 
 ## Remaining Known Issues
 
-- Recovery gate requires both GEMINI_API_KEY and GROQ_API_KEY in the evaluation environment to prove real provider fallback.
+- None

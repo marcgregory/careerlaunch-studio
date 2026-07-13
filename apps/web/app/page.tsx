@@ -32,7 +32,7 @@ export default function HomePage() {
     <main className="signal-site min-h-screen bg-[#f3f3f3] pt-[52px] text-[#123c3a] sm:pt-[60px]">
       <AppHeader actions={
         <nav className="flex items-center gap-2">
-          <Link href="/dashboard" className="rounded-full px-4 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:px-5">
+          <Link href="/dashboard" className="inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-bold transition hover:bg-[#123c3a] hover:text-[#b9ff66] sm:px-5">
             Dashboard
           </Link>
           <Link href="/builder" className="signal-button-dark whitespace-nowrap text-xs sm:text-sm">
@@ -212,8 +212,8 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <p>&copy; {new Date().getFullYear()} CareerLaunch Studio. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="underline underline-offset-2 transition hover:text-[#123c3a]">Privacy</Link>
-            <Link href="/terms" className="underline underline-offset-2 transition hover:text-[#123c3a]">Terms</Link>
+            <Link href="/privacy" className="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-2 transition hover:text-[#123c3a]">Privacy</Link>
+            <Link href="/terms" className="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-2 transition hover:text-[#123c3a]">Terms</Link>
           </div>
         </div>
       </footer>

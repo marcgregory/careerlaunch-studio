@@ -1,0 +1,507 @@
+{
+  "timestamp": "2026-07-13T09:44:10.083Z",
+  "provider": "groq",
+  "model": "llama-3.1-8b-instant",
+  "totalPersonas": 6,
+  "providerCalls": [
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-16.benchmark",
+      "durationMs": 2066,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-16.consistency-1",
+      "durationMs": 10846,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-16.consistency-2",
+      "durationMs": 9959,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-16.consistency-3",
+      "durationMs": 11081,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-17.benchmark",
+      "durationMs": 11989,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-17.consistency-1",
+      "durationMs": 13153,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-17.consistency-2",
+      "durationMs": 13094,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-17.consistency-3",
+      "durationMs": 13360,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-18.benchmark",
+      "durationMs": 758,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-18.consistency-1",
+      "durationMs": 9762,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-18.consistency-2",
+      "durationMs": 694,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-18.consistency-3",
+      "durationMs": 9309,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-19.benchmark",
+      "durationMs": 1006,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-19.consistency-1",
+      "durationMs": 10181,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-19.consistency-2",
+      "durationMs": 12265,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-19.consistency-3",
+      "durationMs": 11100,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-20.benchmark",
+      "durationMs": 12033,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-20.consistency-1",
+      "durationMs": 10918,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-20.consistency-2",
+      "durationMs": 12000,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-20.consistency-3",
+      "durationMs": 11938,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-21.benchmark",
+      "durationMs": 8863,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-21.consistency-1",
+      "durationMs": 10423,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-21.consistency-2",
+      "durationMs": 597,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "operation": "resume-21.consistency-3",
+      "durationMs": 8944,
+      "retryCount": 0,
+      "fallbackPath": "none",
+      "tokenUsage": null,
+      "usedMock": false,
+      "usedStaticFallback": false
+    }
+  ],
+  "results": [
+    {
+      "persona": "Junior Frontend Developer",
+      "personaId": "resume-16",
+      "jobLabel": "React Developer — Junior",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 2066,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    },
+    {
+      "persona": "Senior Backend Engineer",
+      "personaId": "resume-17",
+      "jobLabel": "Senior Backend Engineer — Go/AWS",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 11989,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    },
+    {
+      "persona": "WordPress Developer",
+      "personaId": "resume-18",
+      "jobLabel": "WordPress Developer — Agency",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 758,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    },
+    {
+      "persona": "Marketing Specialist",
+      "personaId": "resume-19",
+      "jobLabel": "Digital Marketing Specialist",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 1006,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    },
+    {
+      "persona": "Graphic Designer",
+      "personaId": "resume-20",
+      "jobLabel": "Visual Designer — Brand & UI",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 12033,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    },
+    {
+      "persona": "Customer Support Specialist",
+      "personaId": "resume-21",
+      "jobLabel": "Customer Support Specialist — SaaS",
+      "provider": "groq",
+      "model": "llama-3.1-8b-instant",
+      "jsonValid": true,
+      "schemaValid": true,
+      "promptFailed": false,
+      "latencyMs": 8863,
+      "suggestionCount": 0,
+      "errors": [],
+      "matchScore": 85
+    }
+  ],
+  "consistency": [
+    {
+      "persona": "Junior Frontend Developer",
+      "personaId": "resume-16",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 85,
+          "latencyMs": 10846
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 85,
+          "latencyMs": 9959
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 85,
+          "latencyMs": 11081
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Senior Backend Engineer",
+      "personaId": "resume-17",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 85,
+          "latencyMs": 13153
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 85,
+          "latencyMs": 13094
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 92,
+          "latencyMs": 13360
+        }
+      ],
+      "scoreStddev": 3.2998316455372216,
+      "passed": true
+    },
+    {
+      "persona": "WordPress Developer",
+      "personaId": "resume-18",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 92,
+          "latencyMs": 9762
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 85,
+          "latencyMs": 694
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 92,
+          "latencyMs": 9309
+        }
+      ],
+      "scoreStddev": 3.2998316455372216,
+      "passed": true
+    },
+    {
+      "persona": "Marketing Specialist",
+      "personaId": "resume-19",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 85,
+          "latencyMs": 10181
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 85,
+          "latencyMs": 12265
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 85,
+          "latencyMs": 11100
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Graphic Designer",
+      "personaId": "resume-20",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 92,
+          "latencyMs": 10918
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 92,
+          "latencyMs": 12000
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 92,
+          "latencyMs": 11938
+        }
+      ],
+      "scoreStddev": 0,
+      "passed": true
+    },
+    {
+      "persona": "Customer Support Specialist",
+      "personaId": "resume-21",
+      "runs": [
+        {
+          "runNumber": 1,
+          "matchScore": 92,
+          "latencyMs": 10423
+        },
+        {
+          "runNumber": 2,
+          "matchScore": 85,
+          "latencyMs": 597
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 85,
+          "latencyMs": 8944
+        }
+      ],
+      "scoreStddev": 3.2998316455372216,
+      "passed": true
+    }
+  ],
+  "aggregated": {
+    "jsonValidityPct": 100,
+    "schemaPassPct": 100,
+    "promptFailurePct": 0,
+    "avgLatencyMs": 9014.125,
+    "p50LatencyMs": 10846,
+    "p95LatencyMs": 13153
+  },
+  "overallPass": true
+}

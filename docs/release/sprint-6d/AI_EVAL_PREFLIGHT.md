@@ -1,33 +1,40 @@
 # AI Eval Preflight
 
-- Date/time: 2026-07-13T08:51:18.142Z
-- Environment: local
-- Provider/model: none
-- Credential presence: Gemini=no, Groq=no
+- Date/time: 2026-07-13T09:39:17.573Z
+- Environment: production
+- Provider/model: groq/llama-3.1-8b-instant
+- Credential presence: Gemini=yes, Groq=yes
 - Commands run: npm run eval:preflight
-- Pass/fail totals: 0 passed, 1 failed
+- Pass/fail totals: 1 passed, 0 failed
 
 ## Credential Status
 
-- Gemini: credential present: no
-- Groq: credential present: no
+- Gemini: credential present: yes
+- Groq: credential present: yes
 
 ## Provider Calls
 
-- No provider calls recorded
+- Provider: Groq
+  Model: llama-3.1-8b-instant
+  Credential present: yes
+  Operation: preflight.matchJob
+  Duration: 543ms
+  Retry count: 0
+  Fallback path: none
+  Token usage: unavailable
 
 ## Latency Results
 
-- None
+- preflight.matchJob: 543ms
 
 ## Failures Found
 
-- Evaluation environment has no real provider credentials loaded (checked process env and .env.eval): configure GEMINI_API_KEY or GROQ_API_KEY.
+- None
 
 ## Fixes Applied
 
-- Preflight now fails when no real Gemini/Groq call is proven.
+- Preflight now performs a real provider matchJob call and validates metadata.
 
 ## Remaining Known Issues
 
-- Evaluation environment has no real provider credentials loaded (checked process env and .env.eval): configure GEMINI_API_KEY or GROQ_API_KEY.
+- None
