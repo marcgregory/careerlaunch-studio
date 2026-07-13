@@ -186,9 +186,12 @@ export default withSentryConfig(nextConfig, {
   // Hides source maps from generated client bundles
   hideSourceMaps: true,
 
-  // Automatically tree-shake Sentry logger statements from production builds
-  disableLogger: true,
-
-  // Enables automatic instrumentation of Vercel Cron Monitors
-  automaticVercelMonitors: false,
+  webpack: {
+    treeshake: {
+      // Remove SDK debug logging without affecting application logs.
+      removeDebugLogging: true,
+    },
+    // Cron monitors are intentionally disabled for this project.
+    automaticVercelMonitors: false,
+  },
 });
