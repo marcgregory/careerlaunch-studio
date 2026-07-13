@@ -1,53 +1,22 @@
 /**
- * CareerLaunch Studio — Dogfooding Test Matrix Runner
- *
- * Executes the automated pipeline portion of the dogfooding test matrix.
- * This covers the AI analysis, gap analysis, and tailoring steps for each
- * of the 6 fixed personas.
- *
- * The full dogfooding workflow (import, UI interaction, billing verification)
- * requires manual execution through the browser — this script validates the
- * data pipeline layer.
- *
- * Usage:
- *   npm run eval:dogfooding
- *   npm run eval:dogfooding -- --json    # JSON output for CI
- *
- * Severity labels (assigned manually during UI walkthrough):
- *   Critical — app crash, data loss, core flow broken, AI hallucinates credentials
- *   High     — feature unusable, wrong output, wrong PDF content
- *   Medium   — feature works but has clear UX problems
- *   Low      — cosmetic issues, edge cases, minor copy
- *
- * Release gate:
- *   Critical: 0 | High: 0 | Medium: <=5 | Low: unlimited
+ * CareerLaunch Studio - Sprint 6D AI dogfooding release gate.
+ * Validates real Gemini/Groq calls for each dogfooding persona.
  */
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { requireRealAIProvider } from "../provider-preflight";
 import {
-  deterministicAnalyzeJob,
-  deterministicGapAnalysis,
-  deterministicTailor,
-} from "@careerlaunch/ai";
-import type {
-  NormalizedResume,
-  JobAnalysis,
-  GapAnalysis,
-  TailorSuggestion,
-} from "@careerlaunch/ai";
+  measuredProviderCall,
+  normalizeFixtureResume,
+  requireRealProvider,
+  validateProviderCoverLetter,
+  validateProviderJobMatch,
+  writeGateReport,
+  type ProviderCallMetadata,
+} from "../release-gate";
+import type { NormalizedResume } from "@careerlaunch/ai";
 
-// ─── Constants ────────────────────────────────────────────────────────────
-
-const DOGFOODING_RESUME_IDS = new Set([
-  "resume-16",
-  "resume-17",
-  "resume-18",
-  "resume-19",
-  "resume-20",
-  "resume-21",
-]);
+const DOGFOODING_RESUME_IDS = new Set(["resume-16", "resume-17", "resume-18", "resume-19", "resume-20", "resume-21"]);
 
 const PERSONA_NAMES: Record<string, string> = {
   "resume-16": "Junior Frontend Developer",
@@ -62,217 +31,124 @@ interface PersonaTestResult {
   persona: string;
   personaId: string;
   jobLabel: string;
+  provider: string;
+  model: string;
   pipelineResults: {
-    analysis: boolean;
-    gapAnalysis: boolean;
-    tailoring: boolean;
+    jobMatch: boolean;
+    coverLetter: boolean;
   };
   errors: string[];
   timingMs: number;
 }
 
-// ─── Load datasets ────────────────────────────────────────────────────────
-
 function loadDataset<T>(filename: string): T[] {
-  const dir = join(__dirname, "..", "datasets");
-  const path = join(dir, filename);
-  if (!existsSync(path)) {
-    console.error(`Dataset not found: ${path}`);
-    process.exit(1);
-  }
+  const path = join(__dirname, "..", "datasets", filename);
+  if (!existsSync(path)) throw new Error(`Dataset not found: ${path}`);
   return JSON.parse(readFileSync(path, "utf-8")) as T[];
 }
 
-// ─── Validators ───────────────────────────────────────────────────────────
-
-function validateJobAnalysis(result: JobAnalysis): string[] {
-  const errors: string[] = [];
-  if (!Array.isArray(result.requiredSkills)) errors.push("requiredSkills is not an array");
-  if (!Array.isArray(result.preferredSkills)) errors.push("preferredSkills is not an array");
-  if (!Array.isArray(result.responsibilities)) errors.push("responsibilities is not an array");
-  if (!Array.isArray(result.atsKeywords)) errors.push("atsKeywords is not an array");
-  if (!["entry", "mid", "senior", "lead", "executive", "unknown"].includes(result.seniority)) {
-    errors.push(`invalid seniority: ${result.seniority}`);
-  }
-  return errors;
-}
-
-function validateGapAnalysis(result: GapAnalysis): string[] {
-  const errors: string[] = [];
-  if (typeof result.matchScore !== "number") errors.push("matchScore is not a number");
-  if (result.matchScore < 0 || result.matchScore > 100) errors.push("matchScore out of range 0-100");
-  if (!Array.isArray(result.matchedSkills)) errors.push("matchedSkills is not an array");
-  if (!Array.isArray(result.missingSkills)) errors.push("missingSkills is not an array");
-  if (!Array.isArray(result.weakSections)) errors.push("weakSections is not an array");
-  if (!Array.isArray(result.recommendations)) errors.push("recommendations is not an array");
-  return errors;
-}
-
-function validateTailoring(suggestions: TailorSuggestion[]): string[] {
-  const errors: string[] = [];
-  if (!Array.isArray(suggestions)) return ["suggestions is not an array"];
-  for (let i = 0; i < suggestions.length; i++) {
-    const s = suggestions[i];
-    if (!s.id) errors.push(`suggestion[${i}] missing id`);
-    if (!["summary", "experience", "skills"].includes(s.category)) {
-      errors.push(`suggestion[${i}] invalid category: ${s.category}`);
-    }
-    if (typeof s.confidence !== "number" || s.confidence < 0 || s.confidence > 1) {
-      errors.push(`suggestion[${i}] confidence out of range`);
-    }
-    if (!s.reason) errors.push(`suggestion[${i}] missing reason`);
-  }
-  return errors;
-}
-
-// ─── Runner ──────────────────────────────────────────────────────────────
-
 async function run(): Promise<void> {
-  requireRealAIProvider();
-
-  const args = process.argv.slice(2);
-  const jsonOutput = args.includes("--json");
-
-  const resumeMap = new Map<string, NormalizedResume & { label: string }>();
+  const selection = await requireRealProvider();
   const allResumes = loadDataset<any>("resumes.json");
-  for (const r of allResumes) {
-    if (DOGFOODING_RESUME_IDS.has(r.id)) {
-      resumeMap.set(r.id, r);
-    }
-  }
-
   const jds = loadDataset<any>("job-descriptions.json");
-
+  const jdMap = new Map(jds.map((j: any) => [j.id, j]));
+  const calls: ProviderCallMetadata[] = [];
   const results: PersonaTestResult[] = [];
 
-  for (const [resumeId, resume] of resumeMap) {
-    const personaName = PERSONA_NAMES[resumeId] ?? resume.label;
-    const jdId = resumeId.replace("resume-", "jd-");
-    const jd = jds.find((j: any) => j.id === jdId);
+  for (const resume of allResumes.filter((r: any) => DOGFOODING_RESUME_IDS.has(r.id))) {
+    const start = Date.now();
+    const normalized: NormalizedResume = normalizeFixtureResume(resume);
+    const jd = jdMap.get(resume.id.replace("resume-", "jd-"));
+    const errors: string[] = [];
+    const pipelineResults = { jobMatch: false, coverLetter: false };
 
     if (!jd) {
-      results.push({
-        persona: personaName,
-        personaId: resumeId,
-        jobLabel: "(no matching JD)",
-        pipelineResults: { analysis: false, gapAnalysis: false, tailoring: false },
-        errors: [`No matching job description found for ${jdId}`],
-        timingMs: 0,
-      });
-      continue;
-    }
+      errors.push(`No matching job description found for ${resume.id}`);
+    } else {
+      try {
+        const { result, metadata } = await measuredProviderCall(
+          selection,
+          `${resume.id}.matchJob`,
+          async (provider) => {
+            if (!provider.matchJob) throw new Error(`${selection.name} does not expose matchJob`);
+            return provider.matchJob(normalized, jd.text);
+          },
+        );
+        calls.push(metadata);
+        const validationErrors = validateProviderJobMatch(result);
+        pipelineResults.jobMatch = validationErrors.length === 0;
+        errors.push(...validationErrors.map((e) => `Job match: ${e}`));
+      } catch (error) {
+        errors.push(`Job match: ${error instanceof Error ? error.message : String(error)}`);
+      }
 
-    const allErrors: string[] = [];
-    const pipelineResults = { analysis: false, gapAnalysis: false, tailoring: false };
-    const start = Date.now();
-
-    // Normalize resume (fixtures are stored directly in NormalizedResume format)
-    const normalized: NormalizedResume = {
-      contact: resume.contact,
-      summary: resume.summary,
-      sections: resume.sections,
-      skills: resume.skills,
-      certifications: resume.certifications,
-      projects: resume.projects.map((p: any) => ({
-        name: p.name ?? "",
-        description: p.description ?? "",
-        bullets: p.bullets ?? [],
-      })),
-    };
-
-    // Step 1: Job Analysis
-    try {
-      const ja = deterministicAnalyzeJob({ jobDescription: jd.text });
-      const errors = validateJobAnalysis(ja);
-      pipelineResults.analysis = errors.length === 0;
-      if (errors.length > 0) allErrors.push(`Analysis: ${errors.join("; ")}`);
-    } catch (e) {
-      allErrors.push(`Analysis: ${String(e)}`);
-    }
-
-    // Step 2: Gap Analysis
-    try {
-      const ja = deterministicAnalyzeJob({ jobDescription: jd.text });
-      const ga = deterministicGapAnalysis({
-        resume: normalized,
-        jobAnalysis: ja,
-        jobDescription: jd.text,
-      });
-      const errors = validateGapAnalysis(ga);
-      pipelineResults.gapAnalysis = errors.length === 0;
-      if (errors.length > 0) allErrors.push(`Gap: ${errors.join("; ")}`);
-    } catch (e) {
-      allErrors.push(`Gap: ${String(e)}`);
-    }
-
-    // Step 3: Tailoring
-    try {
-      const ja = deterministicAnalyzeJob({ jobDescription: jd.text });
-      const ga = deterministicGapAnalysis({
-        resume: normalized,
-        jobAnalysis: ja,
-        jobDescription: jd.text,
-      });
-      const suggestions = deterministicTailor({
-        resume: normalized,
-        jobAnalysis: ja,
-        gapAnalysis: ga,
-      });
-      const errors = validateTailoring(suggestions);
-      pipelineResults.tailoring = errors.length === 0;
-      if (errors.length > 0) allErrors.push(`Tailoring: ${errors.join("; ")}`);
-    } catch (e) {
-      allErrors.push(`Tailoring: ${String(e)}`);
+      try {
+        const { result, metadata } = await measuredProviderCall(
+          selection,
+          `${resume.id}.generateCoverLetter`,
+          async (provider) => {
+            if (!provider.generateCoverLetter) throw new Error(`${selection.name} does not expose generateCoverLetter`);
+            return provider.generateCoverLetter({ resume: normalized, targetRole: jd.label, jobDescription: jd.text });
+          },
+        );
+        calls.push(metadata);
+        const validationErrors = validateProviderCoverLetter(result);
+        pipelineResults.coverLetter = validationErrors.length === 0;
+        errors.push(...validationErrors.map((e) => `Cover letter: ${e}`));
+      } catch (error) {
+        errors.push(`Cover letter: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
 
     results.push({
-      persona: personaName,
-      personaId: resumeId,
-      jobLabel: jd.label,
+      persona: PERSONA_NAMES[resume.id] ?? resume.label,
+      personaId: resume.id,
+      jobLabel: jd?.label ?? "(missing JD)",
+      provider: selection.name,
+      model: selection.model,
       pipelineResults,
-      errors: allErrors,
+      errors,
       timingMs: Date.now() - start,
     });
   }
 
-  // ─── Output ──────────────────────────────────────────────────────────
+  const failed = results.filter((r) => r.errors.length > 0);
+  const passed = results.length - failed.length;
+  const failures = failed.flatMap((r) => r.errors.map((e) => `${r.persona}: ${e}`));
 
-  if (jsonOutput) {
-    console.log(JSON.stringify(results, null, 2));
-  } else {
-    console.log("\n\x1b[1m═══════════════════════════════════════════════════════\x1b[0m");
-    console.log("  Dogfooding Test Matrix — Pipeline Results");
-    console.log("\x1b[1m═══════════════════════════════════════════════════════\x1b[0m\n");
+  writeGateReport({
+    title: "AI Dogfooding Report",
+    fileName: "AI_DOGFOODING_REPORT.md",
+    commands: ["npm run eval:dogfooding"],
+    providerCalls: calls,
+    passCount: passed,
+    failCount: failed.length,
+    failures,
+    fixesApplied: ["Dogfooding gate now uses real provider matchJob and generateCoverLetter calls instead of deterministic pipeline fallbacks."],
+    knownIssues: failures,
+    latencyResults: results.map((r) => ({ label: r.persona, durationMs: r.timingMs })),
+  });
 
-    let allPassed = true;
-    for (const r of results) {
-      const status = r.errors.length === 0 ? "✅ PASS" : "❌ FAIL";
-      if (r.errors.length > 0) allPassed = false;
+  console.log(JSON.stringify({ provider: selection.name, model: selection.model, passed, failed: failed.length, results, providerCalls: calls }, null, 2));
 
-      console.log(`  ${r.persona}`);
-      console.log(`  Target: ${r.jobLabel}`);
-      console.log(`  Status: ${status}`);
-      console.log(`  Time:   ${r.timingMs}ms`);
-      console.log(`  Steps:`);
-      console.log(`    Analysis:    ${r.pipelineResults.analysis ? "✅" : "❌"}`);
-      console.log(`    Gap Analysis: ${r.pipelineResults.gapAnalysis ? "✅" : "❌"}`);
-      console.log(`    Tailoring:    ${r.pipelineResults.tailoring ? "✅" : "❌"}`);
-      if (r.errors.length > 0) {
-        console.log(`  Errors:`);
-        for (const e of r.errors) console.log(`    • ${e}`);
-      }
-      console.log("");
-    }
-
-    const passed = results.filter((r) => r.errors.length === 0).length;
-    console.log(`  ${passed}/${results.length} personas passed pipeline check`);
-    console.log("\x1b[1m═══════════════════════════════════════════════════════\x1b[0m\n");
-
-    if (!allPassed) process.exit(1);
-  }
+  if (failed.length > 0 || calls.length === 0) process.exit(1);
 }
 
-run().catch((err) => {
-  console.error("Dogfooding runner failed:", err);
+run().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  writeGateReport({
+    title: "AI Dogfooding Report",
+    fileName: "AI_DOGFOODING_REPORT.md",
+    commands: ["npm run eval:dogfooding"],
+    providerCalls: [],
+    passCount: 0,
+    failCount: 1,
+    failures: [message],
+    fixesApplied: ["Dogfooding gate now fails when no real provider call can be proven."],
+    knownIssues: [message],
+    latencyResults: [],
+  });
+  console.error("Dogfooding runner failed:", message);
   process.exit(1);
 });
+

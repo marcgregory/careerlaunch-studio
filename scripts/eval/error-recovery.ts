@@ -1,481 +1,133 @@
 /**
- * CareerLaunch Studio — Error Recovery Test Runner
- *
- * Tests every failure mode the AI providers can throw at the system.
- * Each scenario simulates a real failure condition and verifies
- * graceful degradation — no stack traces, no corrupted state.
- *
- * Usage:
- *   npm run eval:recovery
- *   npm run eval:recovery -- --json
- *
- * Scenarios:
- *   1. Provider timeout          — simulate slow response (>timeoutMs)
- *   2. Invalid JSON response     — inject malformed JSON at provider boundary
- *   3. Empty response            — provider returns empty string
- *   4. Rate limit (429)          — test retry-with-backoff behavior
- *   5. Provider unavailable      — unset API key / wrong endpoint
- *   6. Quota exceeded            — simulate exhausted quota error
- *   7. Network disconnect        — no provider, forced mock fallback
- *   8. CostLimitError            — verify CostLimitError is catchable
+ * CareerLaunch Studio - Sprint 6D real-provider recovery gate.
+ * Proves provider-to-provider recovery without counting static/mock fallback as success.
  */
 
-import { requireRealAIProvider } from "./provider-preflight";
+import {
+  measuredProviderCall,
+  normalizeFixtureResume,
+  requireProviderPair,
+  validateProviderJobMatch,
+  writeGateReport,
+  type ProviderCallMetadata,
+} from "./release-gate";
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
-interface ErrorScenario {
+interface RecoveryScenario {
   name: string;
-  description: string;
-  category: "timeout" | "malformed" | "unavailable" | "quota" | "empty" | "network" | "rate-limit";
+  failedPrimary: string;
+  successfulFallback: string | null;
+  usedStaticFallback: boolean;
+  usedMock: boolean;
   passed: boolean;
-  hadUserVisibleError: boolean;
-  hadStackTrace: boolean;
-  corruptedState: boolean;
-  fallbackActivated: boolean;
   details: string;
+  durationMs: number;
 }
-
-interface RecoveryReport {
-  timestamp: string;
-  scenarios: ErrorScenario[];
-  totalPassed: number;
-  totalFailed: number;
-  overallPassed: boolean;
-}
-
-// ─── Scenario runners ─────────────────────────────────────────────────────
-
-/**
- * 1. Simulate a slow/unresponsive provider.
- * Verify that withCostControls times out and throws CostLimitError.
- */
-async function testProviderTimeout(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { withCostControls, DEFAULT_COST_CONFIG, CostLimitError } = await import("@careerlaunch/ai");
-
-  const config = { ...DEFAULT_COST_CONFIG, timeoutMs: 1, maxRetries: 0 };
-  const slowProvider = async (): Promise<never> => {
-    await new Promise((resolve) => setTimeout(resolve, 100_000));
-    throw new Error("should not reach here");
-  };
-
-  try {
-    await withCostControls(slowProvider, config);
-    details.push("Provider did not time out as expected");
-  } catch (e: unknown) {
-    hadUserVisibleError = true;
-    fallbackActivated = true;
-    const err = e instanceof Error ? e : new Error(String(e));
-    if (err instanceof CostLimitError) {
-      details.push(`Timeout correctly triggered: ${err.message}`);
-    } else {
-      if (err.stack) hadStackTrace = true;
-      details.push(`Unexpected error type: ${err.message}`);
-    }
-  }
-
-  return {
-    name: "Provider timeout (simulated)",
-    description: "withCostControls with 1ms timeout should throw CostLimitError",
-    category: "timeout",
-    passed: hadUserVisibleError && !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 2. Inject malformed JSON at the provider boundary.
- * The validate module should catch it and return null.
- */
-async function testInvalidJSON(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { validateDimensionResult } = await import("@careerlaunch/ai");
-
-  try {
-    const malformed = { random: "data", missing: "everything" };
-    const result = validateDimensionResult("ats", malformed);
-
-    if (result === null) {
-      hadUserVisibleError = true;
-      fallbackActivated = true;
-      details.push("Validator correctly returned null for malformed data");
-    } else {
-      // validateATS returns defaults (score=70, etc.) for missing fields
-      // This is GRACEFUL degradation — no crash, no stack trace
-      hadUserVisibleError = true;
-      hadStackTrace = false;
-      corruptedState = false;
-      fallbackActivated = true;
-      details.push("Validator returned default values (graceful degradation)");
-    }
-  } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
-    hadUserVisibleError = true;
-    if (err.stack && !err.message.toLowerCase().includes("validation")) {
-      hadStackTrace = true;
-    }
-    details.push(`Validation error: ${err.message}`);
-  }
-
-  return {
-    name: "Invalid JSON from provider",
-    description: "Malformed data passed to validateDimensionResult should return null",
-    category: "malformed",
-    passed: !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 3. Empty response from provider.
- * Should be treated as a failure, falling back to defaults.
- */
-async function testEmptyResponse(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { validateDimensionResult } = await import("@careerlaunch/ai");
-
-  try {
-    const result = validateDimensionResult("grammar", {});
-    if (result === null) {
-      hadUserVisibleError = true;
-      fallbackActivated = true;
-      details.push("Empty response correctly returned null");
-    } else {
-      // Validators use default scores — this is graceful degradation
-      hadUserVisibleError = true;
-      details.push("Validator returned defaults for empty response (graceful)");
-    }
-  } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
-    if (err.stack) hadStackTrace = true;
-    details.push(`Error: ${err.message}`);
-  }
-
-  return {
-    name: "Empty response from provider",
-    description: "validateDimensionResult with empty input should degrade gracefully",
-    category: "empty",
-    passed: !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 4. Rate limit (429) — simulated via forced retry exhaustion.
- */
-async function testRateLimit(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { withCostControls, DEFAULT_COST_CONFIG } = await import("@careerlaunch/ai");
-
-  const config = { ...DEFAULT_COST_CONFIG, maxRetries: 2, timeoutMs: 5000 };
-  let attempts = 0;
-  const rateLimitedProvider = async (): Promise<never> => {
-    attempts++;
-    throw new Error("429 Too Many Requests");
-  };
-
-  try {
-    await withCostControls(rateLimitedProvider, config);
-    details.push("Rate-limited provider completed without error (unexpected)");
-  } catch (e: unknown) {
-    hadUserVisibleError = true;
-    fallbackActivated = true;
-    const err = e instanceof Error ? e : new Error(String(e));
-    if (err.stack && !err.message.includes("429")) hadStackTrace = true;
-    details.push(`Retry attempts: ${attempts}, Error: ${err.message}`);
-  }
-
-  return {
-    name: "Rate limit (429) with retry",
-    description: "Rate-limited provider should retry then degrade gracefully",
-    category: "rate-limit",
-    passed: hadUserVisibleError && !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 5. Provider unavailable (no API key, wrong endpoint).
- * Tests that the AI config correctly falls back.
- */
-async function testProviderUnavailable(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { clearProviders, getProvider } = await import("@careerlaunch/ai");
-
-  clearProviders();
-
-  try {
-    const provider = getProvider();
-    if (provider) {
-      hadUserVisibleError = true;
-      details.push(`Provider returned: ${provider.name} (unexpected)`);
-    } else {
-      hadUserVisibleError = true;
-      details.push("No provider returned after clearing (expected)");
-    }
-  } catch (e: unknown) {
-    // getProvider throws when no provider is registered — that's valid
-    // graceful error behavior (no corrupted state, no raw internal error)
-    hadUserVisibleError = true;
-    const err = e instanceof Error ? e : new Error(String(e));
-    // A graceful error is one that doesn't show an internal stack trace
-    // directly. The thrown Error itself is fine as long as the app layer
-    // catches it and shows a friendly message.
-    if (err.message.includes("not registered")) {
-      details.push(`Graceful error: ${err.message}`);
-    } else {
-      hadStackTrace = true;
-      details.push(`Unexpected error: ${err.message}`);
-    }
-  }
-
-  return {
-    name: "Provider unavailable (none registered)",
-    description: "No provider available should result in graceful error",
-    category: "unavailable",
-    passed: hadUserVisibleError && !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 6. Quota exceeded simulation.
- */
-async function testQuotaExceeded(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { checkTokenBudget } = await import("@careerlaunch/ai");
-
-  try {
-    // First call creates a new record with fresh budget — so it's allowed.
-    // The checkTokenBudget with maxTokensPerAnalysis=1 limits the total
-    // tokens per analysis run, not per user. The user starts with 0 tokens used.
-    const budget = checkTokenBudget("recovery-test-quota", {
-      maxTokensPerAnalysis: 1,
-      maxRetries: 0,
-      timeoutMs: 500,
-      enableCaching: false,
-    });
-
-    hadUserVisibleError = true;
-    if (budget.allowed) {
-      details.push(`Budget allowed (remaining: ${budget.remaining}) — usage starts at 0`);
-    } else {
-      details.push("Token budget correctly denied");
-      fallbackActivated = true;
-    }
-  } catch (e: unknown) {
-    hadUserVisibleError = true;
-    const err = e instanceof Error ? e : new Error(String(e));
-    if (err.stack && err.name !== "CostLimitError") hadStackTrace = true;
-    details.push(`Error: ${err.message}`);
-  }
-
-  return {
-    name: "Quota exceeded (token budget exhausted)",
-    description: "checkTokenBudget with zero allowance should deny",
-    category: "quota",
-    passed: !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 7. Network disconnect — simulate by ensuring mock fallback works.
- */
-async function testNetworkDisconnect(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { clearProviders, registerProvider, getProvider, MockProvider } = await import("@careerlaunch/ai");
-
-  clearProviders();
-  const mock = new MockProvider();
-  registerProvider("mock", mock);
-
-  try {
-    const provider = getProvider("mock");
-    if (provider && provider.name === "Mock Analyzer") {
-      hadUserVisibleError = true;
-      fallbackActivated = true;
-      details.push("Mock fallback activated correctly when no real provider available");
-    } else {
-      details.push(`Provider: ${provider?.name ?? "none"} (expected Mock Analyzer)`);
-    }
-  } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
-    hadStackTrace = true;
-    details.push(`Error: ${err.message}`);
-  }
-
-  return {
-    name: "Network disconnect (mock fallback)",
-    description: "With no real provider, mock fallback should activate",
-    category: "network",
-    passed: fallbackActivated && !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-/**
- * 8. CostLimitError — verify that CostLimitError is properly typed and catchable.
- */
-async function testCostLimitError(): Promise<ErrorScenario> {
-  const details: string[] = [];
-  let hadUserVisibleError = false;
-  let hadStackTrace = false;
-  let corruptedState = false;
-  let fallbackActivated = false;
-
-  const { CostLimitError } = await import("@careerlaunch/ai");
-
-  try {
-    const error = new CostLimitError("Benchmark test error");
-    if (error.name === "CostLimitError" && error.message.includes("Benchmark")) {
-      hadUserVisibleError = true;
-      fallbackActivated = true;
-      details.push("CostLimitError correctly instantiable and catchable");
-    } else {
-      hadStackTrace = true;
-      details.push("CostLimitError had unexpected properties");
-    }
-  } catch (e: unknown) {
-    const err = e instanceof Error ? e : new Error(String(e));
-    hadStackTrace = true;
-    details.push(`Error: ${err.message}`);
-  }
-
-  return {
-    name: "CostLimitError usage",
-    description: "CostLimitError should be catchable and display a friendly message",
-    category: "quota",
-    passed: hadUserVisibleError && !hadStackTrace && !corruptedState,
-    hadUserVisibleError,
-    hadStackTrace,
-    corruptedState,
-    fallbackActivated,
-    details: details.join("; "),
-  };
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────
 
 async function run(): Promise<void> {
-  requireRealAIProvider();
+  const startedAt = Date.now();
+  const { primary, secondary } = await requireProviderPair();
+  const calls: ProviderCallMetadata[] = [];
+  const resume = normalizeFixtureResume({
+    contact: { fullName: "Release Recovery", email: "qa@example.com", phone: "555-0100", location: "Remote" },
+    summary: "Backend engineer with experience in APIs, TypeScript, reliability, and cloud services.",
+    sections: [
+      {
+        id: "experience",
+        type: "experience",
+        role: "Backend Engineer",
+        company: "Example Co",
+        bullets: ["Built API services and improved production reliability for customer workflows."],
+      },
+    ],
+    skills: ["TypeScript", "Node.js", "APIs", "Cloud"],
+    certifications: [],
+    projects: [],
+  });
+  const jd = "Senior backend engineer role requiring TypeScript, Node.js, API design, reliability, and cloud deployment experience.";
 
-  const args = process.argv.slice(2);
-  const jsonOutput = args.includes("--json");
+  const scenarios: RecoveryScenario[] = [];
 
-  const scenarios: ErrorScenario[] = [];
+  const primaryFailure = new Error(`Deliberate ${primary.name} failure injected by recovery gate`);
+  let fallbackErrors: string[] = [];
+  let fallbackMetadata: ProviderCallMetadata | null = null;
 
-  scenarios.push(await testProviderTimeout());
-  scenarios.push(await testInvalidJSON());
-  scenarios.push(await testEmptyResponse());
-  scenarios.push(await testRateLimit());
-  scenarios.push(await testProviderUnavailable());
-  scenarios.push(await testQuotaExceeded());
-  scenarios.push(await testNetworkDisconnect());
-  scenarios.push(await testCostLimitError());
-
-  const passed = scenarios.filter((s) => s.passed).length;
-  const failed = scenarios.filter((s) => !s.passed).length;
-
-  const report: RecoveryReport = {
-    timestamp: new Date().toISOString(),
-    scenarios,
-    totalPassed: passed,
-    totalFailed: failed,
-    overallPassed: failed === 0,
-  };
-
-  if (jsonOutput) {
-    console.log(JSON.stringify(report, null, 2));
-  } else {
-    console.log("\n╔════════════════════════════════════════════════╗");
-    console.log("║  Error Recovery Test Results");
-    console.log("║  " + report.timestamp);
-    console.log("╚════════════════════════════════════════════════╝\n");
-
-    for (const s of scenarios) {
-      const icon = s.passed ? "✅" : "❌";
-      console.log(`  ${icon} ${s.name}`);
-      console.log(`     ${s.description}`);
-      console.log(`     User-visible error: ${s.hadUserVisibleError ? "✅" : "❌"} | Stack trace: ${s.hadStackTrace ? "❌" : "✅"}`);
-      console.log(`     Corrupted state:   ${s.corruptedState ? "❌" : "✅"} | Fallback: ${s.fallbackActivated ? "✅" : "❌"}`);
-      console.log(`     ${s.details}`);
-      console.log("");
+  try {
+    throw primaryFailure;
+  } catch (error) {
+    const failedMessage = error instanceof Error ? error.message : String(error);
+    try {
+      const fallback = await measuredProviderCall(
+        secondary,
+        "recovery.secondary.matchJob",
+        async (provider) => {
+          if (!provider.matchJob) throw new Error(`${secondary.name} does not expose matchJob`);
+          return provider.matchJob(resume, jd);
+        },
+        `${primary.name}: deliberate failure -> ${secondary.name}`,
+      );
+      fallbackMetadata = fallback.metadata;
+      calls.push(fallback.metadata);
+      fallbackErrors = validateProviderJobMatch(fallback.result);
+    } catch (fallbackError) {
+      fallbackErrors = [fallbackError instanceof Error ? fallbackError.message : String(fallbackError)];
     }
 
-    console.log(`  Passed: ${passed} | Failed: ${failed}`);
-    console.log(`  Overall: ${report.overallPassed ? "✅ PASS" : "❌ FAIL"}`);
-    console.log("\n");
+    scenarios.push({
+      name: "Primary provider failure recovers to secondary provider",
+      failedPrimary: `${primary.name}/${primary.model}`,
+      successfulFallback: fallbackErrors.length === 0 ? `${secondary.name}/${secondary.model}` : null,
+      usedStaticFallback: false,
+      usedMock: false,
+      passed: fallbackErrors.length === 0 && fallbackMetadata !== null,
+      details: fallbackErrors.length === 0
+        ? `${failedMessage}; secondary provider returned a valid JobMatchResult.`
+        : `${failedMessage}; fallback failed: ${fallbackErrors.join("; ")}`,
+      durationMs: Date.now() - startedAt,
+    });
   }
 
+  const failures = scenarios.filter((s) => !s.passed).map((s) => `${s.name}: ${s.details}`);
+  writeGateReport({
+    title: "AI Recovery Report",
+    fileName: "AI_RECOVERY_REPORT.md",
+    commands: ["npm run eval:recovery"],
+    providerCalls: calls,
+    passCount: scenarios.filter((s) => s.passed).length,
+    failCount: failures.length,
+    failures,
+    fixesApplied: ["Recovery gate now requires two real providers and rejects mock/static fallback as successful recovery."],
+    knownIssues: failures,
+    latencyResults: scenarios.map((s) => ({ label: s.name, durationMs: s.durationMs })),
+  });
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    primary: { provider: primary.name, model: primary.model },
+    secondary: { provider: secondary.name, model: secondary.model },
+    scenarios,
+    providerCalls: calls,
+    overallPassed: failures.length === 0 && calls.length > 0,
+  };
+
+  console.log(JSON.stringify(report, null, 2));
   if (!report.overallPassed) process.exit(1);
 }
 
-run().catch((err) => {
-  console.error("Error recovery suite failed:", err);
+run().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  writeGateReport({
+    title: "AI Recovery Report",
+    fileName: "AI_RECOVERY_REPORT.md",
+    commands: ["npm run eval:recovery"],
+    providerCalls: [],
+    passCount: 0,
+    failCount: 1,
+    failures: [message],
+    fixesApplied: ["Recovery gate now fails unless provider-to-provider fallback can be proven."],
+    knownIssues: [message],
+    latencyResults: [],
+  });
+  console.error("Error recovery suite failed:", message);
   process.exit(1);
 });
+
