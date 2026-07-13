@@ -1,62 +1,22 @@
-# Known Issues — v0.9.5-alpha
+# Known Issues — Closed Beta
 
-**Last updated:** 2026-07-06
-
----
+Last updated: 2026-07-14
 
 ## Release Gate
 
-| Severity | Count | Limit | Status |
-|---|---|---|---|
-| 🔴 Critical | 1 | 0 | ❌ No real AI provider configured |
-| 🟠 Major | 3 | 0 | ❌ Parser regressions on common formats |
-| 🟡 Minor | 2 | ≤5 | ✅ |
-| 🔵 Enhancement | 6 | Unlimited | ✅ |
+No critical product-flow or parser blockers are currently open. The remaining issues are production-readiness work.
 
----
+| ID | Severity | Area | Issue | Exit condition |
+| --- | --- | --- | --- | --- |
+| OPS-1 | Major | Error monitoring | Sentry integration needs modernization and production event-capture verification. | A deliberate production-safe test error is captured with release, environment, route, and request context. |
+| OPS-2 | Major | Release engineering | The production release gate is still partly manual. | CI verifies health, auth, builder, resume CRUD, AI, PDF export, billing, and Sentry before promotion. |
+| OPS-3 | Major | Rate limiting | Rate limits are stored in process memory and are not consistent across Vercel instances. | Production-sensitive limits use a shared backend and pass concurrency/expiry tests. |
+| OPS-4 | Minor | Observability | Structured logs and AI/PDF latency visibility are incomplete. | Production dashboards or queries expose request errors and P50/P95 latency for critical operations. |
+| QA-1 | Minor | Accessibility | Automated coverage passes, but broader manual keyboard and screen-reader verification remains. | Manual audit is completed and findings are resolved or explicitly accepted. |
+| DEPLOY-1 | Minor | Vercel configuration | The Vercel project still has a custom Build Command that should be reconciled with the documented build path. | Project settings and repository deployment documentation agree. |
 
-## 🔴 Critical
+## Resolved Parser Issues
 
-| ID | Title | Area | Impact | Workaround |
-|---|---|---|---|---|
-| P0 | No real AI provider configured | AI | All AI features run against MockProvider — actual model quality, latency, and hallucination behavior unknown | Configure `GEMINI_API_KEY` or `GROQ_API_KEY` in `.env` |
+R1, R3, and R7 are no longer active blockers. Pipe-separated experience, skills-before-experience ordering, and table-formatted resume cases now have passing regression coverage.
 
----
-
-## 🟠 Major
-
-| ID | Title | Area | Impact | Workaround |
-|---|---|---|---|---|
-| R1 | Pipe-separated experience not parsed | Import Parser | Resumes formatted as `Date \| Role \| Company` lose all experience entries on import | Paste experience in standard bullet-point format before importing |
-| R3 | Skills-before-experience order breaks parser | Import Parser | When Skills section appears before Experience, zero experience entries are detected. Import quality reports "excellent" despite this — misleading. | Reorder resume to place Experience before Skills before importing |
-| R7 | Table-formatted resumes lose experience | Import Parser | Microsoft Word exports with pipe/category tables lose all experience entries (skills are captured correctly) | Remove table formatting from the Word export before pasting |
-
----
-
-## 🟡 Minor
-
-| ID | Title | Area | Impact | Workaround |
-|---|---|---|---|---|
-| R2 | Bullet certifications under Education not classified | Import Parser | Certifications listed as bullet points under Education are not recognized as certifications (content preserved as skills) | List certifications in a separate section |
-| R6 | Minimal resumes import as "failed" | Import Parser | Resumes shorter than ~4 lines with minimal structure fail to parse | Add more structure (dates, bullet points) before importing |
-
----
-
-## 🔵 Enhancements
-
-| ID | Title | Area | Notes |
-|---|---|---|---|
-| E1 | Tailoring gated behind Professional plan | Entitlements | By design — `run_job_match: false` for free tier |
-| E2-E6 | Various parser improvements | Import Parser | All related to non-standard resume formats (see R1, R2, R3, R6, R7 above) |
-
----
-
-## Pre-Beta Checklist
-
-Before tagging v0.9.5-alpha:
-
-- [ ] Configure a real AI provider (Gemini or Groq)
-- [ ] Verify all 6 persona workflows pass with real AI (analysis, tailoring, cover letter)
-- [ ] Assess parser regression frequency against real user data
-- [ ] Decide: fix 🟠 Major parser issues vs. document as known limitations
-- [ ] Re-run release gate: 🔴=0, 🟠=0
+The parser is feature-frozen for closed beta. Reopen parser work only when a real source document reproduces a defect and a failing regression fixture is added first.

@@ -2,6 +2,8 @@
 
 **Date:** 2026-07-06
 
+> **Historical report.** This document records the earlier 2026-07-06 release-gate run and is not the current project status. Parser blockers, real-provider validation, QA, and production deployment were completed afterward. Use `docs/implementation/PROJECT_STATUS.md`, `docs/implementation/ROADMAP.md`, `docs/release/KNOWN_ISSUES.md`, and `docs/release/sprint-6d/CLOSED_BETA_CHECKLIST.md` as the current sources of truth.
+
 **Status:** ❌ NOT READY — blocking conditions not met
 
 ---
