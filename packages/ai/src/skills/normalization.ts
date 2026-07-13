@@ -105,6 +105,19 @@ export function createSkillMap(skills: string[]): Map<string, string> {
   return map;
 }
 
+export function findSkillMentionInItems(
+  skill: string,
+  items: string[],
+): string | null {
+  for (const item of items.flatMap(splitSkillItems)) {
+    if (normalizedSkillMentioned(skill, item)) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
 export function normalizedSkillMentioned(skill: string, text: string): boolean {
   const needle = normalizeSkill(skill);
   if (!needle) return false;

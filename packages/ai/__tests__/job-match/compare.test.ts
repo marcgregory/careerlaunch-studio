@@ -153,6 +153,37 @@ describe("compare", () => {
     expect(result.missingSkills).toEqual(["Bootstrap"]);
     expect(result.suggestions.map((s) => s.suggestedText)).toEqual(["Bootstrap"]);
   });
+  it("matches skills embedded in compound skills section entries", () => {
+    const resume: NormalizedResume = {
+      ...SAMPLE_RESUME,
+      skills: [
+        "Backend: Node Express, PHP WordPress (Theme Dev, ACF, WP Rest API)",
+        "Cloud / Infra / Tools: Google Services(drive, maps, docs, auth), Git",
+        "LLM / Automation: Python(Web Scraping - playwright, beautifulsoap)",
+        "AI Coding Agents: Github copilot",
+      ],
+    };
+
+    const result = reconcileSkillComparison(
+      {
+        presentSkills: [],
+        missingSkills: ["Express", "Php", "Python", "Github", "Git", "Go"],
+        suggestions: [
+          makeSkillSuggestion("Express"),
+          makeSkillSuggestion("Php"),
+          makeSkillSuggestion("Python"),
+          makeSkillSuggestion("Github"),
+          makeSkillSuggestion("Git"),
+          makeSkillSuggestion("Go"),
+        ],
+      },
+      resume,
+    );
+
+    expect(result.presentSkills).toEqual(["Express", "PHP", "Python", "GitHub", "Git"]);
+    expect(result.missingSkills).toEqual(["Go"]);
+    expect(result.suggestions.map((s) => s.suggestedText)).toEqual(["Go"]);
+  });
 });
 
 

@@ -8,25 +8,25 @@ datasource db {
 }
 
 model User {
-  id               String           @id @default(cuid())
-  email            String           @unique
-  name             String?
-  passwordHash     String
-  passwordSalt     String
-  emailVerifiedAt  DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  resumes          ResumeDocument[]
-  coverLetters     CoverLetter[]
-  subscriptions    Subscription[]
-  authTokens       AuthToken[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String?
+  passwordHash    String
+  passwordSalt    String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  emailVerifiedAt DateTime?
+  authTokens      AuthToken[]
+  coverLetters    CoverLetter[]
+  resumes         ResumeDocument[]
+  subscriptions   Subscription?
 }
 
 model AuthToken {
   id        String    @id @default(cuid())
   userId    String
   tokenHash String
-  type      String    // "email_verification" | "password_reset"
+  type      String
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
@@ -45,11 +45,11 @@ model ResumeDocument {
   body         Json
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  versions     ResumeVersion[]
-  exports      ExportJob[]
   analysisRuns AnalysisRun[]
   coverLetters CoverLetter[]
+  exports      ExportJob[]
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions     ResumeVersion[]
 
   @@index([userId, updatedAt])
 }
@@ -69,17 +69,17 @@ model AnalysisRun {
   id              String         @id @default(cuid())
   resumeId        String
   resumeVersionId String?
-  type            String // "full" | dimension name
-  provider        String // e.g. "static", "mock-v1", "gpt-4o"
+  type            String
+  provider        String
   promptVersion   String?
   durationMs      Int            @default(0)
   overallScore    Float?
   suggestionCount Int            @default(0)
-  viewedCount     Int            @default(0)
+  createdAt       DateTime       @default(now())
   acceptedCount   Int            @default(0)
   appliedCount    Int            @default(0)
   rejectedCount   Int            @default(0)
-  createdAt       DateTime       @default(now())
+  viewedCount     Int            @default(0)
   resume          ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
   @@index([resumeId, createdAt])
@@ -116,8 +116,8 @@ model CoverLetter {
   jobDescription String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   resume         ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, updatedAt])
   @@index([resumeId])
@@ -125,18 +125,16 @@ model CoverLetter {
 
 model Subscription {
   id                   String             @id @default(cuid())
-  userId               String
-  plan                 Plan               @default(FREE)
+  userId               String             @unique
   stripeCustomerId     String?
   stripeSubscriptionId String?            @unique
   status               SubscriptionStatus @default(FREE)
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+  plan                 Plan               @default(FREE)
+  cancelAtPeriodEnd    Boolean            @default(false)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId])
 }
 
 model ProcessedStripeEvent {
@@ -154,8 +152,8 @@ model SuggestionFeedback {
   analysisRunId String?
   category      String
   helpful       Boolean
-  reason        String?  // "too_generic" | "incorrect" | "invented" | "doesnt_match" | "other"
-  reasonText    String?  // free text when reason is "other"
+  reason        String?
+  reasonText    String?
   provider      String?
   model         String?
   promptVersion String?
@@ -171,7 +169,7 @@ model SuggestionEvent {
   userId        String
   resumeId      String
   analysisRunId String?
-  action        String   // "viewed" | "accepted" | "rejected" | "applied"
+  action        String
   category      String
   createdAt     DateTime @default(now())
 

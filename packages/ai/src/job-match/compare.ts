@@ -4,6 +4,7 @@ import { suggestionId } from "../suggestion/types";
 import type { Suggestion } from "../suggestion/types";
 import {
   createSkillMap,
+  findSkillMentionInItems,
   normalizeSkill,
   normalizedSkillMentioned,
   skillDisplayValue,
@@ -34,17 +35,43 @@ function skillMentionedInResume(skill: string, resume: NormalizedResume): boolea
   return normalizedSkillMentioned(skill, searchText);
 }
 
+function skillMentionedInResumeSkills(skill: string, resume: NormalizedResume): boolean {
+  return findSkillMentionInItems(skill, resume.skills) !== null;
+}
+
 export function skillPresentInResume(skill: string, resume: NormalizedResume): string | null {
   const existingSkill = createSkillMap(resume.skills).get(normalizeSkill(skill));
   if (existingSkill) return skillDisplayValue(existingSkill);
+  if (skillMentionedInResumeSkills(skill, resume)) return formatSkillName(skill);
   if (skillMentionedInResume(skill, resume)) return formatSkillName(skill);
   return null;
 }
 
+const CANONICAL_SKILL_DISPLAY: Record<string, string> = {
+  ai: "AI",
+  api: "API",
+  aws: "AWS",
+  css: "CSS",
+  gcp: "GCP",
+  github: "GitHub",
+  html: "HTML",
+  javascript: "JavaScript",
+  jquery: "jQuery",
+  llm: "LLM",
+  mysql: "MySQL",
+  php: "PHP",
+  seo: "SEO",
+  sql: "SQL",
+};
+
 /**
- * Normalize a skill name to a canonical casing (first letter uppercase).
+ * Normalize a skill name to canonical display casing.
  */
 function formatSkillName(skill: string): string {
+  const normalized = normalizeSkill(skill);
+  const canonical = CANONICAL_SKILL_DISPLAY[normalized];
+  if (canonical) return canonical;
+
   return skillDisplayValue(skill)
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -76,6 +103,8 @@ export function compare(
     const existingSkill = resumeSkillMap.get(normalizedSkill);
     if (existingSkill) {
       presentSkills.push(skillDisplayValue(existingSkill));
+    } else if (skillMentionedInResumeSkills(rawSkill, resume)) {
+      presentSkills.push(formatSkillName(rawSkill));
     } else if (skillMentionedInResume(rawSkill, resume)) {
       // The skill appears in text but is not in the formal skills list, so
       // suggest adding it.
