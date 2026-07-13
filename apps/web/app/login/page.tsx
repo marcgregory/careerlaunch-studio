@@ -78,7 +78,7 @@ function LoginForm() {
             <Sparkles size={14} className="text-[#6bbf22]" /> Back to the
             workspace
           </p>
-          <h1 className="font-signal mt-7 text-[clamp(4.5rem,9vw,8.5rem)] font-black uppercase leading-[0.82] tracking-[-0.08em]">
+          <h1 className="auth-hero-title font-signal mt-7 font-black uppercase">
             Resume signal, saved.
           </h1>
           <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-[#4b4b4b]">

@@ -67,7 +67,7 @@ function RegisterForm() {
           <p className="inline-flex items-center gap-2 rounded-full border border-[#123c3a]/10 bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#4b4b4b] shadow-sm">
             <Sparkles size={14} className="text-[#6bbf22]" /> Start with a sharper signal
           </p>
-          <h1 className="font-signal mt-7 text-[clamp(4.5rem,9vw,8.5rem)] font-black uppercase leading-[0.82] tracking-[-0.08em]">
+          <h1 className="auth-hero-title font-signal mt-7 font-black uppercase">
             Build the version that gets read.
           </h1>
           <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-[#4b4b4b]">
