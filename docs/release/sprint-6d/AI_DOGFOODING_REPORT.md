@@ -1,10 +1,16 @@
 # AI Dogfooding Report
 
-- Date/time: 2026-07-13T08:38:47.769Z
+- Date/time: 2026-07-13T08:51:39.501Z
 - Environment: local
 - Provider/model: none
+- Credential presence: Gemini=no, Groq=no
 - Commands run: npm run eval:dogfooding
 - Pass/fail totals: 0 passed, 1 failed
+
+## Credential Status
+
+- Gemini: credential present: no
+- Groq: credential present: no
 
 ## Provider Calls
 
@@ -16,7 +22,7 @@
 
 ## Failures Found
 
-- Real AI provider required: configure GEMINI_API_KEY or GROQ_API_KEY.
+- Evaluation environment has no real provider credentials loaded (checked process env and .env.eval): configure GEMINI_API_KEY or GROQ_API_KEY.
 
 ## Fixes Applied
 
@@ -24,4 +30,4 @@
 
 ## Remaining Known Issues
 
-- Real AI provider required: configure GEMINI_API_KEY or GROQ_API_KEY.
+- Evaluation environment has no real provider credentials loaded (checked process env and .env.eval): configure GEMINI_API_KEY or GROQ_API_KEY.

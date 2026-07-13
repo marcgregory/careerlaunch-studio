@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadEnvConfig } from "@next/env";
 import {
@@ -55,6 +55,7 @@ export const releaseDir = join(process.cwd(), "docs", "release", "sprint-6d");
 export function loadEvaluationEnv(): void {
   if (!envLoaded) {
     loadEnvConfig(process.cwd());
+    loadDotEnvEval();
     envLoaded = true;
   }
 }
@@ -66,7 +67,7 @@ export async function requireRealProvider(preferred?: RealProviderName): Promise
     : providers;
 
   if (ordered.length === 0) {
-    throw new Error("Real AI provider required: configure GEMINI_API_KEY or GROQ_API_KEY.");
+    throw new Error("Evaluation environment has no real provider credentials loaded (checked process env and .env.eval): configure GEMINI_API_KEY or GROQ_API_KEY.");
   }
 
   const failures: string[] = [];
@@ -92,7 +93,7 @@ export async function requireRealProvider(preferred?: RealProviderName): Promise
 export async function requireProviderPair(): Promise<{ primary: ProviderSelection; secondary: ProviderSelection }> {
   const providers = await getAvailableProviders();
   if (providers.length < 2) {
-    throw new Error("Recovery gate requires both GEMINI_API_KEY and GROQ_API_KEY to prove real provider fallback.");
+    throw new Error("Recovery gate requires both GEMINI_API_KEY and GROQ_API_KEY in the evaluation environment to prove real provider fallback.");
   }
 
   const healthy: ProviderSelection[] = [];
@@ -108,7 +109,7 @@ export async function requireProviderPair(): Promise<{ primary: ProviderSelectio
   }
 
   if (healthy.length < 2) {
-    throw new Error("Recovery gate requires two healthy real providers; one or more health checks failed.");
+    throw new Error("Recovery gate requires two healthy real providers in the evaluation environment; one or more health checks failed.");
   }
 
   return { primary: healthy[0], secondary: healthy[1] };
@@ -192,9 +193,23 @@ export function writeGateReport(options: GateReportOptions): void {
   }
 
   const now = new Date().toISOString();
+  const credentialPresence = getCredentialPresence();
+  const credentialSummary = [
+    `- Gemini: credential present: ${credentialPresence.gemini ? "yes" : "no"}`,
+    `- Groq: credential present: ${credentialPresence.groq ? "yes" : "no"}`,
+  ].join("\n");
   const providerSummary = options.providerCalls.length > 0
     ? options.providerCalls
-        .map((m) => `- ${m.operation}: ${m.provider}/${m.model}, ${m.durationMs}ms, retry=${m.retryCount}, fallback=${m.fallbackPath}, tokens=${m.tokenUsage ?? "unavailable"}`)
+        .map((m) => [
+          `- Provider: ${displayProviderName(m.provider)}`,
+          `  Model: ${m.model}`,
+          `  Credential present: ${credentialPresence[m.provider] ? "yes" : "no"}`,
+          `  Operation: ${m.operation}`,
+          `  Duration: ${m.durationMs}ms`,
+          `  Retry count: ${m.retryCount}`,
+          `  Fallback path: ${m.fallbackPath}`,
+          `  Token usage: ${m.tokenUsage ?? "unavailable"}`,
+        ].join("\n"))
         .join("\n")
     : "- No provider calls recorded";
 
@@ -203,8 +218,13 @@ export function writeGateReport(options: GateReportOptions): void {
 - Date/time: ${now}
 - Environment: ${options.environment ?? getEnvironmentLabel()}
 - Provider/model: ${options.providerCalls.map((m) => `${m.provider}/${m.model}`).join(", ") || "none"}
+- Credential presence: Gemini=${credentialPresence.gemini ? "yes" : "no"}, Groq=${credentialPresence.groq ? "yes" : "no"}
 - Commands run: ${options.commands.join(", ")}
 - Pass/fail totals: ${options.passCount} passed, ${options.failCount} failed
+
+## Credential Status
+
+${credentialSummary}
 
 ## Provider Calls
 
@@ -263,8 +283,48 @@ async function getAvailableProviders(): Promise<Array<Omit<ProviderSelection, "h
   return providers;
 }
 
+export function getCredentialPresence(): Record<RealProviderName, boolean> {
+  loadEvaluationEnv();
+  return {
+    gemini: Boolean(process.env.GEMINI_API_KEY?.trim()),
+    groq: Boolean(process.env.GROQ_API_KEY?.trim()),
+  };
+}
+
+function loadDotEnvEval(): void {
+  const envPath = join(process.cwd(), ".env.eval");
+  if (!existsSync(envPath)) return;
+
+  const contents = readFileSync(envPath, "utf-8");
+  for (const rawLine of contents.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const equalsIndex = line.indexOf("=");
+    if (equalsIndex <= 0) continue;
+
+    const key = line.slice(0, equalsIndex).trim();
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue;
+    if (process.env[key] !== undefined) continue;
+
+    let value = line.slice(equalsIndex + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    process.env[key] = value;
+  }
+}
+
+function displayProviderName(provider: RealProviderName): string {
+  return provider === "gemini" ? "Gemini" : "Groq";
+}
+
 function formatList(items: string[]): string {
   if (items.length === 0) return "- None";
   return items.map((item) => `- ${item}`).join("\n");
 }
+
+
+
+
 
