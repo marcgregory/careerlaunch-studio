@@ -9,7 +9,7 @@ async function getResumeId(context: { params: Promise<{ resumeId: string }> }) {
 /**
  * POST /api/resumes/:resumeId/suggestions/event
  *
- * Log a lifecycle event for a suggestion (viewed, accepted, rejected, applied).
+ * Log a lifecycle event for a suggestion (viewed, accepted, dismissed, rejected, applied).
  * Non-critical path — failures are swallowed silently.
  */
 export async function POST(
@@ -50,7 +50,7 @@ export async function POST(
     );
   }
 
-  const validActions = ["viewed", "accepted", "rejected", "applied"];
+  const validActions = ["viewed", "accepted", "dismissed", "rejected", "applied"];
   if (!validActions.includes(body.action)) {
     return Response.json(
       { error: `action must be one of: ${validActions.join(", ")}` },

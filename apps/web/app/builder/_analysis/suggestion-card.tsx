@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SuggestionFeedback } from "../../../components/suggestion-feedback";
 import { ConfidenceBar } from "../../../components/confidence-bar";
 import type { ClientSuggestion } from "./types";
+import { isAppliedSuggestion, isDismissedSuggestion } from "./suggestion-state";
 
 const severityConfig = {
   critical: { icon: AlertCircle, label: "Critical", color: "border-red-400 bg-red-50 text-red-800" },
@@ -29,7 +30,8 @@ export function SuggestionCard({
   const Icon = config.icon;
   const [expanded, setExpanded] = useState(false);
 
-  const isResolved = suggestion.status === "accepted" || suggestion.status === "rejected";
+  const isResolved = isAppliedSuggestion(suggestion);
+  const isDismissed = isDismissedSuggestion(suggestion);
 
   // Compute a one-line summary for the collapsed state
   const collapsedSummary = suggestion.reason
@@ -108,12 +110,12 @@ export function SuggestionCard({
           </div>
         )}
 
-        {suggestion.status === "accepted" && (
+        {isResolved && (
           <div className="shrink-0 rounded-xl bg-[#b9ff66]/30 px-3 py-2 text-xs font-black text-[#00796f]">
-            Accepted
+            Applied
           </div>
         )}
-        {suggestion.status === "rejected" && (
+        {isDismissed && (
           <div className="shrink-0 rounded-xl bg-[#123c3a]/8 px-3 py-2 text-xs font-black text-[#4b4b4b]">
             Dismissed
           </div>
@@ -184,7 +186,7 @@ export function SuggestionCard({
       )}
 
       {/* Feedback widget after action taken */}
-      {(suggestion.status === "accepted" || suggestion.status === "rejected") && resumeId && (
+      {(isResolved || isDismissed) && resumeId && (
         <div className="border-t border-[#123c3a]/5 px-4 pb-3 pt-2">
           <SuggestionFeedback
             resumeId={resumeId}

@@ -29,7 +29,7 @@ export async function GET() {
     const viewed = events.filter((e) => e.action === "viewed").length;
     const accepted = events.filter((e) => e.action === "accepted").length;
     const applied = events.filter((e) => e.action === "applied").length;
-    const rejected = events.filter((e) => e.action === "rejected").length;
+    const rejected = events.filter((e) => e.action === "rejected" || e.action === "dismissed").length;
 
     // Per-category breakdown
     const categories = [...new Set(events.map((e) => e.category))];
@@ -38,7 +38,7 @@ export async function GET() {
     for (const cat of categories) {
       const catEvents = events.filter((e) => e.category === cat);
       const catAccepted = catEvents.filter((e) => e.action === "accepted").length;
-      const catRejected = catEvents.filter((e) => e.action === "rejected").length;
+      const catRejected = catEvents.filter((e) => e.action === "rejected" || e.action === "dismissed").length;
       byCategory[cat] = {
         total: catEvents.length,
         accepted: catAccepted,

@@ -11,6 +11,12 @@ import type { AnalysisState, ClientSuggestion } from "./types";
 import type { SuggestionSeverity, SuggestionCategory } from "@careerlaunch/ai";
 import type { ApplyOperation } from "@careerlaunch/ai";
 import { suggestionToOperation } from "@careerlaunch/ai";
+import {
+  countAppliedSuggestions,
+  countDetectedIssues,
+  countDismissedSuggestions,
+  isPendingSuggestion,
+} from "./suggestion-state";
 
 const categoryLabels: Record<SuggestionCategory, string> = {
   summary: "Summary",
@@ -152,11 +158,12 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
       setAnalysis((prev) => ({
         ...prev,
         suggestions: prev.suggestions.map((s) =>
-          s.id === id ? { ...s, status: "accepted" as const } : s,
+          s.id === id ? { ...s, status: "applied" as const } : s,
         ),
       }));
       setApplyState("applied");
       if (suggestion) fireEvent(id, "applied", suggestion.category);
+      void runAnalysis();
       // Modal auto-closes after 1.5s (handled in SuggestionDiffModal)
     }
   }
@@ -172,10 +179,10 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
     setAnalysis((prev) => ({
       ...prev,
       suggestions: prev.suggestions.map((s) =>
-        s.id === id ? { ...s, status: "rejected" as const } : s,
+        s.id === id ? { ...s, status: "dismissed" as const } : s,
       ),
     }));
-    if (suggestion) fireEvent(id, "rejected", suggestion.category);
+    if (suggestion) fireEvent(id, "dismissed", suggestion.category);
   }
 
   // Group suggestions by severity for display
@@ -183,14 +190,14 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
     .map((severity) => ({
       severity,
       items: analysis.suggestions.filter(
-        (s) => s.severity === severity && s.status === "pending",
+        (s) => s.severity === severity && isPendingSuggestion(s),
       ),
     }))
     .filter((g) => g.items.length > 0);
 
-  const resolvedCount = analysis.suggestions.filter(
-    (s) => s.status === "accepted" || s.status === "rejected",
-  ).length;
+  const resolvedCount = countAppliedSuggestions(analysis.suggestions);
+  const dismissedCount = countDismissedSuggestions(analysis.suggestions);
+  const detectedIssueCount = countDetectedIssues(analysis.suggestions);
 
   // ─── Idle state ───────────────────────────────────────────────
   if (analysis.status === "idle") {
@@ -283,7 +290,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
   // Count by category for the mini-breakdown
   const pendingByCategory = new Map<SuggestionCategory, number>();
   for (const s of analysis.suggestions) {
-    if (s.status === "pending") {
+    if (isPendingSuggestion(s)) {
       pendingByCategory.set(s.category, (pendingByCategory.get(s.category) ?? 0) + 1);
     }
   }
@@ -311,7 +318,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         <div className="mt-6 flex gap-3">
           {(["critical", "major", "medium", "minor"] as const).map((sev) => {
             const count = analysis.suggestions.filter(
-              (s) => s.severity === sev && s.status === "pending",
+              (s) => s.severity === sev && isPendingSuggestion(s),
             ).length;
             if (count === 0) return null;
             const sevColors: Record<string, string> = {
@@ -387,7 +394,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
           </div>
         )}
 
-        {pendingByCategory.size === 0 && (
+        {detectedIssueCount === 0 && (
           <div className="mt-6 rounded-2xl border border-[#b9ff66]/20 bg-[#b9ff66]/5 p-4 text-center sm:p-6">
             <p className="font-signal text-xl font-black tracking-[-0.04em] text-[#b9ff66]">
               No issues found
@@ -398,11 +405,23 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
           </div>
         )}
 
+        {detectedIssueCount > 0 && pendingByCategory.size === 0 && (
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center sm:p-6">
+            <p className="font-signal text-xl font-black tracking-[-0.04em] text-white">
+              All current issues are dismissed
+            </p>
+            <p className="mt-1 text-sm text-white/60">
+              Dismissed suggestions are not resolved. Re-analyze to check whether the issue still exists.
+            </p>
+          </div>
+        )}
+
         {/* Re-analyze button */}
         <div className="mt-5 flex items-center justify-between gap-3">
           <p className="text-xs font-medium text-white/45">
             {analysis.suggestions.length} suggestion{analysis.suggestions.length !== 1 ? "s" : ""}
             {resolvedCount > 0 && ` · ${resolvedCount} resolved`}
+            {dismissedCount > 0 && ` · ${dismissedCount} dismissed`}
           </p>
           <button
             type="button"

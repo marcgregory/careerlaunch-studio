@@ -103,7 +103,7 @@ export interface SuggestionFeedback {
 }
 
 /** Lifecycle event for a suggestion */
-export type SuggestionEventAction = "viewed" | "accepted" | "rejected" | "applied";
+export type SuggestionEventAction = "viewed" | "accepted" | "rejected" | "dismissed" | "applied";
 
 export interface SuggestionEventInput {
   suggestionId: string;
