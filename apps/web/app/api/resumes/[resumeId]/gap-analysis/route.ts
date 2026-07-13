@@ -6,6 +6,7 @@ import { getRequestId } from "../../../../../lib/request-id";
 import { captureServerEvent } from "../../../../../lib/server-analytics";
 import { checkRateLimit } from "../../../../../lib/rate-limit";
 import { requireEntitlement, FeatureKeys } from "../../../../../lib/entitlements";
+import { recordAnalysisRun } from "../../../../../lib/analysis-run-log";
 import { runGapAnalysis, runJobAnalysis, normalizeResume } from "@careerlaunch/ai";
 import { initializeAI } from "../../../../../lib/ai-config";
 
@@ -88,16 +89,14 @@ export async function POST(
       jobDescription,
     });
 
-    await prisma.analysisRun.create({
-      data: {
-        resumeId,
-        type: "gap_analysis",
-        provider: "ai",
-        promptVersion: null,
-        durationMs: Date.now() - startedAt,
-        overallScore: gapAnalysis.matchScore,
-        suggestionCount: gapAnalysis.recommendations.length,
-      },
+    await recordAnalysisRun({
+      resumeId,
+      type: "gap_analysis",
+      provider: "ai",
+      promptVersion: null,
+      durationMs: Date.now() - startedAt,
+      overallScore: gapAnalysis.matchScore,
+      suggestionCount: gapAnalysis.recommendations.length,
     });
 
     captureServerEvent("gap_analysis_run", user.id, {

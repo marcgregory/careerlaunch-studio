@@ -6,6 +6,7 @@ import { getRequestId } from "../../../../../lib/request-id";
 import { captureServerEvent } from "../../../../../lib/server-analytics";
 import { checkRateLimit } from "../../../../../lib/rate-limit";
 import { requireEntitlement, FeatureKeys } from "../../../../../lib/entitlements";
+import { recordAnalysisRun } from "../../../../../lib/analysis-run-log";
 import {
   runJobMatch,
   normalizeResume,
@@ -87,16 +88,14 @@ export async function POST(
 
     const result = await runJobMatch({ resume: normalized, jobDescription });
 
-    await prisma.analysisRun.create({
-      data: {
-        resumeId,
-        type: "job_match",
-        provider: "static",
-        promptVersion: null,
-        durationMs: Date.now() - startedAt,
-        overallScore: result.matchScore,
-        suggestionCount: result.suggestions.length,
-      },
+    await recordAnalysisRun({
+      resumeId,
+      type: "job_match",
+      provider: "static",
+      promptVersion: null,
+      durationMs: Date.now() - startedAt,
+      overallScore: result.matchScore,
+      suggestionCount: result.suggestions.length,
     });
 
     captureServerEvent("job_match_run", user.id, {

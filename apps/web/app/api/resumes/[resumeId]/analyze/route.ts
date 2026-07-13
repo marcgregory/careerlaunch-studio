@@ -5,6 +5,7 @@ import { reportError } from "../../../../../lib/error-reporting";
 import { getRequestId } from "../../../../../lib/request-id";
 import { captureServerEvent } from "../../../../../lib/server-analytics";
 import { checkRateLimit } from "../../../../../lib/rate-limit";
+import { recordAnalysisRun } from "../../../../../lib/analysis-run-log";
 import { analyzeResume } from "@careerlaunch/ai";
 import { initializeAI } from "../../../../../lib/ai-config";
 
@@ -61,16 +62,14 @@ export async function GET(_request: Request, context: { params: Promise<{ resume
     const result = await analyzeResume(resume);
 
     // Persist the analysis run for audit, reproducibility, and history
-    await prisma.analysisRun.create({
-      data: {
-        resumeId,
-        type: "full",
-        provider: result.metadata.providersUsed.join(","),
-        promptVersion: null,
-        durationMs: result.metadata.duration,
-        overallScore: result.overallScore,
-        suggestionCount: result.suggestions.length,
-      },
+    await recordAnalysisRun({
+      resumeId,
+      type: "full",
+      provider: result.metadata.providersUsed.join(","),
+      promptVersion: null,
+      durationMs: result.metadata.duration,
+      overallScore: result.overallScore,
+      suggestionCount: result.suggestions.length,
     });
 
     // Fire server-side analytics event
