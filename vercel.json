@@ -1,4 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build --workspace @careerlaunch/web && rm -rf apps/web/.next/dev .next && cp -R apps/web/.next .next"
+  "buildCommand": "npm run build --workspace @careerlaunch/web",
+  "outputDirectory": "apps/web/.next"
 }
