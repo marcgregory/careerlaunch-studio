@@ -32,7 +32,7 @@ export async function GET() {
     try {
       const baseUrl = rendererUrl.replace(/\/render$/, "");
       const res = await fetch(`${baseUrl}/health`, {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(15000),
       });
       checks["pdf-renderer"] = res.ok ? "ok" : "error";
     } catch {
