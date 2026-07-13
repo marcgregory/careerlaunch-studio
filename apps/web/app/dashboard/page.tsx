@@ -67,16 +67,16 @@ export default async function DashboardPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <form action="/api/auth/logout" method="post">
-              <button className={secondaryButtonClass} type="submit" aria-label="Sign out">
+              <button className={secondaryButtonClass} type="submit">
                 <LogOut size={16} />{" "}
                 <span className="hidden sm:inline">Sign out</span>
               </button>
             </form>
-            <Link href="/import" className={secondaryButtonClass} aria-label="Import">
+            <Link href="/import" className={secondaryButtonClass}>
               <FileText size={16} />{" "}
               <span className="hidden sm:inline">Import</span>
             </Link>
-            <Link href="/builder" className={primaryButtonClass} aria-label="New resume">
+            <Link href="/builder" className={primaryButtonClass}>
               <Plus size={16} />{" "}
               <span className="hidden sm:inline">New resume</span>
             </Link>

@@ -2,19 +2,6 @@
 
 All notable changes to CareerLaunch Studio will be documented here.
 
-## 0.9.3-alpha - 2026-07-13
-
-### Fixed
-
-- Enforced resume-limit entitlements on the dashboard Duplicate action API.
-- Stored duplicated resume body/version payloads with duplicate metadata instead of the source resume metadata.
-- Relaxed shared-IP registration throttling while retaining per-email throttling to avoid blocking legitimate shared-network signups.
-- Added accessible names to mobile dashboard icon-only actions: Sign out, Import, and New resume.
-
-### Audit
-
-- Added product-completion audit docs: `API_COVERAGE.md` and `FUNCTIONAL_READINESS_AUDIT.md`.
-- Product Complete gate remains blocked until full Playwright E2E failures are resolved.
 ## 0.9.2-alpha - 2026-07-09
 
 ### Added

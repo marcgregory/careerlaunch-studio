@@ -30,9 +30,8 @@ export async function POST(request: Request) {
   const { email, name, password } = await parseBody(request);
   const ip = getClientIp(request);
 
-  const ipLimit = checkRateLimit(`register:ip:${ip}`, 300, 3600 * 1000);
-  const emailLimit = checkRateLimit(`register:email:${email.toLowerCase()}`, 3, 3600 * 1000);
-  if (!ipLimit.allowed || !emailLimit.allowed) {
+  const rl = checkRateLimit(`register:ip:${ip}`, 3, 3600 * 1000);
+  if (!rl.allowed) {
     if (isJsonRequest(request)) {
       return NextResponse.json({ error: "ratelimited", message: "Too many registration attempts. Please wait before trying again." }, { status: 429 });
     }

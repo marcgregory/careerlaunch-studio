@@ -1,6 +1,6 @@
 # CareerLaunch Studio Roadmap
 
-Last updated: 2026-07-13
+Last updated: 2026-07-05
 
 ## Completed
 
@@ -39,7 +39,6 @@ Last updated: 2026-07-13
 
 - Sprint 6D — Beta Hardening & Release Candidate (v0.9.5). No new features. Dogfooding, AI benchmark, error recovery, mobile QA, accessibility, performance, closed beta checklist.
 - Sprint 6D — Auth Hardening (password reset, rate limiting, soft email verification). See `docs/implementation/AUTH_HARDENING_PLAN.md`.
-- Product Completion audit: duplicate API entitlement/data consistency fixed, registration throttling adjusted, mobile dashboard action accessibility fixed. Full E2E remains blocking; see `docs/implementation/FUNCTIONAL_READINESS_AUDIT.md`.
 
 ## Future
 
