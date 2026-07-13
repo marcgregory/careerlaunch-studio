@@ -67,8 +67,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export async function requireUser() {
+  const cookieStore = await cookies();
+  const hasSessionCookie = Boolean(cookieStore.get(sessionCookieName)?.value);
   const user = await getCurrentUser();
-  if (!user) redirect("/login?session=expired");
+  if (!user) redirect(hasSessionCookie ? "/login?session=expired" : "/login");
   return user;
 }
 
