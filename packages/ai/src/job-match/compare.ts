@@ -34,6 +34,13 @@ function skillMentionedInResume(skill: string, resume: NormalizedResume): boolea
   return normalizedSkillMentioned(skill, searchText);
 }
 
+export function skillPresentInResume(skill: string, resume: NormalizedResume): string | null {
+  const existingSkill = createSkillMap(resume.skills).get(normalizeSkill(skill));
+  if (existingSkill) return skillDisplayValue(existingSkill);
+  if (skillMentionedInResume(skill, resume)) return formatSkillName(skill);
+  return null;
+}
+
 /**
  * Normalize a skill name to a canonical casing (first letter uppercase).
  */
@@ -105,4 +112,42 @@ export function compare(
   }
 
   return { missingSkills, presentSkills, suggestions };
+}
+export function reconcileSkillComparison(
+  input: Pick<ComparisonResult, "missingSkills" | "presentSkills" | "suggestions">,
+  resume: NormalizedResume,
+): ComparisonResult {
+  const presentByKey = new Map<string, string>();
+  const missingByKey = new Map<string, string>();
+
+  for (const skill of input.presentSkills) {
+    const key = normalizeSkill(skill);
+    if (key && !presentByKey.has(key)) {
+      presentByKey.set(key, skillPresentInResume(skill, resume) ?? formatSkillName(skill));
+    }
+  }
+
+  for (const skill of input.missingSkills) {
+    const key = normalizeSkill(skill);
+    if (!key || presentByKey.has(key) || missingByKey.has(key)) continue;
+
+    const presentSkill = skillPresentInResume(skill, resume);
+    if (presentSkill) {
+      presentByKey.set(key, presentSkill);
+    } else {
+      missingByKey.set(key, formatSkillName(skill));
+    }
+  }
+
+  const suggestions = input.suggestions.filter((suggestion) => {
+    const skill = suggestion.suggestedText ?? suggestion.title;
+    const key = normalizeSkill(skill);
+    return key ? missingByKey.has(key) : true;
+  });
+
+  return {
+    missingSkills: [...missingByKey.values()],
+    presentSkills: [...presentByKey.values()],
+    suggestions,
+  };
 }

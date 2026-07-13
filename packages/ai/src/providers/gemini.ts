@@ -26,6 +26,7 @@ import { buildCoverLetterContext } from "../cover-letter/context";
 import type { JobMatchResult } from "../job-match/types";
 import { callGemini } from "../lib/llm";
 import { suggestionId } from "../suggestion/types";
+import { reconcileSkillComparison } from "../job-match/compare";
 
 // ─── Provider class ────────────────────────────────────────────────────
 
@@ -417,5 +418,7 @@ function parseJobMatchResponse(raw: unknown, resume: NormalizedResume): JobMatch
         .filter(Boolean) as Suggestion[]
     : [];
 
-  return { matchScore, missingSkills, presentSkills, suggestions };
+  const reconciled = reconcileSkillComparison({ missingSkills, presentSkills, suggestions }, resume);
+
+  return { matchScore, ...reconciled };
 }

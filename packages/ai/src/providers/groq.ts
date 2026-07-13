@@ -23,6 +23,7 @@ import { buildCoverLetterContext } from "../cover-letter/context";
 import type { JobMatchResult } from "../job-match/types";
 import { callOpenAICompatible } from "../lib/llm";
 import { suggestionId } from "../suggestion/types";
+import { reconcileSkillComparison } from "../job-match/compare";
 
 const BASE_URL = "https://api.groq.com/openai/v1";
 
@@ -405,7 +406,7 @@ function parseDimensionResponse(
     .filter(Boolean) as Suggestion[];
 }
 
-function parseJobMatchResponse(raw: unknown, _resume: NormalizedResume): JobMatchResult {
+function parseJobMatchResponse(raw: unknown, resume: NormalizedResume): JobMatchResult {
   const data = raw as Record<string, unknown> | null;
   if (!data || typeof data !== "object") {
     return { matchScore: null, missingSkills: [], presentSkills: [], suggestions: [] };
@@ -446,5 +447,7 @@ function parseJobMatchResponse(raw: unknown, _resume: NormalizedResume): JobMatc
         .filter(Boolean) as Suggestion[]
     : [];
 
-  return { matchScore, missingSkills, presentSkills, suggestions };
+  const reconciled = reconcileSkillComparison({ missingSkills, presentSkills, suggestions }, resume);
+
+  return { matchScore, ...reconciled };
 }

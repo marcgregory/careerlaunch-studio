@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  createSkillMap,
   skillsMatch as matches,
+  splitSkillItems,
   uniqueSkillsByNormalization,
 } from "../../src/skills/normalization";
 
@@ -29,5 +31,22 @@ describe("skill normalization", () => {
     expect(uniqueSkillsByNormalization(["HTML", "Html", "html"])).toEqual([
       "HTML",
     ]);
+  });
+  it("splits grouped skills without splitting parenthetical details", () => {
+    expect(splitSkillItems("Frontend: HTML, CSS, JavaScript")).toEqual([
+      "HTML",
+      "CSS",
+      "JavaScript",
+    ]);
+    expect(splitSkillItems("AWS (EC2, S3, Lambda)")).toEqual([
+      "AWS (EC2, S3, Lambda)",
+    ]);
+  });
+
+  it("indexes comma-packed and categorized skill strings", () => {
+    const map = createSkillMap(["Frontend: HTML, CSS, JavaScript"]);
+    expect(map.get("html")).toBe("HTML");
+    expect(map.get("css")).toBe("CSS");
+    expect(map.get("javascript")).toBe("JavaScript");
   });
 });

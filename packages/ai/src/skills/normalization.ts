@@ -38,6 +38,30 @@ export function skillsMatch(a: string, b: string): boolean {
   return normalizeSkill(a) === normalizeSkill(b);
 }
 
+export function splitSkillItems(value: string): string[] {
+  const displayValue = skillDisplayValue(value);
+  const items: string[] = [];
+  let current = "";
+  let parenDepth = 0;
+
+  for (const char of displayValue) {
+    if (char === "(" || char === "[" || char === "{") parenDepth += 1;
+    if (char === ")" || char === "]" || char === "}") parenDepth = Math.max(0, parenDepth - 1);
+
+    if (parenDepth === 0 && /[,;|\u2022]/.test(char)) {
+      const item = current.trim();
+      if (item) items.push(item);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  const item = current.trim();
+  if (item) items.push(item);
+  return items;
+}
+
 export function uniqueSkillsByNormalization(
   skills: string[],
   options: { preserveCategories?: boolean } = {},
@@ -67,12 +91,18 @@ function normalizeCategorizedSkillKey(value: string): string {
 }
 
 export function createSkillMap(skills: string[]): Map<string, string> {
-  return new Map(
-    uniqueSkillsByNormalization(skills).map((skill) => [
-      normalizeSkill(skill),
-      skill,
-    ]),
-  );
+  const map = new Map<string, string>();
+
+  for (const skill of skills) {
+    for (const item of splitSkillItems(skill)) {
+      const key = normalizeSkill(item);
+      if (key && !map.has(key)) {
+        map.set(key, item);
+      }
+    }
+  }
+
+  return map;
 }
 
 export function normalizedSkillMentioned(skill: string, text: string): boolean {

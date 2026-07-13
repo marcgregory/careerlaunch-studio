@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compare } from "../../src/job-match/compare";
+import { compare, reconcileSkillComparison } from "../../src/job-match/compare";
 import { normalizeJobDescription } from "../../src/job-match/normalize-job";
 import type { NormalizedResume } from "../../src/analysis/types";
 
@@ -127,4 +127,46 @@ describe("compare", () => {
     expect(result.missingSkills).toEqual(["HTML"]);
     expect(result.suggestions).toHaveLength(1);
   });
+  it("reconciles AI missing skills case-insensitively against resume skills", () => {
+    const resume: NormalizedResume = {
+      ...SAMPLE_RESUME,
+      skills: ["FRONTEND: HTML, CSS, JavaScript", "Backend: PHP, MySQL", "SEO"],
+    };
+
+    const result = reconcileSkillComparison(
+      {
+        presentSkills: [],
+        missingSkills: ["Html", "Javascript", "Php", "Mysql", "Seo", "Bootstrap"],
+        suggestions: [
+          makeSkillSuggestion("Html"),
+          makeSkillSuggestion("Javascript"),
+          makeSkillSuggestion("Php"),
+          makeSkillSuggestion("Mysql"),
+          makeSkillSuggestion("Seo"),
+          makeSkillSuggestion("Bootstrap"),
+        ],
+      },
+      resume,
+    );
+
+    expect(result.presentSkills).toEqual(["HTML", "JavaScript", "PHP", "MySQL", "SEO"]);
+    expect(result.missingSkills).toEqual(["Bootstrap"]);
+    expect(result.suggestions.map((s) => s.suggestedText)).toEqual(["Bootstrap"]);
+  });
 });
+
+
+function makeSkillSuggestion(skill: string) {
+  return {
+    id: `skills:add-${skill.toLowerCase()}:skills`,
+    category: "job-match" as const,
+    severity: "medium" as const,
+    title: `Add "${skill}" to your skills list`,
+    reason: "",
+    targetText: null,
+    suggestedText: skill,
+    location: { sectionId: "skills" },
+    confidence: 0.9,
+    source: "ai" as const,
+  };
+}
