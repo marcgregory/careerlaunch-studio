@@ -438,6 +438,13 @@ function normalizeExperienceBullets(bullets: string[]): string[] {
 
   return normalized;
 }
+function splitInlineExperienceDetails(value: string): string[] {
+  return value
+    .split(/\s*(?:;|\u2022|\u25cf|\u25aa|\u25e6)\s*/)
+    .map((part) => cleanBulletText(part))
+    .filter(Boolean);
+}
+
 function parseExperience(lines: string[]): {
   experience: ResumeDocument["experience"];
   warnings: string[];
@@ -607,6 +614,7 @@ function parseExperience(lines: string[]): {
       // Normal case: date is on the same line as role/company
       let role = fullText;
       let company = "";
+      const inlineBullets: string[] = [];
 
       // Try to split on " at " or " | " or " - "
       const atSplit = fullText.split(/\s+at\s+/);
@@ -619,13 +627,12 @@ function parseExperience(lines: string[]): {
         // Try pipe split first: "Role | Company | Dates"
         const pipeSplit = withoutDate.split(/\s*\|\s*/);
         if (pipeSplit.length >= 2) {
-          role = pipeSplit[0].trim();
-          // For "Role | Company | (dates removed)", take the middle parts
-          const companyParts = pipeSplit.slice(1).filter(Boolean);
-          company = companyParts
-            .join(" | ")
-            .replace(/\|\s*$/, "")
-            .trim();
+          const pipeParts = pipeSplit.map((part) => part.trim()).filter(Boolean);
+          role = pipeParts[0] ?? "";
+          company = pipeParts[1] ?? "";
+          inlineBullets.push(
+            ...pipeParts.slice(2).flatMap(splitInlineExperienceDetails),
+          );
         } else {
           const dashSplit = withoutDate.split(/\s+[-–]\s+/);
           if (dashSplit.length >= 2) {
@@ -642,7 +649,7 @@ function parseExperience(lines: string[]): {
 
       // Collect bullets
       i++;
-      const bullets: string[] = [];
+      const bullets: string[] = [...inlineBullets];
       while (i < lines.length) {
         const bline = lines[i].trim();
         if (!bline) {
@@ -2550,6 +2557,11 @@ const LAYOUT_SIGNATURES: LayoutSignature[] = [
       // How many pipe-lines follow a date-range pattern?
       const datePipeLines = pipeLines.filter((l) => /\b(19|20)\d{2}\b/.test(l));
       if (datePipeLines.length === 0) return 0;
+      const dateFirstPipeLines = datePipeLines.filter((l) => {
+        const firstCell = l.trim().split("|")[0]?.trim() ?? "";
+        return DATE_RANGE_RE.test(firstCell) || YEAR_RANGE_RE.test(firstCell);
+      });
+      if (dateFirstPipeLines.length > 0) return 1;
       return Math.min(1, datePipeLines.length / 3);
     },
   },
