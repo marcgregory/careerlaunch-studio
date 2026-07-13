@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-07-06T11:29:09.159Z",
+  "timestamp": "2026-07-13T04:54:38.869Z",
   "config": {
-    "useAI": false
+    "useAI": true
   },
   "totalPersonas": 6,
   "results": [
@@ -12,7 +12,7 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 8,
+      "latencyMs": 22,
       "suggestionCount": 0,
       "fabricatedCount": 0,
       "fabricatedExamples": [],
@@ -70,7 +70,7 @@
       "schemaValid": true,
       "promptFailed": false,
       "latencyMs": 1,
-      "suggestionCount": 0,
+      "suggestionCount": 1,
       "fabricatedCount": 0,
       "fabricatedExamples": [],
       "errors": [],
@@ -358,40 +358,40 @@
           "runNumber": 1,
           "matchScore": 100,
           "matchedSkills": [
-            "Css",
+            "CSS",
             "Git",
             "React",
-            "Tailwind",
-            "Typescript"
-          ],
-          "missingSkills": [],
-          "latencyMs": 1
-        },
-        {
-          "runNumber": 2,
-          "matchScore": 100,
-          "matchedSkills": [
-            "Css",
-            "Git",
-            "React",
-            "Tailwind",
-            "Typescript"
+            "Tailwind CSS",
+            "TypeScript"
           ],
           "missingSkills": [],
           "latencyMs": 0
         },
         {
-          "runNumber": 3,
+          "runNumber": 2,
           "matchScore": 100,
           "matchedSkills": [
-            "Css",
+            "CSS",
             "Git",
             "React",
-            "Tailwind",
-            "Typescript"
+            "Tailwind CSS",
+            "TypeScript"
           ],
           "missingSkills": [],
           "latencyMs": 1
+        },
+        {
+          "runNumber": 3,
+          "matchScore": 100,
+          "matchedSkills": [
+            "CSS",
+            "Git",
+            "React",
+            "Tailwind CSS",
+            "TypeScript"
+          ],
+          "missingSkills": [],
+          "latencyMs": 0
         }
       ],
       "scoreStddev": 0,
@@ -404,48 +404,54 @@
       "runs": [
         {
           "runNumber": 1,
-          "matchScore": 100,
+          "matchScore": 88,
           "matchedSkills": [
-            "Aws",
+            "AWS",
             "Docker",
             "Go",
             "Kubernetes",
             "Microservices",
             "Node.js",
-            "Postgresql"
+            "PostgreSQL"
           ],
-          "missingSkills": [],
+          "missingSkills": [
+            "Next"
+          ],
           "latencyMs": 0
         },
         {
           "runNumber": 2,
-          "matchScore": 100,
+          "matchScore": 88,
           "matchedSkills": [
-            "Aws",
+            "AWS",
             "Docker",
             "Go",
             "Kubernetes",
             "Microservices",
             "Node.js",
-            "Postgresql"
+            "PostgreSQL"
           ],
-          "missingSkills": [],
+          "missingSkills": [
+            "Next"
+          ],
           "latencyMs": 1
         },
         {
           "runNumber": 3,
-          "matchScore": 100,
+          "matchScore": 88,
           "matchedSkills": [
-            "Aws",
+            "AWS",
             "Docker",
             "Go",
             "Kubernetes",
             "Microservices",
             "Node.js",
-            "Postgresql"
+            "PostgreSQL"
           ],
-          "missingSkills": [],
-          "latencyMs": 0
+          "missingSkills": [
+            "Next"
+          ],
+          "latencyMs": 1
         }
       ],
       "scoreStddev": 0,
@@ -460,37 +466,37 @@
           "runNumber": 1,
           "matchScore": 67,
           "matchedSkills": [
-            "Php",
-            "Seo"
+            "PHP",
+            "SEO"
           ],
           "missingSkills": [
             "Rest"
           ],
-          "latencyMs": 1
+          "latencyMs": 2
         },
         {
           "runNumber": 2,
           "matchScore": 67,
           "matchedSkills": [
-            "Php",
-            "Seo"
+            "PHP",
+            "SEO"
           ],
           "missingSkills": [
             "Rest"
           ],
-          "latencyMs": 0
+          "latencyMs": 2
         },
         {
           "runNumber": 3,
           "matchScore": 67,
           "matchedSkills": [
-            "Php",
-            "Seo"
+            "PHP",
+            "SEO"
           ],
           "missingSkills": [
             "Rest"
           ],
-          "latencyMs": 1
+          "latencyMs": 0
         }
       ],
       "scoreStddev": 0,
@@ -505,7 +511,7 @@
           "runNumber": 1,
           "matchScore": 100,
           "matchedSkills": [
-            "A/b Testing",
+            "A/B Testing",
             "Analytics"
           ],
           "missingSkills": [],
@@ -515,7 +521,7 @@
           "runNumber": 2,
           "matchScore": 100,
           "matchedSkills": [
-            "A/b Testing",
+            "A/B Testing",
             "Analytics"
           ],
           "missingSkills": [],
@@ -525,7 +531,7 @@
           "runNumber": 3,
           "matchScore": 100,
           "matchedSkills": [
-            "A/b Testing",
+            "A/B Testing",
             "Analytics"
           ],
           "missingSkills": [],
@@ -556,7 +562,7 @@
             "Figma"
           ],
           "missingSkills": [],
-          "latencyMs": 1
+          "latencyMs": 0
         },
         {
           "runNumber": 3,
@@ -565,7 +571,7 @@
             "Figma"
           ],
           "missingSkills": [],
-          "latencyMs": 0
+          "latencyMs": 1
         }
       ],
       "scoreStddev": 0,
@@ -580,7 +586,7 @@
           "runNumber": 1,
           "matchScore": 60,
           "matchedSkills": [
-            "Crm",
+            "CRM",
             "Customer Support",
             "Zendesk"
           ],
@@ -594,7 +600,7 @@
           "runNumber": 2,
           "matchScore": 60,
           "matchedSkills": [
-            "Crm",
+            "CRM",
             "Customer Support",
             "Zendesk"
           ],
@@ -608,7 +614,7 @@
           "runNumber": 3,
           "matchScore": 60,
           "matchedSkills": [
-            "Crm",
+            "CRM",
             "Customer Support",
             "Zendesk"
           ],
