@@ -20,19 +20,21 @@ type SerializedResume = {
 
 const INITIAL_PAGE_SIZE = 10;
 
+const FREE_SUBSCRIPTION = {
+  plan: "free" as const,
+};
+
 export default async function DashboardPage() {
   const user = await requireUser();
   const [allResumesForStats, subscription] = await Promise.all([
-    prisma.resumeDocument.findMany({
-      where: { userId: user.id },
-      orderBy: { updatedAt: "desc" },
-      select: {
-        id: true,
-        targetRole: true,
-        _count: { select: { analysisRuns: true, exports: true } },
-      },
+    getDashboardResumeStats(user.id),
+    getSubscription(user.id).catch((error) => {
+      console.warn(
+        "[dashboard] failed to load subscription, falling back to free plan",
+        error instanceof Error ? error.message : String(error),
+      );
+      return FREE_SUBSCRIPTION;
     }),
-    getSubscription(user.id),
   ]);
   const isFree = subscription.plan === "free";
 
@@ -42,18 +44,7 @@ export default async function DashboardPage() {
   const exportCount = allResumesForStats.reduce((sum, r) => sum + r._count.exports, 0);
 
   // Fetch first page for initial render
-  const initialResumes = await prisma.resumeDocument.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-    take: INITIAL_PAGE_SIZE,
-    select: {
-      id: true,
-      title: true,
-      targetRole: true,
-      updatedAt: true,
-      _count: { select: { analysisRuns: true, exports: true } },
-    },
-  });
+  const initialResumes = await getInitialDashboardResumes(user.id);
 
   const serialized: SerializedResume[] = initialResumes.map((r) => ({
     id: r.id,
@@ -167,4 +158,47 @@ export default async function DashboardPage() {
       </div>
     </main>
   );
+}
+
+async function getDashboardResumeStats(userId: string) {
+  try {
+    return await prisma.resumeDocument.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        targetRole: true,
+        _count: { select: { analysisRuns: true, exports: true } },
+      },
+    });
+  } catch (error) {
+    console.warn(
+      "[dashboard] failed to load resume stats",
+      error instanceof Error ? error.message : String(error),
+    );
+    return [];
+  }
+}
+
+async function getInitialDashboardResumes(userId: string) {
+  try {
+    return await prisma.resumeDocument.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      take: INITIAL_PAGE_SIZE,
+      select: {
+        id: true,
+        title: true,
+        targetRole: true,
+        updatedAt: true,
+        _count: { select: { analysisRuns: true, exports: true } },
+      },
+    });
+  } catch (error) {
+    console.warn(
+      "[dashboard] failed to load initial resumes",
+      error instanceof Error ? error.message : String(error),
+    );
+    return [];
+  }
 }
