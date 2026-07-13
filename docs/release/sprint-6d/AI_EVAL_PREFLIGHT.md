@@ -1,6 +1,6 @@
 # AI Eval Preflight
 
-- Date/time: 2026-07-13T09:39:17.573Z
+- Date/time: 2026-07-13T10:31:13.218Z
 - Environment: production
 - Provider/model: groq/llama-3.1-8b-instant
 - Credential presence: Gemini=yes, Groq=yes
@@ -18,14 +18,14 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: preflight.matchJob
-  Duration: 543ms
+  Duration: 22853ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
 
 ## Latency Results
 
-- preflight.matchJob: 543ms
+- preflight.matchJob: 22853ms
 
 ## Failures Found
 

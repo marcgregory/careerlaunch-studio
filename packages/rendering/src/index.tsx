@@ -539,7 +539,7 @@ function ReferencesSection({
               {[item.title, item.company].filter(Boolean).join(", ")}
             </p>
             <p className="text-[#555]">
-              {[item.phone, item.email].filter(Boolean).join(" | ")}
+              {[item.phone, item.email].filter(Boolean).join(" · ")}
             </p>
             {item.relationship && (
               <p className="mt-0.5 text-sm text-[#777]">{item.relationship}</p>

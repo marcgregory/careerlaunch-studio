@@ -120,7 +120,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [resume]);
+  }, [analytics, resume]);
 
   function patchResume(patch: Partial<ResumeDocument>) {
     setResume((current) => ({ ...current, ...patch }));

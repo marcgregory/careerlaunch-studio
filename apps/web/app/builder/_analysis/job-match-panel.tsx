@@ -123,7 +123,7 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
       }));
       toast.error("Job match analysis failed.");
     }
-  }, [resumeId, jobDescription]);
+  }, [analytics, resumeId, jobDescription]);
 
   // ── Review handler — opens the diff modal ─────────────────────────
   function handleReview(id: string) {

@@ -1,6 +1,6 @@
 # AI Dogfooding Report
 
-- Date/time: 2026-07-13T09:40:24.154Z
+- Date/time: 2026-07-13T10:32:24.250Z
 - Environment: production
 - Provider/model: groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant
 - Credential presence: Gemini=yes, Groq=yes
@@ -18,7 +18,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.matchJob
-  Duration: 770ms
+  Duration: 756ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -26,7 +26,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.generateCoverLetter
-  Duration: 791ms
+  Duration: 24435ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -34,7 +34,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.matchJob
-  Duration: 7106ms
+  Duration: 1207ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -42,7 +42,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.generateCoverLetter
-  Duration: 698ms
+  Duration: 9977ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -50,7 +50,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.matchJob
-  Duration: 858ms
+  Duration: 713ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -58,7 +58,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.generateCoverLetter
-  Duration: 10276ms
+  Duration: 6727ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -66,7 +66,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.matchJob
-  Duration: 2953ms
+  Duration: 12945ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -74,7 +74,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.generateCoverLetter
-  Duration: 5913ms
+  Duration: 7464ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -82,7 +82,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.matchJob
-  Duration: 10972ms
+  Duration: 17744ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -90,7 +90,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.generateCoverLetter
-  Duration: 8944ms
+  Duration: 1097ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -98,7 +98,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.matchJob
-  Duration: 1732ms
+  Duration: 4711ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -106,19 +106,19 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.generateCoverLetter
-  Duration: 6153ms
+  Duration: 6209ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
 
 ## Latency Results
 
-- Junior Frontend Developer: 1561ms
-- Senior Backend Engineer: 7804ms
-- WordPress Developer: 11134ms
-- Marketing Specialist: 8868ms
-- Graphic Designer: 19916ms
-- Customer Support Specialist: 7885ms
+- Junior Frontend Developer: 25194ms
+- Senior Backend Engineer: 11184ms
+- WordPress Developer: 7440ms
+- Marketing Specialist: 20409ms
+- Graphic Designer: 18841ms
+- Customer Support Specialist: 10920ms
 
 ## Failures Found
 

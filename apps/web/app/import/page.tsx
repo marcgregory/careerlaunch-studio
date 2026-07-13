@@ -140,7 +140,7 @@ export default function ImportPage() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [result]);
+  }, [analytics, result]);
 
   /** Whether the parser or AI was able to extract meaningful content */
   function hasAnyContent(): boolean {

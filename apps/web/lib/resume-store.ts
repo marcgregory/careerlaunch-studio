@@ -10,8 +10,7 @@ export function createStarterResume(): ResumeDocument {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toStoredResume(resume: ResumeDocument): any {
+export function toStoredResume(resume: ResumeDocument): ResumeDocument {
   const normalized = normalizeResume(resume);
   return {
     id: normalized.id,

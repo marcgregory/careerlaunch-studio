@@ -101,11 +101,6 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (isAnyModalOpen) {
-      setActiveMenuId(null);
-    }
-  }, [isAnyModalOpen]);
 
   // ── Infinite query with cache ──
   const {

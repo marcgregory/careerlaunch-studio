@@ -106,7 +106,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
       }));
       toast.error("Resume analysis failed. Please try again.");
     }
-  }, [resumeId]);
+  }, [analytics, resumeId]);
 
   // ── Review handler — opens the diff modal ─────────────────────────
   function handleReview(id: string) {

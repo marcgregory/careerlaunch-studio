@@ -1,31 +1,27 @@
-﻿# Accessibility Audit
+# Accessibility Audit
 
-- Date/time: 2026-07-13T09:52:00Z
+- Date/time: 2026-07-13T10:37:42Z
 - Environment: local dev server
 - Commands run:
-  - npx playwright test tests/mobile-qa.spec.ts --project=mobile
-  - npm run lint
+  - `npm run lint`
+  - `npx playwright test tests/resume-flow.spec.ts --project=chromium --workers=1`
+  - Prior Sprint 6D mobile run: `npx playwright test tests/mobile-qa.spec.ts --project=mobile`
 
 ## Results
 
-- Keyboard-only navigation: partially covered by Playwright role-based navigation; not fully signed off.
-- Visible focus: not fully audited manually.
-- Form labels: mobile auth forms and builder labels exercised; one E2E selector mismatch found for renamed "File name" label.
-- Modal focus trapping: not fully audited in this run.
-- Screen-reader names: Playwright role selectors passed for auth, billing, and mobile routes; not exhaustive.
-- Contrast: not fully audited with tooling in this run.
-- Reduced motion: not fully audited in this run.
-- Error announcements: registration rate-limit alert observed and announced as alert in Playwright snapshot.
-
-## Failures Found
-
-- npm run lint failed on existing React hook lint errors in dashboard rename/list components.
-- Mobile tap targets were initially below 44px for Dashboard, Privacy, and Terms.
+- Lint accessibility/hook gate: passed with zero warnings.
+- Form labels: builder E2E now uses the current accessible `File name` label; auth and builder form labels are exercised through Playwright label selectors.
+- Screen-reader names: resume-flow uses role/link/button selectors for protected redirects, dashboard navigation, template controls, and export actions.
+- Error announcements: registration throttling is no longer hidden by retries; the E2E helper explicitly fails on unexpected 429 responses.
+- Mobile QA: prior Sprint 6D mobile report remains 11/11 passing.
 
 ## Fixes Applied
 
-- Fixed home-page Dashboard, Privacy, and Terms tap targets.
+- Removed synchronous setState-in-effect hook violations in dashboard components.
+- Fixed missing hook dependencies for analytics callbacks/effects.
+- Replaced stale `Resume title` E2E selectors with the current `File name` label.
+- Preserved deterministic rate-limit behavior in E2E setup with isolated registration keys.
 
-## Remaining Known Issues
+## Remaining Manual Audit Scope
 
-- Accessibility audit is not complete enough for signoff until lint errors are fixed and keyboard/modal/contrast/reduced-motion checks are completed.
+- Full keyboard-only traversal, modal focus trapping, contrast tooling, and reduced-motion checks are not exhaustively documented here and should be completed before public launch.

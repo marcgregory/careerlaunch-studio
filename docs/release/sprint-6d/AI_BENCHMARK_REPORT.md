@@ -1,6 +1,6 @@
 # AI Benchmark Report
 
-- Date/time: 2026-07-13T09:44:10.085Z
+- Date/time: 2026-07-13T10:37:42.140Z
 - Environment: production
 - Provider/model: groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant, groq/llama-3.1-8b-instant
 - Credential presence: Gemini=yes, Groq=yes
@@ -18,7 +18,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.benchmark
-  Duration: 2066ms
+  Duration: 6997ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -26,7 +26,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.consistency-1
-  Duration: 10846ms
+  Duration: 12532ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -34,7 +34,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.consistency-2
-  Duration: 9959ms
+  Duration: 10332ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -42,7 +42,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-16.consistency-3
-  Duration: 11081ms
+  Duration: 18569ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -50,7 +50,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.benchmark
-  Duration: 11989ms
+  Duration: 1159ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -58,7 +58,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.consistency-1
-  Duration: 13153ms
+  Duration: 11855ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -66,7 +66,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.consistency-2
-  Duration: 13094ms
+  Duration: 13969ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -74,7 +74,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-17.consistency-3
-  Duration: 13360ms
+  Duration: 12112ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -82,7 +82,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.benchmark
-  Duration: 758ms
+  Duration: 12542ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -90,7 +90,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.consistency-1
-  Duration: 9762ms
+  Duration: 631ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -98,7 +98,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.consistency-2
-  Duration: 694ms
+  Duration: 8844ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -106,7 +106,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-18.consistency-3
-  Duration: 9309ms
+  Duration: 11873ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -114,7 +114,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.benchmark
-  Duration: 1006ms
+  Duration: 818ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -122,7 +122,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.consistency-1
-  Duration: 10181ms
+  Duration: 7997ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -130,7 +130,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.consistency-2
-  Duration: 12265ms
+  Duration: 10858ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -138,7 +138,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-19.consistency-3
-  Duration: 11100ms
+  Duration: 9900ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -146,7 +146,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.benchmark
-  Duration: 12033ms
+  Duration: 10959ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -154,7 +154,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.consistency-1
-  Duration: 10918ms
+  Duration: 11951ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -162,7 +162,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.consistency-2
-  Duration: 12000ms
+  Duration: 12564ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -170,7 +170,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-20.consistency-3
-  Duration: 11938ms
+  Duration: 794ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -178,7 +178,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.benchmark
-  Duration: 8863ms
+  Duration: 7826ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -186,7 +186,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.consistency-1
-  Duration: 10423ms
+  Duration: 10811ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -194,7 +194,7 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.consistency-2
-  Duration: 597ms
+  Duration: 7843ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
@@ -202,16 +202,16 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: resume-21.consistency-3
-  Duration: 8944ms
+  Duration: 11815ms
   Retry count: 0
   Fallback path: none
   Token usage: unavailable
 
 ## Latency Results
 
-- p50 provider latency: 10846ms
-- p95 provider latency: 13153ms
-- avg provider latency: 9014ms
+- p50 provider latency: 10858ms
+- p95 provider latency: 13969ms
+- avg provider latency: 9398ms
 
 ## Failures Found
 

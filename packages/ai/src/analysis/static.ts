@@ -387,7 +387,8 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
         contextualReason =
           `Add measurable outcomes for your ${role} role. ` +
           "Examples: number of features shipped, code coverage percentage, " +
-          "performance improvements (e.g. reduced load time by X%), or team size mentored.";
+          "performance improvements (e.g. reduced load time by X%), or team size mentored. " +
+          "Only add numbers that are true.";
       } else if (/staff|support|help desk|technician/i.test(lowerRole)) {
         contextualReason =
           `Mention the number of users supported, tickets resolved, systems maintained, ` +
@@ -399,14 +400,14 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
       } else if (/sales|marketing|account|business/i.test(lowerRole)) {
         contextualReason =
           `Quantify results for your ${role} role — revenue generated, ` +
-          `conversion rate improvements, leads generated, or market share growth.`;
+          `conversion rate improvements, leads generated, or market share growth. Only add numbers that are true.`;
       }
 
       s.push({
         id: suggestionId("impact", "no-metrics", entry.id),
         category: "impact",
         severity: "minor",
-        title: `Strengthen "${role}" with measurable outcomes`,
+        title: `Opportunity to strengthen "${role}" with measurable outcomes`,
         reason: contextualReason,
         targetText: null,
         suggestedText: null,

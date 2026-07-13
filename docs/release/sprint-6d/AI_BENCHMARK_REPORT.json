@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-13T09:44:10.083Z",
+  "timestamp": "2026-07-13T10:37:42.135Z",
   "provider": "groq",
   "model": "llama-3.1-8b-instant",
   "totalPersonas": 6,
@@ -8,7 +8,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-16.benchmark",
-      "durationMs": 2066,
+      "durationMs": 6997,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -19,7 +19,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-16.consistency-1",
-      "durationMs": 10846,
+      "durationMs": 12532,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -30,7 +30,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-16.consistency-2",
-      "durationMs": 9959,
+      "durationMs": 10332,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -41,7 +41,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-16.consistency-3",
-      "durationMs": 11081,
+      "durationMs": 18569,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -52,7 +52,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-17.benchmark",
-      "durationMs": 11989,
+      "durationMs": 1159,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -63,7 +63,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-17.consistency-1",
-      "durationMs": 13153,
+      "durationMs": 11855,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -74,7 +74,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-17.consistency-2",
-      "durationMs": 13094,
+      "durationMs": 13969,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -85,7 +85,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-17.consistency-3",
-      "durationMs": 13360,
+      "durationMs": 12112,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -96,7 +96,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-18.benchmark",
-      "durationMs": 758,
+      "durationMs": 12542,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -107,7 +107,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-18.consistency-1",
-      "durationMs": 9762,
+      "durationMs": 631,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -118,7 +118,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-18.consistency-2",
-      "durationMs": 694,
+      "durationMs": 8844,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -129,7 +129,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-18.consistency-3",
-      "durationMs": 9309,
+      "durationMs": 11873,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -140,7 +140,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-19.benchmark",
-      "durationMs": 1006,
+      "durationMs": 818,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -151,7 +151,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-19.consistency-1",
-      "durationMs": 10181,
+      "durationMs": 7997,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -162,7 +162,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-19.consistency-2",
-      "durationMs": 12265,
+      "durationMs": 10858,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -173,7 +173,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-19.consistency-3",
-      "durationMs": 11100,
+      "durationMs": 9900,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -184,7 +184,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-20.benchmark",
-      "durationMs": 12033,
+      "durationMs": 10959,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -195,7 +195,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-20.consistency-1",
-      "durationMs": 10918,
+      "durationMs": 11951,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -206,7 +206,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-20.consistency-2",
-      "durationMs": 12000,
+      "durationMs": 12564,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -217,7 +217,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-20.consistency-3",
-      "durationMs": 11938,
+      "durationMs": 794,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -228,7 +228,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-21.benchmark",
-      "durationMs": 8863,
+      "durationMs": 7826,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -239,7 +239,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-21.consistency-1",
-      "durationMs": 10423,
+      "durationMs": 10811,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -250,7 +250,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-21.consistency-2",
-      "durationMs": 597,
+      "durationMs": 7843,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -261,7 +261,7 @@
       "provider": "groq",
       "model": "llama-3.1-8b-instant",
       "operation": "resume-21.consistency-3",
-      "durationMs": 8944,
+      "durationMs": 11815,
       "retryCount": 0,
       "fallbackPath": "none",
       "tokenUsage": null,
@@ -279,7 +279,7 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 2066,
+      "latencyMs": 6997,
       "suggestionCount": 0,
       "errors": [],
       "matchScore": 85
@@ -293,10 +293,10 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 11989,
+      "latencyMs": 1159,
       "suggestionCount": 0,
       "errors": [],
-      "matchScore": 85
+      "matchScore": 92
     },
     {
       "persona": "WordPress Developer",
@@ -307,10 +307,10 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 758,
+      "latencyMs": 12542,
       "suggestionCount": 0,
       "errors": [],
-      "matchScore": 85
+      "matchScore": 92
     },
     {
       "persona": "Marketing Specialist",
@@ -321,10 +321,10 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 1006,
+      "latencyMs": 818,
       "suggestionCount": 0,
       "errors": [],
-      "matchScore": 85
+      "matchScore": 92
     },
     {
       "persona": "Graphic Designer",
@@ -335,7 +335,7 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 12033,
+      "latencyMs": 10959,
       "suggestionCount": 0,
       "errors": [],
       "matchScore": 85
@@ -349,7 +349,7 @@
       "jsonValid": true,
       "schemaValid": true,
       "promptFailed": false,
-      "latencyMs": 8863,
+      "latencyMs": 7826,
       "suggestionCount": 0,
       "errors": [],
       "matchScore": 85
@@ -362,21 +362,21 @@
       "runs": [
         {
           "runNumber": 1,
-          "matchScore": 85,
-          "latencyMs": 10846
+          "matchScore": 90,
+          "latencyMs": 12532
         },
         {
           "runNumber": 2,
-          "matchScore": 85,
-          "latencyMs": 9959
+          "matchScore": 90,
+          "latencyMs": 10332
         },
         {
           "runNumber": 3,
-          "matchScore": 85,
-          "latencyMs": 11081
+          "matchScore": 92,
+          "latencyMs": 18569
         }
       ],
-      "scoreStddev": 0,
+      "scoreStddev": 0.9428090415820634,
       "passed": true
     },
     {
@@ -386,20 +386,20 @@
         {
           "runNumber": 1,
           "matchScore": 85,
-          "latencyMs": 13153
+          "latencyMs": 11855
         },
         {
           "runNumber": 2,
           "matchScore": 85,
-          "latencyMs": 13094
+          "latencyMs": 13969
         },
         {
           "runNumber": 3,
-          "matchScore": 92,
-          "latencyMs": 13360
+          "matchScore": 85,
+          "latencyMs": 12112
         }
       ],
-      "scoreStddev": 3.2998316455372216,
+      "scoreStddev": 0,
       "passed": true
     },
     {
@@ -408,18 +408,18 @@
       "runs": [
         {
           "runNumber": 1,
-          "matchScore": 92,
-          "latencyMs": 9762
+          "matchScore": 85,
+          "latencyMs": 631
         },
         {
           "runNumber": 2,
           "matchScore": 85,
-          "latencyMs": 694
+          "latencyMs": 8844
         },
         {
           "runNumber": 3,
           "matchScore": 92,
-          "latencyMs": 9309
+          "latencyMs": 11873
         }
       ],
       "scoreStddev": 3.2998316455372216,
@@ -432,17 +432,17 @@
         {
           "runNumber": 1,
           "matchScore": 85,
-          "latencyMs": 10181
+          "latencyMs": 7997
         },
         {
           "runNumber": 2,
           "matchScore": 85,
-          "latencyMs": 12265
+          "latencyMs": 10858
         },
         {
           "runNumber": 3,
           "matchScore": 85,
-          "latencyMs": 11100
+          "latencyMs": 9900
         }
       ],
       "scoreStddev": 0,
@@ -454,21 +454,21 @@
       "runs": [
         {
           "runNumber": 1,
-          "matchScore": 92,
-          "latencyMs": 10918
+          "matchScore": 85,
+          "latencyMs": 11951
         },
         {
           "runNumber": 2,
           "matchScore": 92,
-          "latencyMs": 12000
+          "latencyMs": 12564
         },
         {
           "runNumber": 3,
-          "matchScore": 92,
-          "latencyMs": 11938
+          "matchScore": 85,
+          "latencyMs": 794
         }
       ],
-      "scoreStddev": 0,
+      "scoreStddev": 3.2998316455372216,
       "passed": true
     },
     {
@@ -477,21 +477,21 @@
       "runs": [
         {
           "runNumber": 1,
-          "matchScore": 92,
-          "latencyMs": 10423
+          "matchScore": 85,
+          "latencyMs": 10811
         },
         {
           "runNumber": 2,
           "matchScore": 85,
-          "latencyMs": 597
+          "latencyMs": 7843
         },
         {
           "runNumber": 3,
           "matchScore": 85,
-          "latencyMs": 8944
+          "latencyMs": 11815
         }
       ],
-      "scoreStddev": 3.2998316455372216,
+      "scoreStddev": 0,
       "passed": true
     }
   ],
@@ -499,9 +499,9 @@
     "jsonValidityPct": 100,
     "schemaPassPct": 100,
     "promptFailurePct": 0,
-    "avgLatencyMs": 9014.125,
-    "p50LatencyMs": 10846,
-    "p95LatencyMs": 13153
+    "avgLatencyMs": 9397.958333333334,
+    "p50LatencyMs": 10858,
+    "p95LatencyMs": 13969
   },
   "overallPass": true
 }

@@ -1,6 +1,6 @@
 # AI Recovery Report
 
-- Date/time: 2026-07-13T09:45:21.081Z
+- Date/time: 2026-07-13T10:31:13.387Z
 - Environment: production
 - Provider/model: groq/llama-3.1-8b-instant
 - Credential presence: Gemini=yes, Groq=yes
@@ -18,14 +18,14 @@
   Model: llama-3.1-8b-instant
   Credential present: yes
   Operation: recovery.secondary.matchJob
-  Duration: 649ms
+  Duration: 22952ms
   Retry count: 0
   Fallback path: gemini: deliberate failure -> groq
   Token usage: unavailable
 
 ## Latency Results
 
-- Primary provider failure recovers to secondary provider: 1074ms
+- Primary provider failure recovers to secondary provider: 23337ms
 
 ## Failures Found
 
