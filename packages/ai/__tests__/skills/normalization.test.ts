@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createSkillMap,
+  expandSkillList,
   skillsMatch as matches,
   splitSkillItems,
   uniqueSkillsByNormalization,
@@ -43,6 +44,18 @@ describe("skill normalization", () => {
     ]);
   });
 
+
+  it("expands grouped skills into deduplicated individual skills", () => {
+    expect(expandSkillList([
+      "Frontend: HTML, CSS, JavaScript, React JS, Next.js, and TypeScript",
+      "Backend: Node.js, Prisma, PostgreSQL",
+      "frontend: html",
+    ])).toEqual({
+      skills: ["HTML", "CSS", "JavaScript", "React JS", "Next.js", "TypeScript", "Node.js", "Prisma", "PostgreSQL"],
+      count: 9,
+      categoryCount: 2,
+    });
+  });
   it("indexes comma-packed and categorized skill strings", () => {
     const map = createSkillMap(["Frontend: HTML, CSS, JavaScript"]);
     expect(map.get("html")).toBe("HTML");

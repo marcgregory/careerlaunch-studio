@@ -1,6 +1,7 @@
 import type { NormalizedResume, ResumeStatistics } from "./types";
 import type { Suggestion } from "../suggestion/types";
 import { suggestionId } from "../suggestion/types";
+import { expandSkillList } from "../skills/normalization";
 
 /**
  * Static analysis engine — performs deterministic checks that require no AI.
@@ -29,9 +30,10 @@ export function runStaticAnalysis(resume: NormalizedResume): {
   const expSections = resume.sections.filter((sec) => sec.type === "experience");
   const eduSections = resume.sections.filter((sec) => sec.type === "education");
   const bulletCount = expSections.reduce((sum, e) => sum + e.bullets.length, 0);
+  const skillSummary = expandSkillList(resume.skills);
 
   const statistics: ResumeStatistics = {
-    skills: resume.skills.length,
+    skills: skillSummary.count,
     certifications: resume.certifications.length,
     projects: resume.projects.length,
     experienceEntries: expSections.length,
@@ -450,7 +452,9 @@ function checkExperience(resume: NormalizedResume): Suggestion[] {
 
 function checkSkills(resume: NormalizedResume): Suggestion[] {
   const s: Suggestion[] = [];
-  const count = resume.skills.length;
+  const skillSummary = expandSkillList(resume.skills);
+  const count = skillSummary.count;
+  const categoryCount = skillSummary.categoryCount;
 
   if (count === 0) {
     s.push({
@@ -471,9 +475,13 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("skills", "too-few", "skills"),
       category: "skills",
       severity: "medium",
-      title: `Only ${count} skills listed`,
+      title: categoryCount > 0
+        ? `${count} skills detected across ${categoryCount} categories`
+        : `Only ${count} skills listed`,
       reason:
-        `${count} skills is on the lighter side for most roles. 6–12 relevant skills tends to give the strongest signal to both ATS and recruiters.`,
+        categoryCount > 0
+          ? `Your skills are grouped by category, but only ${count} individual skills were detected. 6–12 relevant skills tends to give the strongest signal to both ATS and recruiters.`
+          : `${count} skills is on the lighter side for most roles. 6–12 relevant skills tends to give the strongest signal to both ATS and recruiters.`,
       targetText: null,
       suggestedText: null,
       location: { sectionId: "skills" },
@@ -485,9 +493,13 @@ function checkSkills(resume: NormalizedResume): Suggestion[] {
       id: suggestionId("skills", "too-many", "skills"),
       category: "skills",
       severity: "minor",
-      title: `${count} skills may dilute your focus`,
+      title: categoryCount > 0
+        ? `${count} skills detected across ${categoryCount} categories`
+        : `${count} skills may dilute your focus`,
       reason:
-        `${count} skills is a lot to scan. Trimming to 10–15 of your strongest, most relevant skills makes the section easier to digest.`,
+        categoryCount > 0
+          ? `Your skills are grouped by category. ${count} individual skills were detected across ${categoryCount} categories; trimming to 10–15 of your strongest, most relevant skills can make the section easier to digest.`
+          : `${count} skills is a lot to scan. Trimming to 10–15 of your strongest, most relevant skills makes the section easier to digest.`,
       targetText: null,
       suggestedText: null,
       location: { sectionId: "skills" },

@@ -296,6 +296,23 @@ describe("runStaticAnalysis", () => {
     expect(suggestions.some((s) => s.id === "skills:too-few:skills")).toBe(true);
   });
 
+
+  it("counts grouped skill categories as individual skills", () => {
+    const resume = makeMinimalResume({
+      skills: [
+        "Frontend: HTML, CSS, JavaScript, React JS, Next.js, TypeScript",
+        "Backend: Node.js, Prisma, PostgreSQL",
+        "Cloud / Infra / Tools: AWS, Docker, Kubernetes, Terraform",
+        "LLM / Automation: OpenAI, LangChain, Python",
+        "AI Coding Agents: GitHub Copilot, Cursor",
+      ],
+    });
+
+    const result = runStaticAnalysis(resume);
+    expect(result.statistics.skills).toBe(18);
+    expect(result.suggestions.some((s) => s.id === "skills:too-few:skills")).toBe(false);
+    expect(result.suggestions.some((s) => s.title === "Only 5 skills listed")).toBe(false);
+  });
   it("flags too many skills", () => {
     const longSkills = Array.from({ length: 25 }, (_, i) => `Skill ${i + 1}`);
     const resume = makeMinimalResume({ skills: longSkills });

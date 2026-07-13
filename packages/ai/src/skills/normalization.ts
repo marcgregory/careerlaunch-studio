@@ -59,7 +59,39 @@ export function splitSkillItems(value: string): string[] {
 
   const item = current.trim();
   if (item) items.push(item);
-  return items;
+  return items.map(cleanSkillItem).filter(Boolean);
+}
+
+export interface ExpandedSkillSummary {
+  skills: string[];
+  count: number;
+  categoryCount: number;
+}
+
+export function expandSkillList(skills: string[]): ExpandedSkillSummary {
+  const seenSkills = new Set<string>();
+  const seenCategories = new Set<string>();
+  const expanded: string[] = [];
+
+  for (const skill of skills) {
+    const category = getSkillCategory(skill);
+    if (category) {
+      seenCategories.add(category);
+    }
+
+    for (const item of splitSkillItems(skill)) {
+      const key = normalizeSkill(item);
+      if (!key || seenSkills.has(key)) continue;
+      seenSkills.add(key);
+      expanded.push(item);
+    }
+  }
+
+  return {
+    skills: expanded,
+    count: expanded.length,
+    categoryCount: seenCategories.size,
+  };
 }
 
 export function uniqueSkillsByNormalization(
@@ -79,6 +111,23 @@ export function uniqueSkillsByNormalization(
   }
 
   return unique;
+}
+
+function cleanSkillItem(value: string): string {
+  return value
+    .trim()
+    .replace(/^and\s+/i, "")
+    .replace(/\s+and$/i, "")
+    .trim();
+}
+
+function getSkillCategory(value: string): string | null {
+  const colonIdx = value.indexOf(":");
+  if (colonIdx < 1) return null;
+
+  const category = normalizeSkillText(value.slice(0, colonIdx));
+  const skillText = value.slice(colonIdx + 1).trim();
+  return category && skillText ? category : null;
 }
 
 function normalizeCategorizedSkillKey(value: string): string {
