@@ -1,5 +1,4 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build --workspace @careerlaunch/web",
-  "outputDirectory": "apps/web/.next"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs"
 }
