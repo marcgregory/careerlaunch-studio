@@ -70,6 +70,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
   const [upgradePrompt, setUpgradePrompt] = useState<UpgradePrompt | null>(null);
   const savedSnapshot = useRef(JSON.stringify(normalizeResume(initialResume)));
+  const failedSaveSnapshot = useRef<string | null>(null);
   // Track whether draft_edited has been fired this session to avoid event spam on each autosave
   const hasFiredEditEvent = useRef(false);
 
@@ -81,6 +82,7 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   useEffect(() => {
     const snapshot = JSON.stringify(resume);
     if (snapshot === savedSnapshot.current) return;
+    if (snapshot === failedSaveSnapshot.current) return;
 
     setSaveState("Unsaved");
     const controller = new AbortController();
@@ -94,7 +96,11 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           signal: controller.signal
         });
 
-        if (!response.ok) throw new Error("Save failed");
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          throw new Error(body.error ?? `Save failed (${response.status})`);
+        }
+        failedSaveSnapshot.current = null;
         savedSnapshot.current = snapshot;
         setSaveState("Saved");
 
@@ -110,8 +116,9 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         }
       } catch (error) {
         if (!controller.signal.aborted) {
+          failedSaveSnapshot.current = snapshot;
           setSaveState("Error");
-          toast.error("Failed to save changes.");
+          toast.error(error instanceof Error ? error.message : "Failed to save changes.");
         }
       }
     }, 450);

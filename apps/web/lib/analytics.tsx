@@ -1,7 +1,7 @@
 "use client";
 
 import posthog from "posthog-js";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 
 /**
  * Analytics provider that initializes PostHog on the client side.
@@ -35,10 +35,13 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
  * No-ops outside production.
  */
 export function useAnalytics() {
-  return {
-    capture: (event: string, properties?: Record<string, unknown>) => {
-      if (process.env.NODE_ENV !== "production") return;
-      posthog.capture(event, properties);
-    },
-  };
+  return useMemo(
+    () => ({
+      capture: (event: string, properties?: Record<string, unknown>) => {
+        if (process.env.NODE_ENV !== "production") return;
+        posthog.capture(event, properties);
+      },
+    }),
+    [],
+  );
 }
