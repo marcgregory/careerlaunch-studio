@@ -17,7 +17,7 @@ Last updated: 2026-07-04
                  │ POST /render
                  │ Authorization: Bearer ****
                  │ X-Request-ID: <uuid>
-                 │ AbortSignal.timeout(35000)
+                 │ AbortSignal.timeout(55000)
                  ▼
         PDF_RENDERER_URL
                  │
@@ -47,6 +47,7 @@ Deployed from the monorepo root. Standard `vercel deploy`.
 | `AUTH_SECRET` | Secret for session signing |
 | `PDF_RENDERER_URL` | Full URL of renderer's `/render` endpoint (e.g. `https://pdf-renderer.up.railway.app/render`) |
 | `PDF_RENDERER_TOKEN` | Shared secret — **must match** the renderer's `PDF_RENDERER_TOKEN` |
+| `PDF_RENDERER_REQUEST_TIMEOUT_MS` | Optional Vercel-side timeout while waiting for the renderer (default `55000`) |
 
 `PDF_RENDERER_URL` + `PDF_RENDERER_TOKEN` must both be set in production/preview.
 When unset (local dev), the app falls back to the in-process Playwright renderer.
@@ -68,7 +69,7 @@ A standalone Node.js HTTP server at `services/pdf-renderer/`.
 |---|---|---|
 | `PORT` | `3001` | HTTP listen port |
 | `PDF_RENDERER_TOKEN` | — | Shared secret for bearer auth (omit to disable auth — not recommended) |
-| `PDF_RENDERER_TIMEOUT_MS` | `30000` | Per-request render timeout in ms |
+| `PDF_RENDERER_TIMEOUT_MS` | `45000` | Per-request render timeout in ms |
 | `PDF_RENDERER_MAX_HTML_SIZE` | `5242880` | Max accepted HTML payload in bytes (5 MB) |
 | `CHROMIUM_PATH` | — | Path to system Chromium binary (optional; auto-detected on the Docker image) |
 

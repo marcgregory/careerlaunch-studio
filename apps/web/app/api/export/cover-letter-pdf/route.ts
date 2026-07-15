@@ -10,9 +10,12 @@ import { reportError } from "../../../../lib/error-reporting";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import type { CoverLetterDocument } from "@careerlaunch/domain";
 import { canExportPdf, getPdfExportKind } from "../../../../lib/entitlements";
+import { pdfRendererErrorResponse, renderHtmlToPdfViaRenderer } from "../../../../lib/pdf-renderer-client";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
+
+export const maxDuration = 60;
 
 /**
  * POST /api/export/cover-letter-pdf
@@ -96,23 +99,12 @@ export async function POST(request: Request) {
       const html = coverLetterToHtml(coverLetter, resume);
       const requestId = getRequestId(request);
 
-      const res = await fetch(RENDERER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(RENDERER_TOKEN ? { Authorization: `Bearer ${RENDERER_TOKEN}` } : {}),
-          "X-Request-ID": requestId,
-        },
-        body: JSON.stringify({ html }),
-        signal: AbortSignal.timeout(35000),
+      pdf = await renderHtmlToPdfViaRenderer({
+        rendererUrl: RENDERER_URL,
+        rendererToken: RENDERER_TOKEN,
+        html,
+        requestId,
       });
-
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => "unknown");
-        throw new Error(`PDF renderer returned ${res.status}: ${errBody}`);
-      }
-
-      pdf = await res.arrayBuffer();
     } else {
       // Local dev: use in-process Playwright renderer
       pdf = await renderCoverLetterPdf(coverLetter, resume);
@@ -133,10 +125,7 @@ export async function POST(request: Request) {
       coverLetterId,
       route: "export-cover-letter-pdf",
     });
-    return Response.json(
-      { error: error instanceof Error ? error.message : "PDF render failed" },
-      { status: 500 },
-    );
+    return pdfRendererErrorResponse(error);
   }
 }
 

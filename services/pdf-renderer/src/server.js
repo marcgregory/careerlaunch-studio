@@ -21,8 +21,8 @@ const CHROMIUM_PATH = process.env.CHROMIUM_PATH;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
 /* Max acceptable HTML payload in bytes (default 5 MB). */
 const MAX_HTML_SIZE = parseInt(process.env.PDF_RENDERER_MAX_HTML_SIZE || (5 * 1024 * 1024).toString(), 10);
-/* Per-request render timeout in ms (default 30 s). */
-const RENDER_TIMEOUT_MS = parseInt(process.env.PDF_RENDERER_TIMEOUT_MS || "30000", 10);
+/* Per-request render timeout in ms (default 45 s). */
+const RENDER_TIMEOUT_MS = parseInt(process.env.PDF_RENDERER_TIMEOUT_MS || "45000", 10);
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

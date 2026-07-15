@@ -7,9 +7,12 @@ import { reportError } from "../../../../lib/error-reporting";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { canExportPdf, getPdfExportKind } from "../../../../lib/entitlements";
 import { captureServerEvent } from "../../../../lib/server-analytics";
+import { pdfRendererErrorResponse, renderHtmlToPdfViaRenderer } from "../../../../lib/pdf-renderer-client";
 
 const RENDERER_URL = process.env.PDF_RENDERER_URL;
 const RENDERER_TOKEN = process.env.PDF_RENDERER_TOKEN;
+
+export const maxDuration = 60;
 
 // ── In-memory PDF cache (cleared on server restart) ──
 // Key: `${resumeId}:${updatedAt}:${templateId}:${watermarked}`
@@ -114,25 +117,15 @@ export async function POST(request: Request) {
       const requestId = getRequestId(request);
       const renderStart = Date.now();
 
-      const res = await fetch(RENDERER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(RENDERER_TOKEN ? { Authorization: `Bearer ${RENDERER_TOKEN}` } : {}),
-          "X-Request-ID": requestId,
-        },
-        body: JSON.stringify({ html, watermarked: pdfOptions.watermarked }),
-        signal: AbortSignal.timeout(35000),
+      pdf = await renderHtmlToPdfViaRenderer({
+        rendererUrl: RENDERER_URL,
+        rendererToken: RENDERER_TOKEN,
+        html,
+        requestId,
+        watermarked: pdfOptions.watermarked,
       });
 
       const renderTime = Date.now() - renderStart;
-
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => "unknown");
-        throw new Error(`PDF renderer returned ${res.status}: ${errBody}`);
-      }
-
-      pdf = await res.arrayBuffer();
       console.log(`[pdf-export] RENDER ${resumeId} (html:${htmlBuildTime}ms, render:${renderTime}ms, total:${Date.now() - startTotal}ms)`);
     } else {
       // Local dev: use in-process Playwright renderer
@@ -185,7 +178,7 @@ export async function POST(request: Request) {
     });
 
     reportError(error, requestId, { resumeId, route: "export-pdf" });
-    return Response.json({ error: "PDF render failed" }, { status: 500 });
+    return pdfRendererErrorResponse(error);
   }
 }
 
