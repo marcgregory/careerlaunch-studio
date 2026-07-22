@@ -7,6 +7,7 @@ import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { AppHeader, AppLogo } from "../../components/app-header";
 import { FocusTrap } from "../../components/focus-trap";
+import BillingLoading from "./loading";
 
 type PlanInfo = {
   id: string;
@@ -146,11 +147,7 @@ function formatDate(date: string | null) {
 
 export default function BillingPage() {
   return (
-    <Suspense fallback={
-      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
-        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
-      </main>
-    }>
+    <Suspense fallback={<BillingLoading />}>
       <BillingContent />
     </Suspense>
   );
@@ -371,11 +368,7 @@ function BillingContent() {
     }
   };
   if (loading) {
-    return (
-      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
-        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
-      </main>
-    );
+    return <BillingLoading />;
   }
 
   return (
