@@ -26,31 +26,24 @@ export function DeleteResumeModal({
   const [error, setError] = useState<string | null>(null);
 
   useIsoLayoutEffect(() => {
+    console.log('[DeleteModal] open changed:', { open, scrollY: window.scrollY, innerHeight: window.innerHeight, scrollHeight: document.documentElement.scrollHeight });
     if (!open) return;
 
-    const scrollY = window.scrollY;
-    const previousPosition = document.body.style.position;
-    const previousTop = document.body.style.top;
-    const previousWidth = document.body.style.width;
-    const previousOverflowY = document.body.style.overflowY;
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.overflowY = "scroll";
+    document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+    console.log('[DeleteModal] body locked. scrollY before lock:', window.scrollY);
 
     return () => {
-      document.body.style.position = previousPosition;
-      document.body.style.top = previousTop;
-      document.body.style.width = previousWidth;
-      document.body.style.overflowY = previousOverflowY;
-      document.body.style.paddingRight = "";
-      window.scrollTo(0, scrollY);
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+      console.log('[DeleteModal] body unlocked. scrollY after unlock:', window.scrollY);
     };
   }, [open]);
 
