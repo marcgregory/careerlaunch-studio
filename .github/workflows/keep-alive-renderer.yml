@@ -9,4 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping keep-alive endpoint
-        run: curl -sSf https://careerlaunch-studio.vercel.app/api/cron/keep-alive-renderer
+        env:
+          ENDPOINT: https://careerlaunch-studio.vercel.app/api/cron/keep-alive-renderer
+        run: |
+          set -euo pipefail
+          body=$(mktemp)
+          http=$(curl -sS -o "$body" -w '%{http_code}' "$ENDPOINT")
+          echo "http=$http"
+          cat "$body"
+          echo
+          status=$(jq -r '.status // "unknown"' "$body")
+          case "$status" in
+            ok|degraded) echo "keep-alive: $status" ;;
+            misconfigured|*)
+              echo "keep-alive misconfigured (http=$http status=$status)"
+              exit 1
+              ;;
+          esac
