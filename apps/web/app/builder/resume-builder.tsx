@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
   Download,
   GripVertical,
+  Loader2,
   Lock,
   Palette,
   Plus,
@@ -35,6 +38,10 @@ import { TailoringPanel } from "./_analysis/tailoring-panel";
 import { CoverLetterPanel } from "./_analysis/cover-letter-panel";
 import { useAnalytics } from "../../lib/analytics";
 import { AppHeader } from "../../components/app-header";
+import type { ResumeCacheData } from "../dashboard/resume-actions";
+import { applyBackAction, decideBackAction } from "./save-pipeline";
+
+const DASHBOARD_RESUMES_QUERY_KEY = ["resumes"];
 
 type SaveState = "Saved" | "Unsaved" | "Saving" | "Error";
 type EditableStringListSection = 'skills' | 'certifications' | 'professionalQualities' | 'achievements' | 'languages' | 'awards' | 'memberships' | 'publications' | 'training';
@@ -65,6 +72,8 @@ const sectionLabels: Record<ResumeSectionId, string> = {
 
 export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initialResume: ResumeDocument; canUsePremiumTemplates: boolean }) {
   const analytics = useAnalytics();
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [resume, setResume] = useState<ResumeDocument>(() => normalizeResume(initialResume));
   const [saveState, setSaveState] = useState<SaveState>("Saved");
   const [exportState, setExportState] = useState<"Idle" | "Exporting" | "Error">("Idle");
@@ -74,10 +83,119 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
   // Track whether draft_edited has been fired this session to avoid event spam on each autosave
   const hasFiredEditEvent = useRef(false);
 
+  // Serializable save pipeline: lets the back button await an in-flight save
+  // and re-save any pending edits that arrived during the wait.
+  const saveInFlight = useRef<Promise<boolean> | null>(null);
+  const saveGeneration = useRef(0);
+
   const [mobileTab, setMobileTab] = useState<"preview" | "edit" | "analyze">("preview");
   const [templateJustChanged, setTemplateJustChanged] = useState(false);
   const validation = useMemo(() => validateResumeWithSchema(resume), [resume]);
   const hasValidationErrors = Object.keys(validation).length > 0;
+
+  /**
+   * Mirror the saved resume's title, targetRole, and updatedAt into the
+   * dashboard's ["resumes"] infinite-query cache so the user sees the new
+   * title the moment they return — no manual refresh, no flicker.
+   */
+  const syncDashboardCache = useCallback((saved: ResumeDocument, nowIso: string) => {
+    queryClient.setQueryData<ResumeCacheData>(DASHBOARD_RESUMES_QUERY_KEY, (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pageParams: old.pageParams,
+        pages: old.pages.map((p) => ({
+          ...p,
+          resumes: p.resumes.map((r) =>
+            r.id === saved.id
+              ? { ...r, title: saved.title, targetRole: saved.targetRole ?? null, updatedAt: nowIso }
+              : r,
+          ),
+        })),
+      };
+    });
+  }, [queryClient]);
+
+  /**
+   * Run a single save. Resolves to true on success, false on failure.
+   * If another save is already in flight, chains after it so callers always
+   * observe the freshest server-confirmed state.
+   */
+  const runSave = useCallback(async (snapshot: ResumeDocument, signal: AbortSignal): Promise<boolean> => {
+    const myGeneration = ++saveGeneration.current;
+    try {
+      const response = await fetch(`/api/resumes/${snapshot.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snapshot),
+        signal,
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error ?? `Save failed (${response.status})`);
+      }
+
+      // A newer save superseded this one — let that one update snapshot state.
+      if (myGeneration !== saveGeneration.current) {
+        return true;
+      }
+
+      failedSaveSnapshot.current = null;
+      savedSnapshot.current = JSON.stringify(snapshot);
+      setSaveState("Saved");
+      syncDashboardCache(snapshot, new Date().toISOString());
+      // Background revalidate so the server's view of updatedAt wins eventually.
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_RESUMES_QUERY_KEY });
+
+      // Funnel: draft_edited (first save per session)
+      if (!hasFiredEditEvent.current) {
+        hasFiredEditEvent.current = true;
+        analytics.capture("draft_edited", {
+          resumeId: snapshot.id,
+          templateId: snapshot.templateId,
+          sectionCount: snapshot.sectionOrder.length,
+          isImported: snapshot.title.startsWith("Imported Resume"),
+        });
+      }
+      return true;
+    } catch (error) {
+      if (signal.aborted) return false;
+      failedSaveSnapshot.current = JSON.stringify(snapshot);
+      setSaveState("Error");
+      toast.error(error instanceof Error ? error.message : "Failed to save changes.");
+      return false;
+    }
+  }, [analytics, queryClient, syncDashboardCache]);
+
+  /**
+   * Await any in-flight save and run a follow-up save if the user typed more
+   * while we were waiting. Returns true only if the latest snapshot persisted.
+   * The caller (e.g. the back button) must not navigate on a false result.
+   */
+  const flushSave = useCallback(async (): Promise<boolean> => {
+    if (saveInFlight.current) {
+      await saveInFlight.current.catch(() => false);
+    }
+    const latest = resumeRef.current;
+    if (!latest || JSON.stringify(latest) === savedSnapshot.current) {
+      return saveState !== "Error";
+    }
+    const controller = new AbortController();
+    const promise = runSave(latest, controller.signal);
+    saveInFlight.current = promise.finally(() => {
+      if (saveInFlight.current === promise) saveInFlight.current = null;
+    });
+    return saveInFlight.current;
+  }, [runSave, saveState]);
+
+  // Keep a ref of the latest resume so flushSave can read the freshest value
+  // without stale-closure issues.
+  const resumeRef = useRef<ResumeDocument | null>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- intentionally a mutable mirror
+    resumeRef.current = resume;
+  }, [resume]);
 
   useEffect(() => {
     const snapshot = JSON.stringify(resume);
@@ -86,48 +204,36 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
 
     setSaveState("Unsaved");
     const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
+    const timeout = window.setTimeout(() => {
       setSaveState("Saving");
-      try {
-        const response = await fetch(`/api/resumes/${resume.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(resume),
-          signal: controller.signal
-        });
-
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
-          throw new Error(body.error ?? `Save failed (${response.status})`);
-        }
-        failedSaveSnapshot.current = null;
-        savedSnapshot.current = snapshot;
-        setSaveState("Saved");
-
-        // Funnel: draft_edited (first save per session)
-        if (!hasFiredEditEvent.current) {
-          hasFiredEditEvent.current = true;
-          analytics.capture("draft_edited", {
-            resumeId: resume.id,
-            templateId: resume.templateId,
-            sectionCount: resume.sectionOrder.length,
-            isImported: resume.title.startsWith("Imported Resume"),
-          });
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          failedSaveSnapshot.current = snapshot;
-          setSaveState("Error");
-          toast.error(error instanceof Error ? error.message : "Failed to save changes.");
-        }
-      }
+      const promise = runSave(resume, controller.signal).finally(() => {
+        if (saveInFlight.current === promise) saveInFlight.current = null;
+      });
+      saveInFlight.current = promise;
     }, 450);
 
     return () => {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [analytics, resume]);
+  }, [resume, runSave]);
+
+  /**
+   * Back-to-dashboard handler. Awaits any pending or in-flight save before
+   * navigating, so the dashboard cache is already up to date by the time we
+   * transition. On save failure, we keep the user in the builder and surface
+   * the existing error toast.
+   */
+  const handleBackToDashboard = useCallback(async () => {
+    const action = decideBackAction({
+      saveState,
+      hasInFlightSave: saveInFlight.current !== null,
+      hasUnsavedSnapshot: JSON.stringify(resume) !== savedSnapshot.current,
+    });
+    const shouldNavigate = await applyBackAction(action, flushSave);
+    if (!shouldNavigate) return;
+    router.push("/dashboard");
+  }, [saveState, resume, flushSave, router]);
 
   function patchResume(patch: Partial<ResumeDocument>) {
     setResume((current) => ({ ...current, ...patch }));
@@ -344,9 +450,26 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
           </button>
         </>
       }>
-        <Link href="/dashboard" className={`${secondaryButtonClass} min-h-11 w-11 flex-shrink-0 rounded-full px-0 sm:min-h-10 sm:w-10`} aria-label="Back to dashboard">
-          <ArrowLeft className="w-5 h-5 shrink-0" />
-        </Link>
+        <button
+          type="button"
+          onClick={handleBackToDashboard}
+          disabled={saveState === "Saving"}
+          aria-label="Back to dashboard"
+          title={
+            saveState === "Saving"
+              ? "Saving your changes..."
+              : saveState === "Unsaved"
+                ? "Save & go back to dashboard"
+                : "Back to dashboard"
+          }
+          className={`${secondaryButtonClass} min-h-11 w-11 flex-shrink-0 rounded-full px-0 disabled:cursor-wait disabled:opacity-70 sm:min-h-10 sm:w-10`}
+        >
+          {saveState === "Saving" ? (
+            <Loader2 className="w-5 h-5 shrink-0 animate-spin" />
+          ) : (
+            <ArrowLeft className="w-5 h-5 shrink-0" />
+          )}
+        </button>
         <div className="min-w-0">
           <p className="hidden font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:block sm:text-xs">Resume Builder</p>
           <h1 className="font-signal truncate text-sm font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
