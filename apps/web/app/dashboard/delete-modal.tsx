@@ -26,7 +26,6 @@ export function DeleteResumeModal({
   const [error, setError] = useState<string | null>(null);
 
   useIsoLayoutEffect(() => {
-    console.log('[DeleteModal] open changed:', { open, scrollY: window.scrollY, innerHeight: window.innerHeight, scrollHeight: document.documentElement.scrollHeight });
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -34,40 +33,18 @@ export function DeleteResumeModal({
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.overflow = "hidden";
+    // Use overflow: clip instead of hidden so we don't create a new scroll
+    // container for descendants with position: sticky (e.g. the dashboard
+    // aside). overflow: clip prevents scrolling without changing which
+    // element is the scroll container, so sticky elements keep sticking.
+    document.body.style.overflow = "clip";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
-    console.log('[DeleteModal] body locked. scrollY before lock:', window.scrollY);
-
-    // Snapshot aside rect
-    const asideEl = document.querySelector('aside');
-    if (asideEl) {
-      const r = asideEl.getBoundingClientRect();
-      console.log('[DeleteModal] ASIDE before lock:', { top: r.top, left: r.left, width: r.width, height: r.height, position: getComputedStyle(asideEl).position, zIndex: getComputedStyle(asideEl).zIndex });
-    }
-
-    // Sample aside rect 5 times over 250ms
-    const asideSample = setInterval(() => {
-      const a = document.querySelector('aside');
-      if (a) {
-        const r = a.getBoundingClientRect();
-        console.log('[ASIDE sample]', { top: r.top.toFixed(1), left: r.left.toFixed(1), width: r.width.toFixed(1), scrollY: window.scrollY });
-      } else {
-        console.log('[ASIDE sample] NOT FOUND');
-      }
-    }, 50);
 
     return () => {
-      clearInterval(asideSample);
-      const asideEl2 = document.querySelector('aside');
-      if (asideEl2) {
-        const r = asideEl2.getBoundingClientRect();
-        console.log('[DeleteModal] ASIDE after unlock:', { top: r.top, left: r.left, width: r.width, height: r.height });
-      }
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
-      console.log('[DeleteModal] body unlocked. scrollY after unlock:', window.scrollY);
     };
   }, [open]);
 
