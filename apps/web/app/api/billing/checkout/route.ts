@@ -84,7 +84,7 @@ export async function POST(request: Request) {
           throw new Error("No subscription items found to update");
         }
 
-        await getStripe().subscriptions.update(
+        const updatedSub = await getStripe().subscriptions.update(
           subscription.stripeSubscriptionId,
           {
             items: [{ id: itemId, price: priceId }],
@@ -92,12 +92,17 @@ export async function POST(request: Request) {
           },
         );
 
+        const endTs = (updatedSub as unknown as { current_period_end?: number }).current_period_end
+          ?? updatedSub.items?.data?.[0]?.current_period_end;
+        const currentPeriodEnd = endTs ? new Date(endTs * 1000) : undefined;
+
         // Update local DB immediately for responsiveness; the
         // customer.subscription.updated webhook will confirm it.
         await prisma.subscription.update({
           where: { userId: user.id },
           data: {
             plan: plan === "enterprise" ? "ENTERPRISE" : "PROFESSIONAL",
+            ...(currentPeriodEnd ? { currentPeriodEnd } : {}),
           },
         });
 

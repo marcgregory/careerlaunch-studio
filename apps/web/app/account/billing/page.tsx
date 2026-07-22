@@ -14,8 +14,8 @@ function planLabel(plan: string) {
   return plan.charAt(0).toUpperCase() + plan.slice(1);
 }
 
-function formatDate(date: string | null) {
-  if (!date) return "Not scheduled";
+function formatDate(date: string | null, isPaid = false) {
+  if (!date) return isPaid ? "Active" : "Not scheduled";
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -235,7 +235,7 @@ function AccountBillingContent() {
                   <CalendarDays size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-[#123c3a]">{formatDate(data?.currentPeriodEnd ?? null)}</p>
+                  <p className="text-sm font-black text-[#123c3a]">{formatDate(data?.currentPeriodEnd ?? null, isPaid)}</p>
                   <p className="text-sm font-medium text-[#4b4b4b]">
                     {data?.cancelAtPeriodEnd ? "Paid access ends" : isPaid ? "Next renewal" : "Upgrade anytime"}
                   </p>

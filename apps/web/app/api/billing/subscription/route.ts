@@ -1,9 +1,10 @@
 import { getAllPlans } from "@careerlaunch/domain";
 import { requireApiUser } from "../../../../lib/auth";
-import { getDefaultPaymentMethodSummary, type InvoiceSummary, summarizeInvoice } from "../../../../lib/billing-stripe";
+import { getDefaultPaymentMethodSummary, getSubscriptionPeriodEnd, type InvoiceSummary, summarizeInvoice } from "../../../../lib/billing-stripe";
 import { getMonthlyExportCount, getPdfExportKind, getSubscription } from "../../../../lib/entitlements";
 import { reportError } from "../../../../lib/error-reporting";
 import { getStripe } from "../../../../lib/stripe";
+import { prisma } from "../../../../lib/prisma";
 
 type ScheduledChange = {
   plan: string;
@@ -55,6 +56,7 @@ export async function GET() {
   let paymentMethod = null;
   let invoices: InvoiceSummary[] = [];
   let scheduledChange: ScheduledChange = null;
+  let livePeriodEnd: string | null = null;
 
   if (sub.stripeCustomerId) {
     try {
@@ -70,6 +72,17 @@ export async function GET() {
       scheduledChange = getScheduledChange(stripeSub);
       paymentMethod = await getDefaultPaymentMethodSummary(stripe, stripeSub, sub.stripeCustomerId);
       invoices = invoiceList.data.map(summarizeInvoice);
+
+      if (stripeSub) {
+        const liveEndIso = getSubscriptionPeriodEnd(stripeSub);
+        if (liveEndIso && (!sub.currentPeriodEnd || sub.currentPeriodEnd.toISOString() !== liveEndIso)) {
+          prisma.subscription.update({
+            where: { userId: user.id },
+            data: { currentPeriodEnd: new Date(liveEndIso) },
+          }).catch(() => {});
+        }
+        livePeriodEnd = liveEndIso;
+      }
     } catch (error) {
       reportError(error, "billing-subscription-stripe-summary", {
         route: "billing-subscription",
@@ -77,6 +90,8 @@ export async function GET() {
       });
     }
   }
+
+  const effectivePeriodEnd = livePeriodEnd ?? (sub.currentPeriodEnd?.toISOString() ?? null);
 
   const plans = getAllPlans().map((plan) => ({
     id: plan.id,
@@ -88,7 +103,7 @@ export async function GET() {
   return Response.json({
     currentPlan: planId,
     cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
-    currentPeriodEnd: sub.currentPeriodEnd?.toISOString() ?? null,
+    currentPeriodEnd: effectivePeriodEnd,
     pdfExportKind,
     monthlyExportsUsed,
     paymentMethod,
