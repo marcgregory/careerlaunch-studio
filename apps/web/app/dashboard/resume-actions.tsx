@@ -61,8 +61,12 @@ export function ResumeActions({
   }, [onMenuOpenChange, onRenameClick]);
 
   const handleDeleteSelect = useCallback(() => {
+    console.log('[ResumeActions] handleDeleteSelect fired', { scrollY: window.scrollY, activeElement: document.activeElement?.tagName });
     onMenuOpenChange(false);
-    requestAnimationFrame(() => onDeleteClick());
+    requestAnimationFrame(() => {
+      console.log('[ResumeActions] rAF callback about to call onDeleteClick', { scrollY: window.scrollY });
+      onDeleteClick();
+    });
   }, [onMenuOpenChange, onDeleteClick]);
 
   const handleDuplicate = useCallback(async () => {

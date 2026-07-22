@@ -194,6 +194,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
 
   const handleDeleteClick = useCallback(
     (id: string, title: string) => {
+      console.log('[ResumeList] handleDeleteClick called', { id, title, scrollY: window.scrollY, activeMenuId });
       setResumeToRename(null);
       setActiveMenuId(null);
       setResumeToDelete({ id, title, targetRole: null, updatedAt: "", analysisRunCount: 0, exportCount: 0 });
