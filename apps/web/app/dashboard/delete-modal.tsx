@@ -28,19 +28,29 @@ export function DeleteResumeModal({
   useIsoLayoutEffect(() => {
     if (!open) return;
 
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollY = window.scrollY;
+    const previousPosition = document.body.style.position;
+    const previousTop = document.body.style.top;
+    const previousWidth = document.body.style.width;
+    const previousOverflowY = document.body.style.overflowY;
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.body.style.overflowY = "scroll";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
     return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
+      document.body.style.position = previousPosition;
+      document.body.style.top = previousTop;
+      document.body.style.width = previousWidth;
+      document.body.style.overflowY = previousOverflowY;
+      document.body.style.paddingRight = "";
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
