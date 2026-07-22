@@ -331,7 +331,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       {groups.map((group) => (
         <section key={group.label}>
           <GroupHeader label={group.label} count={group.items.length} />
-          <div className="space-y-4">
+          <div className="space-y-3">
             {group.items.map((r) => (
               <ResumeCard
                 key={r.id}
@@ -351,7 +351,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
 
       {/* Loading indicator */}
       {isFetchingNextPage && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-center gap-2 py-4">
             <Loader2 size={18} className="animate-spin text-[#6bbf22]" />
             <span className="text-sm font-semibold text-[#4b4b4b]/70">
