@@ -1,31 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CreditCard, FileText, Loader2, ExternalLink, CalendarDays, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { AppHeader, AppLogo } from "../../../components/app-header";
-
-type InvoiceSummary = {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  currency: string;
-  status: string | null;
-  hostedInvoiceUrl: string | null;
-  invoicePdf: string | null;
-};
-
-type SubscriptionResponse = {
-  currentPlan: string;
-  cancelAtPeriodEnd: boolean;
-  currentPeriodEnd: string | null;
-  pdfExportKind: string;
-  monthlyExportsUsed: number;
-  paymentMethod: { brand: string; last4: string } | null;
-  invoices: InvoiceSummary[];
-};
+import { CheckoutVerificationBanner } from "../../../components/checkout-verification-banner";
+import { useSubscriptionVerification } from "../../../hooks/use-subscription-verification";
+import AccountBillingLoading from "./loading";
 
 function planLabel(plan: string) {
   return plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -57,31 +40,43 @@ function formatMoney(amount: number, currency = "USD") {
 }
 
 export default function AccountBillingPage() {
-  const [data, setData] = useState<SubscriptionResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [portalLoading, setPortalLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  return (
+    <Suspense fallback={<AccountBillingLoading />}>
+      <AccountBillingContent />
+    </Suspense>
+  );
+}
 
-  useEffect(() => {
-    fetch("/api/billing/subscription")
-      .then((res) => res.json())
-      .then(setData)
-      .catch(() => setError("Failed to load billing data."))
-      .finally(() => setLoading(false));
-  }, []);
+function AccountBillingContent() {
+  const searchParams = useSearchParams();
+  const {
+    data,
+    loading,
+    isVerifying,
+    timedOut,
+    error: verificationError,
+    setError: setVerificationError,
+    retryVerification,
+  } = useSubscriptionVerification();
+
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  const error = portalError ?? verificationError;
 
   const handleManageBilling = async () => {
     setPortalLoading(true);
+    setPortalError(null);
     try {
       const res = await fetch("/api/billing/portal", { method: "POST" });
       const result = await res.json();
       if (res.ok && result.url) {
         window.location.href = result.url;
       } else {
-        setError(result.error || "Failed to open billing portal.");
+        setPortalError(result.error || "Failed to open billing portal.");
       }
     } catch {
-      setError("Network error.");
+      setPortalError("Network error.");
     } finally {
       setPortalLoading(false);
     }
@@ -90,6 +85,10 @@ export default function AccountBillingPage() {
   const currentPlan = data?.currentPlan ?? "free";
   const isPaid = currentPlan !== "free";
   const invoices = data?.invoices ?? [];
+
+  if (loading) {
+    return <AccountBillingLoading />;
+  }
 
   return (
     <main className="signal-site min-h-screen pt-[52px] px-5 py-6 text-[#123c3a] sm:pt-[60px]">
@@ -110,6 +109,12 @@ export default function AccountBillingPage() {
         <header className="border-b border-[#123c3a]/10 pb-8">
           <h1 className="font-signal text-5xl font-black tracking-[-0.06em]">Billing & plan</h1>
         </header>
+
+        <CheckoutVerificationBanner
+          isVerifying={isVerifying}
+          timedOut={timedOut}
+          onRetry={retryVerification}
+        />
 
         {error && (
           <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-black text-red-700" role="alert">
@@ -148,7 +153,11 @@ export default function AccountBillingPage() {
                 </h2>
                 <p className="mt-1 text-sm font-medium text-[#4b4b4b]">Current subscription tier</p>
               </div>
-              {currentPlan === "free" ? (
+              {isVerifying ? (
+                <div className="flex items-center gap-2 rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                  <Loader2 size={16} className="animate-spin text-[#6bbf22]" /> Verifying...
+                </div>
+              ) : currentPlan === "free" ? (
                 <Link href="/billing" className={primaryButtonClass}>
                   <CreditCard size={16} /> Upgrade
                 </Link>

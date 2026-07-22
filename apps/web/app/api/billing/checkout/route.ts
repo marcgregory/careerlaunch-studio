@@ -113,7 +113,7 @@ export async function POST(request: Request) {
       customer: stripeCustomerId,
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${getBaseUrl(request)}/billing?checkout=success`,
+      success_url: `${getBaseUrl(request)}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${getBaseUrl(request)}/billing?checkout=canceled`,
       metadata: { userId: user.id, plan },
     });

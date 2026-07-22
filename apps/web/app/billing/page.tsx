@@ -1,27 +1,19 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlertTriangle, Check, CreditCard, Sparkles, ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
 import { AppHeader, AppLogo } from "../../components/app-header";
 import { FocusTrap } from "../../components/focus-trap";
+import { CheckoutVerificationBanner } from "../../components/checkout-verification-banner";
+import {
+  useSubscriptionVerification,
+  type PlanInfo,
+  type SubscriptionData,
+} from "../../hooks/use-subscription-verification";
 import BillingLoading from "./loading";
-
-type PlanInfo = {
-  id: string;
-  label: string;
-  isCurrent: boolean;
-};
-
-type SubscriptionData = {
-  currentPlan: string;
-  cancelAtPeriodEnd: boolean;
-  currentPeriodEnd: string | null;
-  scheduledChange: { plan: string; effectiveDate: string | null } | null;
-  plans: PlanInfo[];
-};
 
 type UpgradePreview = {
   todayCharge: number;
@@ -33,42 +25,6 @@ type UpgradePreview = {
   paymentMethod: { brand: string; last4: string } | null;
   lines: Array<{ label: string; amount: number }>;
 };
-
-const DEFAULT_SUBSCRIPTION_DATA: SubscriptionData = {
-  currentPlan: "free",
-  cancelAtPeriodEnd: false,
-  currentPeriodEnd: null,
-  scheduledChange: null,
-  plans: [
-    { id: "free", label: "Free", isCurrent: true },
-    { id: "professional", label: "Professional", isCurrent: false },
-    { id: "enterprise", label: "Enterprise", isCurrent: false },
-  ],
-};
-
-function normalizeSubscriptionData(value: Partial<SubscriptionData> | null | undefined): SubscriptionData {
-  const currentPlan = ["free", "professional", "enterprise"].includes(value?.currentPlan ?? "")
-    ? value?.currentPlan ?? "free"
-    : "free";
-
-  return {
-    currentPlan,
-    cancelAtPeriodEnd: Boolean(value?.cancelAtPeriodEnd),
-    currentPeriodEnd: typeof value?.currentPeriodEnd === "string" ? value.currentPeriodEnd : null,
-    scheduledChange: value?.scheduledChange && typeof value.scheduledChange === "object"
-      ? {
-          plan: typeof value.scheduledChange.plan === "string" ? value.scheduledChange.plan : "",
-          effectiveDate: typeof value.scheduledChange.effectiveDate === "string" ? value.scheduledChange.effectiveDate : null,
-        }
-      : null,
-    plans: Array.isArray(value?.plans)
-      ? value.plans
-      : DEFAULT_SUBSCRIPTION_DATA.plans.map((plan) => ({
-          ...plan,
-          isCurrent: plan.id === currentPlan,
-        })),
-  };
-}
 
 const FEATURE_LABELS: Record<string, string> = {
   resume_limit: "Resume drafts",
@@ -154,120 +110,44 @@ export default function BillingPage() {
 }
 
 function BillingContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [data, setData] = useState<SubscriptionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [syncingCheckout, setSyncingCheckout] = useState(false);
+  const {
+    data,
+    loading,
+    isVerifying,
+    timedOut,
+    error: verificationError,
+    setError: setVerificationError,
+    retryVerification,
+    refreshSubscription,
+  } = useSubscriptionVerification();
+
   const [busyPlan, setBusyPlan] = useState<string | null>(null);
   const [confirmingUpgrade, setConfirmingUpgrade] = useState(false);
   const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
   const [downgradePlan, setDowngradePlan] = useState<string | null>(null);
   const [cancelingScheduledDowngrade, setCancelingScheduledDowngrade] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const error = actionError ?? verificationError;
 
   const reason = searchParams?.get("reason");
   const checkoutStatus = searchParams?.get("checkout");
   const upgradePlan = searchParams?.get("plan");
-  const message = success ?? (checkoutStatus === "success"
+  const message = success ?? (checkoutStatus === "success" && !isVerifying
     ? "Payment successful! Your plan has been upgraded."
     : checkoutStatus === "canceled"
       ? "Checkout was canceled. No changes were made."
-      : searchParams?.get("upgrade") === "completed"
+      : searchParams?.get("upgrade") === "completed" && !isVerifying
         ? `Your plan has been upgraded to ${upgradePlan ?? "the new plan"}. Your next invoice will reflect any prorated charges.`
         : reason === "resume_limit"
           ? "You've reached the free plan limit. Upgrade to create more resumes."
           : null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadSubscription() {
-      setLoading(true);
-
-      try {
-        const res = await fetch("/api/billing/subscription");
-        if (!res.ok) throw new Error("Failed to load subscription");
-
-        const result = await res.json();
-        if (!cancelled) {
-          setData(normalizeSubscriptionData(result));
-        }
-      } catch {
-        if (!cancelled) {
-          setData(DEFAULT_SUBSCRIPTION_DATA);
-          setError("We couldn't refresh your subscription yet. You can still compare plans below.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadSubscription();
-
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    if (checkoutStatus !== "success") return;
-
-    let cancelled = false;
-    const MAX_ATTEMPTS = 10;
-    const POLL_INTERVAL_MS = 1500;
-    const TIMEOUT_MS = 30_000;
-    let attempts = 0;
-
-    async function poll() {
-      setSyncingCheckout(true);
-      const deadline = Date.now() + TIMEOUT_MS;
-
-      while (!cancelled && attempts < MAX_ATTEMPTS && Date.now() < deadline) {
-        attempts++;
-        try {
-          const res = await fetch("/api/billing/subscription");
-          if (!res.ok) throw new Error("Failed to refresh subscription");
-
-          const d = normalizeSubscriptionData(await res.json());
-          if (cancelled) return;
-
-          if (d.currentPlan !== "free") {
-            setData(d);
-            setSyncingCheckout(false);
-            router.replace("/billing", { scroll: false });
-            return;
-          }
-        } catch {
-          // Retry transient failures while Stripe webhooks settle.
-        }
-
-        if (!cancelled && attempts < MAX_ATTEMPTS) {
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-        }
-      }
-
-      if (!cancelled) {
-        setSyncingCheckout(false);
-        setError("Payment succeeded, but we're still waiting for Stripe to confirm your subscription. The plan cards remain available below.");
-        router.replace("/billing", { scroll: false });
-      }
-    }
-
-    poll();
-    return () => { cancelled = true; };
-  }, [checkoutStatus, router]);
-
-  const refreshSubscription = async () => {
-    const res = await fetch("/api/billing/subscription");
-    if (!res.ok) return;
-    setData(normalizeSubscriptionData(await res.json()));
-  };
-
   const openUpgradePreview = async (planId: string) => {
     setBusyPlan(planId);
-    setError(null);
+    setActionError(null);
     setSuccess(null);
 
     try {
@@ -282,7 +162,7 @@ function BillingContent() {
 
       setUpgradePreview(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to preview upgrade.");
+      setActionError(err instanceof Error ? err.message : "Failed to preview upgrade.");
     } finally {
       setBusyPlan(null);
     }
@@ -292,7 +172,7 @@ function BillingContent() {
     if (!upgradePreview) return;
 
     setConfirmingUpgrade(true);
-    setError(null);
+    setActionError(null);
 
     try {
       const plan = upgradePreview.newPlan.toLowerCase();
@@ -307,10 +187,10 @@ function BillingContent() {
       if (res.ok && result.url) {
         window.location.assign(result.url);
       } else {
-        setError(result.error || "Failed to start upgrade.");
+        setActionError(result.error || "Failed to start upgrade.");
       }
     } catch {
-      setError("Network error. Please try again.");
+      setActionError("Network error. Please try again.");
     } finally {
       setConfirmingUpgrade(false);
     }
@@ -320,7 +200,7 @@ function BillingContent() {
     if (!downgradePlan) return;
 
     setBusyPlan(downgradePlan);
-    setError(null);
+    setActionError(null);
     setSuccess(null);
 
     try {
@@ -337,7 +217,7 @@ function BillingContent() {
       setSuccess(`${result.scheduledPlan} is scheduled for ${formatDate(result.effectiveDate)}. Your ${result.currentPlan} features remain available until then.`);
       await refreshSubscription();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to schedule downgrade.");
+      setActionError(err instanceof Error ? err.message : "Failed to schedule downgrade.");
     } finally {
       setBusyPlan(null);
     }
@@ -345,7 +225,7 @@ function BillingContent() {
 
   const confirmCancelScheduledDowngrade = async () => {
     setBusyPlan(data?.currentPlan ?? "enterprise");
-    setError(null);
+    setActionError(null);
     setSuccess(null);
 
     try {
@@ -362,11 +242,12 @@ function BillingContent() {
       setSuccess(`Your scheduled downgrade was canceled. ${result.currentPlan} will renew on ${formatDate(result.renewalDate)}.`);
       await refreshSubscription();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to cancel scheduled downgrade.");
+      setActionError(err instanceof Error ? err.message : "Failed to cancel scheduled downgrade.");
     } finally {
       setBusyPlan(null);
     }
   };
+
   if (loading) {
     return <BillingLoading />;
   }
@@ -403,15 +284,16 @@ function BillingContent() {
           </div>
         </header>
 
+        <CheckoutVerificationBanner
+          isVerifying={isVerifying}
+          timedOut={timedOut}
+          onRetry={retryVerification}
+          planName={upgradePlan}
+        />
+
         {message && (
           <div className="mt-6 rounded-2xl border border-[#b9ff66] bg-[#b9ff66]/20 p-4 text-sm font-black text-[#123c3a]">
             {message}
-          </div>
-        )}
-
-        {syncingCheckout && (
-          <div className="mt-6 rounded-2xl border border-[#b9ff66] bg-[#b9ff66]/20 p-4 text-sm font-black text-[#123c3a]">
-            Confirming your Stripe checkout. Plan cards are available while we sync your subscription.
           </div>
         )}
 
@@ -517,6 +399,10 @@ function BillingContent() {
                           Downgrade
                         </button>
                       )
+                    ) : isVerifying ? (
+                      <div className="flex w-full items-center justify-center gap-2 rounded-full border border-[#b9ff66] bg-[#b9ff66]/20 px-6 py-3 text-center text-sm font-black uppercase tracking-[0.08em] text-[#123c3a]">
+                        <Loader2 size={16} className="animate-spin text-[#6bbf22]" /> Verifying upgrade...
+                      </div>
                     ) : (
                       <button
                         onClick={() => openUpgradePreview(planId)}

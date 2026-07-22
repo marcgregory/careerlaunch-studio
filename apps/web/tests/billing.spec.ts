@@ -61,14 +61,35 @@ test.describe("Billing page", () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test("renders plan cards after checkout success params while Stripe sync completes", async ({ page }) => {
+  test("renders verification banner after checkout success and transitions once confirmed", async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on("pageerror", (error) => pageErrors.push(error));
-    await mockSubscription(page, { currentPlan: "professional" });
+    
+    let fetchCount = 0;
+    await page.route("**/api/billing/subscription", async (route) => {
+      fetchCount++;
+      const currentPlan = fetchCount === 1 ? "free" : "professional";
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...defaultSubscription,
+          currentPlan,
+          plans: defaultSubscription.plans.map((plan) => ({
+            ...plan,
+            isCurrent: plan.id === currentPlan,
+          })),
+        }),
+      });
+    });
 
-    await page.goto("/billing?checkout=success");
+    await page.goto("/billing?checkout=success&session_id=cs_test_123");
 
-    await expectPlanCards(page);
+    // Initially shows verification banner & button state
+    await expect(page.getByText("Verifying your subscription...")).toBeVisible();
+    await expect(page.getByText("Verifying upgrade...")).toBeVisible();
+
+    // After polling resolves active plan
     await expect(page.getByText("You're on the professional plan.")).toBeVisible();
     await expect(page).toHaveURL(/\/billing$/);
     expect(pageErrors).toEqual([]);

@@ -28,7 +28,7 @@ const PAST_DUE_GRACE_MS = (parseInt(process.env.PAST_DUE_GRACE_DAYS || "3", 10))
  * (e.g. a page that also calls `can()` and `getFeatureValue()`) hit the DB
  * once instead of three times.
  */
-export const getSubscription = cache(async (userId: string): Promise<PlanRecord> => {
+const _getSubscription = async (userId: string): Promise<PlanRecord> => {
   let sub = await prisma.subscription.findUnique({ where: { userId } });
 
   if (!sub) {
@@ -41,7 +41,9 @@ export const getSubscription = cache(async (userId: string): Promise<PlanRecord>
     ...sub,
     plan: sub.plan.toLowerCase() as PlanId,
   };
-});
+};
+
+export const getSubscription = typeof cache === "function" ? cache(_getSubscription) : _getSubscription;
 
 /**
  * Get the effective plan ID for a user, accounting for payment grace periods
