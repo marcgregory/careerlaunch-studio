@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, CreditCard, FileText, Loader2, ExternalLink, CalendarDays, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
@@ -57,18 +57,6 @@ function formatMoney(amount: number, currency = "USD") {
 }
 
 export default function AccountBillingPage() {
-  return (
-    <Suspense fallback={
-      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
-        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
-      </main>
-    }>
-      <AccountBillingContent />
-    </Suspense>
-  );
-}
-
-function AccountBillingContent() {
   const [data, setData] = useState<SubscriptionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -98,14 +86,6 @@ function AccountBillingContent() {
       setPortalLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <main className="signal-site flex min-h-screen items-center justify-center pt-[52px] px-5 sm:pt-[60px]">
-        <Loader2 size={32} className="animate-spin text-[#6bbf22]" />
-      </main>
-    );
-  }
 
   const currentPlan = data?.currentPlan ?? "free";
   const isPaid = currentPlan !== "free";
