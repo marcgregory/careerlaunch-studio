@@ -40,27 +40,31 @@ export function DeleteResumeModal({
     }
     console.log('[DeleteModal] body locked. scrollY before lock:', window.scrollY);
 
-    // Scroll watcher: log every scroll change with active element context
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const newY = window.scrollY;
-      const delta = newY - lastY;
-      lastY = newY;
-      console.log('[SCROLL]', {
-        ts: performance.now().toFixed(0),
-        from: newY - delta,
-        to: newY,
-        delta,
-        activeEl: document.activeElement?.tagName,
-        activeId: document.activeElement?.id,
-        activeClass: (document.activeElement?.className || '').toString().slice(0, 60),
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    console.log('[DeleteModal] scroll watcher attached');
+    // Snapshot aside rect
+    const asideEl = document.querySelector('aside');
+    if (asideEl) {
+      const r = asideEl.getBoundingClientRect();
+      console.log('[DeleteModal] ASIDE before lock:', { top: r.top, left: r.left, width: r.width, height: r.height, position: getComputedStyle(asideEl).position, zIndex: getComputedStyle(asideEl).zIndex });
+    }
+
+    // Sample aside rect 5 times over 250ms
+    const asideSample = setInterval(() => {
+      const a = document.querySelector('aside');
+      if (a) {
+        const r = a.getBoundingClientRect();
+        console.log('[ASIDE sample]', { top: r.top.toFixed(1), left: r.left.toFixed(1), width: r.width.toFixed(1), scrollY: window.scrollY });
+      } else {
+        console.log('[ASIDE sample] NOT FOUND');
+      }
+    }, 50);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      clearInterval(asideSample);
+      const asideEl2 = document.querySelector('aside');
+      if (asideEl2) {
+        const r = asideEl2.getBoundingClientRect();
+        console.log('[DeleteModal] ASIDE after unlock:', { top: r.top, left: r.left, width: r.width, height: r.height });
+      }
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
       console.log('[DeleteModal] body unlocked. scrollY after unlock:', window.scrollY);
