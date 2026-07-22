@@ -470,9 +470,14 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
             <ArrowLeft className="w-5 h-5 shrink-0" />
           )}
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="hidden font-mono text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#00796f] sm:block sm:text-xs">Resume Builder</p>
-          <h1 className="font-signal truncate text-sm font-black leading-none tracking-[-0.06em] sm:text-2xl">{resume.title || "Untitled resume"}</h1>
+          <h1
+            className="font-signal block truncate text-sm font-black leading-none tracking-[-0.06em] sm:text-2xl"
+            title={resume.title || "Untitled resume"}
+          >
+            {resume.title || "Untitled resume"}
+          </h1>
         </div>
       </AppHeader>
 
