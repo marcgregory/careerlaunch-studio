@@ -28,23 +28,13 @@ export function DeleteResumeModal({
   useIsoLayoutEffect(() => {
     if (!open) return;
 
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-
-    // Use overflow: clip instead of hidden so we don't create a new scroll
-    // container for descendants with position: sticky (e.g. the dashboard
-    // aside). overflow: clip prevents scrolling without changing which
-    // element is the scroll container, so sticky elements keep sticking.
-    document.body.style.overflow = "clip";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
     return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
+      // No-op cleanup. We intentionally do not lock body scroll here because
+      // the modal is position: fixed and the dashboard uses a position: sticky
+      // aside. Locking body overflow (via hidden, clip, or scroll lock) breaks
+      // the sticky positioning of the aside, causing it to disappear behind
+      // the modal. The modal is purely visual (position: fixed) and does not
+      // require scroll lock to function correctly.
     };
   }, [open]);
 
