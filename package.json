@@ -15,7 +15,10 @@
         "eval:preflight": "npx tsx scripts/eval/provider-preflight.ts",
         "eval:dogfooding": "npx tsx scripts/eval/dogfooding/dogfood-runner.ts",
         "eval:benchmark": "npx tsx scripts/eval/benchmark/benchmark-runner.ts",
-        "eval:recovery": "npx tsx scripts/eval/error-recovery.ts"
+        "eval:recovery": "npx tsx scripts/eval/error-recovery.ts",
+        "perf": "node perf-runner.mjs",
+        "perf:cold": "node perf-runner.mjs --cold",
+        "perf:nav": "node perf-runner.mjs --nav"
     },
     "workspaces": [
         "apps/*",

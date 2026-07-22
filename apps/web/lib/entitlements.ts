@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "./prisma";
 import {
   can as planCan,
@@ -22,8 +23,12 @@ const PAST_DUE_GRACE_MS = (parseInt(process.env.PAST_DUE_GRACE_DAYS || "3", 10))
 
 /**
  * Get the user's subscription record, creating a FREE default if none exists.
+ *
+ * Wrapped in React `cache()` so multiple call sites within the same request
+ * (e.g. a page that also calls `can()` and `getFeatureValue()`) hit the DB
+ * once instead of three times.
  */
-export async function getSubscription(userId: string): Promise<PlanRecord> {
+export const getSubscription = cache(async (userId: string): Promise<PlanRecord> => {
   let sub = await prisma.subscription.findUnique({ where: { userId } });
 
   if (!sub) {
@@ -36,7 +41,7 @@ export async function getSubscription(userId: string): Promise<PlanRecord> {
     ...sub,
     plan: sub.plan.toLowerCase() as PlanId,
   };
-}
+});
 
 /**
  * Get the effective plan ID for a user, accounting for payment grace periods

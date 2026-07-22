@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
@@ -51,7 +52,7 @@ export function deleteUserSession(response: NextResponse) {
   response.cookies.delete(sessionCookieName);
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
+export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const cookieStore = await cookies();
   const rawSession = cookieStore.get(sessionCookieName)?.value;
   const payload = rawSession ? verifySession(rawSession) : null;
@@ -64,7 +65,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   });
 
   return user;
-}
+});
 
 export async function requireUser() {
   const cookieStore = await cookies();
