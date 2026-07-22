@@ -49,6 +49,9 @@ html {
   min-width: 320px;
   scroll-behavior: smooth;
   overflow-x: clip;
+  /* Reserve the scrollbar gutter so opening modals (which lock body overflow)
+     does not cause the page width to jump and produce layout shift. */
+  scrollbar-gutter: stable;
 }
 
 body {
