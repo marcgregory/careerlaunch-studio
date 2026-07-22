@@ -1,19 +1,49 @@
 /**
  * Streaming loading state for /import.
+ *
+ * Mirrors the real page structure:
+ *   1. AppHeader (logo only — no actions on this page)
+ *   2. Header block with "Dashboard" back link, "Import resume" title, helper
+ *   3. Card with the paste-textarea + character counter
+ *   4. Cancel link + "Parse resume" button
  */
+import { Skeleton, SkeletonHeader, SkeletonPage } from "../../components/skeletons";
+
 export default function ImportLoading() {
   return (
-    <main className="signal-site min-h-screen pt-[52px] text-[#123c3a] sm:pt-[60px]">
-      <div className="mx-auto max-w-3xl px-5 py-6" aria-busy="true" aria-live="polite">
-        <div className="h-10 w-1/2 animate-pulse rounded-md bg-[#123c3a]/10" />
-        <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-[#123c3a]/10" />
+    <>
+      <SkeletonHeader actions={0} />
 
-        <div
-          className="mt-8 h-56 animate-pulse rounded-3xl border-2 border-dashed border-[#123c3a]/15 bg-white"
-          aria-hidden="true"
-        />
-        <div className="mt-4 h-10 w-40 animate-pulse rounded-full bg-[#123c3a]/10" />
-      </div>
-    </main>
+      <SkeletonPage maxWidthClass="max-w-5xl">
+        {/* Header block — mirrors the back link + title + subtitle */}
+        <div className="flex items-center justify-between border-b border-[#123c3a]/10 pb-6">
+          <div>
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="mt-4 h-10 w-64" />
+            <Skeleton className="mt-2 h-4 w-3/4 max-w-md" />
+          </div>
+        </div>
+
+        {/* Idle-state card with textarea */}
+        <div className="mt-8 space-y-6" aria-hidden="true">
+          <div className="rounded-2xl border border-[#123c3a]/10 bg-white p-6">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-[18px] w-[18px]" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <Skeleton className="mt-4 h-[320px] w-full rounded-xl border border-[#123c3a]/15 bg-[#fafafa]" />
+            <div className="mt-3 flex justify-end">
+              <Skeleton className="h-3 w-28" />
+            </div>
+          </div>
+
+          {/* Actions row — Cancel link + "Parse resume" button */}
+          <div className="flex items-center justify-between gap-4">
+            <Skeleton className="h-3 w-16" />
+            <div className="h-11 w-40 rounded-[14px] border-2 border-[#123c3a] bg-[#123c3a] animate-pulse" />
+          </div>
+        </div>
+      </SkeletonPage>
+    </>
   );
 }
