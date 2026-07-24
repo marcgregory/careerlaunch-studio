@@ -125,7 +125,9 @@ export function useDuplicateResume() {
         exportCount: 0,
       };
       optimisticallyAddResume(queryClient, optimisticResume);
-      const toastId = toast.loading(`Duplicating "${resume.title}"...`);
+      const displayTitle =
+        resume.title.length > 30 ? `${resume.title.slice(0, 30)}...` : resume.title;
+      const toastId = toast.loading(`Duplicating "${displayTitle}"...`);
       return { toastId, optimisticId };
     },
 

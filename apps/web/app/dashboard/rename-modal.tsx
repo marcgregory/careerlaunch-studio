@@ -61,8 +61,6 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
     onClose();
     // ────────────────────────────────────────────────────────────────────────
 
-    const toastId = toast.loading("Renaming resume...");
-
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
         method: "PATCH",
@@ -75,15 +73,14 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
         throw new Error(body?.error ?? "Failed to save rename.");
       }
 
-      toast.success("Resume renamed.", { id: toastId });
+      toast.success("Resume renamed.");
     } catch (err) {
       // ── Rollback ────────────────────────────────────────────────────────────
       // Server rejected the rename — restore the previous title in the cache.
       patchCachedTitle(currentTitle);
       // ───────────────────────────────────────────────────────────────────────
       toast.error(
-        err instanceof Error ? err.message : "Failed to save rename.",
-        { id: toastId },
+        err instanceof Error ? err.message : "Failed to save rename."
       );
     } finally {
       setSaving(false);

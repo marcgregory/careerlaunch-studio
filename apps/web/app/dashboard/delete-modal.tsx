@@ -90,8 +90,6 @@ export function DeleteResumeModal({
     onClose();
     // ────────────────────────────────────────────────────────────────────────
 
-    const toastId = toast.loading(`Deleting "${resumeTitle}"...`);
-
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
         method: "DELETE",
@@ -101,43 +99,16 @@ export function DeleteResumeModal({
         throw new Error("Server rejected deletion. The resume has been restored.");
       }
 
-      toast.success("Resume deleted.", { id: toastId });
-      // Background revalidation to sync total counts and page boundaries
-      queryClient.invalidateQueries({ queryKey: ["resumes"] });
+      toast.success("Resume deleted.");
     } catch (err) {
       // ── Rollback ─────────────────────────────────────────────────────────
       // Re-insert the removed resume at its original position.
-      // Using the full snapshot is the safest approach — it handles edge cases
-      // like concurrent mutations that may have also updated the cache.
       if (previousData) {
         queryClient.setQueryData<ResumeCacheData>(["resumes"], previousData);
-      } else if (removedResume) {
-        // Fallback: splice back into the current (possibly mutated) cache
-        queryClient.setQueryData<ResumeCacheData>(["resumes"], (current) => {
-          if (!current) return current;
-          return {
-            ...current,
-            pages: current.pages.map((p, pi) => {
-              if (pi !== removedPageIndex || !removedResume) return p;
-              const resumes = [...p.resumes];
-              resumes.splice(removedItemIndex, 0, removedResume);
-              return {
-                ...p,
-                resumes,
-                pagination: { ...p.pagination, total: p.pagination.total + 1 },
-              };
-            }),
-          };
-        });
       }
-      // ─────────────────────────────────────────────────────────────────────
-
       toast.error(
-        err instanceof Error ? err.message : "Failed to delete resume.",
-        { id: toastId },
+        err instanceof Error ? err.message : "Failed to delete resume."
       );
-
-      queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } finally {
       setDeleting(false);
     }
