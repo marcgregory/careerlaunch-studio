@@ -281,8 +281,28 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
   const handleDeleteClose = useCallback(() => setResumeToDelete(null), []);
   const handleRenameClose = useCallback(() => setResumeToRename(null), []);
 
-  // Empty state (only when we have data loaded)
-  if (sorted.length === 0 && hasActiveFilters) {
+  // ── Auto-fetch next page if filter returns 0 items in loaded pages ──
+  useEffect(() => {
+    if (
+      sorted.length === 0 &&
+      hasActiveFilters &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isError
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    sorted.length,
+    hasActiveFilters,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    fetchNextPage,
+  ]);
+
+  // Empty state (only when all available pages have been searched)
+  if (sorted.length === 0 && hasActiveFilters && !isFetchingNextPage) {
     return (
       <div className="space-y-5">
         <SearchBar
@@ -292,10 +312,21 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
           showFilters={showFilters}
           onToggleFilters={handleToggleFilters}
         />
+        {(showFilters || hasActiveFilters) && (
+          <FilterSortBar
+            sort={sort}
+            filter={filter}
+            hasActiveFilters={hasActiveFilters}
+            onSetSort={handleSetSort}
+            onSetFilter={handleSetFilter}
+            onClearAll={handleClearAll}
+          />
+        )}
         <EmptyState
           variant="no-results"
           searchTerm={search.trim() || undefined}
           activeFilter={filter !== "all" ? filter : undefined}
+          onClearFilters={handleClearAll}
         />
       </div>
     );
@@ -539,7 +570,11 @@ function SearchBar({
         type="button"
         onClick={onToggleFilters}
         aria-label="Toggle search filters"
-        className={`absolute right-3 top-1/2 -translate-y-1/2 text-[#4b4b4b]/60 transition-colors hover:text-[#123c3a] ${search ? "right-10" : ""}`}
+        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
+          showFilters
+            ? "rounded-md bg-[#123c3a] p-1 text-[#b9ff66]"
+            : "text-[#4b4b4b]/60 hover:text-[#123c3a]"
+        } ${search ? "right-10" : ""}`}
       >
         <SlidersHorizontal size={16} aria-hidden="true" />
       </button>
