@@ -73,6 +73,7 @@ type DuplicateVariables = {
 
 type DuplicateContext = {
   optimisticId: string;
+  toastId: string | number;
 };
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -124,14 +125,18 @@ export function useDuplicateResume() {
         exportCount: 0,
       };
       optimisticallyAddResume(queryClient, optimisticResume);
-      toast.success("Resume duplicated.");
-      return { optimisticId };
+      // Show a loading toast so the user gets instant feedback, but we
+      // don't falsely claim "done" until the server actually confirms.
+      const toastId = toast.loading("Duplicating resume…");
+      return { optimisticId, toastId };
     },
 
     // ── Swap optimistic placeholder → real resume ────────────────────────────
     onSuccess: (dupedResume, _variables, context) => {
       if (context) {
         replaceOrRemoveOptimisticResume(queryClient, context.optimisticId, dupedResume);
+        // Upgrade the loading toast → success exactly when the spinner disappears.
+        toast.success("Resume duplicated.", { id: context.toastId });
       }
     },
 
@@ -140,6 +145,7 @@ export function useDuplicateResume() {
       // Remove the optimistic card so the list doesn't show a ghost entry
       if (context) {
         replaceOrRemoveOptimisticResume(queryClient, context.optimisticId, null);
+        toast.dismiss(context.toastId);
       }
 
       // "Duplicate Again" reuses the SAME idempotency key from variables.
