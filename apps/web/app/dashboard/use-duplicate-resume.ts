@@ -114,7 +114,18 @@ export function useDuplicateResume() {
     },
 
     // ── Optimistic insert on click, not on server response ──────────────────
-    onMutate: ({ resume, idempotencyKey }) => {
+    //
+    // IMPORTANT: cancelQueries must run first. Without it, a concurrent
+    // background refetch (triggered by infinite-scroll + refetchOnMount /
+    // refetchOnWindowFocus) can overwrite page 0 with stale server data
+    // WHILE the mutation is in-flight, causing the optimistic card to vanish
+    // or the spinner to stick indefinitely because onSuccess can no longer
+    // find "optimistic-xxxx" in the cache to swap it out.
+    onMutate: async ({ resume, idempotencyKey }) => {
+      // Stop any running/queued refetches for the resumes query so they
+      // cannot clobber our optimistic insert.
+      await queryClient.cancelQueries({ queryKey: ["resumes"] });
+
       const optimisticId = `optimistic-${idempotencyKey}`;
       const optimisticResume: SerializedResume = {
         id: optimisticId,
@@ -127,7 +138,7 @@ export function useDuplicateResume() {
       optimisticallyAddResume(queryClient, optimisticResume);
       // Show a loading toast so the user gets instant feedback, but we
       // don't falsely claim "done" until the server actually confirms.
-      const toastId = toast.loading("Duplicating resume…");
+      const toastId = toast.loading("Duplicating resume\u2026");
       return { optimisticId, toastId };
     },
 
@@ -163,6 +174,14 @@ export function useDuplicateResume() {
       toast.error(err.message || "Failed to duplicate resume. Please try again.", {
         action: actionButton,
       });
+    },
+
+    // ── Re-sync cache with server after mutation resolves ───────────────────
+    // cancelQueries paused any background refetches. invalidateQueries lets
+    // TanStack Query resume those and pull fresh data from the server,
+    // ensuring the real resume (or the rolled-back state) is reflected.
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },
   });
 
