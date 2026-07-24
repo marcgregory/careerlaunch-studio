@@ -3,8 +3,9 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { useDuplicateResume } from "./use-duplicate-resume";
 
 export type ResumeCacheData = {
   pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
@@ -28,21 +29,6 @@ type ResumeActionsProps = {
   onDeleteClick: () => void;
 };
 
-/** Helper: manually re-read the query cache and insert a resume at the front */
-function optimisticallyAddResume(queryClient: ReturnType<typeof useQueryClient>, resume: SerializedResume) {
-  queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
-    if (!old) return old;
-    return {
-      ...old,
-      pageParams: old.pageParams,
-      pages: old.pages.map((p, i) =>
-        i === 0
-          ? { ...p, resumes: [resume, ...p.resumes] }
-          : p,
-      ),
-    };
-  });
-}
 
 export function ResumeActions({
   resume,
@@ -51,7 +37,8 @@ export function ResumeActions({
   onRenameClick,
   onDeleteClick,
 }: ResumeActionsProps) {
-  const queryClient = useQueryClient();
+  const { duplicate, isDuplicating } = useDuplicateResume();
+  const isCurrentlyDuplicating = isDuplicating(resume.id);
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -65,33 +52,10 @@ export function ResumeActions({
     requestAnimationFrame(() => onDeleteClick());
   }, [onMenuOpenChange, onDeleteClick]);
 
-  const handleDuplicate = useCallback(async () => {
+  const handleDuplicate = useCallback(() => {
     onMenuOpenChange(false);
-    setActionLoading("duplicate");
-    try {
-      const res = await fetch(`/api/resumes/${resume.id}/duplicate`, { method: "POST" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Failed to duplicate" }));
-        toast.error(err.error);
-        return;
-      }
-      const data = await res.json();
-      const duped: SerializedResume = {
-        id: data.resume.id,
-        title: data.resume.title,
-        targetRole: data.resume.targetRole ?? null,
-        updatedAt: new Date().toISOString(),
-        analysisRunCount: 0,
-        exportCount: 0,
-      };
-      optimisticallyAddResume(queryClient, duped);
-      toast.success("Resume duplicated.");
-    } catch {
-      toast.error("Failed to duplicate resume");
-    } finally {
-      setActionLoading(null);
-    }
-  }, [resume.id, queryClient, onMenuOpenChange]);
+    duplicate(resume);
+  }, [onMenuOpenChange, duplicate, resume]);
 
   const handleExport = useCallback(async () => {
     onMenuOpenChange(false);
@@ -145,7 +109,7 @@ export function ResumeActions({
   }, [resume.id, resume.title, onMenuOpenChange]);
 
   const menuContent = useMemo(() => {
-    const isLoading = actionLoading !== null;
+    const isLoading = actionLoading !== null || isCurrentlyDuplicating;
     return (
       <DropdownMenu.Portal>
         <DropdownMenu.Content
@@ -170,7 +134,7 @@ export function ResumeActions({
             disabled={isLoading}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
           >
-            {actionLoading === "duplicate" ? (
+            {isCurrentlyDuplicating || actionLoading === "duplicate" ? (
               <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
             ) : (
               <Copy size={15} className="text-[#4b4b4b]" />
@@ -211,6 +175,7 @@ export function ResumeActions({
     );
   }, [
     actionLoading,
+    isCurrentlyDuplicating,
     handleRenameSelect,
     handleDuplicate,
     handleExport,
@@ -227,7 +192,7 @@ export function ResumeActions({
             title="More actions"
             aria-label="More actions"
           >
-            {actionLoading === "duplicate" || actionLoading === "export" ? (
+            {isCurrentlyDuplicating || actionLoading === "duplicate" || actionLoading === "export" ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <EllipsisVertical size={16} />
