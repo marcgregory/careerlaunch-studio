@@ -22,6 +22,13 @@ export function optimisticallyAddResume(
               ...p,
               resumes: [resume, ...p.resumes],
               pagination: { ...p.pagination, total: p.pagination.total + 1 },
+              stats: p.stats
+                ? {
+                    ...p.stats,
+                    totalResumes: p.stats.totalResumes + 1,
+                    targetedCount: resume.targetRole ? p.stats.targetedCount + 1 : p.stats.targetedCount,
+                  }
+                : undefined,
             }
           : p
       ),
@@ -36,6 +43,7 @@ function replaceOrRemoveOptimisticResume(
 ) {
   queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
     if (!old) return old;
+    const optimisticCard = old.pages[0]?.resumes.find((r) => r.id === optimisticId);
     return {
       ...old,
       pages: old.pages.map((p, i) => {
@@ -53,6 +61,15 @@ function replaceOrRemoveOptimisticResume(
           ...p,
           resumes: p.resumes.filter((r) => r.id !== optimisticId),
           pagination: { ...p.pagination, total: Math.max(0, p.pagination.total - 1) },
+          stats: p.stats
+            ? {
+                ...p.stats,
+                totalResumes: Math.max(0, p.stats.totalResumes - 1),
+                targetedCount: optimisticCard?.targetRole
+                  ? Math.max(0, p.stats.targetedCount - 1)
+                  : p.stats.targetedCount,
+              }
+            : undefined,
         };
       }),
     };

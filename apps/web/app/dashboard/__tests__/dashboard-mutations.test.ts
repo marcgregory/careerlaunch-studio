@@ -286,6 +286,27 @@ describe("WorkspaceStats derivation from cache", () => {
     expect(deriveStats(pages).totalResumes).toBe(1);
   });
 
+  it("prioritizes server-provided stats from page 0 over partial array filtering", () => {
+    const serverStats = { totalResumes: 26, targetedCount: 26, analyzedCount: 23, exportCount: 81 };
+    const page0WithStats: ResumeCacheData["pages"][number] = {
+      resumes: [makeResume("r1", { targetRole: "Dev" })],
+      pagination: { page: 1, limit: 10, total: 26, hasMore: true },
+      stats: serverStats,
+    };
+    const deriveWithServerStats = (pages: ResumeCacheData["pages"]) => {
+      if (pages[0]?.stats) return pages[0].stats;
+      const allResumes = pages.flatMap((p) => p.resumes);
+      return {
+        totalResumes: pages[0]?.pagination.total ?? allResumes.length,
+        targetedCount: allResumes.filter((r) => !!r.targetRole).length,
+        analyzedCount: allResumes.filter((r) => r.analysisRunCount > 0).length,
+        exportCount: allResumes.reduce((sum, r) => sum + (r.exportCount ?? 0), 0),
+      };
+    };
+
+    expect(deriveWithServerStats([page0WithStats])).toEqual(serverStats);
+  });
+
   it("falls back to SSR values when cache pages is empty", () => {
     const ssrFallback = { totalResumes: 5, targetedCount: 2, analyzedCount: 1, exportCount: 3 };
     const emptyPages: ResumeCacheData["pages"] = [];

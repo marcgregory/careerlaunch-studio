@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "10", 10)));
   const skip = (page - 1) * limit;
 
-  const [resumes, total] = await Promise.all([
+  const [resumes, total, allResumesForStats] = await Promise.all([
     prisma.resumeDocument.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
@@ -22,6 +22,13 @@ export async function GET(request: Request) {
       select: { id: true, title: true, targetRole: true, updatedAt: true, _count: { select: { analysisRuns: true, exports: true } } },
     }),
     prisma.resumeDocument.count({ where: { userId: user.id } }),
+    prisma.resumeDocument.findMany({
+      where: { userId: user.id },
+      select: {
+        targetRole: true,
+        _count: { select: { analysisRuns: true, exports: true } },
+      },
+    }),
   ]);
 
   const serialized = resumes.map((r) => ({
@@ -33,6 +40,13 @@ export async function GET(request: Request) {
     exportCount: r._count.exports,
   }));
 
+  const stats = {
+    totalResumes: total,
+    targetedCount: allResumesForStats.filter((r) => !!r.targetRole).length,
+    analyzedCount: allResumesForStats.filter((r) => r._count.analysisRuns > 0).length,
+    exportCount: allResumesForStats.reduce((sum, r) => sum + r._count.exports, 0),
+  };
+
   return Response.json({
     resumes: serialized,
     pagination: {
@@ -41,6 +55,7 @@ export async function GET(request: Request) {
       total,
       hasMore: skip + resumes.length < total,
     },
+    stats,
   });
 }
 

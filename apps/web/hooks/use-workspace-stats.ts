@@ -36,14 +36,27 @@ export function useWorkspaceStats(ssrFallback: WorkspaceStats): WorkspaceStats {
   const cacheData = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   return useMemo<WorkspaceStats>(() => {
-    if (!cacheData?.pages) return ssrFallback;
+    if (!cacheData?.pages || cacheData.pages.length === 0) return ssrFallback;
+
+    const serverStats = cacheData.pages[0]?.stats;
+    if (serverStats) {
+      return serverStats;
+    }
 
     const allResumes = cacheData.pages.flatMap((p) => p.resumes);
+    const totalFromPagination = cacheData.pages[0]?.pagination?.total;
+    const totalResumes =
+      typeof totalFromPagination === "number" && totalFromPagination > 0
+        ? totalFromPagination
+        : allResumes.length > 0
+        ? allResumes.length
+        : ssrFallback.totalResumes;
+
     return {
-      totalResumes: cacheData.pages[0]?.pagination.total ?? allResumes.length,
-      targetedCount: allResumes.filter((r) => !!r.targetRole).length,
-      analyzedCount: allResumes.filter((r) => r.analysisRunCount > 0).length,
-      exportCount: allResumes.reduce((sum, r) => sum + (r.exportCount ?? 0), 0),
+      totalResumes,
+      targetedCount: Math.max(ssrFallback.targetedCount, allResumes.filter((r) => !!r.targetRole).length),
+      analyzedCount: Math.max(ssrFallback.analyzedCount, allResumes.filter((r) => r.analysisRunCount > 0).length),
+      exportCount: Math.max(ssrFallback.exportCount, allResumes.reduce((sum, r) => sum + (r.exportCount ?? 0), 0)),
     };
   }, [cacheData, ssrFallback]);
 }

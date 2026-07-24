@@ -5,10 +5,16 @@ import { Download, Edit3, EllipsisVertical, Loader2, Trash2, Copy } from "lucide
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useDuplicateResume } from "./use-duplicate-resume";
+import type { WorkspaceStats } from "../../hooks/use-workspace-stats";
 
 export type ResumeCacheData = {
-  pages: Array<{ resumes: SerializedResume[]; pagination: { page: number; limit: number; total: number; hasMore: boolean } }>;
+  pages: Array<{
+    resumes: SerializedResume[];
+    pagination: { page: number; limit: number; total: number; hasMore: boolean };
+    stats?: WorkspaceStats;
+  }>;
   pageParams: number[];
 };
 
@@ -37,6 +43,7 @@ export function ResumeActions({
   onRenameClick,
   onDeleteClick,
 }: ResumeActionsProps) {
+  const queryClient = useQueryClient();
   const { duplicate, isDuplicating } = useDuplicateResume();
   const isCurrentlyDuplicating = isDuplicating(resume.id);
 
@@ -105,13 +112,33 @@ export function ResumeActions({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((p, i) =>
+            i === 0
+              ? {
+                  ...p,
+                  resumes: p.resumes.map((r) =>
+                    r.id === resume.id ? { ...r, exportCount: (r.exportCount ?? 0) + 1 } : r
+                  ),
+                  stats: p.stats
+                    ? { ...p.stats, exportCount: p.stats.exportCount + 1 }
+                    : undefined,
+                }
+              : p
+          ),
+        };
+      });
+
       toast.success("PDF downloaded successfully.");
     } catch {
       toast.error("Failed to export resume");
     } finally {
       setActionLoading(null);
     }
-  }, [resume.id, resume.title, onMenuOpenChange]);
+  }, [resume.id, resume.title, onMenuOpenChange, queryClient]);
 
   const menuContent = useMemo(() => {
     // Only block menu actions when this card itself has a pending export/action.

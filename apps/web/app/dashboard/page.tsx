@@ -141,6 +141,12 @@ export default async function DashboardPage() {
           <div className="min-w-0">
             <ResumeList
               initialResumes={serialized}
+              initialStats={{
+                totalResumes: totalResumeCount,
+                targetedCount,
+                analyzedCount,
+                exportCount,
+              }}
               hasMoreInit={hasMore}
             />
           </div>

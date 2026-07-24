@@ -76,14 +76,38 @@ export function DeleteResumeModal({
       return {
         ...old,
         pageParams: old.pageParams,
-        pages: old.pages.map((p) => ({
-          ...p,
-          resumes: p.resumes.filter((r) => r.id !== resumeId),
-          pagination: {
-            ...p.pagination,
-            total: Math.max(0, p.pagination.total - 1),
-          },
-        })),
+        pages: old.pages.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                resumes: p.resumes.filter((r) => r.id !== resumeId),
+                pagination: {
+                  ...p.pagination,
+                  total: Math.max(0, p.pagination.total - 1),
+                },
+                stats: p.stats
+                  ? {
+                      ...p.stats,
+                      totalResumes: Math.max(0, p.stats.totalResumes - 1),
+                      targetedCount: removedResume?.targetRole
+                        ? Math.max(0, p.stats.targetedCount - 1)
+                        : p.stats.targetedCount,
+                      analyzedCount:
+                        (removedResume?.analysisRunCount ?? 0) > 0
+                          ? Math.max(0, p.stats.analyzedCount - 1)
+                          : p.stats.analyzedCount,
+                      exportCount: Math.max(
+                        0,
+                        p.stats.exportCount - (removedResume?.exportCount ?? 0)
+                      ),
+                    }
+                  : undefined,
+              }
+            : {
+                ...p,
+                resumes: p.resumes.filter((r) => r.id !== resumeId),
+              }
+        ),
       };
     });
 

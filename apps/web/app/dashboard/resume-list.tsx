@@ -8,6 +8,8 @@ import { EmptyState } from "./empty-state";
 import { DeleteResumeModal } from "./delete-modal";
 import { RenameModal } from "./rename-modal";
 
+import type { WorkspaceStats } from "../../hooks/use-workspace-stats";
+
 type SerializedResume = {
   id: string;
   title: string;
@@ -25,6 +27,7 @@ type PaginatedResponse = {
     total: number;
     hasMore: boolean;
   };
+  stats?: WorkspaceStats;
 };
 
 type SortMode = "updated" | "alpha" | "oldest";
@@ -36,7 +39,7 @@ const SCROLL_STORAGE_KEY = "dashboard-scroll-pos";
 type ResumeListProps = {
   initialResumes: SerializedResume[];
   hasMoreInit: boolean;
-  /** Total resume count (for stats — passed separately so cache doesn't invalidate) */
+  initialStats: WorkspaceStats;
 };
 
 const sortModes: { value: SortMode; label: string }[] = [
@@ -88,7 +91,7 @@ async function fetchResumesPage(page: number): Promise<PaginatedResponse> {
   return res.json();
 }
 
-export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
+export function ResumeList({ initialResumes, hasMoreInit, initialStats }: ResumeListProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("updated");
   const [filter, setFilter] = useState<FilterMode>("all");
@@ -117,14 +120,25 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     // Seed cache with SSR data so first render is instant
     initialData: {
-      pages: [{ resumes: initialResumes, pagination: { page: 1, limit: PAGE_SIZE, total: 0, hasMore: hasMoreInit } }],
+      pages: [
+        {
+          resumes: initialResumes,
+          pagination: {
+            page: 1,
+            limit: PAGE_SIZE,
+            total: initialStats.totalResumes,
+            hasMore: hasMoreInit,
+          },
+          stats: initialStats,
+        },
+      ],
       pageParams: [1],
     },
   });
