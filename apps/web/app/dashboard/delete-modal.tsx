@@ -114,16 +114,21 @@ export function DeleteResumeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/35 p-4 backdrop-blur-sm sm:p-6">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/35 p-4 backdrop-blur-sm sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-title"
+    >
       <div
         className="relative z-[110] w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-red-100 text-red-600">
-            <Trash2 size={18} />
+            <Trash2 size={18} aria-hidden="true" />
           </div>
-          <h2 className="font-signal text-2xl font-black tracking-[-0.06em] text-[#123c3a]">
+          <h2 id="delete-title" className="font-signal text-2xl font-black tracking-[-0.06em] text-[#123c3a]">
             Delete resume?
           </h2>
         </div>

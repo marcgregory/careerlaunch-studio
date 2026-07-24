@@ -138,21 +138,21 @@ function ResumeCardInner({
             {targetRole}
           </h2>
         ) : (
-          <h2 className="font-signal mt-2 truncate text-2xl font-black leading-tight tracking-[-0.06em] text-[#4b4b4b]/60">
+          <h2 className="font-signal mt-2 truncate text-2xl font-black leading-tight tracking-[-0.06em] text-[#3d3d3d]">
             General Resume
           </h2>
         )}
 
         {/* Resume title (secondary) */}
         <p
-          className="mt-1 truncate text-sm font-semibold text-[#4b4b4b]/70"
+          className="mt-1 truncate text-sm font-semibold text-[#3d3d3d]"
           title={title}
         >
           {title}
         </p>
 
         {/* Updated timestamp */}
-        <p className="mt-1.5 text-xs font-medium text-[#4b4b4b]/50" suppressHydrationWarning>
+        <p className="mt-1.5 text-xs font-medium text-[#4b4b4b]/80" suppressHydrationWarning>
           {timeAgoLabel ? `Updated ${timeAgoLabel}` : ""}
         </p>
       </div>
@@ -169,8 +169,9 @@ function ResumeCardInner({
         <Link
           href={editHref}
           className={`${secondaryButtonClass} whitespace-nowrap`}
+          aria-label={`Edit resume: ${title}`}
         >
-          Edit Resume <ArrowRight size={16} />
+          Edit Resume <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
     </article>

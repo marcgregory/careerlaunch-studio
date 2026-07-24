@@ -90,14 +90,17 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm sm:p-6"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rename-title"
     >
       <div
         className="relative z-[110] w-full max-w-md rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_24px_70px_rgba(18,60,58,0.22)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-signal text-2xl font-black tracking-[-0.06em] text-[#123c3a]">
+        <h2 id="rename-title" className="font-signal text-2xl font-black tracking-[-0.06em] text-[#123c3a]">
           Rename resume
         </h2>
         <p className="mt-1 text-sm font-medium text-[#4b4b4b]">
@@ -114,7 +117,8 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
             }}
             autoFocus
             disabled={saving}
-            className="w-full rounded-[14px] border border-[#123c3a]/15 bg-white px-3 py-2.5 text-sm text-[#123c3a] shadow-sm outline-none transition placeholder:text-[#4b4b4b]/50 focus:border-[#6bbf22] focus:ring-4 focus:ring-[#b9ff66]/40 disabled:opacity-60"
+            aria-label="New resume title"
+            className="w-full rounded-[14px] border border-[#123c3a]/15 bg-white px-3 py-2.5 text-sm text-[#123c3a] shadow-sm outline-none transition placeholder:text-[#4b4b4b]/70 focus:border-[#3a7a1a] focus:ring-4 focus:ring-[#b9ff66]/40 disabled:opacity-60"
             placeholder="e.g. Google Frontend Application"
             maxLength={120}
           />

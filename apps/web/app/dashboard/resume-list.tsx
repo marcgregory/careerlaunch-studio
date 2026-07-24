@@ -514,30 +514,34 @@ function SearchBar({
     <div className="relative">
       <Search
         size={16}
-        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#4b4b4b]/40"
+        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#4b4b4b]/60"
+        aria-hidden="true"
       />
       <input
         type="text"
         value={search}
         onChange={onSearchChange}
         placeholder="Search resumes..."
-        className="w-full rounded-[14px] border border-[#123c3a]/15 bg-white py-2.5 pl-10 pr-10 text-sm text-[#123c3a] shadow-sm outline-none transition-colors placeholder:text-[#4b4b4b]/50 focus:border-[#6bbf22] focus:ring-4 focus:ring-[#b9ff66]/40"
+        aria-label="Search resumes"
+        className="w-full rounded-[14px] border border-[#123c3a]/15 bg-white py-2.5 pl-10 pr-10 text-sm text-[#123c3a] shadow-sm outline-none transition-colors placeholder:text-[#4b4b4b]/70 focus:border-[#3a7a1a] focus:ring-4 focus:ring-[#b9ff66]/40"
       />
       {search && (
         <button
           type="button"
           onClick={onSearchClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4b4b4b]/40 transition-colors hover:text-[#4b4b4b]"
+          aria-label="Clear search query"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4b4b4b]/60 transition-colors hover:text-[#123c3a]"
         >
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </button>
       )}
       <button
         type="button"
         onClick={onToggleFilters}
-        className={`absolute right-3 top-1/2 -translate-y-1/2 text-[#4b4b4b]/40 transition-colors hover:text-[#4b4b4b] ${search ? "right-10" : ""}`}
+        aria-label="Toggle search filters"
+        className={`absolute right-3 top-1/2 -translate-y-1/2 text-[#4b4b4b]/60 transition-colors hover:text-[#123c3a] ${search ? "right-10" : ""}`}
       >
-        <SlidersHorizontal size={16} />
+        <SlidersHorizontal size={16} aria-hidden="true" />
       </button>
     </div>
   );
