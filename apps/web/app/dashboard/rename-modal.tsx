@@ -55,9 +55,10 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
     setError(null);
 
     // ── Optimistic update ────────────────────────────────────────────────────
-    // Apply the new title to the cache immediately so the card updates while
-    // the network request is in flight — no visible delay for the user.
+    // Apply the new title to the cache and show toast immediately so the UI
+    // and status popup update instantly (0ms delay) while the network request runs.
     patchCachedTitle(trimmed);
+    toast.success("Resume renamed.");
     onClose();
     // ────────────────────────────────────────────────────────────────────────
 
@@ -72,8 +73,6 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? "Failed to save rename.");
       }
-
-      toast.success("Resume renamed.");
     } catch (err) {
       // ── Rollback ────────────────────────────────────────────────────────────
       // Server rejected the rename — restore the previous title in the cache.

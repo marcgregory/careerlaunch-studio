@@ -87,6 +87,7 @@ export function DeleteResumeModal({
       };
     });
 
+    toast.success("Resume deleted.");
     onClose();
     // ────────────────────────────────────────────────────────────────────────
 
@@ -98,8 +99,6 @@ export function DeleteResumeModal({
       if (!res.ok) {
         throw new Error("Server rejected deletion. The resume has been restored.");
       }
-
-      toast.success("Resume deleted.");
     } catch (err) {
       // ── Rollback ─────────────────────────────────────────────────────────
       // Re-insert the removed resume at its original position.
