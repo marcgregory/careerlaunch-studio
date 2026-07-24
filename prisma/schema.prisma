@@ -38,20 +38,25 @@ model AuthToken {
 }
 
 model ResumeDocument {
-  id           String          @id @default(cuid())
-  userId       String
-  title        String
-  targetRole   String?
-  body         Json
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  analysisRuns AnalysisRun[]
-  coverLetters CoverLetter[]
-  exports      ExportJob[]
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  versions     ResumeVersion[]
+  id              String          @id @default(cuid())
+  userId          String
+  title           String
+  targetRole      String?
+  body            Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  /// Client-generated UUID sent as Idempotency-Key header on POST /duplicate.
+  /// Allows the server to return the already-created copy on retry instead of
+  /// creating a second one. NULL for resumes not created via duplication.
+  idempotencyKey  String?
+  analysisRuns    AnalysisRun[]
+  coverLetters    CoverLetter[]
+  exports         ExportJob[]
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions        ResumeVersion[]
 
   @@index([userId, updatedAt])
+  @@unique([userId, idempotencyKey])
 }
 
 model ResumeVersion {

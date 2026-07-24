@@ -5,6 +5,8 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import type { ResumeCacheData, SerializedResume } from "./resume-actions";
 
+// ─── Cache helpers ────────────────────────────────────────────────────────────
+
 export function optimisticallyAddResume(
   queryClient: ReturnType<typeof useQueryClient>,
   resume: SerializedResume
@@ -19,10 +21,7 @@ export function optimisticallyAddResume(
           ? {
               ...p,
               resumes: [resume, ...p.resumes],
-              pagination: {
-                ...p.pagination,
-                total: p.pagination.total + 1,
-              },
+              pagination: { ...p.pagination, total: p.pagination.total + 1 },
             }
           : p
       ),
@@ -30,10 +29,54 @@ export function optimisticallyAddResume(
   });
 }
 
+function replaceOrRemoveOptimisticResume(
+  queryClient: ReturnType<typeof useQueryClient>,
+  optimisticId: string,
+  replacement: SerializedResume | null
+) {
+  queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      pages: old.pages.map((p, i) => {
+        if (i !== 0) return p;
+        if (replacement) {
+          return {
+            ...p,
+            resumes: p.resumes.map((r) =>
+              r.id === optimisticId ? replacement : r
+            ),
+          };
+        }
+        // null → rollback: remove the optimistic entry and decrement total
+        return {
+          ...p,
+          resumes: p.resumes.filter((r) => r.id !== optimisticId),
+          pagination: { ...p.pagination, total: Math.max(0, p.pagination.total - 1) },
+        };
+      }),
+    };
+  });
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+/**
+ * Idempotency key is generated once per user click and baked into mutation
+ * variables — NOT only context. This means "Duplicate Again" retries carry
+ * the same key, so the server can safely short-circuit a duplicate create.
+ */
+type DuplicateVariables = {
+  resume: SerializedResume;
+  idempotencyKey: string;
+};
+
 type DuplicateContext = {
   toastId: string | number;
-  resume: SerializedResume;
+  optimisticId: string;
 };
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useDuplicateResume() {
   const queryClient = useQueryClient();
@@ -41,13 +84,17 @@ export function useDuplicateResume() {
   const duplicateMutation = useMutation<
     SerializedResume,
     Error,
-    SerializedResume,
+    DuplicateVariables,
     DuplicateContext
   >({
     mutationKey: ["duplicateResume"],
-    mutationFn: async (resume: SerializedResume) => {
+
+    mutationFn: async ({ resume, idempotencyKey }: DuplicateVariables) => {
       const res = await fetch(`/api/resumes/${resume.id}/duplicate`, {
         method: "POST",
+        // The server uses this key to detect replays and return the already-
+        // created copy instead of creating a second resume.
+        headers: { "Idempotency-Key": idempotencyKey },
       });
 
       if (!res.ok) {
@@ -56,84 +103,99 @@ export function useDuplicateResume() {
       }
 
       const data = await res.json();
-      const duped: SerializedResume = {
+      return {
         id: data.resume.id,
         title: data.resume.title,
         targetRole: data.resume.targetRole ?? null,
         updatedAt: new Date().toISOString(),
         analysisRunCount: 0,
         exportCount: 0,
-      };
+      } satisfies SerializedResume;
+    },
 
-      return duped;
-    },
-    onMutate: (resume: SerializedResume) => {
+    // ── Optimistic insert on click, not on server response ──────────────────
+    onMutate: ({ resume, idempotencyKey }) => {
+      const optimisticId = `optimistic-${idempotencyKey}`;
+      const optimisticResume: SerializedResume = {
+        id: optimisticId,
+        title: `Copy of ${resume.title}`,
+        targetRole: resume.targetRole,
+        updatedAt: new Date().toISOString(),
+        analysisRunCount: 0,
+        exportCount: 0,
+      };
+      optimisticallyAddResume(queryClient, optimisticResume);
       const toastId = toast.loading(`Duplicating "${resume.title}"...`);
-      return { toastId, resume };
+      return { toastId, optimisticId };
     },
+
+    // ── Swap optimistic placeholder → real resume ────────────────────────────
     onSuccess: (dupedResume, _variables, context) => {
-      optimisticallyAddResume(queryClient, dupedResume);
+      if (context) {
+        replaceOrRemoveOptimisticResume(queryClient, context.optimisticId, dupedResume);
+      }
+      // Background revalidation keeps cache consistent with server state
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
 
-      if (context?.toastId) {
-        toast.success("Resume duplicated successfully.", {
-          id: context.toastId,
-        });
-      } else {
-        toast.success("Resume duplicated successfully.");
-      }
+      toast.success("Resume duplicated successfully.", {
+        id: context?.toastId,
+      });
     },
-    onError: (err, _variables, context) => {
-      const isCanceled =
-        err.name === "AbortError" ||
-        err.message.toLowerCase().includes("cancel") ||
-        err.message.toLowerCase().includes("aborted");
 
-      const resumeToRetry = context?.resume;
-      const actionButton = resumeToRetry
-        ? {
-            label: "Duplicate Again",
-            onClick: () => duplicateMutation.mutate(resumeToRetry),
-          }
-        : undefined;
-
-      const message = isCanceled
-        ? "Duplication was canceled because the operation was interrupted."
-        : err.message || "Failed to duplicate resume. Please try again.";
-
-      if (context?.toastId) {
-        toast.error(message, {
-          id: context.toastId,
-          action: actionButton,
-        });
-      } else {
-        toast.error(message, { action: actionButton });
+    // ── Roll back optimistic insert; offer safe retry ────────────────────────
+    onError: (err, variables, context) => {
+      // Remove the optimistic card so the list doesn't show a ghost entry
+      if (context) {
+        replaceOrRemoveOptimisticResume(queryClient, context.optimisticId, null);
       }
+
+      // "Duplicate Again" reuses the SAME idempotency key from variables.
+      // If the server actually succeeded (response was lost in transit), the
+      // server returns the already-created copy rather than creating a second.
+      const actionButton = {
+        label: "Duplicate Again",
+        onClick: () =>
+          duplicateMutation.mutate({
+            resume: variables.resume,
+            idempotencyKey: variables.idempotencyKey,
+          }),
+      };
+
+      toast.error(err.message || "Failed to duplicate resume. Please try again.", {
+        id: context?.toastId,
+        action: actionButton,
+      });
     },
   });
+
+  // ── Per-resume in-flight guard ─────────────────────────────────────────────
 
   const isAnyDuplicating = useIsMutating({ mutationKey: ["duplicateResume"] }) > 0;
 
   const isDuplicating = useCallback(
-    (resumeId: string) => {
-      // Check if there is an active mutation for this specific resume ID
-      return (
-        queryClient
-          .getMutationCache()
-          .findAll({ mutationKey: ["duplicateResume"], status: "pending" })
-          .some((m) => {
-            const vars = m.state.variables as SerializedResume | undefined;
-            return vars?.id === resumeId;
-          })
-      );
-    },
+    (resumeId: string) =>
+      queryClient
+        .getMutationCache()
+        .findAll({ mutationKey: ["duplicateResume"], status: "pending" })
+        .some((m) => {
+          const vars = m.state.variables as DuplicateVariables | undefined;
+          return vars?.resume.id === resumeId;
+        }),
     [queryClient]
   );
 
+  /**
+   * Trigger a duplicate. Generates a fresh idempotency key per click.
+   * If an in-flight duplicate for the same resume is already pending, this is
+   * a no-op — preventing accidental double-submits.
+   */
   const duplicate = useCallback(
     (resume: SerializedResume) => {
       if (isDuplicating(resume.id)) return;
-      duplicateMutation.mutate(resume);
+      duplicateMutation.mutate({
+        resume,
+        idempotencyKey: crypto.randomUUID(),
+      });
     },
     [duplicateMutation, isDuplicating]
   );
