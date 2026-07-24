@@ -240,8 +240,45 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
     return arr;
   }, [filtered, sort]);
 
-  // Group by recency
+  // Grouping logic depends on sort mode:
+  // - "updated": recency groups (Today, Yesterday, This Week, Earlier)
+  // - "alpha": alphabetical first letter groups (A, B, C, ...)
+  // - "oldest": chronological date groups (Earlier, This Week, Yesterday, Today)
   const groups = useMemo(() => {
+    if (sort === "alpha") {
+      const map = new Map<string, typeof sorted>();
+      for (const r of sorted) {
+        const firstChar = r.title.trim().charAt(0).toUpperCase() || "#";
+        const groupKey = /[A-Z]/.test(firstChar) ? firstChar : "#";
+        if (!map.has(groupKey)) map.set(groupKey, []);
+        map.get(groupKey)!.push(r);
+      }
+      const sortedKeys = Array.from(map.keys()).sort();
+      return sortedKeys.map((label) => ({
+        label,
+        items: map.get(label)!,
+      }));
+    }
+
+    if (sort === "oldest") {
+      const map = new Map<string, typeof sorted>();
+      for (const r of sorted) {
+        const group = getRecencyGroup(r.parsedDate);
+        if (!map.has(group)) map.set(group, []);
+        map.get(group)!.push(r);
+      }
+      const order = ["Earlier", "This Week", "Yesterday", "Today"];
+      const result: { label: string; items: typeof sorted }[] = [];
+      for (const label of order) {
+        const items = map.get(label);
+        if (items && items.length > 0) {
+          result.push({ label, items });
+        }
+      }
+      return result;
+    }
+
+    // Default "updated": Recently updated first (Today, Yesterday, This Week, Earlier)
     const map = new Map<string, typeof sorted>();
     for (const r of sorted) {
       const group = getRecencyGroup(r.parsedDate);
@@ -257,7 +294,7 @@ export function ResumeList({ initialResumes, hasMoreInit }: ResumeListProps) {
       }
     }
     return result;
-  }, [sorted]);
+  }, [sorted, sort]);
 
   const hasActiveFilters = search.trim().length > 0 || filter !== "all";
 
