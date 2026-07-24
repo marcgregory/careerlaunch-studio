@@ -72,7 +72,6 @@ type DuplicateVariables = {
 };
 
 type DuplicateContext = {
-  toastId: string | number;
   optimisticId: string;
 };
 

@@ -32,7 +32,7 @@ export async function POST(
 
   if (idempotencyKey) {
     try {
-      const existing = await prisma.resumeDocument.findFirst({
+      const existing = await (prisma.resumeDocument as any).findFirst({
         where: { userId: user.id, idempotencyKey },
       });
       if (existing) {
@@ -54,7 +54,7 @@ export async function POST(
 
   // Build create data; only include idempotencyKey if we have one so we don't
   // write a field that doesn't exist yet on older schemas.
-  const createData: Parameters<typeof prisma.resumeDocument.create>[0]["data"] = {
+  const createData: Record<string, unknown> = {
     userId: user.id,
     title: `Copy of ${original.title}`,
     targetRole: original.targetRole,
@@ -70,17 +70,17 @@ export async function POST(
   let duplicated;
   if (idempotencyKey) {
     try {
-      duplicated = await prisma.resumeDocument.create({
+      duplicated = await (prisma.resumeDocument as any).create({
         data: { ...createData, idempotencyKey },
       });
     } catch (e) {
       // If setting the key fails (column not migrated yet), fall back to a
       // plain create without the key.
       console.warn("[duplicate] could not store idempotencyKey — run prisma migrate deploy:", e instanceof Error ? e.message : e);
-      duplicated = await prisma.resumeDocument.create({ data: createData });
+      duplicated = await prisma.resumeDocument.create({ data: createData as any });
     }
   } else {
-    duplicated = await prisma.resumeDocument.create({ data: createData });
+    duplicated = await prisma.resumeDocument.create({ data: createData as any });
   }
 
   return Response.json(
