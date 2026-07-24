@@ -35,6 +35,9 @@ const categoryLabels: Record<SuggestionCategory, string> = {
 
 const severityOrder: SuggestionSeverity[] = ["critical", "major", "medium", "minor", "info"];
 
+import { useQueryClient } from "@tanstack/react-query";
+import { syncAnalysisInDashboardCache } from "./cache-utils";
+
 interface HealthDashboardProps {
   resumeId: string;
   /** Called when the user accepts a suggestion — maps it to operations and persists. */
@@ -46,6 +49,7 @@ interface HealthDashboardProps {
 
 export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboardProps) {
   const analytics = useAnalytics();
+  const queryClient = useQueryClient();
   const [analysis, setAnalysis] = useState<AnalysisState>({
     status: "idle",
     overallScore: null,
@@ -103,6 +107,8 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
         analyzedAt: data.result.analyzedAt ?? null,
         error: null,
       });
+      syncAnalysisInDashboardCache(queryClient, resumeId);
+      queryClient.invalidateQueries({ queryKey: ["resumes"], refetchType: "none" });
       toast.success(`Analysis complete — score: ${data.result.overallScore ?? 0}/100`);
     } catch (error) {
       setAnalysis((prev) => ({
@@ -112,7 +118,7 @@ export function HealthDashboard({ resumeId, onApplySuggestion }: HealthDashboard
       }));
       toast.error("Resume analysis failed. Please try again.");
     }
-  }, [analytics, resumeId]);
+  }, [analytics, queryClient, resumeId]);
 
   // ── Review handler — opens the diff modal ─────────────────────────
   function handleReview(id: string) {

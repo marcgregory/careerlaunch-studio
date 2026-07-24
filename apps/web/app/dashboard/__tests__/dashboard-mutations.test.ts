@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ResumeCacheData, SerializedResume } from "../resume-actions";
+import { syncAnalysisInDashboardCache } from "../../builder/_analysis/cache-utils";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -316,5 +317,73 @@ describe("WorkspaceStats derivation from cache", () => {
     const result = allResumes.length === 0 ? ssrFallback : deriveStats(emptyPages);
 
     expect(result).toEqual(ssrFallback);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Issue 5 — Analysis completion — cache synchronization
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe("Analysis completion — cache synchronization", () => {
+  function makeMockQueryClient(initialData: ResumeCacheData | undefined) {
+    let cache = initialData;
+    return {
+      getQueryData: vi.fn(() => cache),
+      setQueryData: vi.fn((_key: any, updater: any) => {
+        cache = typeof updater === "function" ? updater(cache) : updater;
+        return cache;
+      }),
+      getCache: () => cache,
+    };
+  }
+
+  it("increments analysisRunCount for target resume", () => {
+    const r1 = makeResume("r1", { analysisRunCount: 0 });
+    const cacheData = makeCacheData([r1]);
+    const qc = makeMockQueryClient(cacheData);
+
+    syncAnalysisInDashboardCache(qc as any, "r1");
+
+    const updated = qc.getCache();
+    expect(updated?.pages[0].resumes[0].analysisRunCount).toBe(1);
+  });
+
+  it("increments workspaceStats.analyzedCount when transitioning from 0 to 1 analysis runs", () => {
+    const r1 = makeResume("r1", { analysisRunCount: 0 });
+    const cacheData = makeCacheData([r1]);
+    cacheData.pages[0].stats = { totalResumes: 1, targetedCount: 0, analyzedCount: 0, exportCount: 0 };
+    const qc = makeMockQueryClient(cacheData);
+
+    syncAnalysisInDashboardCache(qc as any, "r1");
+
+    const updated = qc.getCache();
+    expect(updated?.pages[0].resumes[0].analysisRunCount).toBe(1);
+    expect(updated?.pages[0].stats?.analyzedCount).toBe(1);
+  });
+
+  it("does not increment workspaceStats.analyzedCount if resume was already analyzed", () => {
+    const r1 = makeResume("r1", { analysisRunCount: 1 });
+    const cacheData = makeCacheData([r1]);
+    cacheData.pages[0].stats = { totalResumes: 1, targetedCount: 0, analyzedCount: 1, exportCount: 0 };
+    const qc = makeMockQueryClient(cacheData);
+
+    syncAnalysisInDashboardCache(qc as any, "r1");
+
+    const updated = qc.getCache();
+    expect(updated?.pages[0].resumes[0].analysisRunCount).toBe(2);
+    expect(updated?.pages[0].stats?.analyzedCount).toBe(1);
+  });
+
+  it("does not affect other resumes in the query cache", () => {
+    const r1 = makeResume("r1", { analysisRunCount: 0 });
+    const r2 = makeResume("r2", { analysisRunCount: 0 });
+    const cacheData = makeCacheData([r1, r2]);
+    const qc = makeMockQueryClient(cacheData);
+
+    syncAnalysisInDashboardCache(qc as any, "r1");
+
+    const updated = qc.getCache();
+    expect(updated?.pages[0].resumes[0].analysisRunCount).toBe(1);
+    expect(updated?.pages[0].resumes[1].analysisRunCount).toBe(0);
   });
 });

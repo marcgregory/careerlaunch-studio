@@ -25,6 +25,8 @@ import { ConfidenceBar } from "../../../components/confidence-bar";
 import { createOperations } from "@careerlaunch/ai";
 import { useAnalytics } from "../../../lib/analytics";
 import type { Suggestion, ApplyOperation } from "@careerlaunch/ai";
+import { useQueryClient } from "@tanstack/react-query";
+import { syncAnalysisInDashboardCache } from "./cache-utils";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -81,6 +83,7 @@ function scoreBg(score: number | null): string {
 
 export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelProps) {
   const analytics = useAnalytics();
+  const queryClient = useQueryClient();
   const [jobDescription, setJobDescription] = useState("");
   const [tailor, setTailor] = useState<TailorState>({
     status: "idle",
@@ -193,6 +196,8 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
         skillSuggestions: skillSugs.map((s: any) => ({ ...s, status: "pending" as const })),
         error: null,
       });
+      syncAnalysisInDashboardCache(queryClient, resumeId);
+      queryClient.invalidateQueries({ queryKey: ["resumes"], refetchType: "none" });
       toast.success(`Tailoring complete. ${totalSugCount} suggestion${totalSugCount !== 1 ? "s" : ""} found.`);
     } catch (error) {
       setTailor((prev) => ({
@@ -202,7 +207,7 @@ export function TailoringPanel({ resumeId, onApplySuggestion }: TailoringPanelPr
       }));
       toast.error("Tailoring analysis failed. Please try again.");
     }
-  }, [resumeId, jobDescription, analytics]);
+  }, [resumeId, jobDescription, analytics, queryClient]);
 
   // ── Review handler — opens the diff modal ──────────────────────────
   function handleReview(suggestion: TailorSuggestionState) {

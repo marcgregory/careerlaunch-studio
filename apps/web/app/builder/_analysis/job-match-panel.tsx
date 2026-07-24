@@ -17,6 +17,8 @@ import { SuggestionFeedback } from "../../../components/suggestion-feedback";
 import { createOperations } from "@careerlaunch/ai";
 import { useAnalytics } from "../../../lib/analytics";
 import type { Suggestion, ApplyOperation } from "@careerlaunch/ai";
+import { useQueryClient } from "@tanstack/react-query";
+import { syncAnalysisInDashboardCache } from "./cache-utils";
 
 interface MatchState {
   status: "idle" | "loading" | "success" | "error";
@@ -42,6 +44,7 @@ interface JobMatchPanelProps {
 
 export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProps) {
   const analytics = useAnalytics();
+  const queryClient = useQueryClient();
   const [jobDescription, setJobDescription] = useState("");
   const [match, setMatch] = useState<MatchState>({
     status: "idle",
@@ -114,6 +117,8 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
         initial[s.id] = "pending";
       }
       setSuggestionStatuses(initial);
+      syncAnalysisInDashboardCache(queryClient, resumeId);
+      queryClient.invalidateQueries({ queryKey: ["resumes"], refetchType: "none" });
       toast.success("Job match analysis complete.");
     } catch (error) {
       setMatch((prev) => ({
@@ -123,7 +128,7 @@ export function JobMatchPanel({ resumeId, onApplySuggestion }: JobMatchPanelProp
       }));
       toast.error("Job match analysis failed.");
     }
-  }, [analytics, resumeId, jobDescription]);
+  }, [analytics, resumeId, jobDescription, queryClient]);
 
   // ── Review handler — opens the diff modal ─────────────────────────
   function handleReview(id: string) {
