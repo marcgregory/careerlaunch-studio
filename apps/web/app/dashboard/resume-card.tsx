@@ -131,17 +131,23 @@ function ResumeCardInner({
 
         {/* Target role (primary) */}
         {targetRole ? (
-          <h2 className="font-signal mt-2 text-2xl font-black leading-none tracking-[-0.06em] text-[#123c3a]">
+          <h2
+            className="font-signal mt-2 truncate text-2xl font-black leading-tight tracking-[-0.06em] text-[#123c3a]"
+            title={targetRole}
+          >
             {targetRole}
           </h2>
         ) : (
-          <h2 className="font-signal mt-2 text-2xl font-black leading-none tracking-[-0.06em] text-[#4b4b4b]/60">
+          <h2 className="font-signal mt-2 truncate text-2xl font-black leading-tight tracking-[-0.06em] text-[#4b4b4b]/60">
             General Resume
           </h2>
         )}
 
         {/* Resume title (secondary) */}
-        <p className="mt-1 truncate text-sm font-semibold text-[#4b4b4b]/70">
+        <p
+          className="mt-1 truncate text-sm font-semibold text-[#4b4b4b]/70"
+          title={title}
+        >
           {title}
         </p>
 
