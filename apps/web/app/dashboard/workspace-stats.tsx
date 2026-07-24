@@ -1,23 +1,24 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, CreditCard, FileText, Gauge, Layers3, Sparkles, Target } from "lucide-react";
+import { useWorkspaceStats, type WorkspaceStats as WorkspaceStatsValues } from "../../hooks/use-workspace-stats";
 
 type WorkspaceStatsProps = {
-  totalResumes: number;
-  targetedCount: number;
-  analyzedCount: number;
-  exportCount: number;
+  /** SSR-computed initial values — used until the TanStack cache has data. */
+  initialStats: WorkspaceStatsValues;
   isFree: boolean;
   planName?: string;
 };
 
 export function WorkspaceStats({
-  totalResumes,
-  targetedCount,
-  analyzedCount,
-  exportCount,
+  initialStats,
   isFree,
   planName = "Free",
 }: WorkspaceStatsProps) {
+  // Reactively derived from the ["resumes"] cache — no extra fetch.
+  const stats = useWorkspaceStats(initialStats);
+
   return (
     <aside className="rounded-[28px] border border-[#123c3a] bg-[#123c3a] p-5 text-white shadow-[0_24px_70px_rgba(18,60,58,0.22)] lg:sticky lg:top-[84px] lg:self-start xl:p-6">
       {/* Header */}
@@ -38,22 +39,22 @@ export function WorkspaceStats({
       <div className="mt-5 grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
           <FileText size={18} className="text-[#b9ff66]" />
-          <p className="mt-2 text-2xl font-black">{totalResumes}</p>
+          <p className="mt-2 text-2xl font-black">{stats.totalResumes}</p>
           <p className="text-xs font-medium text-white/50">Total</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
           <Target size={18} className="text-[#b9ff66]" />
-          <p className="mt-2 text-2xl font-black">{targetedCount}</p>
+          <p className="mt-2 text-2xl font-black">{stats.targetedCount}</p>
           <p className="text-xs font-medium text-white/50">Targeted</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
           <Gauge size={18} className="text-[#b9ff66]" />
-          <p className="mt-2 text-2xl font-black">{analyzedCount}</p>
+          <p className="mt-2 text-2xl font-black">{stats.analyzedCount}</p>
           <p className="text-xs font-medium text-white/50">Analyzed</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
           <CreditCard size={18} className="text-[#b9ff66]" />
-          <p className="mt-2 text-2xl font-black">{exportCount}</p>
+          <p className="mt-2 text-2xl font-black">{stats.exportCount}</p>
           <p className="text-xs font-medium text-white/50">Exports</p>
         </div>
       </div>
@@ -91,7 +92,7 @@ export function WorkspaceStats({
       <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#b9ff66] px-4 py-3 text-[#123c3a]">
         <FileText size={22} />
         <p className="text-sm font-black leading-5">
-          {totalResumes} resume{totalResumes !== 1 ? "s" : ""} in your workspace.
+          {stats.totalResumes} resume{stats.totalResumes !== 1 ? "s" : ""} in your workspace.
         </p>
       </div>
 

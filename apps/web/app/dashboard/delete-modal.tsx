@@ -6,7 +6,7 @@ const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayout
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import type { ResumeCacheData } from "./resume-actions";
+import type { ResumeCacheData, SerializedResume } from "./resume-actions";
 
 type DeleteResumeModalProps = {
   resumeId: string;
@@ -44,7 +44,33 @@ export function DeleteResumeModal({
     setDeleting(true);
     setError(null);
 
-    // Optimistic remove from cache
+    // ── Snapshot the current cache state for rollback ───────────────────────
+    // Capture both the full cache snapshot and the specific resume being removed
+    // so we can restore the exact list state if the server rejects the deletion.
+    const previousData = queryClient.getQueryData<ResumeCacheData>(["resumes"]);
+
+    // Find the resume and its position within its page so we can re-insert it
+    // at the correct index if we need to roll back.
+    let removedResume: SerializedResume | null = null;
+    let removedPageIndex = 0;
+    let removedItemIndex = 0;
+
+    if (previousData) {
+      outer: for (let pi = 0; pi < previousData.pages.length; pi++) {
+        const page = previousData.pages[pi];
+        for (let ri = 0; ri < page.resumes.length; ri++) {
+          if (page.resumes[ri].id === resumeId) {
+            removedResume = page.resumes[ri];
+            removedPageIndex = pi;
+            removedItemIndex = ri;
+            break outer;
+          }
+        }
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ── Optimistic remove ────────────────────────────────────────────────────
     queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
       if (!old) return old;
       return {
@@ -53,24 +79,64 @@ export function DeleteResumeModal({
         pages: old.pages.map((p) => ({
           ...p,
           resumes: p.resumes.filter((r) => r.id !== resumeId),
+          pagination: {
+            ...p.pagination,
+            total: Math.max(0, p.pagination.total - 1),
+          },
         })),
       };
     });
 
-    toast.success("Resume deleted.");
     onClose();
+    // ────────────────────────────────────────────────────────────────────────
+
+    const toastId = toast.loading(`Deleting "${resumeTitle}"...`);
 
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
         method: "DELETE",
       });
+
       if (!res.ok) {
-        toast.error("Failed to delete from server. Reverting...");
+        throw new Error("Server rejected deletion. The resume has been restored.");
       }
-      // Background revalidate
+
+      toast.success("Resume deleted.", { id: toastId });
+      // Background revalidation to sync total counts and page boundaries
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
-    } catch {
-      toast.error("Failed to delete from server");
+    } catch (err) {
+      // ── Rollback ─────────────────────────────────────────────────────────
+      // Re-insert the removed resume at its original position.
+      // Using the full snapshot is the safest approach — it handles edge cases
+      // like concurrent mutations that may have also updated the cache.
+      if (previousData) {
+        queryClient.setQueryData<ResumeCacheData>(["resumes"], previousData);
+      } else if (removedResume) {
+        // Fallback: splice back into the current (possibly mutated) cache
+        queryClient.setQueryData<ResumeCacheData>(["resumes"], (current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            pages: current.pages.map((p, pi) => {
+              if (pi !== removedPageIndex || !removedResume) return p;
+              const resumes = [...p.resumes];
+              resumes.splice(removedItemIndex, 0, removedResume);
+              return {
+                ...p,
+                resumes,
+                pagination: { ...p.pagination, total: p.pagination.total + 1 },
+              };
+            }),
+          };
+        });
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete resume.",
+        { id: toastId },
+      );
+
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
     } finally {
       setDeleting(false);

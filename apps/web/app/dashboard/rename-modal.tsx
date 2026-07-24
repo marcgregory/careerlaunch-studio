@@ -22,7 +22,8 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
   const resumeId = resume?.id ?? "";
   const currentTitle = resume?.title ?? "";
 
-  function updateCachedTitle(nextTitle: string) {
+  /** Write a title into every page of the ["resumes"] infinite cache. */
+  function patchCachedTitle(nextTitle: string) {
     queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
       if (!old) return old;
       return {
@@ -53,6 +54,15 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
     setSaving(true);
     setError(null);
 
+    // ── Optimistic update ────────────────────────────────────────────────────
+    // Apply the new title to the cache immediately so the card updates while
+    // the network request is in flight — no visible delay for the user.
+    patchCachedTitle(trimmed);
+    onClose();
+    // ────────────────────────────────────────────────────────────────────────
+
+    const toastId = toast.loading("Renaming resume...");
+
     try {
       const res = await fetch(`/api/resumes/${resumeId}`, {
         method: "PATCH",
@@ -65,11 +75,16 @@ export function RenameModal({ open, resume, onClose }: RenameModalProps) {
         throw new Error(body?.error ?? "Failed to save rename.");
       }
 
-      updateCachedTitle(trimmed);
-      toast.success("Resume renamed.");
-      onClose();
+      toast.success("Resume renamed.", { id: toastId });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save rename.");
+      // ── Rollback ────────────────────────────────────────────────────────────
+      // Server rejected the rename — restore the previous title in the cache.
+      patchCachedTitle(currentTitle);
+      // ───────────────────────────────────────────────────────────────────────
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save rename.",
+        { id: toastId },
+      );
     } finally {
       setSaving(false);
     }

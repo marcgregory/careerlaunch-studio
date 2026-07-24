@@ -147,10 +147,12 @@ export default async function DashboardPage() {
 
           {/* Workspace sidebar — sticky on desktop */}
           <WorkspaceStats
-            totalResumes={totalResumeCount}
-            targetedCount={targetedCount}
-            analyzedCount={analyzedCount}
-            exportCount={exportCount}
+            initialStats={{
+              totalResumes: totalResumeCount,
+              targetedCount,
+              analyzedCount,
+              exportCount,
+            }}
             isFree={isFree}
             planName={planLabel}
           />
