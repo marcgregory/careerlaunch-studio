@@ -77,47 +77,47 @@ function RegisterForm() {
 
         <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_28px_70px_rgba(18,60,58,0.12)] sm:p-8">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
-            <PenLine size={24} />
+            <PenLine size={24} aria-hidden="true" />
           </div>
-          <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#6bbf22]">New workspace</p>
-          <h1 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">Create account</h1>
+          <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#3a7a1a]">New workspace</p>
+          <h2 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">Create account</h2>
           {(serverError || errors.root) && (
             <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
               {errors.root?.message || serverError}
             </p>
           )}
           <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-5" noValidate>
-            <label className="block">
+            <label className="block" htmlFor="register-name">
               <span className="text-sm font-black text-[#4b4b4b]">Name</span>
               <input
                 {...register("name")}
-                className={`signal-input mt-2 ${errors.name ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                 id="register-name"
+                className={`signal-input mt-2 ${errors.name ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
               />
               {errors.name && <p className="mt-1 text-xs font-black text-red-700">{errors.name.message}</p>}
             </label>
-            <label className="block">
+            <label className="block" htmlFor="register-email">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
               <input
                 {...register("email")}
                 type="email"
-                className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                 id="register-email"
+                className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
               />
               {errors.email && <p className="mt-1 text-xs font-black text-red-700">{errors.email.message}</p>}
             </label>
-            <label className="block">
+            <label className="block" htmlFor="register-password">
               <span className="text-sm font-black text-[#4b4b4b]">Password</span>
               <input
                 {...register("password")}
                 type="password"
-                className={`signal-input mt-2 ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                 id="register-password"
+                className={`signal-input mt-2 ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
               />
               {errors.password && <p className="mt-1 text-xs font-black text-red-700">{errors.password.message}</p>}
             </label>
             <button className="signal-button-dark w-full justify-center" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <ArrowRight size={18} aria-hidden="true" />}
               {isSubmitting ? "Creating account..." : "Create account"}
             </button>
           </form>

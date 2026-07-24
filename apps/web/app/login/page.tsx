@@ -89,14 +89,14 @@ function LoginForm() {
 
         <section className="rounded-[28px] border border-[#123c3a]/10 bg-white p-6 shadow-[0_28px_70px_rgba(18,60,58,0.12)] sm:p-8">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-[#b9ff66] text-[#123c3a]">
-            <LockKeyhole size={24} />
+            <LockKeyhole size={24} aria-hidden="true" />
           </div>
-          <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#6bbf22]">
+          <p className="mt-7 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#3a7a1a]">
             Secure workspace
           </p>
-          <h1 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">
+          <h2 className="font-signal mt-3 text-5xl font-black uppercase leading-none tracking-[-0.07em]">
             Sign in
-          </h1>
+          </h2>
           {resetSuccess && (
             <p
               className="mt-5 rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-bold text-green-700"
@@ -134,13 +134,13 @@ function LoginForm() {
             className="mt-7 space-y-5"
             noValidate
           >
-            <label className="block">
+            <label className="block" htmlFor="login-email">
               <span className="text-sm font-black text-[#4b4b4b]">Email</span>
               <input
                 {...register("email")}
                 type="email"
-                className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                 id="login-email"
+                className={`signal-input mt-2 ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
               />
               {errors.email && (
                 <p className="mt-1 text-xs font-black text-red-700">
@@ -148,15 +148,15 @@ function LoginForm() {
                 </p>
               )}
             </label>
-            <label className="block">
+            <label className="block" htmlFor="login-password">
               <span className="text-sm font-black text-[#4b4b4b]">
                 Password
               </span>
               <input
                 {...register("password")}
                 type="password"
-                className={`signal-input mt-2 ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                 id="login-password"
+                className={`signal-input mt-2 ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
               />
               {errors.password && (
                 <p className="mt-1 text-xs font-black text-red-700">
@@ -178,9 +178,9 @@ function LoginForm() {
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={18} className="animate-spin" aria-hidden="true" />
               ) : (
-                <ArrowRight size={18} />
+                <ArrowRight size={18} aria-hidden="true" />
               )}
               {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
