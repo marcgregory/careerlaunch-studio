@@ -40,6 +40,11 @@ export function ResumeActions({
   const { duplicate, isDuplicating } = useDuplicateResume();
   const isCurrentlyDuplicating = isDuplicating(resume.id);
 
+  // Optimistic cards (id starts with "optimistic-") haven't been committed
+  // to the server yet. Rename/Delete must be blocked until the real ID arrives,
+  // otherwise those API calls hit /api/resumes/optimistic-xxxx → 404.
+  const isOptimistic = resume.id.startsWith("optimistic-");
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleRenameSelect = useCallback(() => {
@@ -88,7 +93,7 @@ export function ResumeActions({
       const filename =
         res.headers
           .get("Content-Disposition")
-          ?.match(/filename="?(.+?)"?\s*$/)?.[1]
+          ?.match(/filename="?(.+?)"\s*$/)?.[1]
           ?.replace(/^"|"$/g, "") ?? `${resume.title.replace(/[^a-z0-9]/gi, "-")}.pdf`;
 
       const url = URL.createObjectURL(blob);
@@ -120,19 +125,24 @@ export function ResumeActions({
           avoidCollisions
           className="z-[999] min-w-[180px] origin-top-right animate-[fadeIn_0.1s_ease-out] rounded-2xl border border-[#123c3a]/10 bg-white p-1.5 shadow-[0_12px_40px_rgba(18,60,58,0.18)]"
         >
+          {/* Rename — disabled while this card is still an optimistic placeholder */}
           <DropdownMenu.Item
             onSelect={handleRenameSelect}
-            disabled={isLoading}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            disabled={isLoading || isOptimistic}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Edit3 size={15} className="text-[#4b4b4b]" />
-            Rename
+            {isOptimistic ? (
+              <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
+            ) : (
+              <Edit3 size={15} className="text-[#4b4b4b]" />
+            )}
+            {isOptimistic ? "Saving…" : "Rename"}
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
             onSelect={handleDuplicate}
-            disabled={isLoading}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            disabled={isLoading || isOptimistic}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isCurrentlyDuplicating || actionLoading === "duplicate" ? (
               <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
@@ -144,8 +154,8 @@ export function ResumeActions({
 
           <DropdownMenu.Item
             onSelect={handleExport}
-            disabled={isLoading}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:opacity-40"
+            disabled={isLoading || isOptimistic}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {actionLoading === "export" ? (
               <>
@@ -162,10 +172,11 @@ export function ResumeActions({
 
           <DropdownMenu.Separator className="my-1 h-px bg-[#123c3a]/8" />
 
+          {/* Delete — disabled while this card is still an optimistic placeholder */}
           <DropdownMenu.Item
             onSelect={handleDeleteSelect}
-            disabled={isLoading}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:opacity-40"
+            disabled={isLoading || isOptimistic}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 outline-none transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Trash2 size={15} />
             Delete
@@ -175,6 +186,7 @@ export function ResumeActions({
     );
   }, [
     actionLoading,
+    isOptimistic,
     isCurrentlyDuplicating,
     handleRenameSelect,
     handleDuplicate,
@@ -189,10 +201,10 @@ export function ResumeActions({
           <button
             type="button"
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-            title="More actions"
-            aria-label="More actions"
+            title={isOptimistic ? "Saving duplicate…" : "More actions"}
+            aria-label={isOptimistic ? "Saving duplicate…" : "More actions"}
           >
-            {isCurrentlyDuplicating || actionLoading === "duplicate" || actionLoading === "export" ? (
+            {isOptimistic || isCurrentlyDuplicating || actionLoading === "duplicate" || actionLoading === "export" ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <EllipsisVertical size={16} />
