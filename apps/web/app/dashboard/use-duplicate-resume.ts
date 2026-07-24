@@ -125,10 +125,8 @@ export function useDuplicateResume() {
         exportCount: 0,
       };
       optimisticallyAddResume(queryClient, optimisticResume);
-      const displayTitle =
-        resume.title.length > 30 ? `${resume.title.slice(0, 30)}...` : resume.title;
-      const toastId = toast.loading(`Duplicating "${displayTitle}"...`);
-      return { toastId, optimisticId };
+      toast.success("Resume duplicated.");
+      return { optimisticId };
     },
 
     // ── Swap optimistic placeholder → real resume ────────────────────────────
@@ -136,12 +134,6 @@ export function useDuplicateResume() {
       if (context) {
         replaceOrRemoveOptimisticResume(queryClient, context.optimisticId, dupedResume);
       }
-      // Background revalidation keeps cache consistent with server state
-      queryClient.invalidateQueries({ queryKey: ["resumes"] });
-
-      toast.success("Resume duplicated successfully.", {
-        id: context?.toastId,
-      });
     },
 
     // ── Roll back optimistic insert; offer safe retry ────────────────────────
@@ -164,7 +156,6 @@ export function useDuplicateResume() {
       };
 
       toast.error(err.message || "Failed to duplicate resume. Please try again.", {
-        id: context?.toastId,
         action: actionButton,
       });
     },
