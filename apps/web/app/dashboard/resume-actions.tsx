@@ -114,7 +114,10 @@ export function ResumeActions({
   }, [resume.id, resume.title, onMenuOpenChange]);
 
   const menuContent = useMemo(() => {
-    const isLoading = actionLoading !== null || isCurrentlyDuplicating;
+    // Only block menu actions when this card itself has a pending export/action.
+    // isCurrentlyDuplicating (source card in flight) is intentionally excluded:
+    // it only needs to block the Duplicate item itself, not the whole menu.
+    const isLoading = actionLoading !== null;
     return (
       <DropdownMenu.Portal>
         <DropdownMenu.Content
@@ -141,10 +144,10 @@ export function ResumeActions({
 
           <DropdownMenu.Item
             onSelect={handleDuplicate}
-            disabled={isLoading || isOptimistic}
+            disabled={isLoading || isOptimistic || isCurrentlyDuplicating}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[#123c3a] outline-none transition hover:bg-[#f3f3f3] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isCurrentlyDuplicating || actionLoading === "duplicate" ? (
+            {isCurrentlyDuplicating ? (
               <Loader2 size={15} className="animate-spin text-[#4b4b4b]" />
             ) : (
               <Copy size={15} className="text-[#4b4b4b]" />
@@ -204,7 +207,7 @@ export function ResumeActions({
             title={isOptimistic ? "Saving duplicate…" : "More actions"}
             aria-label={isOptimistic ? "Saving duplicate…" : "More actions"}
           >
-            {isOptimistic || isCurrentlyDuplicating || actionLoading === "duplicate" || actionLoading === "export" ? (
+            {isOptimistic || actionLoading === "export" ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <EllipsisVertical size={16} />
