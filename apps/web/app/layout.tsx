@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AnalyticsProvider } from "../lib/analytics";
 import { QueryProvider } from "../lib/query-provider";
+import { NavigationOverlayProvider } from "../lib/navigation-overlay";
 import { Toaster } from "sonner";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://careerlaunch-studio.vercel.app";
@@ -82,8 +83,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <QueryProvider>
           <AnalyticsProvider>
-            {children}
-            <Toaster position="bottom-center" richColors closeButton />
+            <NavigationOverlayProvider>
+              {children}
+              <Toaster position="bottom-center" richColors closeButton />
+            </NavigationOverlayProvider>
           </AnalyticsProvider>
         </QueryProvider>
       </body>
