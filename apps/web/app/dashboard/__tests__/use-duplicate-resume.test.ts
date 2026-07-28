@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SerializedResume } from "../resume-actions";
-import { optimisticallyAddResume } from "../use-duplicate-resume";
+import { optimisticallyAddResume, parseDuplicateError } from "../use-duplicate-resume";
 import type { ResumeCacheData } from "../resume-actions";
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -277,7 +277,7 @@ describe("in-flight guard", () => {
 
 describe("fetch sends Idempotency-Key header", () => {
   it("request includes Idempotency-Key header with the UUID", async () => {
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = vi.fn(async (..._args: unknown[]) => ({
       ok: true,
       json: async () => ({ resume: makeResume("server-id") }),
     }));
@@ -296,5 +296,54 @@ describe("fetch sends Idempotency-Key header", () => {
         headers: expect.objectContaining({ "Idempotency-Key": key }),
       })
     );
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// parseDuplicateError — 403 RESUME_LIMIT response contract
+// ──────────────────────────────────────────────────────────────────────────────
+//
+// The server's 403 response shape is { error, feature: "resume_limit",
+// upgradeUrl: "/billing" }. parseDuplicateError must lift `upgradeUrl` onto
+// the thrown Error so onError can render an "Upgrade" action button instead
+// of a "Duplicate Again" retry button (which would just 403 again).
+
+describe("parseDuplicateError (403 resume limit)", () => {
+  it("attaches upgradeUrl from a 403 resume_limit body", async () => {
+    const res = new Response(
+      JSON.stringify({
+        error: "This feature requires a paid plan.",
+        feature: "resume_limit",
+        upgradeUrl: "/billing",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } },
+    );
+
+    const err = await parseDuplicateError(res, "Failed to duplicate resume");
+
+    expect(err).toBeInstanceOf(Error);
+    expect(err.message).toBe("This feature requires a paid plan.");
+    expect(err.upgradeUrl).toBe("/billing");
+  });
+
+  it("falls back to the default message when the body cannot be parsed", async () => {
+    const res = new Response("not json", { status: 500 });
+
+    const err = await parseDuplicateError(res, "Failed to duplicate resume");
+
+    expect(err.message).toBe("Failed to duplicate resume");
+    expect(err.upgradeUrl).toBeUndefined();
+  });
+
+  it("does not attach upgradeUrl when the body omits it (non-entitlement failure)", async () => {
+    const res = new Response(
+      JSON.stringify({ error: "Database unavailable" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+
+    const err = await parseDuplicateError(res, "Failed to duplicate resume");
+
+    expect(err.message).toBe("Database unavailable");
+    expect(err.upgradeUrl).toBeUndefined();
   });
 });

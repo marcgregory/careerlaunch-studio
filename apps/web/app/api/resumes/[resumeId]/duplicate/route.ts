@@ -1,6 +1,7 @@
 import { prisma } from "../../../../../lib/prisma";
 import { requireApiUser } from "../../../../../lib/auth";
 import { fromStoredResume, toStoredResume } from "../../../../../lib/resume-store";
+import { requireEntitlement, FeatureKeys } from "../../../../../lib/entitlements";
 
 export async function POST(
   request: Request,
@@ -8,6 +9,23 @@ export async function POST(
 ) {
   const { user, response } = await requireApiUser();
   if (response) return response;
+
+  // ── Entitlement gate ────────────────────────────────────────────────────────
+  // Duplicate creates a new ResumeDocument, so it counts against
+  // RESUME_LIMIT just like POST /api/resumes. Without this check, a free
+  // user at the cap could bypass the plan by clicking "Duplicate".
+  //
+  // NOTE: can(RESUME_LIMIT) does a non-transactional count — a user at
+  // limit-1 firing two duplicate requests in parallel can briefly end up
+  // at limit+1. The same race exists in POST /api/resumes and is tracked
+  // separately; do not block this fix on it.
+  //
+  // Gate runs before findFirst (the count inside can() already issues a DB
+  // read, so doing another findFirst first would be wasted work), before
+  // the idempotency lookup (returning an already-created copy when the user
+  // is at limit would be confusing UX), and before create.
+  const entitlementGate = await requireEntitlement(user.id, FeatureKeys.RESUME_LIMIT);
+  if (entitlementGate) return entitlementGate;
 
   const { resumeId } = await context.params;
 
