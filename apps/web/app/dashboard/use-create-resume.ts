@@ -8,10 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
-import type { ResumeCacheData, SerializedResume } from "./resume-actions";
-import {
-  optimisticallyAddResume,
-} from "./use-duplicate-resume";
+import type { SerializedResume } from "./resume-actions";
 import {
   type CreateApiError,
   parseCreateError,
@@ -20,10 +17,6 @@ import {
 // Re-export so existing callers (`import { parseCreateError } from "./use-create-resume"`)
 // keep working without hunting for the new module.
 export { parseCreateError, type CreateApiError };
-
-// ─── Cache helpers ────────────────────────────────────────────────────────────
-// `optimisticallyAddResume` lives in use-duplicate-resume.ts — single source
-// of truth for the cache shape.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,50 +37,47 @@ type CreateContext = {};
 /**
  * `useCreateResume` — drives the dashboard "New resume" flow.
  *
- * Why there is NO optimistic insert:
+ * Why there is NO optimistic insert (and NO overlay):
  *
  *   Clicking "New resume" sends the user on a soft navigation to
  *   `/builder?resumeId=…`. The dashboard is unmounted within milliseconds
  *   of `router.push` firing — anything inserted into the dashboard cache
- *   before navigation is at best invisible and at worst races the
- *   destination's first paint (the source of the observed flicker).
+ *   before navigation is invisible, and the cache write races the route
+ *   segment unmount, which makes the dashboard appear to flicker into a
+ *   new state right before the builder segment takes over. Worse, the
+ *   transition window eats the brief loading.tsx skeleton on the
+ *   destination so the user sees no skeleton at all.
  *
  *   Create is gated by RESUME_LIMIT too, so we cannot know whether the
  *   server will accept the request until it actually responds. We wait
- *   for server confirmation, then insert the real resume into the cache
- *   so a subsequent return-to-dashboard is instant.
- *
- * Why there is NO overlay / loading popup:
- *
- *   The mutation has only two terminal paths, both of which transition
- *   the user away from the dashboard:
- *
- *     • 201 success → router.push("/builder?resumeId=…") in onSuccess.
- *       The destination's `loading.tsx` skeleton IS the loading state.
- *     • 403 RESUME_LIMIT → window.location.href = upgradeUrl in onError.
- *       The user is sent straight to /billing.
+ *   for server confirmation, then navigate. The "back to dashboard shows
+ *   the new resume" UX benefit is preserved by onSettled →
+ *   invalidateQueries(["resumes"]): that re-fetch runs while the user is
+ *   on the builder page, so by the time they navigate back the cache
+ *   already holds the new row.
  *
  *   Showing an intermediate "Preparing your workspace…" modal for the
- *   ~200ms between click and either terminal transition produces a
- *   visible flash that the user reads as "a popup appears when I click
- *   New resume." Removing the overlay eliminates that flash.
- *
- *   (The global NavigationOverlay is still useful for flows that keep
- *   the user on the same route — e.g. an export or import that takes
- *   longer than a soft navigation would — and is preserved in
+ *   ~200ms between click and the route transition is the same problem
+ *   the user reported as "a popup appears when I click New resume."
+ *   Removing the overlay eliminates that flash. (The global
+ *   NavigationOverlay is still useful for flows that keep the user on
+ *   the same route — e.g. an export or import that takes longer than a
+ *   soft navigation would — and is preserved in
  *   `lib/navigation-overlay.tsx`. It is just not appropriate here.)
  *
  * Flow:
  *   1. Click "New resume" → POST /api/resumes (kind: "starter") with
  *      Idempotency-Key. No UI feedback — the destination transition is
  *      the feedback.
- *   2. On 201 → insert the real resume into the cache, router.push to
- *      /builder?resumeId=… on the next tick.
+ *   2. On 201 → router.push to /builder?resumeId=… on the next tick. No
+ *      cache write — the dashboard's loading.tsx skeleton is allowed to
+ *      take over without racing the cache.
  *   3. On 403 upgradeUrl → auto-redirect to upgradeUrl. No toast, no
  *      Upgrade button — the user has already decided they want more
  *      resumes; intermediate prompts are friction.
- *   4. On other failure → toast with Try Again. Cache untouched
- *      (nothing was inserted).
+ *   4. On other failure → toast with Try Again. Cache untouched.
+ *   5. onSettled → invalidateQueries(["resumes"]) so a return to the
+ *      dashboard sees the freshly-created resume.
  */
 export function useCreateResume() {
   const router = useRouter();
@@ -148,19 +138,31 @@ export function useCreateResume() {
       return {};
     },
 
-    // ── Server confirmed: insert real resume, then navigate ────────────────
+    // ── Server confirmed: navigate to builder.                                ──
     //
-    // `optimisticallyAddResume` here is the SUCCESS path insert — it
-    // happens only after the server returns 201, so a 403 RESUME_LIMIT
-    // never produces a phantom card. The insert means a quick "back" to
-    // the dashboard shows the new resume immediately.
+    // No optimistic insert. Earlier this hook called optimisticallyAddResume
+    // here so a quick "back" to the dashboard would show the new resume.
+    // That had two visible costs:
+    //
+    //   1. The dashboard re-rendered with a freshly-inserted card during the
+    //      router.push transition, making the dashboard appear to "flicker"
+    //      into a new state right before the builder segment took over.
+    //   2. The transition window between cache update and route unmount
+    //      racing the destination's first paint ate the brief loading.tsx
+    //      skeleton the user expected to see — it looked like the builder
+    //      page opened without a skeleton at all.
+    //
+    // The "back to dashboard shows the new resume" UX benefit is preserved
+    // by onSettled → invalidateQueries(["resumes"]). That re-fetch is
+    // cheap (the resume is freshly created and indexed) and it runs while
+    // the user is on the builder page, so by the time they navigate back
+    // the cache already holds the new row.
     onSuccess: (created, _variables, _context) => {
-      optimisticallyAddResume(queryClient, created);
-      // Defer router.push to the next tick so React commits the cache
-      // update before the route segment unmounts. Without this, the
-      // dashboard unmounts before the optimistic-cache write is observed,
-      // and the destination's loading.tsx skeleton can briefly replace
-      // the overlay before the destination paints.
+      // Defer router.push to the next tick so the React commit for the
+      // success branch (which closes the mutation's pending state and
+      // re-enables the button) lands before the dashboard route segment
+      // unmounts. Without this, the unmount races the click-target's
+      // re-render.
       queueMicrotask(() => {
         router.push(`/builder?resumeId=${created.id}`);
       });
