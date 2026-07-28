@@ -189,12 +189,17 @@ async function getDashboardResumeStats(userId: string) {
 }
 
 /**
- * Lifetime PDF export count for the dashboard "Exports" tile. Reads from
- * `User.lifetimeExportCount`, which is incremented on every successful PDF
- * export. This number survives resume deletion (the User row outlives
- * ResumeDocument), unlike `_count.exports` which collapses to 0 when all
- * exported resumes are deleted. Returns 0 if the user record cannot be
- * loaded (e.g. right after a delete-rollback edge case).
+ * Lifetime PDF export count for the dashboard "All-time exports" tile.
+ * Reads from `User.lifetimeExportCount`, which is incremented on every
+ * successful PDF export. This number survives resume deletion (the User
+ * row outlives ResumeDocument), unlike `_count.exports` which collapses
+ * to 0 when all exported resumes are deleted. Returns 0 if the user
+ * record cannot be loaded (e.g. right after a delete-rollback edge case).
+ *
+ * This is intentionally separate from the monthly counter shown on
+ * /billing — the dashboard tracks lifetime to give users a sense of
+ * their total output, while billing only counts the current calendar
+ * month toward the entitlement limit.
  */
 async function getLifetimeExportCount(userId: string): Promise<number> {
   try {

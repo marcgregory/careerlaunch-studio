@@ -55,7 +55,7 @@ export function WorkspaceStats({
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
           <CreditCard size={18} className="text-[#b9ff66]" aria-hidden="true" />
           <p className="mt-2 text-2xl font-black">{stats.exportCount}</p>
-          <p className="text-xs font-medium text-white/80">Exports</p>
+          <p className="text-xs font-medium text-white/80">All-time exports</p>
         </div>
       </div>
 
