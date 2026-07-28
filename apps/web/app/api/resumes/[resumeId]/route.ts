@@ -39,7 +39,7 @@ export async function PUT(request: Request, context: { params: Promise<{ resumeI
         {
           error: "This template requires a paid plan.",
           feature: FeatureKeys.USE_PREMIUM_TEMPLATES,
-          upgradeUrl: "/billing",
+          upgradeUrl: `/billing?reason=${encodeURIComponent(FeatureKeys.USE_PREMIUM_TEMPLATES)}`,
         },
         { status: 403 },
       );

@@ -44,11 +44,16 @@ export async function POST(request: Request) {
     );
   }
 
-  // Entitlement check: monthly export limit
+  // Entitlement check: monthly export limit. The `reason` query tells the
+  // billing page which banner to show — without it, the user lands on
+  // /billing with no idea why they were redirected.
   const exportCheck = await canExportPdf(user.id);
   if (!exportCheck.allowed) {
     return Response.json(
-      { error: "Monthly export limit reached. Upgrade to Professional for unlimited exports.", upgradeUrl: "/billing" },
+      {
+        error: "Monthly export limit reached. Upgrade to Professional for unlimited exports.",
+        upgradeUrl: "/billing?reason=monthly_export_limit",
+      },
       { status: 402 },
     );
   }

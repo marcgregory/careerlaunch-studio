@@ -122,6 +122,11 @@ export async function getFeatureValue(userId: string, feature: string): Promise<
 /**
  * For API routes: returns a 403 Response if the user lacks an entitlement,
  * or null if they can proceed.
+ *
+ * The `upgradeUrl` carries `?reason={feature}` so the billing page can show
+ * a context banner explaining why the user was redirected (e.g. "You've
+ * hit your monthly export limit"). Without this the page silently opens
+ * and the user has no idea what triggered the redirect.
  */
 export async function requireEntitlement(userId: string, feature: string): Promise<Response | null> {
   const allowed = await can(userId, feature);
@@ -130,7 +135,7 @@ export async function requireEntitlement(userId: string, feature: string): Promi
       {
         error: "This feature requires a paid plan.",
         feature,
-        upgradeUrl: "/billing",
+        upgradeUrl: `/billing?reason=${encodeURIComponent(feature)}`,
       },
       { status: 403 },
     );

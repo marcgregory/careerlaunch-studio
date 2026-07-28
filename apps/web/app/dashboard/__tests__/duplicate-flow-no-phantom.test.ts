@@ -214,9 +214,10 @@ describe("duplicate flow — no phantom resume on limit reached", () => {
     // Click happens → only onMutate runs
     await onMutate(qc, { resume: makeResume("r1"), idempotencyKey: "k" });
 
-    // Server returns 403 → onError runs, cache untouched
+    // Server returns 403 → onError runs, cache untouched. The upgradeUrl
+    // carries a reason query so the /billing page can show a context banner.
     const err = Object.assign(new Error("Resume limit reached."), {
-      upgradeUrl: "/billing",
+      upgradeUrl: "/billing?reason=resume_limit",
     }) as DuplicateApiError;
     onError(qc, { toastId: 1 }, { resume: makeResume("r1"), idempotencyKey: "k" }, () => {}, err);
 

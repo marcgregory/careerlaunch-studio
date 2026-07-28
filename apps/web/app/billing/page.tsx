@@ -135,15 +135,30 @@ function BillingContent() {
   const reason = searchParams?.get("reason");
   const checkoutStatus = searchParams?.get("checkout");
   const upgradePlan = searchParams?.get("plan");
+  // ── Reason → banner copy ───────────────────────────────────────────────────
+  // The auto-redirect flows (use-create-resume, use-duplicate-resume,
+  // PDF export) send the user here with ?reason=… so we can explain WHY
+  // they were bounced. Without these banners the page silently opens and
+  // the user has no idea what triggered the redirect.
+  //
+  // Each reason gets a single line of context. Keep them short and
+  // action-oriented — the plan cards below carry the off-ramp.
+  const REASON_BANNERS: Record<string, string> = {
+    resume_limit:
+      "You've reached the free plan limit. Upgrade to create more resumes.",
+    monthly_export_limit:
+      "You've hit your monthly export limit. Upgrade to Professional for unlimited PDF exports.",
+    duplicate_limit:
+      "You've reached the free plan limit. Upgrade to duplicate this resume.",
+  };
+  const reasonMessage = reason ? REASON_BANNERS[reason] : undefined;
   const message = success ?? (checkoutStatus === "success" && !isVerifying
     ? "Payment successful! Your plan has been upgraded."
     : checkoutStatus === "canceled"
       ? "Checkout was canceled. No changes were made."
       : searchParams?.get("upgrade") === "completed" && !isVerifying
         ? `Your plan has been upgraded to ${upgradePlan ?? "the new plan"}. Your next invoice will reflect any prorated charges.`
-        : reason === "resume_limit"
-          ? "You've reached the free plan limit. Upgrade to create more resumes."
-          : null);
+        : reasonMessage ?? null);
 
   const openUpgradePreview = async (planId: string) => {
     setBusyPlan(planId);

@@ -58,13 +58,17 @@ const duplicatedResume = {
   updatedAt: new Date(),
 };
 
-// Exact 403 shape produced by requireEntitlement in apps/web/lib/entitlements.ts
+// Mirror the 403 shape produced by requireEntitlement in
+// apps/web/lib/entitlements.ts. The upgradeUrl carries ?reason={feature}
+// so the /billing page can show a context banner. Keep this in sync with
+// the production helper — if the real shape drifts, the test below will
+// fail loudly and force the helper and the assertion to converge.
 const limitReached403 = () =>
   Response.json(
     {
       error: "This feature requires a paid plan.",
       feature: FeatureKeys.RESUME_LIMIT,
-      upgradeUrl: "/billing",
+      upgradeUrl: `/billing?reason=${encodeURIComponent(FeatureKeys.RESUME_LIMIT)}`,
     },
     { status: 403 },
   );
@@ -127,7 +131,10 @@ describe("POST /api/resumes/[resumeId]/duplicate", () => {
     expect(res.status).toBe(403);
     expect(json.error).toBeTruthy();
     expect(json.feature).toBe(FeatureKeys.RESUME_LIMIT);
-    expect(json.upgradeUrl).toBe("/billing");
+    // The reason query is attached so the /billing page knows which banner
+    // to show. Pinned here so a future refactor that drops the query
+    // string will fail this test.
+    expect(json.upgradeUrl).toBe(`/billing?reason=${encodeURIComponent(FeatureKeys.RESUME_LIMIT)}`);
   });
 
   // ── 3. Professional / unlimited user → 201 regardless of count ───────────────

@@ -304,17 +304,19 @@ describe("fetch sends Idempotency-Key header", () => {
 // ──────────────────────────────────────────────────────────────────────────────
 //
 // The server's 403 response shape is { error, feature: "resume_limit",
-// upgradeUrl: "/billing" }. parseDuplicateError must lift `upgradeUrl` onto
-// the thrown Error so onError can render an "Upgrade" action button instead
-// of a "Duplicate Again" retry button (which would just 403 again).
+// upgradeUrl: "/billing?reason=resume_limit" }. The reason query is
+// attached so the /billing page can show a context banner — without it
+// the user lands on the page with no idea why they were redirected.
+// parseDuplicateError must lift `upgradeUrl` onto the thrown Error so
+// onError can use it as the auto-redirect destination.
 
 describe("parseDuplicateError (403 resume limit)", () => {
-  it("attaches upgradeUrl from a 403 resume_limit body", async () => {
+  it("attaches upgradeUrl (with reason query) from a 403 resume_limit body", async () => {
     const res = new Response(
       JSON.stringify({
         error: "This feature requires a paid plan.",
         feature: "resume_limit",
-        upgradeUrl: "/billing",
+        upgradeUrl: "/billing?reason=resume_limit",
       }),
       { status: 403, headers: { "Content-Type": "application/json" } },
     );
@@ -323,7 +325,7 @@ describe("parseDuplicateError (403 resume limit)", () => {
 
     expect(err).toBeInstanceOf(Error);
     expect(err.message).toBe("This feature requires a paid plan.");
-    expect(err.upgradeUrl).toBe("/billing");
+    expect(err.upgradeUrl).toBe("/billing?reason=resume_limit");
   });
 
   it("falls back to the default message when the body cannot be parsed", async () => {
