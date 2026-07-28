@@ -82,6 +82,25 @@ export function ResumeActions({
         body: JSON.stringify({ resumeId: resume.id }),
       });
 
+      // Entitlement gate (monthly export limit, template tier, etc.) — the
+      // server returns 402/403 with an upgradeUrl. Skip the toast + Upgrade
+      // button and send the user straight to /billing. They have already
+      // decided they want to export; intermediate prompts are friction and
+      // would leave "Preparing your PDF…" lingering if a toast was being shown.
+      if (res.status === 402 || res.status === 403) {
+        let upgradeUrl = "/billing";
+        try {
+          const jsonErr = (await res.clone().json().catch(() => null)) as {
+            upgradeUrl?: string;
+          } | null;
+          if (jsonErr?.upgradeUrl) upgradeUrl = jsonErr.upgradeUrl;
+        } catch {
+          // fall through to /billing
+        }
+        window.location.href = upgradeUrl;
+        return;
+      }
+
       if (!res.ok) {
         let errorMsg = "Failed to export resume";
         try {
@@ -89,7 +108,6 @@ export function ResumeActions({
           const jsonErr = await cloned.json().catch(() => null);
           if (jsonErr?.error) {
             errorMsg = jsonErr.error;
-            if (jsonErr.upgradeUrl) errorMsg += " — Upgrade to export more.";
           }
         } catch {
           const textErr = await res.text().catch(() => null);

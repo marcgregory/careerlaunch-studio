@@ -393,14 +393,20 @@ export function ResumeBuilder({ initialResume, canUsePremiumTemplates }: { initi
         body: JSON.stringify({ resumeId: resume.id })
       });
 
+      // Entitlement gate (monthly export limit, template tier, etc.) — the
+      // server returns 402/403 with an upgradeUrl. Skip the upgrade modal
+      // and send the user straight to /billing. They have already decided
+      // they want to export; the upgrade modal is friction and would let the
+      // "Preparing your PDF…" loading toast linger behind it. Mirrors the
+      // auto-redirect behavior on the dashboard's "New resume" flow.
       if (response.status === 402 || response.status === 403) {
-        const data = await response.json().catch(() => ({}));
-        setUpgradePrompt({
-          title: "Monthly export limit reached",
-          message: formatUpgradeMessage(data.error),
-          upgradeUrl: data.upgradeUrl ?? "/billing",
-        });
+        const data = await response.json().catch(() => ({} as { upgradeUrl?: string }));
+        // Clear the loading toast BEFORE navigating so the destination
+        // /billing route doesn't render with a half-faded Preparing-state
+        // toast on top of it for a frame.
+        toast.dismiss("pdf-export");
         setExportState("Idle");
+        window.location.href = data.upgradeUrl ?? "/billing";
         return;
       }
 
@@ -1034,11 +1040,6 @@ function StackEmpty({ when, label, action }: { when: boolean; label: string; act
 function ErrorText({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="mt-1 text-xs font-black text-red-700">{message}</p>;
-}
-
-function formatUpgradeMessage(message: unknown) {
-  if (typeof message !== "string" || !message.trim()) return "Upgrade to Professional for unlimited exports.";
-  return message.replace(/^Monthly export limit reached\.\s*/i, "");
 }
 
 function normalizeResume(resume: ResumeDocument): ResumeDocument {
