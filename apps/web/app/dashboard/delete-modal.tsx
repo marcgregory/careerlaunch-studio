@@ -96,10 +96,6 @@ export function DeleteResumeModal({
                         (removedResume?.analysisRunCount ?? 0) > 0
                           ? Math.max(0, p.stats.analyzedCount - 1)
                           : p.stats.analyzedCount,
-                      exportCount: Math.max(
-                        0,
-                        p.stats.exportCount - (removedResume?.exportCount ?? 0)
-                      ),
                     }
                   : undefined,
               }

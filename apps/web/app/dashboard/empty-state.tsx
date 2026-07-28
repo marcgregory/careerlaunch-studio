@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { FileText, Search, ArrowRight, RotateCcw } from "lucide-react";
-import { primaryButtonClass } from "@careerlaunch/ui";
+import { FileText, Search, RotateCcw } from "lucide-react";
+import { NewResumeButton } from "./new-resume-button";
 
 type EmptyStateProps = {
   /** Which view is empty — determines the icon and messaging */
@@ -34,9 +33,7 @@ export function EmptyState({
             Create your first database-backed resume draft and continue editing from any authenticated session.
           </p>
           <div className="mt-8">
-            <Link href="/builder" className={primaryButtonClass}>
-              Create first draft <ArrowRight size={18} aria-hidden="true" />
-            </Link>
+            <NewResumeButton variant="first-draft" fallbackHref="/login" />
           </div>
         </div>
       </article>

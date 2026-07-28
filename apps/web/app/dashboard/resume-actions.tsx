@@ -48,8 +48,11 @@ export function ResumeActions({
   const isCurrentlyDuplicating = isDuplicating(resume.id);
 
   // Optimistic cards (id starts with "optimistic-") haven't been committed
-  // to the server yet. Rename/Delete must be blocked until the real ID arrives,
-  // otherwise those API calls hit /api/resumes/optimistic-xxxx → 404.
+  // to the server yet — these are produced only by useCreateResume now,
+  // since useDuplicateResume no longer inserts optimistically (duplicate
+  // is gated by RESUME_LIMIT so we wait for server confirmation).
+  // Rename/Delete must be blocked on optimistics because those API calls
+  // would hit /api/resumes/optimistic-xxxx → 404.
   const isOptimistic = resume.id.startsWith("optimistic-");
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -112,23 +115,35 @@ export function ResumeActions({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      // Optimistically increment exportCount on the resume AND on the
+      // workspace stats. Apply across ALL loaded pages — the resume may
+      // live on a page other than page 0 (e.g. after the user has scrolled
+      // or sorted/filtered and the resume is in a later page), and the
+      // workspace stats live on page 0.
       queryClient.setQueryData<ResumeCacheData>(["resumes"], (old) => {
         if (!old) return old;
+        let didIncrement = false;
+        const pages = old.pages.map((p) => {
+          let pageTouched = false;
+          const resumes = p.resumes.map((r) => {
+            if (r.id === resume.id) {
+              pageTouched = true;
+              return { ...r, exportCount: (r.exportCount ?? 0) + 1 };
+            }
+            return r;
+          });
+          if (pageTouched) didIncrement = true;
+          return pageTouched ? { ...p, resumes } : p;
+        });
         return {
           ...old,
-          pages: old.pages.map((p, i) =>
-            i === 0
-              ? {
-                  ...p,
-                  resumes: p.resumes.map((r) =>
-                    r.id === resume.id ? { ...r, exportCount: (r.exportCount ?? 0) + 1 } : r
-                  ),
-                  stats: p.stats
-                    ? { ...p.stats, exportCount: p.stats.exportCount + 1 }
-                    : undefined,
-                }
-              : p
-          ),
+          pages: didIncrement
+            ? pages.map((p, i) =>
+                i === 0 && p.stats
+                  ? { ...p, stats: { ...p.stats, exportCount: p.stats.exportCount + 1 } }
+                  : p,
+              )
+            : pages,
         };
       });
 
@@ -231,8 +246,8 @@ export function ResumeActions({
           <button
             type="button"
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#123c3a]/10 bg-white text-[#4b4b4b] transition-colors hover:border-[#123c3a]/30 hover:bg-[#f3f3f3] hover:text-[#123c3a]"
-            title={isOptimistic ? "Saving duplicate…" : "More actions"}
-            aria-label={isOptimistic ? "Saving duplicate…" : "More actions"}
+            title={isOptimistic ? "Saving…" : "More actions"}
+            aria-label={isOptimistic ? "Saving…" : "More actions"}
           >
             {isOptimistic || actionLoading === "export" ? (
               <Loader2 size={16} className="animate-spin" />

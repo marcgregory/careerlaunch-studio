@@ -8,18 +8,27 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  email           String           @unique
-  name            String?
-  passwordHash    String
-  passwordSalt    String
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  emailVerifiedAt DateTime?
-  authTokens      AuthToken[]
-  coverLetters    CoverLetter[]
-  resumes         ResumeDocument[]
-  subscriptions   Subscription?
+  id                  String           @id @default(cuid())
+  email               String           @unique
+  name                String?
+  passwordHash        String
+  passwordSalt        String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  emailVerifiedAt     DateTime?
+  /// Lifetime PDF export count across all of this user's resumes — past AND
+  /// present. Incremented on every successful PDF export. NEVER decremented
+  /// when a resume is deleted (deleting a resume does not un-make the
+  /// exports that already happened). The dashboard "Exports" tile reads
+  /// this so the count survives resume deletion. Per-resume export history
+  /// is still derived from `ExportJob.resumeId` (those rows are kept too,
+  /// but cascade-delete with the resume).
+  lifetimeExportCount Int              @default(0)
+  authTokens          AuthToken[]
+  coverLetters        CoverLetter[]
+  exportJobs          ExportJob[]
+  resumes             ResumeDocument[]
+  subscriptions       Subscription?
 }
 
 model AuthToken {
@@ -38,25 +47,25 @@ model AuthToken {
 }
 
 model ResumeDocument {
-  id              String          @id @default(cuid())
-  userId          String
-  title           String
-  targetRole      String?
-  body            Json
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id             String          @id @default(cuid())
+  userId         String
+  title          String
+  targetRole     String?
+  body           Json
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   /// Client-generated UUID sent as Idempotency-Key header on POST /duplicate.
   /// Allows the server to return the already-created copy on retry instead of
   /// creating a second one. NULL for resumes not created via duplication.
-  idempotencyKey  String?
-  analysisRuns    AnalysisRun[]
-  coverLetters    CoverLetter[]
-  exports         ExportJob[]
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  versions        ResumeVersion[]
+  idempotencyKey String?
+  analysisRuns   AnalysisRun[]
+  coverLetters   CoverLetter[]
+  exports        ExportJob[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions       ResumeVersion[]
 
-  @@index([userId, updatedAt])
   @@unique([userId, idempotencyKey])
+  @@index([userId, updatedAt])
 }
 
 model ResumeVersion {
@@ -92,17 +101,28 @@ model AnalysisRun {
 }
 
 model ExportJob {
-  id        String         @id @default(cuid())
-  resumeId  String
+  id        String          @id @default(cuid())
+  /// Owning user. Snapshotted at export time so the row remains
+  /// queryable for billing/quota purposes (e.g. monthly count) even
+  /// after the resume is deleted. Cascade-delete with the User.
+  userId    String
+  /// The resume this job was for. Nullable so that deleting a resume
+  /// orphans the job instead of cascade-deleting it — the `userId`
+  /// snapshot keeps the row alive for billing/audit. Per-resume
+  /// `_count.exports` still works because the relation returns the
+  /// non-null jobs only (Prisma uses an inner join).
+  resumeId  String?
   format    ExportFormat
-  status    ExportStatus   @default(PENDING)
+  status    ExportStatus    @default(PENDING)
   fileUrl   String?
   error     String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  resume    ResumeDocument @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume    ResumeDocument? @relation(fields: [resumeId], references: [id], onDelete: SetNull)
 
   @@index([resumeId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model CoverLetter {

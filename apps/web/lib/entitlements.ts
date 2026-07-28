@@ -149,6 +149,12 @@ export async function getUserEntitlements(userId: string): Promise<Entitlements>
 
 /**
  * Get the number of monthly PDF exports used by a user.
+ *
+ * Filters by `userId` (snapshotted onto ExportJob at creation time) instead
+ * of the resume relation. This way the count survives resume deletion —
+ * the resume cascade-deletes `ExportJob`, but the snapshot `userId` keeps
+ * the audit row alive for billing/quota purposes until the job is itself
+ * removed by a separate cleanup.
  */
 export async function getMonthlyExportCount(userId: string): Promise<number> {
   const now = new Date();
@@ -156,7 +162,7 @@ export async function getMonthlyExportCount(userId: string): Promise<number> {
 
   return prisma.exportJob.count({
     where: {
-      resume: { userId },
+      userId,
       createdAt: { gte: startOfMonth },
       format: "PDF",
     },

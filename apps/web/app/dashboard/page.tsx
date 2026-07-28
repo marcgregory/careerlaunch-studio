@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { FileText, LogOut, Plus, Sparkles } from "lucide-react";
-import { primaryButtonClass, secondaryButtonClass } from "@careerlaunch/ui";
+import { FileText, LogOut, Sparkles } from "lucide-react";
+import { secondaryButtonClass } from "@careerlaunch/ui";
 import { AppHeader, AppLogo } from "../../components/app-header";
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
@@ -8,6 +8,7 @@ import { getSubscription } from "../../lib/entitlements";
 import { EmailVerificationBanner } from "../../components/email-verification-banner";
 import { ResumeList } from "./resume-list";
 import { WorkspaceStats } from "./workspace-stats";
+import { NewResumeButton } from "./new-resume-button";
 
 type SerializedResume = {
   id: string;
@@ -41,7 +42,9 @@ export default async function DashboardPage() {
   const totalResumeCount = allResumesForStats.length;
   const targetedCount = allResumesForStats.filter((r) => r.targetRole).length;
   const analyzedCount = allResumesForStats.filter((r) => r._count.analysisRuns > 0).length;
-  const exportCount = allResumesForStats.reduce((sum, r) => sum + r._count.exports, 0);
+  // Use the lifetime counter on the User row (it survives resume deletes),
+  // not the per-resume sum (which collapses to 0 when resumes are deleted).
+  const exportCount = await getLifetimeExportCount(user.id);
 
   // Fetch first page for initial render
   const initialResumes = await getInitialDashboardResumes(user.id);
@@ -76,10 +79,7 @@ export default async function DashboardPage() {
               <FileText size={16} />{" "}
               <span className="hidden sm:inline">Import</span>
             </Link>
-            <Link href="/builder" className={primaryButtonClass}>
-              <Plus size={16} />{" "}
-              <span className="hidden sm:inline">New resume</span>
-            </Link>
+            <NewResumeButton variant="new-resume" fallbackHref="/login" />
           </div>
         }
       >
@@ -185,6 +185,30 @@ async function getDashboardResumeStats(userId: string) {
       error instanceof Error ? error.message : String(error),
     );
     return [];
+  }
+}
+
+/**
+ * Lifetime PDF export count for the dashboard "Exports" tile. Reads from
+ * `User.lifetimeExportCount`, which is incremented on every successful PDF
+ * export. This number survives resume deletion (the User row outlives
+ * ResumeDocument), unlike `_count.exports` which collapses to 0 when all
+ * exported resumes are deleted. Returns 0 if the user record cannot be
+ * loaded (e.g. right after a delete-rollback edge case).
+ */
+async function getLifetimeExportCount(userId: string): Promise<number> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { lifetimeExportCount: true },
+    });
+    return user?.lifetimeExportCount ?? 0;
+  } catch (error) {
+    console.warn(
+      "[dashboard] failed to load lifetime export count",
+      error instanceof Error ? error.message : String(error),
+    );
+    return 0;
   }
 }
 

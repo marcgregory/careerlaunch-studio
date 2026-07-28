@@ -64,11 +64,35 @@ export async function POST(request: Request) {
 
   const exportJob = await prisma.exportJob.create({
     data: {
+      userId: user.id,
       resumeId,
       format: "PDF",
       status: "PROCESSING"
     }
   });
+
+  /**
+   * Bump the user's lifetime export counter on success. We use a flag
+   * (`counterBumped`) instead of incrementing eagerly so that FAILED
+   * renders are NOT counted. The counter lives on the `User` row, which
+   * outlives `ResumeDocument` — so the value survives resume deletion
+   * and the dashboard "Exports" tile keeps showing historical activity.
+   */
+  const userId = user.id;
+  async function bumpLifetimeExportCount() {
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { lifetimeExportCount: { increment: 1 } },
+      });
+    } catch (counterError) {
+      // Don't fail the export just because the counter couldn't be bumped.
+      console.warn(
+        "[pdf-export] failed to bump lifetimeExportCount",
+        counterError instanceof Error ? counterError.message : String(counterError),
+      );
+    }
+  }
 
   try {
     const resume = fromStoredResume(record);
@@ -90,6 +114,7 @@ export async function POST(request: Request) {
         where: { id: exportJob.id },
         data: { status: "READY", fileUrl: `download:${filename}` },
       });
+      await bumpLifetimeExportCount();
 
       console.log(`[pdf-export] CACHE HIT ${resumeId} (${cachedElapsed}ms)`);
 
@@ -142,6 +167,7 @@ export async function POST(request: Request) {
         fileUrl: `download:${filename}`
       }
     });
+    await bumpLifetimeExportCount();
 
     // ── Analytics ──
     captureServerEvent("pdf_exported", user.id, {
