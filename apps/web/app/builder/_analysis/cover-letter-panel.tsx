@@ -188,14 +188,20 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
         body: JSON.stringify({ coverLetterId: coverLetter.id }),
       });
 
+      // Entitlement gate (monthly export limit). The server returns 402/403
+      // with an upgradeUrl. Skip the upgrade modal and send the user
+      // straight to /billing. They have already decided they want to export;
+      // the modal is friction and would let the "Exporting cover letter…"
+      // loading toast linger behind it. Mirrors the auto-redirect behavior
+      // of resume PDF export (abb4d3d).
       if (response.status === 402 || response.status === 403) {
-        const data = await response.json().catch(() => ({}));
-        onUpgradeRequired?.({
-          title: "Monthly export limit reached",
-          message: formatUpgradeMessage(data.error),
-          upgradeUrl: data.upgradeUrl ?? "/billing",
-        });
+        const data = await response.json().catch(() => ({} as { upgradeUrl?: string }));
+        // Dismiss the loading toast BEFORE navigating so the destination
+        // /billing route doesn't render with a half-faded Exporting-state
+        // toast on top of it for a frame.
+        toast.dismiss("cl-export");
         setPanelState({ status: "ready", coverLetter });
+        window.location.href = data.upgradeUrl ?? "/billing";
         return;
       }
 
@@ -222,7 +228,7 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
       });
       toast.error("Export failed. Please try again.", { id: "cl-export" });
     }
-  }, [coverLetter, onUpgradeRequired, analytics]);
+  }, [coverLetter, analytics]);
 
   // Reset to idle
   function resetToIdle() {
@@ -501,7 +507,3 @@ export function CoverLetterPanel({ resumeId, initialTargetRole, onTargetRoleChan
   );
 }
 
-function formatUpgradeMessage(message: unknown) {
-  if (typeof message !== "string" || !message.trim()) return "Upgrade to Professional for unlimited exports.";
-  return message.replace(/^Monthly export limit reached\.\s*/i, "");
-}
